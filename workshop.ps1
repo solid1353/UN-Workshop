@@ -40,7 +40,7 @@ switch ($normalizedCommand) {
             'UN Workshop'
             ''
             '  ws input [profile]'
-            '  ws ss move <game> <subpath> [-Target dev|stable]'
+            '  ws ss move <game> <subpath> [-Target dev|stable] [-Cleanup]'
             '  ws ss extract <paths...>'
             ''
         ) | Write-Output

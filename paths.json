@@ -7,7 +7,7 @@
     "icons": "icons",
     "tools": "tools",
     "work": "work",
-    "ss": "@work/ss",
+    "ss": "@work/__sstates",
     "scripts": "scripts",
     "pcsx2_scripts": "@scripts/pcsx2",
     "ghidra_scripts": "@scripts/ghidra",
