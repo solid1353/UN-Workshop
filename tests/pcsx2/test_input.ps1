@@ -44,6 +44,9 @@ Triangle = Keyboard/I
 Circle = Keyboard/L
 Cross = Keyboard/K
 Square = Keyboard/J
+PreviousSaveStateSlot = Keyboard/F1
+L2 = Keyboard/Z
+R2 = Keyboard/C
 
 [Pad2]
 Triangle = untouched
@@ -120,6 +123,9 @@ Triangle = untouched
             ($actualText.Contains($expected)) `
             "Generated profile omitted expected binding: $expected"
     }
+    Assert-Condition `
+        (-not $actualText.Contains('PreviousSaveStateSlot = Keyboard/F1')) `
+        'The override left another action bound to Keyboard/F1.'
     Assert-Condition `
         ($actualText.IndexOf('Triangle = SDL-0/FaceEast') -lt
             $actualText.IndexOf('Square = SDL-0/FaceWest')) `
