@@ -20,7 +20,7 @@ switch ($normalizedCommand) {
     'input' {
         $argumentList = @($Arguments)
         if ($argumentList.Count -gt 1) {
-            throw 'Usage: workshop.ps1 input [profile]'
+            throw 'Usage: workshop input [profile]'
         }
         $parameters = @{}
         if ($argumentList.Count -eq 0) {
@@ -55,9 +55,9 @@ switch ($normalizedCommand) {
         @(
             'UN Workshop'
             ''
-            '  workshop.ps1 input [profile]'
-            '  workshop.ps1 ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]'
-            '  workshop.ps1 ss extract <paths...>'
+            '  workshop input [profile]'
+            '  workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]'
+            '  workshop ss extract <paths...>'
             ''
         ) | Write-Output
     }

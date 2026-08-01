@@ -124,7 +124,13 @@ def derive_game_paths(
         selector, catalog
     )
     profile_root = _root(roots, "pcsx2_input_profiles")
-    override = profile_root / "sources" / "games" / f"{canonical_name}.ini"
+    override = (
+        profile_root
+        / "sources"
+        / "overrides"
+        / "games"
+        / f"{canonical_name}.ini"
+    )
     override_enabled = override.is_file()
     resolved_profile = (
         f"{DEFAULT_INPUT_PROFILE}_{canonical_name}"

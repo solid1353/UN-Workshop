@@ -10,17 +10,20 @@ memory cards, savestates, logs, and task artifacts.
 `workshop.ps1` is the single user-facing entrypoint.
 
 ```powershell
-.\workshop.ps1 input [profile]
-.\workshop.ps1 ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]
-.\workshop.ps1 ss extract <folder-or-savestates...>
+workshop input [profile]
+workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]
+workshop ss extract <folder-or-savestates...>
 ```
 
-- `workshop.ps1 input` regenerates every complete PCSX2 input profile from the
+- `workshop input` regenerates every complete PCSX2 input profile from the
   tracked base and partial overrides without changing GameSettings assignments.
-- `workshop.ps1 input <profile>` regenerates the selected profile and its game
-  variants, then assigns them in every configured GameSettings file. Every generated profile
-  at the root of
-  `pcsx2/__shared/input_profiles/` is tracked by Git.
+- `workshop input <profile>` regenerates the selected profile and its game
+  variants, then assigns them in every configured GameSettings file. Every
+  generated profile at the root of `pcsx2/__shared/input_profiles/` is tracked
+  by Git.
+- An override replaces the same action's bindings for the matching input type
+  and removes other actions using the same binding. Multiple actions explicitly
+  sharing that binding in the override remain together.
 - `ss move` files matching savestates from the selected user PCSX2 installation
   below Workshop `work/__sstates/` for source games or the invoking project's
   `work/__sstates/` for project builds. `-Cleanup` first sends the existing
@@ -41,6 +44,8 @@ a project catalog.
 - `icons/`: reusable source-game `simple` and `detailed` icons.
 - `pcsx2/__shared/`: public cheats, GameSettings, input-profile sources, and
   input recordings. BIOS files and memory cards are deliberately ignored.
+- `pcsx2/__shared/input_profiles/sources/overrides/`: named input-profile
+  overrides, with game-specific overrides under `games/`.
 - `scripts/pcsx2/`: reusable PCSX2 launch, worker-copy, PINE, input-profile,
   savestate, and disc-identity utilities.
 - `scripts/ghidra/`: reusable headless Ghidra Java scripts and runtime setup.
