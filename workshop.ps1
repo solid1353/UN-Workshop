@@ -33,8 +33,8 @@ switch ($normalizedCommand) {
                 else { $entry.Name }
             }
         )
-        $buildSelectors = if ($null -ne $catalog.Builds) {
-            @(
+        $buildSelectors = @(
+            if ($null -ne $catalog.Builds) {
                 foreach ($entry in $catalog.Builds.PSObject.Properties) {
                     $aliasesProperty = $entry.Value.PSObject.Properties['aliases']
                     $aliases = @(
@@ -47,9 +47,8 @@ switch ($normalizedCommand) {
                     }
                     else { $entry.Name }
                 }
-            )
-        }
-        else { @() }
+            }
+        )
         $canonicalSelectors = @(
             $catalog.Sources.PSObject.Properties |
                 ForEach-Object { [string]$_.Name }
@@ -72,6 +71,7 @@ switch ($normalizedCommand) {
             'UN Workshop'
             ''
             '  workshop resolve [game] [property]  Resolve all games, one game, or one property.'
+            '  workshop pcsx2 <game> [input-recording]  Launch a game in development PCSX2, optionally with a recording.'
             '  workshop input [profile]            Regenerate all profiles, or regenerate and assign one.'
             '  workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]  Move savestates; -c recycles the destination first.'
             '  workshop ss extract <folder-or-savestates...>  Extract embedded PNGs into screenshots/.'
@@ -143,6 +143,20 @@ switch ($normalizedCommand) {
         else {
             & (Join-Path $scripts 'input.ps1') -Profile $argumentList[0]
         }
+    }
+    'pcsx2' {
+        $argumentList = @($Arguments)
+        if ($argumentList.Count -lt 1 -or $argumentList.Count -gt 2) {
+            throw 'Usage: workshop pcsx2 <game> [input-recording]'
+        }
+        $resolved = Resolve-UnWorkshopGame `
+            -Game $argumentList[0] `
+            -ProjectRoot $paths.Project
+        $parameters = @{ IsoPath = [string]$resolved.iso }
+        if ($argumentList.Count -eq 2) {
+            $parameters.InputRecording = $argumentList[1]
+        }
+        & (Join-Path $scripts 'launch.ps1') @parameters
     }
     'ss' {
         $argumentList = @($Arguments)
