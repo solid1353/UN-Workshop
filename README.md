@@ -12,7 +12,7 @@ convenient but not required.
 
 ```powershell
 ws input [profile]
-ws ss move <game> <subpath> [-Target dev|stable] [-Cleanup]
+ws ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]
 ws ss extract <folder-or-savestates...>
 ```
 

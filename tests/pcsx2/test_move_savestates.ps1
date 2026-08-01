@@ -118,7 +118,7 @@ function Get-Pcsx2IsoIdentity {
     Set-Content -LiteralPath (Join-Path $cleanupTarget 'stale.p2s') -Value 'stale'
     Set-Content -LiteralPath (Join-Path $states 'SLOP-NA228 (12345678).02.p2s') -Value 'new'
     & (Join-Path $workshop 'scripts\pcsx2\move_savestates.ps1') `
-        latest cleanup-case -ProjectRoot $project -Cleanup -WhatIf
+        latest cleanup-case -ProjectRoot $project -c -WhatIf
     Assert-Exists `
         (Join-Path $cleanupTarget 'stale.p2s') `
         'Cleanup -WhatIf changed the existing destination.'
