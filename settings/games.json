@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "config": {
+    "input_profile": "Default"
+  },
+  "sources": {
+    "NA2": {
+      "serial": "SLPS-25837",
+      "crc": "C0659AD1"
+    },
+    "NUN3": {
+      "serial": "SLUS-21727",
+      "crc": "EE3737A4"
+    },
+    "NUN5": {
+      "serial": "SLES-55605",
+      "crc": "C071D4C1"
+    }
+  }
+}

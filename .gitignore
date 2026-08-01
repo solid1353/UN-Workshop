@@ -1,6 +1,10 @@
 analysis/
 source/
+ss/
 tools/
+logs/
+__pycache__/
+*.pyc
 
 pcsx2/*
 !pcsx2/__shared/
@@ -10,5 +14,4 @@ pcsx2/__shared/*
 !pcsx2/__shared/input_profiles/
 !pcsx2/__shared/input_recordings/
 
-SLOP-NA228_*.ini
-SLOP-NA228_*.pnach
+SLOP-NA228.ini
