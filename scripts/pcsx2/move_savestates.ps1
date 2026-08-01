@@ -13,6 +13,7 @@ param(
     [ValidateSet('stable', 'dev')]
     [string]$Target = 'dev',
 
+    [Alias('c')]
     [switch]$Cleanup,
 
     [string]$ProjectRoot
