@@ -20,6 +20,10 @@ function Assert-Condition {
 }
 
 $synchronizer = Join-Path $sourceRepository 'scripts\pcsx2\input.ps1'
+$synchronizerParameters = (Get-Command -Name $synchronizer).Parameters
+Assert-Condition `
+    (-not $synchronizerParameters.ContainsKey('All')) `
+    'The input generator still exposes the redundant All switch.'
 $temporaryRoot = Join-Path (
     [IO.Path]::GetTempPath()
 ) ('un-workshop-input-profile-test-{0}' -f [guid]::NewGuid().ToString('N'))

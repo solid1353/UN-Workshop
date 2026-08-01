@@ -137,14 +137,12 @@ switch ($normalizedCommand) {
         if ($argumentList.Count -gt 1) {
             throw 'Usage: workshop input [profile]'
         }
-        $parameters = @{}
         if ($argumentList.Count -eq 0) {
-            $parameters.All = $true
+            & (Join-Path $scripts 'input.ps1')
         }
         else {
-            $parameters.Profile = $argumentList[0]
+            & (Join-Path $scripts 'input.ps1') -Profile $argumentList[0]
         }
-        & (Join-Path $scripts 'input.ps1') @parameters
     }
     'ss' {
         $argumentList = @($Arguments)
