@@ -9,6 +9,9 @@ param(
     [ValidateSet('stable', 'dev')]
     [string]$Target,
 
+    [Alias('c')]
+    [switch]$Cleanup,
+
     [string]$ProjectRoot,
 
     [switch]$WhatIf
@@ -19,7 +22,7 @@ $ErrorActionPreference = 'Stop'
 switch ($Command) {
     'move' {
         if ($Arguments.Count -ne 2) {
-            throw 'Usage: savestates.ps1 move <game> <subpath> [-Target dev|stable]'
+            throw 'Usage: savestates.ps1 move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]'
         }
 
         $parameters = @{
@@ -28,6 +31,9 @@ switch ($Command) {
         }
         if ($PSBoundParameters.ContainsKey('Target')) {
             $parameters.Target = $Target
+        }
+        if ($Cleanup) {
+            $parameters.Cleanup = $true
         }
         if (-not [string]::IsNullOrWhiteSpace($ProjectRoot)) {
             $parameters.ProjectRoot = $ProjectRoot
@@ -38,8 +44,8 @@ switch ($Command) {
         & (Join-Path $PSScriptRoot 'move_savestates.ps1') @parameters
     }
     'extract' {
-        if ($PSBoundParameters.ContainsKey('Target') -or $WhatIf) {
-            throw '-Target and -WhatIf apply only to the move command.'
+        if ($PSBoundParameters.ContainsKey('Target') -or $Cleanup -or $WhatIf) {
+            throw '-Target, -Cleanup, and -WhatIf apply only to the move command.'
         }
         & (Join-Path $PSScriptRoot 'extract_savestate_screenshots.ps1') @Arguments
     }

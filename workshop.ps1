@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [string]$Command,
+    [string]$Action,
 
     [Parameter(Position = 1, ValueFromRemainingArguments)]
     [string[]]$Arguments
@@ -12,9 +12,9 @@ $ErrorActionPreference = 'Stop'
 $paths = Get-UnWorkshopPaths
 $scripts = $paths.Roots.pcsx2_scripts
 
-$normalizedCommand = if ([string]::IsNullOrWhiteSpace($Command)) {
+$normalizedCommand = if ([string]::IsNullOrWhiteSpace($Action)) {
     ''
-} else { $Command.ToLowerInvariant() }
+} else { $Action.ToLowerInvariant() }
 
 switch ($normalizedCommand) {
     'input' {
@@ -33,7 +33,20 @@ switch ($normalizedCommand) {
         if ($argumentList.Count -eq 0) {
             throw 'Usage: workshop ss move|extract ...'
         }
-        & (Join-Path $scripts 'savestates.ps1') @argumentList
+        $cleanup = $false
+        $forwardedArguments = @(
+            foreach ($argument in $argumentList) {
+                if ($argument -ieq '-c' -or $argument -ieq '-Cleanup') {
+                    $cleanup = $true
+                }
+                else {
+                    $argument
+                }
+            }
+        )
+        $parameters = @{}
+        if ($cleanup) { $parameters.Cleanup = $true }
+        & (Join-Path $scripts 'savestates.ps1') @forwardedArguments @parameters
     }
     { [string]::IsNullOrWhiteSpace($_) -or $_ -eq 'help' } {
         @(
@@ -46,6 +59,6 @@ switch ($normalizedCommand) {
         ) | Write-Output
     }
     default {
-        throw "Unknown Workshop command: $Command"
+        throw "Unknown Workshop command: $Action"
     }
 }
