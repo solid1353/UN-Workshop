@@ -17,6 +17,23 @@ $normalizedCommand = if ([string]::IsNullOrWhiteSpace($Action)) {
 } else { $Action.ToLowerInvariant() }
 
 switch ($normalizedCommand) {
+    'resolve' {
+        $argumentList = @($Arguments)
+        if ($argumentList.Count -ne 2) {
+            throw 'Usage: workshop resolve <game> <property>'
+        }
+        $resolved = Resolve-UnWorkshopGame `
+            -Game $argumentList[0] `
+            -ProjectRoot $paths.Project
+        $property = @(
+            $resolved.PSObject.Properties |
+                Where-Object { $_.Name -ieq $argumentList[1] }
+        )
+        if ($property.Count -ne 1) {
+            throw "Unknown resolved game property: $($argumentList[1])"
+        }
+        $property[0].Value | Write-Output
+    }
     'input' {
         $argumentList = @($Arguments)
         if ($argumentList.Count -gt 1) {
@@ -55,6 +72,7 @@ switch ($normalizedCommand) {
         @(
             'UN Workshop'
             ''
+            '  workshop resolve <game> <property>'
             '  workshop input [profile]'
             '  workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]'
             '  workshop ss extract <paths...>'
