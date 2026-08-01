@@ -8,7 +8,6 @@ param(
     [string[]]$OverridePath,
     [string]$OutputPath,
     [string]$ProjectRoot,
-    [switch]$All,
     [switch]$PassThru
 )
 
@@ -59,10 +58,6 @@ if ($usingConfiguredPaths) {
     $baseName = 'Default'
     $sourcesRoot = Join-Path $profileRoot 'sources'
     $templateFullPath = Join-Path $sourcesRoot "$baseName.ini"
-    if ($All -and -not [string]::IsNullOrWhiteSpace($Profile)) {
-        throw 'Profile and All cannot be used together.'
-    }
-
     $profileOverridesRoot = Join-Path $sourcesRoot 'overrides'
     $availableProfiles = [ordered]@{}
     $availableProfiles[$baseName] = @()
@@ -77,7 +72,8 @@ if ($usingConfiguredPaths) {
         }
 
     $selectedName = $null
-    $generationProfiles = if ($All) {
+    $generateAll = [string]::IsNullOrWhiteSpace($Profile)
+    $generationProfiles = if ($generateAll) {
         @(
             foreach ($profileName in $availableProfiles.Keys) {
                 [pscustomobject]@{
@@ -169,7 +165,7 @@ if ($usingConfiguredPaths) {
                 }
             }
 
-            if (-not $All) {
+            if (-not $generateAll) {
                 $settingsPath = [string]$entry.Resolved.game_settings
                 $settingsProfiles[$settingsPath] = $profileName
             }
@@ -219,7 +215,7 @@ if ($usingConfiguredPaths) {
         $configuredResult
     }
     else {
-        if ($All) {
+        if ($generateAll) {
             Write-Host (
                 "Input profiles: generated $($generated.Count); " +
                 'GameSettings unchanged.'
