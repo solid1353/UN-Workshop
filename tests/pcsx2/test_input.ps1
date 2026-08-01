@@ -89,19 +89,27 @@ Triangle = untouched
     )
     Assert-Condition $pad1Match.Success 'Generated profile omitted [Pad1].'
     $pad1Text = $pad1Match.Groups['body'].Value
-    Assert-Condition `
-        (@([regex]::Matches($pad1Text, '(?m)^Triangle\s*=')).Count -eq 1) `
-        'The generated profile retained an overridden Triangle binding.'
-    Assert-Condition `
-        (@([regex]::Matches($pad1Text, '(?m)^Circle\s*=')).Count -eq 1) `
-        'The generated profile retained an overridden Circle binding.'
-    Assert-Condition `
-        (@([regex]::Matches($pad1Text, '(?m)^Cross\s*=')).Count -eq 1) `
-        'The generated profile retained an overridden Cross binding.'
+    foreach ($bindingName in @('Triangle', 'Circle', 'Cross')) {
+        Assert-Condition `
+            (@([regex]::Matches(
+                $pad1Text,
+                "(?m)^$bindingName\s*=\s*SDL-"
+            )).Count -eq 1) `
+            "The generated profile did not replace one $bindingName SDL binding."
+        Assert-Condition `
+            (@([regex]::Matches(
+                $pad1Text,
+                "(?m)^$bindingName\s*=\s*Keyboard/"
+            )).Count -eq 1) `
+            "The SDL override changed the $bindingName keyboard binding."
+    }
     foreach ($expected in @(
         'Triangle = SDL-0/FaceEast',
         'Circle = SDL-0/FaceSouth',
         'Cross = SDL-0/FaceNorth',
+        'Triangle = Keyboard/I',
+        'Circle = Keyboard/L',
+        'Cross = Keyboard/K',
         'L3 = Keyboard/F1',
         'R3 = Keyboard/F1',
         'Square = SDL-0/FaceWest',
@@ -112,6 +120,21 @@ Triangle = untouched
             ($actualText.Contains($expected)) `
             "Generated profile omitted expected binding: $expected"
     }
+    Assert-Condition `
+        ($actualText.IndexOf('Triangle = SDL-0/FaceEast') -lt
+            $actualText.IndexOf('Square = SDL-0/FaceWest')) `
+        'The generated profile moved an existing binding out of position.'
+    Assert-Condition `
+        ([regex]::IsMatch(
+            $actualText,
+            (
+                'R2 = Keyboard/C\r?\n\r?\n' +
+                'L3 = Keyboard/F1\r?\n' +
+                'R3 = Keyboard/F1\r?\n\r?\n' +
+                '\[Pad2\]'
+            )
+        )) `
+        'New bindings do not have exactly one blank line around their block.'
     Assert-Condition `
         ([Convert]::ToHexString([IO.File]::ReadAllBytes($linkedOutputPath)) -ceq
             [Convert]::ToHexString($actualBytes)) `
