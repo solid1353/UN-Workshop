@@ -10,16 +10,16 @@ memory cards, savestates, logs, and task artifacts.
 `workshop.ps1` is the single user-facing entrypoint.
 
 ```powershell
-workshop resolve <game> <property>
+workshop resolve <game> [property]
 workshop input [profile]
 workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]
 workshop ss extract <folder-or-savestates...>
 ```
 
-- `workshop resolve <game> <property>` prints one resolved value, such as
-  `workshop resolve NUN5 iso`. When invoked inside a configured project, its
-  build selectors are available as well, such as `workshop resolve latest iso`
-  from the NA2 repository.
+- `workshop resolve <game>` returns every resolved property. Supplying a
+  property prints only that value, such as `workshop resolve NUN5 iso`. When
+  invoked inside a configured project, its build selectors are available as
+  well, such as `workshop resolve latest iso` from the NA2 repository.
 - `workshop input` regenerates every complete PCSX2 input profile from the
   tracked base and partial overrides without changing GameSettings assignments.
 - `workshop input <profile>` regenerates the selected profile and its game
