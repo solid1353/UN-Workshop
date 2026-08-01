@@ -63,7 +63,7 @@ if ($usingConfiguredPaths) {
         throw 'Profile and All cannot be used together.'
     }
 
-    $profileOverridesRoot = Join-Path $sourcesRoot 'profiles'
+    $profileOverridesRoot = Join-Path $sourcesRoot 'overrides'
     $availableProfiles = [ordered]@{}
     $availableProfiles[$baseName] = @()
     Get-ChildItem -LiteralPath $profileOverridesRoot -Filter '*.ini' -File |
@@ -260,6 +260,11 @@ $sectionPattern = (
     '(?<body>.*?)' +
     '(?=^\[[^\r\n]+\][^\r\n]*(?:\r\n|\n|\r)|\z)'
 )
+$assignmentPattern = (
+    '(?im)^[ `t]*(?<name>[^;#\s][^=\r\n]*?)[ `t]*=' +
+    '[ `t]*(?<value>[^\r\n]*)' +
+    '(?<ending>\r\n|\n|\r|$)'
+)
 $newline = if ($generatedText.Contains("`r`n")) { "`r`n" } else { "`n" }
 foreach ($overrideFullPath in $overrideFullPaths) {
     $overrideText = [Text.Encoding]::Latin1.GetString(
@@ -268,6 +273,27 @@ foreach ($overrideFullPath in $overrideFullPaths) {
     $overrideSections = @([regex]::Matches($overrideText, $sectionPattern))
     if ($overrideSections.Count -eq 0) {
         throw "Input-profile override contains no sections: $overrideFullPath"
+    }
+
+    $protectedNamesByValue = @{}
+    foreach ($overrideSection in $overrideSections) {
+        $overrideLines = @(
+            $overrideSection.Groups['body'].Value -split '\r\n|\n|\r' |
+                Where-Object { $_ -match '^\s*[^;#\s][^=]*=' }
+        )
+        foreach ($overrideLine in $overrideLines) {
+            $parts = $overrideLine -split '=', 2
+            $name = $parts[0].Trim()
+            $value = $parts[1].Trim()
+            if (-not $protectedNamesByValue.ContainsKey($value)) {
+                $protectedNamesByValue[$value] = (
+                    [Collections.Generic.HashSet[string]]::new(
+                        [StringComparer]::OrdinalIgnoreCase
+                    )
+                )
+            }
+            $null = $protectedNamesByValue[$value].Add($name)
+        }
     }
 
     foreach ($overrideSection in $overrideSections) {
@@ -312,19 +338,6 @@ foreach ($overrideFullPath in $overrideFullPaths) {
                 }
             }
         )
-        $protectedNamesByValue = @{}
-        foreach ($assignment in $overrideAssignments) {
-            if (-not $protectedNamesByValue.ContainsKey($assignment.Value)) {
-                $protectedNamesByValue[$assignment.Value] =
-                    [Collections.Generic.HashSet[string]]::new(
-                        [StringComparer]::OrdinalIgnoreCase
-                    )
-            }
-            $null = $protectedNamesByValue[$assignment.Value].Add(
-                $assignment.Name
-            )
-        }
-
         $newAssignments = [Collections.Generic.List[string]]::new()
         foreach ($assignment in $overrideAssignments) {
             $name = $assignment.Name
@@ -372,29 +385,6 @@ foreach ($overrideFullPath in $overrideFullPaths) {
             )
         }
 
-        $assignmentPattern = (
-            '(?im)^[ `t]*(?<name>[^;#\s][^=\r\n]*?)[ `t]*=' +
-            '[ `t]*(?<value>[^\r\n]*)' +
-            '(?<ending>\r\n|\n|\r|$)'
-        )
-        $assignmentMatches = [regex]::Matches($body, $assignmentPattern)
-        for (
-            $matchIndex = $assignmentMatches.Count - 1
-            $matchIndex -ge 0
-            $matchIndex--
-        ) {
-            $candidate = $assignmentMatches[$matchIndex]
-            $candidateValue = $candidate.Groups['value'].Value.Trim()
-            if (-not $protectedNamesByValue.ContainsKey($candidateValue)) {
-                continue
-            }
-            $candidateName = $candidate.Groups['name'].Value.Trim()
-            if ($protectedNamesByValue[$candidateValue].Contains($candidateName)) {
-                continue
-            }
-            $body = $body.Remove($candidate.Index, $candidate.Length)
-        }
-
         if ($newAssignments.Count -gt 0) {
             $body = [regex]::Replace(
                 $body,
@@ -412,6 +402,27 @@ foreach ($overrideFullPath in $overrideFullPaths) {
             $generatedText.Substring(0, $bodyGroup.Index) +
             $body +
             $generatedText.Substring($bodyGroup.Index + $bodyGroup.Length)
+        )
+    }
+
+    $assignmentMatches = [regex]::Matches($generatedText, $assignmentPattern)
+    for (
+        $matchIndex = $assignmentMatches.Count - 1
+        $matchIndex -ge 0
+        $matchIndex--
+    ) {
+        $candidate = $assignmentMatches[$matchIndex]
+        $candidateValue = $candidate.Groups['value'].Value.Trim()
+        if (-not $protectedNamesByValue.ContainsKey($candidateValue)) {
+            continue
+        }
+        $candidateName = $candidate.Groups['name'].Value.Trim()
+        if ($protectedNamesByValue[$candidateValue].Contains($candidateName)) {
+            continue
+        }
+        $generatedText = $generatedText.Remove(
+            $candidate.Index,
+            $candidate.Length
         )
     }
 }

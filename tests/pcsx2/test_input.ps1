@@ -27,10 +27,10 @@ $temporaryRoot = Join-Path (
 New-Item -ItemType Directory -Path $temporaryRoot | Out-Null
 try {
     $templatePath = Join-Path $temporaryRoot 'Default.ini'
-    $overridePath = Join-Path $temporaryRoot 'sources\games\NA2.ini'
-    $captureOverridePath = Join-Path $temporaryRoot 'sources\profiles\Test_Capture.ini'
-    $outputPath = Join-Path $temporaryRoot 'Test_Capture_NA2.ini'
-    $linkedOutputPath = Join-Path $temporaryRoot 'PCSX2_Test_Capture_NA2.ini'
+    $overridePath = Join-Path $temporaryRoot 'sources\overrides\games\NA2.ini'
+    $captureOverridePath = Join-Path $temporaryRoot 'sources\overrides\TestCapture.ini'
+    $outputPath = Join-Path $temporaryRoot 'TestCapture_NA2.ini'
+    $linkedOutputPath = Join-Path $temporaryRoot 'PCSX2_TestCapture_NA2.ini'
     $templateText = @'
 [Pad1]
 Type = DualShock2
@@ -44,12 +44,17 @@ Triangle = Keyboard/I
 Circle = Keyboard/L
 Cross = Keyboard/K
 Square = Keyboard/J
-PreviousSaveStateSlot = Keyboard/F1
 L2 = Keyboard/Z
 R2 = Keyboard/C
 
 [Pad2]
 Triangle = untouched
+
+[Hotkeys]
+PreviousSaveStateSlot = Keyboard/Shift & Keyboard/F2
+NextSaveStateSlot = Keyboard/F2
+SaveStateAndSelectNextSlot = Keyboard/F1
+TakeScreenshot = Keyboard/F1
 '@ -replace "`r`n", "`n"
     [IO.File]::WriteAllBytes(
         $templatePath,
@@ -67,7 +72,12 @@ Triangle = untouched
     )
     [IO.File]::WriteAllText(
         $captureOverridePath,
-        "[Pad1]`nL3 = Keyboard/F1`nR3 = Keyboard/F1`n",
+        (
+            "[Pad1]`nL3 = Keyboard/F1`nR3 = Keyboard/F1`n`n" +
+            "[Hotkeys]`nPreviousSaveStateSlot = Keyboard/Q`n" +
+            "NextSaveStateSlot = Keyboard/E`n" +
+            "SaveStateAndSelectNextSlot = Keyboard/Alt`n"
+        ),
         [Text.Encoding]::Latin1
     )
     [IO.File]::WriteAllText($outputPath, "stale`r`n")
@@ -115,6 +125,9 @@ Triangle = untouched
         'Cross = Keyboard/K',
         'L3 = Keyboard/F1',
         'R3 = Keyboard/F1',
+        'PreviousSaveStateSlot = Keyboard/Q',
+        'NextSaveStateSlot = Keyboard/E',
+        'SaveStateAndSelectNextSlot = Keyboard/Alt',
         'Square = SDL-0/FaceWest',
         'Square = Keyboard/J',
         'Triangle = untouched'
@@ -124,8 +137,16 @@ Triangle = untouched
             "Generated profile omitted expected binding: $expected"
     }
     Assert-Condition `
-        (-not $actualText.Contains('PreviousSaveStateSlot = Keyboard/F1')) `
+        (-not $actualText.Contains('TakeScreenshot = Keyboard/F1')) `
         'The override left another action bound to Keyboard/F1.'
+    foreach ($replaced in @(
+        'PreviousSaveStateSlot = Keyboard/Shift & Keyboard/F2',
+        'NextSaveStateSlot = Keyboard/F2'
+    )) {
+        Assert-Condition `
+            (-not $actualText.Contains($replaced)) `
+            "The override left a replaced binding in the generated profile: $replaced"
+    }
     Assert-Condition `
         ($actualText.IndexOf('Triangle = SDL-0/FaceEast') -lt
             $actualText.IndexOf('Square = SDL-0/FaceWest')) `
