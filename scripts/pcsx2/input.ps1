@@ -8,6 +8,7 @@ param(
     [string[]]$OverridePath,
     [string]$OutputPath,
     [string]$ProjectRoot,
+    [switch]$All,
     [switch]$PassThru
 )
 
@@ -58,24 +59,55 @@ if ($usingConfiguredPaths) {
     $baseName = 'Default'
     $sourcesRoot = Join-Path $profileRoot 'sources'
     $templateFullPath = Join-Path $sourcesRoot "$baseName.ini"
-    $selectedName = if ([string]::IsNullOrWhiteSpace($Profile)) {
-        $baseName
-    }
-    else {
-        $Profile
-    }
-    if ($selectedName -cnotmatch '^[A-Za-z0-9][A-Za-z0-9_-]*$') {
-        throw "Invalid input profile name: $selectedName"
+    if ($All -and -not [string]::IsNullOrWhiteSpace($Profile)) {
+        throw 'Profile and All cannot be used together.'
     }
 
     $profileOverridesRoot = Join-Path $sourcesRoot 'profiles'
-    $selectedOverrides = @()
-    if ($selectedName -cne $baseName) {
-        $selectedOverride = Join-Path $profileOverridesRoot "$selectedName.ini"
-        if (-not (Test-Path -LiteralPath $selectedOverride -PathType Leaf)) {
-            throw "Input-profile override not found: $selectedOverride"
+    $availableProfiles = [ordered]@{}
+    $availableProfiles[$baseName] = @()
+    Get-ChildItem -LiteralPath $profileOverridesRoot -Filter '*.ini' -File |
+        Sort-Object Name |
+        ForEach-Object {
+            $profileName = $_.BaseName
+            if ($profileName -cnotmatch '^[A-Za-z0-9][A-Za-z0-9_-]*$') {
+                throw "Invalid input profile name: $profileName"
+            }
+            $availableProfiles[$profileName] = @($_.FullName)
         }
-        $selectedOverrides = @($selectedOverride)
+
+    $selectedName = $null
+    $generationProfiles = if ($All) {
+        @(
+            foreach ($profileName in $availableProfiles.Keys) {
+                [pscustomobject]@{
+                    Name = $profileName
+                    Overrides = @($availableProfiles[$profileName])
+                }
+            }
+        )
+    }
+    else {
+        $requestedName = if ([string]::IsNullOrWhiteSpace($Profile)) {
+            $baseName
+        }
+        else {
+            $Profile
+        }
+        if ($requestedName -cnotmatch '^[A-Za-z0-9][A-Za-z0-9_-]*$') {
+            throw "Invalid input profile name: $requestedName"
+        }
+        if (-not $availableProfiles.Contains($requestedName)) {
+            throw "Input-profile override not found: $requestedName"
+        }
+        $selectedName = [string](@(
+            $availableProfiles.Keys |
+                Where-Object { $_ -ieq $requestedName }
+        )[0])
+        @([pscustomobject]@{
+            Name = $selectedName
+            Overrides = @($availableProfiles[$selectedName])
+        })
     }
 
     $plans = [ordered]@{}
@@ -90,35 +122,50 @@ if ($usingConfiguredPaths) {
             }
         }
     )
-    foreach ($entry in $entries) {
-        $resolved = Resolve-UnWorkshopGame `
-            -Game $entry.Name `
-            -ProjectRoot $paths.Project
-        $gameOverrideProperty = $resolved.PSObject.Properties[
-            'input_profile_overrides'
-        ]
-        $hasGameOverride = $null -ne $gameOverrideProperty
-        $gameOverride = if ($hasGameOverride) {
-            [string]$gameOverrideProperty.Value
-        } else { $null }
-        $profileName = if ($hasGameOverride) {
-            "${selectedName}_$($entry.Name)"
-        }
-        else {
-            $selectedName
-        }
-        $overrides = @($selectedOverrides)
-        if ($hasGameOverride) { $overrides += $gameOverride }
-        if (-not $plans.Contains($profileName)) {
-            $plans[$profileName] = [pscustomobject]@{
-                Name = $profileName
-                Overrides = $overrides
-                Output = Join-Path $profileRoot "$profileName.ini"
+    $resolvedEntries = @(
+        foreach ($entry in $entries) {
+            $resolved = Resolve-UnWorkshopGame `
+                -Game $entry.Name `
+                -ProjectRoot $paths.Project
+            $gameOverrideProperty = $resolved.PSObject.Properties[
+                'input_profile_overrides'
+            ]
+            [pscustomobject]@{
+                Name = $entry.Name
+                Resolved = $resolved
+                HasGameOverride = $null -ne $gameOverrideProperty
+                GameOverride = if ($null -ne $gameOverrideProperty) {
+                    [string]$gameOverrideProperty.Value
+                }
+                else { $null }
             }
         }
+    )
+    foreach ($profileDefinition in $generationProfiles) {
+        foreach ($entry in $resolvedEntries) {
+            $profileName = if ($entry.HasGameOverride) {
+                "$($profileDefinition.Name)_$($entry.Name)"
+            }
+            else {
+                $profileDefinition.Name
+            }
+            $overrides = @($profileDefinition.Overrides)
+            if ($entry.HasGameOverride) {
+                $overrides += $entry.GameOverride
+            }
+            if (-not $plans.Contains($profileName)) {
+                $plans[$profileName] = [pscustomobject]@{
+                    Name = $profileName
+                    Overrides = $overrides
+                    Output = Join-Path $profileRoot "$profileName.ini"
+                }
+            }
 
-        $settingsPath = [string]$resolved.game_settings
-        $settingsProfiles[$settingsPath] = $profileName
+            if (-not $All) {
+                $settingsPath = [string]$entry.Resolved.game_settings
+                $settingsProfiles[$settingsPath] = $profileName
+            }
+        }
     }
 
     $generated = @(
@@ -164,10 +211,18 @@ if ($usingConfiguredPaths) {
         $configuredResult
     }
     else {
-        Write-Host (
-            "Input profile '$selectedName': generated $($generated.Count), " +
-            "updated GameSettings $($updatedSettings.Count)."
-        )
+        if ($All) {
+            Write-Host (
+                "Input profiles: generated $($generated.Count); " +
+                'GameSettings unchanged.'
+            )
+        }
+        else {
+            Write-Host (
+                "Input profile '$selectedName': generated $($generated.Count), " +
+                "updated GameSettings $($updatedSettings.Count)."
+            )
+        }
     }
     return
 }

@@ -17,16 +17,8 @@ $normalizedCommand = if ([string]::IsNullOrWhiteSpace($Action)) {
 } else { $Action.ToLowerInvariant() }
 
 switch ($normalizedCommand) {
-    'input' {
-        $argumentList = @($Arguments)
-        if ($argumentList.Count -gt 1) {
-            throw 'Usage: workshop input [profile]'
-        }
-        $parameters = @{}
-        if ($argumentList.Count -eq 1) {
-            $parameters.Profile = $argumentList[0]
-        }
-        & (Join-Path $scripts 'input.ps1') @parameters
+    '' {
+        & (Join-Path $scripts 'input.ps1') -All
     }
     'ss' {
         $argumentList = @($Arguments)
@@ -48,17 +40,21 @@ switch ($normalizedCommand) {
         if ($cleanup) { $parameters.Cleanup = $true }
         & (Join-Path $scripts 'savestates.ps1') @forwardedArguments @parameters
     }
-    { [string]::IsNullOrWhiteSpace($_) -or $_ -eq 'help' } {
+    'help' {
         @(
             'UN Workshop'
             ''
-            '  ws input [profile]'
+            '  ws                     Regenerate every input profile'
+            '  ws <profile>           Regenerate and assign one input profile'
             '  ws ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]'
             '  ws ss extract <paths...>'
             ''
         ) | Write-Output
     }
     default {
-        throw "Unknown Workshop command: $Action"
+        if (@($Arguments).Count -gt 0) {
+            throw 'Usage: workshop [profile]'
+        }
+        & (Join-Path $scripts 'input.ps1') -Profile $Action
     }
 }
