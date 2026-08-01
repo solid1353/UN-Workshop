@@ -269,8 +269,8 @@ $sectionPattern = (
     '(?=^\[[^\r\n]+\][^\r\n]*(?:\r\n|\n|\r)|\z)'
 )
 $assignmentPattern = (
-    '(?im)^[ `t]*(?<name>[^;#\s][^=\r\n]*?)[ `t]*=' +
-    '[ `t]*(?<value>[^\r\n]*)' +
+    '(?im)^[ \t]*(?<name>[^;#\s][^=\r\n]*?)[ \t]*=' +
+    '[ \t]*(?<value>[^\r\n]*)' +
     '(?<ending>\r\n|\n|\r|$)'
 )
 $newline = if ($generatedText.Contains("`r`n")) { "`r`n" } else { "`n" }
@@ -363,7 +363,7 @@ foreach ($overrideFullPath in $overrideFullPaths) {
             $escapedName = [regex]::Escape($name)
             $overrideFamily = $assignment.Family
             $bindingPattern = (
-                "(?im)^(?<indent>[ `t]*)$escapedName[ `t]*=" +
+                "(?im)^(?<indent>[ \t]*)$escapedName[ \t]*=" +
                 '(?<value>[^\r\n]*)' +
                 '(?<ending>\r\n|\n|\r|$)'
             )
@@ -406,7 +406,7 @@ foreach ($overrideFullPath in $overrideFullPaths) {
         if ($newAssignments.Count -gt 0) {
             $body = [regex]::Replace(
                 $body,
-                '(?:[ `t]*(?:\r\n|\n|\r))+\z',
+                '(?:[ \t]*(?:\r\n|\n|\r))+\z',
                 ''
             )
             $body = (

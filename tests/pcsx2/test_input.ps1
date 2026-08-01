@@ -30,6 +30,8 @@ try {
     $overridePath = Join-Path $temporaryRoot 'sources\overrides\games\NA2.ini'
     $captureOverridePath = Join-Path $temporaryRoot 'sources\overrides\TestCapture.ini'
     $outputPath = Join-Path $temporaryRoot 'TestCapture_NA2.ini'
+    $trailingTemplatePath = Join-Path $temporaryRoot 'TrailingT.ini'
+    $trailingOutputPath = Join-Path $temporaryRoot 'TrailingT_NA2.ini'
     $linkedOutputPath = Join-Path $temporaryRoot 'PCSX2_TestCapture_NA2.ini'
     $templateText = @'
 [Pad1]
@@ -82,6 +84,15 @@ TakeScreenshot = Keyboard/F1
         [Text.Encoding]::Latin1
     )
     [IO.File]::WriteAllText($outputPath, "stale`r`n")
+    [IO.File]::WriteAllText(
+        $trailingTemplatePath,
+        (
+            "[Pad1]`nTriangle = SDL-0/FaceNorth`n" +
+            "Circle = SDL-0/FaceEast`nCross = SDL-0/FaceSouth`n" +
+            "Square = SDL-0/FaceWest`n`n[Pad2]`nType = DualShock2`n"
+        ),
+        [Text.Encoding]::Latin1
+    )
     New-Item `
         -ItemType HardLink `
         -Path $linkedOutputPath `
@@ -184,6 +195,20 @@ TakeScreenshot = Keyboard/F1
         ([Convert]::ToHexString([IO.File]::ReadAllBytes($linkedOutputPath)) -ceq
             [Convert]::ToHexString($actualBytes)) `
         'Updating the generated profile broke its existing hardlink.'
+
+    & $synchronizer `
+        -TemplatePath $trailingTemplatePath `
+        -OverridePath $overridePath `
+        -OutputPath $trailingOutputPath
+    $trailingText = [Text.Encoding]::Latin1.GetString(
+        [IO.File]::ReadAllBytes($trailingOutputPath)
+    )
+    Assert-Condition `
+        ([regex]::IsMatch(
+            $trailingText,
+            '(?m)^Square = SDL-0/FaceWest$'
+        )) `
+        'Trailing whitespace cleanup truncated a binding ending in t.'
 
     $firstWriteTime = (Get-Item -LiteralPath $outputPath).LastWriteTimeUtc
     Start-Sleep -Milliseconds 50
