@@ -19,12 +19,16 @@ $normalizedCommand = if ([string]::IsNullOrWhiteSpace($Action)) {
 switch ($normalizedCommand) {
     'resolve' {
         $argumentList = @($Arguments)
-        if ($argumentList.Count -ne 2) {
-            throw 'Usage: workshop resolve <game> <property>'
+        if ($argumentList.Count -lt 1 -or $argumentList.Count -gt 2) {
+            throw 'Usage: workshop resolve <game> [property]'
         }
         $resolved = Resolve-UnWorkshopGame `
             -Game $argumentList[0] `
             -ProjectRoot $paths.Project
+        if ($argumentList.Count -eq 1) {
+            $resolved | Write-Output
+            break
+        }
         $property = @(
             $resolved.PSObject.Properties |
                 Where-Object { $_.Name -ieq $argumentList[1] }
@@ -72,7 +76,7 @@ switch ($normalizedCommand) {
         @(
             'UN Workshop'
             ''
-            '  workshop resolve <game> <property>'
+            '  workshop resolve <game> [property]'
             '  workshop input [profile]'
             '  workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]'
             '  workshop ss extract <paths...>'
