@@ -126,6 +126,20 @@ function Get-Pcsx2IsoIdentity {
         (Join-Path $states 'SLOP-NA228 (12345678).02.p2s') `
         'Cleanup -WhatIf moved the incoming savestate.'
 
+    $shortAliasForwarded = $false
+    try {
+        & (Join-Path $repository 'workshop.ps1') `
+            ss move __unknown_game__ destination -c
+    }
+    catch {
+        $shortAliasForwarded = (
+            $_.Exception.Message -like 'Unknown game or alias*'
+        )
+    }
+    if (-not $shortAliasForwarded) {
+        throw 'The Workshop dispatcher did not forward the -c cleanup alias.'
+    }
+
     Write-Host 'Savestate filing tests passed.'
 }
 finally {
