@@ -11,6 +11,9 @@ param(
     [Parameter(Mandatory, ParameterSetName = 'Worker')]
     [string]$IsoPath,
 
+    [Parameter(ParameterSetName = 'Configured')]
+    [string]$InputRecording,
+
     [Parameter(ValueFromRemainingArguments)]
     [string[]]$Arguments,
 
@@ -199,6 +202,22 @@ else {
     $hidden = $false
 }
 
+if (-not [string]::IsNullOrWhiteSpace($InputRecording)) {
+    $resolvedInputRecording = if ([IO.Path]::IsPathRooted($InputRecording)) {
+        [IO.Path]::GetFullPath($InputRecording)
+    }
+    else {
+        [IO.Path]::GetFullPath(
+            (Join-Path $paths.InputRecordings $InputRecording)
+        )
+    }
+    if (-not (
+        Test-Path -LiteralPath $resolvedInputRecording -PathType Leaf
+    )) {
+        throw "Input recording does not exist: $resolvedInputRecording"
+    }
+}
+
 if ($IsoPath -and -not (
     Test-Path -LiteralPath $resolvedIso -PathType Leaf
 )) {
@@ -226,6 +245,12 @@ if (
 }
 if ($IsoPath) {
     $launchArguments += @('-batch', "`"$resolvedIso`"")
+}
+if (-not [string]::IsNullOrWhiteSpace($InputRecording)) {
+    $launchArguments += @(
+        '-input-recording',
+        "`"$resolvedInputRecording`""
+    )
 }
 if ($Arguments) {
     $launchArguments += @(
