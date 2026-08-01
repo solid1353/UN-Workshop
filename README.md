@@ -20,10 +20,12 @@ workshop ss extract <folder-or-savestates...>
 - `workshop input <profile>` regenerates the selected profile and its game
   variants, then assigns them in every configured GameSettings file. Every
   generated profile at the root of `pcsx2/__shared/input_profiles/` is tracked
-  by Git.
-- An override replaces the same action's bindings for the matching input type
-  and removes other actions using the same binding. Multiple actions explicitly
-  sharing that binding in the override remain together.
+  by Git. Profile selectors are case-insensitive and ignore `_` or `-`, so
+  `Test_Capture` selects canonical `TestCapture`.
+- Before adding override assignments to their declared sections, generation
+  removes every existing assignment using an override binding across the
+  complete profile. Multiple assignments declared by the override may still
+  deliberately share that binding.
 - `ss move` files matching savestates from the selected user PCSX2 installation
   below Workshop `work/__sstates/` for source games or the invoking project's
   `work/__sstates/` for project builds. `-Cleanup` first sends the existing

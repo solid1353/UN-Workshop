@@ -62,6 +62,7 @@ TakeScreenshot = Keyboard/F1
     )
     New-Item `
         -ItemType Directory `
+        -Force `
         -Path ([IO.Path]::GetDirectoryName($overridePath)), `
             ([IO.Path]::GetDirectoryName($captureOverridePath)) |
         Out-Null
@@ -102,6 +103,12 @@ TakeScreenshot = Keyboard/F1
     )
     Assert-Condition $pad1Match.Success 'Generated profile omitted [Pad1].'
     $pad1Text = $pad1Match.Groups['body'].Value
+    $hotkeysMatch = [regex]::Match(
+        $actualText,
+        '(?ms)^\[Hotkeys\]\r?\n(?<body>.*)\z'
+    )
+    Assert-Condition $hotkeysMatch.Success 'Generated profile omitted [Hotkeys].'
+    $hotkeysText = $hotkeysMatch.Groups['body'].Value
     foreach ($bindingName in @('Triangle', 'Circle', 'Cross')) {
         Assert-Condition `
             (@([regex]::Matches(
@@ -139,6 +146,18 @@ TakeScreenshot = Keyboard/F1
     Assert-Condition `
         (-not $actualText.Contains('TakeScreenshot = Keyboard/F1')) `
         'The override left another action bound to Keyboard/F1.'
+    foreach ($hotkey in @(
+        'PreviousSaveStateSlot = Keyboard/Q',
+        'NextSaveStateSlot = Keyboard/E',
+        'SaveStateAndSelectNextSlot = Keyboard/Alt'
+    )) {
+        Assert-Condition `
+            ($hotkeysText.Contains($hotkey)) `
+            "The override did not add $hotkey to [Hotkeys]."
+        Assert-Condition `
+            (-not $pad1Text.Contains($hotkey)) `
+            "The override incorrectly added $hotkey to [Pad1]."
+    }
     foreach ($replaced in @(
         'PreviousSaveStateSlot = Keyboard/Shift & Keyboard/F2',
         'NextSaveStateSlot = Keyboard/F2'
@@ -148,16 +167,15 @@ TakeScreenshot = Keyboard/F1
             "The override left a replaced binding in the generated profile: $replaced"
     }
     Assert-Condition `
-        ($actualText.IndexOf('Triangle = SDL-0/FaceEast') -lt
-            $actualText.IndexOf('Square = SDL-0/FaceWest')) `
-        'The generated profile moved an existing binding out of position.'
-    Assert-Condition `
         ([regex]::IsMatch(
             $actualText,
             (
                 'R2 = Keyboard/C\r?\n\r?\n' +
                 'L3 = Keyboard/F1\r?\n' +
                 'R3 = Keyboard/F1\r?\n\r?\n' +
+                'Triangle = SDL-0/FaceEast\r?\n' +
+                'Circle = SDL-0/FaceSouth\r?\n' +
+                'Cross = SDL-0/FaceNorth\r?\n\r?\n' +
                 '\[Pad2\]'
             )
         )) `
