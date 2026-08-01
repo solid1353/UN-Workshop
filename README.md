@@ -11,15 +11,17 @@ memory cards, savestates, logs, and task artifacts.
 convenient but not required.
 
 ```powershell
-ws input [profile]
+ws
+ws <profile>
 ws ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]
 ws ss extract <folder-or-savestates...>
 ```
 
-- `input` overwrites the selected complete PCSX2 input profiles from the
-  tracked base and partial overrides when their content changes, leaves every
-  other generated profile in place, then updates every configured GameSettings
-  file. Every generated profile at the root of
+- Bare `ws` regenerates every complete PCSX2 input profile from the tracked
+  base and partial overrides without changing GameSettings assignments.
+- `ws <profile>` regenerates the selected profile and its game variants, then
+  assigns them in every configured GameSettings file. Every generated profile
+  at the root of
   `pcsx2/__shared/input_profiles/` is tracked by Git.
 - `ss move` files matching savestates from the selected user PCSX2 installation
   below Workshop `work/__sstates/` for source games or the invoking project's
