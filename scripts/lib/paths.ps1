@@ -20,7 +20,7 @@ function Find-UnWorkshopProjectRoot {
     while ($null -ne $candidate) {
         if (
             (Test-Path -LiteralPath (Join-Path $candidate.FullName 'paths.json') -PathType Leaf) -and
-            (Test-Path -LiteralPath (Join-Path $candidate.FullName 'builds.json') -PathType Leaf)
+            (Test-Path -LiteralPath (Join-Path $candidate.FullName 'product.json') -PathType Leaf)
         ) {
             return $candidate.FullName
         }
@@ -110,7 +110,7 @@ function Get-UnWorkshopPaths {
         Savestates = $roots.ss
         SourceCatalog = $files.game_catalog
         ProjectCatalog = if ($project) {
-            Join-Path $project 'builds.json'
+            Join-Path $project 'product.json'
         } else { $null }
         Pcsx2Stable = $roots.pcsx2_stable
         Pcsx2Dev = $roots.pcsx2_dev
@@ -138,7 +138,6 @@ function Get-UnWorkshopCatalog {
         throw "Unsupported Workshop game catalog schema: $($shared.schema_version)"
     }
     $result = [ordered]@{
-        Config = $shared.config
         Sources = $shared.sources
         Title = $null
         Serial = $null

@@ -43,10 +43,7 @@ if ($usingConfiguredPaths) {
     $paths = Get-UnWorkshopPaths -ProjectRoot $ProjectRoot
     $catalog = Get-UnWorkshopCatalog -ProjectRoot $paths.Project
     $profileRoot = $paths.InputProfiles
-    $baseName = [string]$catalog.Config.input_profile
-    if ([string]::IsNullOrWhiteSpace($baseName)) {
-        throw 'Workshop game catalog has no default input profile.'
-    }
+    $baseName = 'Default'
     $sourcesRoot = Join-Path $profileRoot 'sources'
     $templateFullPath = Join-Path $sourcesRoot "$baseName.ini"
     $selectedName = if ([string]::IsNullOrWhiteSpace($Profile)) {
