@@ -61,7 +61,7 @@ function Get-Pcsx2IsoIdentity {
     "analysis": "@work",
     "tools": "tools",
     "work": "work",
-    "ss": "@work/ss",
+    "ss": "@work/__sstates",
     "scripts": "scripts",
     "pcsx2_clean": "pcsx2/clean",
     "pcsx2_dev": "pcsx2/dev",
@@ -103,15 +103,28 @@ function Get-Pcsx2IsoIdentity {
     & (Join-Path $workshop 'scripts\pcsx2\move_savestates.ps1') `
         latest build-case -ProjectRoot $project | Out-Null
     Assert-Exists `
-        (Join-Path $project 'work\ss\build-case\SLOP-NA228 (12345678).00.p2s') `
-        'Build savestate was not filed under the invoking project work/ss root.'
+        (Join-Path $project 'work\__sstates\build-case\SLOP-NA228 (12345678).00.p2s') `
+        'Build savestate was not filed under the invoking project work/__sstates root.'
 
     Set-Content -LiteralPath (Join-Path $states 'SLES-55605 (C071D4C1).01.p2s') -Value 'source'
     & (Join-Path $workshop 'scripts\pcsx2\move_savestates.ps1') `
         NUN5 source-case -ProjectRoot $project | Out-Null
     Assert-Exists `
-        (Join-Path $workshop 'work\ss\source-case\SLES-55605 (C071D4C1).01.p2s') `
-        'Source savestate was not filed under the Workshop work/ss root.'
+        (Join-Path $workshop 'work\__sstates\source-case\SLES-55605 (C071D4C1).01.p2s') `
+        'Source savestate was not filed under the Workshop work/__sstates root.'
+
+    $cleanupTarget = Join-Path $project 'work\__sstates\cleanup-case'
+    [void](New-Item -ItemType Directory -Path $cleanupTarget -Force)
+    Set-Content -LiteralPath (Join-Path $cleanupTarget 'stale.p2s') -Value 'stale'
+    Set-Content -LiteralPath (Join-Path $states 'SLOP-NA228 (12345678).02.p2s') -Value 'new'
+    & (Join-Path $workshop 'scripts\pcsx2\move_savestates.ps1') `
+        latest cleanup-case -ProjectRoot $project -Cleanup -WhatIf
+    Assert-Exists `
+        (Join-Path $cleanupTarget 'stale.p2s') `
+        'Cleanup -WhatIf changed the existing destination.'
+    Assert-Exists `
+        (Join-Path $states 'SLOP-NA228 (12345678).02.p2s') `
+        'Cleanup -WhatIf moved the incoming savestate.'
 
     Write-Host 'Savestate filing tests passed.'
 }

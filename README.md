@@ -12,15 +12,16 @@ convenient but not required.
 
 ```powershell
 ws input [profile]
-ws ss move <game> <subpath> [-Target dev|stable]
+ws ss move <game> <subpath> [-Target dev|stable] [-Cleanup]
 ws ss extract <folder-or-savestates...>
 ```
 
 - `input` generates the selected complete PCSX2 input profile from the tracked
   base and partial overrides, then updates every configured GameSettings file.
 - `ss move` files matching savestates from the selected user PCSX2 installation
-  below Workshop `work/ss/` for source games or the invoking project's
-  `work/ss/` for project builds.
+  below Workshop `work/__sstates/` for source games or the invoking project's
+  `work/__sstates/` for project builds. `-Cleanup` first sends the existing
+  selected destination directory to the Windows Recycle Bin.
 - `ss extract` extracts embedded screenshots beside one selected savestate
   folder.
 

@@ -13,6 +13,8 @@ param(
     [ValidateSet('stable', 'dev')]
     [string]$Target = 'dev',
 
+    [switch]$Cleanup,
+
     [string]$ProjectRoot
 )
 
@@ -73,7 +75,7 @@ $destinationRoot = if ($canonicalCategory -eq 'Builds') {
     if ([string]::IsNullOrWhiteSpace($paths.Project)) {
         throw 'A project root is required to file build savestates.'
     }
-    Join-Path $paths.Project 'work\ss'
+    Join-Path $paths.Project 'work\__sstates'
 }
 else {
     $paths.Savestates
@@ -181,6 +183,22 @@ $parsedStates = @(
 if ($parsedStates.Count -eq 0) {
     Write-Warning "No savestates found for $canonicalGame ($expectedStem)."
     return
+}
+
+if (
+    $Cleanup -and
+    (Test-Path -LiteralPath $destinationFull -PathType Container) -and
+    $PSCmdlet.ShouldProcess(
+        $destinationFull,
+        'Move existing target directory to Recycle Bin'
+    )
+) {
+    Add-Type -AssemblyName Microsoft.VisualBasic
+    [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory(
+        $destinationFull,
+        [Microsoft.VisualBasic.FileIO.UIOption]::OnlyErrorDialogs,
+        [Microsoft.VisualBasic.FileIO.RecycleOption]::SendToRecycleBin
+    )
 }
 
 if (-not (Test-Path -LiteralPath $destinationFull -PathType Container)) {
