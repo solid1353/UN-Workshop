@@ -7,20 +7,18 @@ memory cards, savestates, logs, and task artifacts.
 
 ## User command
 
-`workshop.ps1` is the single user-facing entrypoint. A personal `ws` alias is
-convenient but not required.
+`workshop.ps1` is the single user-facing entrypoint.
 
 ```powershell
-ws
-ws <profile>
-ws ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]
-ws ss extract <folder-or-savestates...>
+.\workshop.ps1 input [profile]
+.\workshop.ps1 ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]
+.\workshop.ps1 ss extract <folder-or-savestates...>
 ```
 
-- Bare `ws` regenerates every complete PCSX2 input profile from the tracked
-  base and partial overrides without changing GameSettings assignments.
-- `ws <profile>` regenerates the selected profile and its game variants, then
-  assigns them in every configured GameSettings file. Every generated profile
+- `workshop.ps1 input` regenerates every complete PCSX2 input profile from the
+  tracked base and partial overrides without changing GameSettings assignments.
+- `workshop.ps1 input <profile>` regenerates the selected profile and its game
+  variants, then assigns them in every configured GameSettings file. Every generated profile
   at the root of
   `pcsx2/__shared/input_profiles/` is tracked by Git.
 - `ss move` files matching savestates from the selected user PCSX2 installation

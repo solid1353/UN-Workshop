@@ -301,13 +301,36 @@ foreach ($overrideFullPath in $overrideFullPaths) {
             )
         }
 
+        $overrideAssignments = @(
+            foreach ($overrideLine in $overrideLines) {
+                $parts = $overrideLine -split '=', 2
+                $value = $parts[1].Trim()
+                [pscustomobject]@{
+                    Name = $parts[0].Trim()
+                    Value = $value
+                    Family = Get-InputBindingFamily -Value $value
+                }
+            }
+        )
+        $protectedNamesByValue = @{}
+        foreach ($assignment in $overrideAssignments) {
+            if (-not $protectedNamesByValue.ContainsKey($assignment.Value)) {
+                $protectedNamesByValue[$assignment.Value] =
+                    [Collections.Generic.HashSet[string]]::new(
+                        [StringComparer]::OrdinalIgnoreCase
+                    )
+            }
+            $null = $protectedNamesByValue[$assignment.Value].Add(
+                $assignment.Name
+            )
+        }
+
         $newAssignments = [Collections.Generic.List[string]]::new()
-        foreach ($overrideLine in $overrideLines) {
-            $parts = $overrideLine -split '=', 2
-            $name = $parts[0].Trim()
-            $value = $parts[1].Trim()
+        foreach ($assignment in $overrideAssignments) {
+            $name = $assignment.Name
+            $value = $assignment.Value
             $escapedName = [regex]::Escape($name)
-            $overrideFamily = Get-InputBindingFamily -Value $value
+            $overrideFamily = $assignment.Family
             $bindingPattern = (
                 "(?im)^(?<indent>[ `t]*)$escapedName[ `t]*=" +
                 '(?<value>[^\r\n]*)' +
@@ -347,6 +370,29 @@ foreach ($overrideFullPath in $overrideFullPaths) {
                 $replacement +
                 $body.Substring($first.Index + $first.Length)
             )
+        }
+
+        $assignmentPattern = (
+            '(?im)^[ `t]*(?<name>[^;#\s][^=\r\n]*?)[ `t]*=' +
+            '[ `t]*(?<value>[^\r\n]*)' +
+            '(?<ending>\r\n|\n|\r|$)'
+        )
+        $assignmentMatches = [regex]::Matches($body, $assignmentPattern)
+        for (
+            $matchIndex = $assignmentMatches.Count - 1
+            $matchIndex -ge 0
+            $matchIndex--
+        ) {
+            $candidate = $assignmentMatches[$matchIndex]
+            $candidateValue = $candidate.Groups['value'].Value.Trim()
+            if (-not $protectedNamesByValue.ContainsKey($candidateValue)) {
+                continue
+            }
+            $candidateName = $candidate.Groups['name'].Value.Trim()
+            if ($protectedNamesByValue[$candidateValue].Contains($candidateName)) {
+                continue
+            }
+            $body = $body.Remove($candidate.Index, $candidate.Length)
         }
 
         if ($newAssignments.Count -gt 0) {
