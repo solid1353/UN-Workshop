@@ -18,20 +18,22 @@ $normalizedCommand = if ([string]::IsNullOrWhiteSpace($Command)) {
 
 switch ($normalizedCommand) {
     'input' {
-        if ($Arguments.Count -gt 1) {
+        $argumentList = @($Arguments)
+        if ($argumentList.Count -gt 1) {
             throw 'Usage: workshop input [profile]'
         }
         $parameters = @{}
-        if ($Arguments.Count -eq 1) {
-            $parameters.Profile = $Arguments[0]
+        if ($argumentList.Count -eq 1) {
+            $parameters.Profile = $argumentList[0]
         }
         & (Join-Path $scripts 'input.ps1') @parameters
     }
     'ss' {
-        if ($Arguments.Count -eq 0) {
+        $argumentList = @($Arguments)
+        if ($argumentList.Count -eq 0) {
             throw 'Usage: workshop ss move|extract ...'
         }
-        & (Join-Path $scripts 'savestates.ps1') @Arguments
+        & (Join-Path $scripts 'savestates.ps1') @argumentList
     }
     { [string]::IsNullOrWhiteSpace($_) -or $_ -eq 'help' } {
         @(

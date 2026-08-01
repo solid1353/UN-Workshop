@@ -19,7 +19,8 @@ ws ss extract <folder-or-savestates...>
 - `input` generates the selected complete PCSX2 input profile from the tracked
   base and partial overrides, then updates every configured GameSettings file.
 - `ss move` files matching savestates from the selected user PCSX2 installation
-  below the ignored root `ss/`.
+  below Workshop `work/ss/` for source games or the invoking project's
+  `work/ss/` for project builds.
 - `ss extract` extracts embedded screenshots beside one selected savestate
   folder.
 
@@ -30,10 +31,10 @@ a project catalog.
 ## Tracked layout
 
 - `paths.json`: authoritative Workshop roots and named reusable files.
-- `settings/games.json`: stable source-game selectors, aliases, serials, CRCs,
-  and the default input-profile name.
+- `games.json`: stable source-game selectors, aliases, serials, and CRCs.
 - `settings/git-authors.tsv`: shared non-secret agent commit identities.
 - `settings/notifications.json`: shared notification mute state.
+- `icons/`: reusable source-game `simple` and `detailed` icons.
 - `pcsx2/__shared/`: public cheats, GameSettings, input-profile sources, and
   input recordings. BIOS files and memory cards are deliberately ignored.
 - `scripts/pcsx2/`: reusable PCSX2 launch, worker-copy, PINE, input-profile,

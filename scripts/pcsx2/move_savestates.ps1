@@ -22,6 +22,7 @@ $ErrorActionPreference = 'Stop'
 $paths = Get-UnWorkshopPaths -ProjectRoot $ProjectRoot
 $catalog = Get-UnWorkshopCatalog -ProjectRoot $paths.Project
 $canonicalGame = $null
+$canonicalCategory = $null
 foreach ($category in @('Sources', 'Builds')) {
     $section = $catalog.$category
     if ($null -eq $section) { continue }
@@ -39,6 +40,7 @@ foreach ($category in @('Sources', 'Builds')) {
             @($aliases | Where-Object { $_ -ieq $Game }).Count -gt 0
         ) {
             $canonicalGame = $property.Name
+            $canonicalCategory = $category
             break
         }
     }
@@ -67,7 +69,15 @@ $sourceInstallation = switch ($Target) {
     'dev' { $paths.Pcsx2Dev }
 }
 $sourceRoot = Join-Path $sourceInstallation 'sstates'
-$destinationRoot = $paths.Savestates
+$destinationRoot = if ($canonicalCategory -eq 'Builds') {
+    if ([string]::IsNullOrWhiteSpace($paths.Project)) {
+        throw 'A project root is required to file build savestates.'
+    }
+    Join-Path $paths.Project 'work\ss'
+}
+else {
+    $paths.Savestates
+}
 
 if ([string]::IsNullOrWhiteSpace($SubPath)) {
     throw 'SubPath cannot be empty.'

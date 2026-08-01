@@ -1,8 +1,5 @@
 {
   "schema_version": 1,
-  "config": {
-    "input_profile": "Default"
-  },
   "sources": {
     "NA2": {
       "serial": "SLPS-25837",

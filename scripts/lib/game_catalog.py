@@ -18,6 +18,7 @@ def _load_paths_module():
 
 
 _PATHS = _load_paths_module()
+DEFAULT_INPUT_PROFILE = "Default"
 
 
 def _read_catalog(path: Path, label: str) -> dict[str, object]:
@@ -36,21 +37,17 @@ def load_catalog(
     workshop_root = workshop_root.resolve()
     workshop_paths = _PATHS.load_workshop_paths(workshop_root)
     shared = _read_catalog(workshop_paths.files["game_catalog"], "Workshop game")
-    config = shared.get("config", {})
     sources = shared.get("sources")
-    if not isinstance(config, dict):
-        raise ValueError("Workshop game catalog config must be an object")
     if not isinstance(sources, dict) or not sources:
         raise ValueError("Workshop game catalog has no source games")
 
     merged: dict[str, object] = {
         "schema_version": 1,
-        "config": config,
         "sources": sources,
     }
     if project_root is not None:
         project = _read_catalog(
-            project_root.resolve() / "builds.json",
+            project_root.resolve() / "product.json",
             "Project game",
         )
         title = project.get("title")
@@ -126,20 +123,13 @@ def derive_game_paths(
     category, canonical_name, definition, section = find_definition(
         selector, catalog
     )
-    global_config = catalog.get("config", {})
-    if not isinstance(global_config, dict):
-        raise ValueError("Game catalog config must be an object")
-    input_profile = _required_text(
-        global_config.get("input_profile"), "Global input_profile"
-    )
-    if Path(input_profile).name != input_profile or Path(input_profile).suffix:
-        raise ValueError("Global input_profile must be a profile name")
-
     profile_root = _root(roots, "pcsx2_input_profiles")
     override = profile_root / "sources" / "games" / f"{canonical_name}.ini"
     override_enabled = override.is_file()
     resolved_profile = (
-        f"{input_profile}_{canonical_name}" if override_enabled else input_profile
+        f"{DEFAULT_INPUT_PROFILE}_{canonical_name}"
+        if override_enabled
+        else DEFAULT_INPUT_PROFILE
     )
     input_profile_path = profile_root / f"{resolved_profile}.ini"
 

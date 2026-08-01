@@ -3,9 +3,11 @@
   "roots": {
     "repository": ".",
     "source": "source",
-    "analysis": "analysis",
+    "analysis": "@work",
+    "icons": "icons",
     "tools": "tools",
-    "ss": "ss",
+    "work": "work",
+    "ss": "@work/ss",
     "scripts": "scripts",
     "pcsx2_scripts": "@scripts/pcsx2",
     "ghidra_scripts": "@scripts/ghidra",
@@ -26,7 +28,7 @@
   },
   "files": {
     "paths": "@repository/paths.json",
-    "game_catalog": "@repository/settings/games.json",
+    "game_catalog": "@repository/games.json",
     "game_resolver": "@repository/scripts/lib/resolve_game.py",
     "workshop_command": "@repository/workshop.ps1",
     "pcsx2_stable_exe": "@pcsx2_stable/pcsx2-qt.exe",
