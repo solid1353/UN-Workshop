@@ -109,13 +109,6 @@ if ($usingConfiguredPaths) {
         $settingsProfiles[$settingsPath] = $profileName
     }
 
-    $removedProfiles = [Collections.Generic.List[string]]::new()
-    Get-ChildItem -LiteralPath $profileRoot -Filter '*.ini' -File |
-        ForEach-Object {
-            $removedProfiles.Add($_.FullName)
-            Remove-Item -LiteralPath $_.FullName -Force
-        }
-
     $generated = @(
         foreach ($plan in $plans.Values) {
             & $PSCommandPath `
@@ -149,10 +142,8 @@ if ($usingConfiguredPaths) {
     $configuredResult = [pscustomobject]@{
         Profile = $selectedName
         GeneratedProfiles = $generated
-        RemovedProfiles = @($removedProfiles)
         UpdatedGameSettings = @($updatedSettings)
         Changed = (
-            $removedProfiles.Count -gt 0 -or
             @($generated | Where-Object Changed).Count -gt 0 -or
             $updatedSettings.Count -gt 0
         )
@@ -163,7 +154,6 @@ if ($usingConfiguredPaths) {
     else {
         Write-Host (
             "Input profile '$selectedName': generated $($generated.Count), " +
-            "removed $($removedProfiles.Count), " +
             "updated GameSettings $($updatedSettings.Count)."
         )
     }
