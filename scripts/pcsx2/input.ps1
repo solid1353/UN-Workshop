@@ -36,6 +36,18 @@ function Test-ByteArrayEqual {
     return $true
 }
 
+function Get-InputBindingFamily {
+    param([Parameter(Mandatory)][string]$Value)
+
+    if ($Value -match '^SDL-[^/]+/') {
+        return 'SDL'
+    }
+    if ($Value -match '^(?<family>[^/]+)/') {
+        return $Matches['family']
+    }
+    return $null
+}
+
 $usingConfiguredPaths = [string]::IsNullOrWhiteSpace($TemplatePath)
 if ($usingConfiguredPaths) {
     . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
@@ -234,24 +246,65 @@ foreach ($overrideFullPath in $overrideFullPaths) {
             )
         }
 
+        $newAssignments = [Collections.Generic.List[string]]::new()
         foreach ($overrideLine in $overrideLines) {
             $parts = $overrideLine -split '=', 2
             $name = $parts[0].Trim()
             $value = $parts[1].Trim()
             $escapedName = [regex]::Escape($name)
+            $overrideFamily = Get-InputBindingFamily -Value $value
+            $bindingPattern = (
+                "(?im)^(?<indent>[ `t]*)$escapedName[ `t]*=" +
+                '(?<value>[^\r\n]*)' +
+                '(?<ending>\r\n|\n|\r|$)'
+            )
+            $bindingMatches = @(
+                [regex]::Matches($body, $bindingPattern) |
+                    Where-Object {
+                        $candidateFamily = Get-InputBindingFamily `
+                            -Value $_.Groups['value'].Value.Trim()
+                        $null -eq $overrideFamily -or
+                            $candidateFamily -ieq $overrideFamily
+                    }
+            )
+            if ($bindingMatches.Count -eq 0) {
+                $newAssignments.Add("$name = $value")
+                continue
+            }
+
+            for (
+                $matchIndex = $bindingMatches.Count - 1
+                $matchIndex -ge 1
+                $matchIndex--
+            ) {
+                $duplicate = $bindingMatches[$matchIndex]
+                $body = $body.Remove($duplicate.Index, $duplicate.Length)
+            }
+
+            $first = $bindingMatches[0]
+            $replacement = (
+                $first.Groups['indent'].Value +
+                "$name = $value" +
+                $first.Groups['ending'].Value
+            )
+            $body = (
+                $body.Substring(0, $first.Index) +
+                $replacement +
+                $body.Substring($first.Index + $first.Length)
+            )
+        }
+
+        if ($newAssignments.Count -gt 0) {
             $body = [regex]::Replace(
                 $body,
-                (
-                    "(?m)^[ `t]*$escapedName[ `t]*=[^\r\n]*" +
-                    '(?:\r?\n|$)'
-                ),
-                '',
-                [Text.RegularExpressions.RegexOptions]::IgnoreCase
+                '(?:[ `t]*(?:\r\n|\n|\r))+\z',
+                ''
             )
-            if ($body.Length -gt 0 -and -not $body.EndsWith("`n")) {
-                $body += $newline
-            }
-            $body += "$name = $value$newline"
+            $body = (
+                $body + $newline + $newline +
+                ($newAssignments -join $newline) +
+                $newline + $newline
+            )
         }
 
         $generatedText = (
