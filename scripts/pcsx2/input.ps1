@@ -97,13 +97,21 @@ if ($usingConfiguredPaths) {
         if ($requestedName -cnotmatch '^[A-Za-z0-9][A-Za-z0-9_-]*$') {
             throw "Invalid input profile name: $requestedName"
         }
-        if (-not $availableProfiles.Contains($requestedName)) {
+        $selectorKey = ($requestedName -replace '[_-]', '').ToLowerInvariant()
+        $matchingNames = @(
+            $availableProfiles.Keys |
+                Where-Object {
+                    (($_ -replace '[_-]', '').ToLowerInvariant()) -ceq
+                        $selectorKey
+                }
+        )
+        if ($matchingNames.Count -eq 0) {
             throw "Input-profile override not found: $requestedName"
         }
-        $selectedName = [string](@(
-            $availableProfiles.Keys |
-                Where-Object { $_ -ieq $requestedName }
-        )[0])
+        if ($matchingNames.Count -gt 1) {
+            throw "Ambiguous input-profile override: $requestedName"
+        }
+        $selectedName = [string]$matchingNames[0]
         @([pscustomobject]@{
             Name = $selectedName
             Overrides = @($availableProfiles[$selectedName])
@@ -275,7 +283,9 @@ foreach ($overrideFullPath in $overrideFullPaths) {
         throw "Input-profile override contains no sections: $overrideFullPath"
     }
 
-    $protectedNamesByValue = @{}
+    $overrideValues = [Collections.Generic.HashSet[string]]::new(
+        [StringComparer]::OrdinalIgnoreCase
+    )
     foreach ($overrideSection in $overrideSections) {
         $overrideLines = @(
             $overrideSection.Groups['body'].Value -split '\r\n|\n|\r' |
@@ -283,16 +293,24 @@ foreach ($overrideFullPath in $overrideFullPaths) {
         )
         foreach ($overrideLine in $overrideLines) {
             $parts = $overrideLine -split '=', 2
-            $name = $parts[0].Trim()
             $value = $parts[1].Trim()
-            if (-not $protectedNamesByValue.ContainsKey($value)) {
-                $protectedNamesByValue[$value] = (
-                    [Collections.Generic.HashSet[string]]::new(
-                        [StringComparer]::OrdinalIgnoreCase
-                    )
-                )
-            }
-            $null = $protectedNamesByValue[$value].Add($name)
+            $null = $overrideValues.Add($value)
+        }
+    }
+
+    $assignmentMatches = [regex]::Matches($generatedText, $assignmentPattern)
+    for (
+        $matchIndex = $assignmentMatches.Count - 1
+        $matchIndex -ge 0
+        $matchIndex--
+    ) {
+        $candidate = $assignmentMatches[$matchIndex]
+        $candidateValue = $candidate.Groups['value'].Value.Trim()
+        if ($overrideValues.Contains($candidateValue)) {
+            $generatedText = $generatedText.Remove(
+                $candidate.Index,
+                $candidate.Length
+            )
         }
     }
 
@@ -405,26 +423,6 @@ foreach ($overrideFullPath in $overrideFullPaths) {
         )
     }
 
-    $assignmentMatches = [regex]::Matches($generatedText, $assignmentPattern)
-    for (
-        $matchIndex = $assignmentMatches.Count - 1
-        $matchIndex -ge 0
-        $matchIndex--
-    ) {
-        $candidate = $assignmentMatches[$matchIndex]
-        $candidateValue = $candidate.Groups['value'].Value.Trim()
-        if (-not $protectedNamesByValue.ContainsKey($candidateValue)) {
-            continue
-        }
-        $candidateName = $candidate.Groups['name'].Value.Trim()
-        if ($protectedNamesByValue[$candidateValue].Contains($candidateName)) {
-            continue
-        }
-        $generatedText = $generatedText.Remove(
-            $candidate.Index,
-            $candidate.Length
-        )
-    }
 }
 $generatedBytes = [Text.Encoding]::Latin1.GetBytes($generatedText)
 
