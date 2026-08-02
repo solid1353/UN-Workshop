@@ -202,12 +202,12 @@ if ($Test) {
         -Hidden `
         -PassThru
     try {
-        Wait-Process -Id $process.Id
+        Wait-Process -InputObject $process
     }
     finally {
         if (-not $process.HasExited) {
             Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
-            Wait-Process -Id $process.Id -ErrorAction SilentlyContinue
+            Wait-Process -InputObject $process -ErrorAction SilentlyContinue
         }
     }
     return
