@@ -286,7 +286,6 @@ if (
     $PSCmdlet.ParameterSetName -eq 'Configured' -and
     $Target -eq 'dev' -and
     -not $Capped -and
-    [string]::IsNullOrWhiteSpace($InputRecording) -and
     [string]::IsNullOrWhiteSpace($CreateInputRecording)
 ) {
     $launchArguments += '-unlimited'

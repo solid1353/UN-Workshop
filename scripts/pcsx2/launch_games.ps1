@@ -319,7 +319,7 @@ try {
         }
         if (
             $selectedGames.Count -eq 2 -and
-            $PSCmdlet.ParameterSetName -in @('Play', 'Record')
+            $PSCmdlet.ParameterSetName -eq 'Record'
         ) {
             $launchParameters.Capped = $true
         }
