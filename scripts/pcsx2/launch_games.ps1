@@ -317,6 +317,12 @@ try {
             Arguments = @('-pine-port', [string]$pinePort)
             PassThru = $true
         }
+        if (
+            $selectedGames.Count -eq 2 -and
+            $PSCmdlet.ParameterSetName -in @('Play', 'Record')
+        ) {
+            $launchParameters.Capped = $true
+        }
         if ($PSCmdlet.ParameterSetName -eq 'Play') {
             $launchParameters.InputRecording = $playbackRecordings[$index]
         }

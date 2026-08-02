@@ -28,6 +28,9 @@ param(
     [switch]$PassThru,
 
     [Parameter(ParameterSetName = 'Configured')]
+    [switch]$Capped,
+
+    [Parameter(ParameterSetName = 'Configured')]
     [switch]$Hidden
 )
 
@@ -282,6 +285,7 @@ if ($hidden) {
 if (
     $PSCmdlet.ParameterSetName -eq 'Configured' -and
     $Target -eq 'dev' -and
+    -not $Capped -and
     [string]::IsNullOrWhiteSpace($InputRecording) -and
     [string]::IsNullOrWhiteSpace($CreateInputRecording)
 ) {
