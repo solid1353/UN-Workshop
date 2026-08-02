@@ -74,7 +74,7 @@ switch ($normalizedCommand) {
             '  workshop pcsx2 [game] [input-recording]  Launch development PCSX2, optionally with a game and recording.'
             '  workshop input [profile]            Regenerate all profiles; optionally assign one.'
             '  workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]  Move savestates; -c recycles the destination first.'
-            '  workshop ss extract <folder-or-savestates...>  Extract embedded PNGs into screenshots/.'
+            '  workshop ss extract <subpath|folder-or-savestates...>  Extract embedded PNGs into screenshots/.'
             ''
             "  Sources: $($sourceSelectors -join ', ')"
             $(if ($buildSelectors.Count -gt 0) {
