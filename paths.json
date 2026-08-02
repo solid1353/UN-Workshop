@@ -34,6 +34,7 @@
     "pcsx2_stable_exe": "@pcsx2_stable/pcsx2-qt.exe",
     "pcsx2_dev_exe": "@pcsx2_dev/pcsx2-qtx64-avx2-dev.exe",
     "pcsx2_launch_command": "@repository/scripts/pcsx2/launch.ps1",
+    "pcsx2_game_launch_command": "@repository/scripts/pcsx2/launch_games.ps1",
     "pcsx2_copy_worker_command": "@repository/scripts/pcsx2/copy_worker.ps1",
     "pcsx2_pine_command": "@repository/scripts/pcsx2/pine.py",
     "pcsx2_iso_identity": "@repository/scripts/pcsx2/iso_identity.ps1",

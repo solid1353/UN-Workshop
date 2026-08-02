@@ -11,8 +11,7 @@ memory cards, savestates, logs, and task artifacts.
 
 ```powershell
 workshop resolve [game] [property]
-workshop pcsx2 [game]
-workshop rec <game> <recording-name> [-r|-t]
+workshop pcsx2 [game] [game] [-play <recording>|-record <recording>]
 workshop input [profile]
 workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]
 workshop ss extract <subpath|folder-or-savestates...>
@@ -22,17 +21,12 @@ workshop ss extract <subpath|folder-or-savestates...>
   inside a configured project, every available project build. Supplying a game
   returns all of its resolved properties; supplying a property prints only that
   value, such as `workshop resolve NUN5 iso`.
-- `workshop pcsx2` launches development PCSX2. Supplying a game launches its
-  resolved ISO.
-- `workshop rec <game> <recording-name>` launches development PCSX2 with the
-  resolved game ISO and replays the named input recording. Adding `-r` creates
-  and records a new power-on recording instead. Adding `-t` runs the replay
-  hidden, muted, and at unlimited speed, capturing every recorded L3+R3 marker
-  as a sequential savestate under `work/sstates/regression/<game>/` and a
-  screenshot under its `screenshots/` subfolder. Each PNG is the exact standard
-  640x480 screenshot embedded in its matching savestate. PCSX2 exits when the
-  regression replay finishes. The `.p2m2` extension is added automatically
-  when omitted.
+- `workshop pcsx2` launches development PCSX2. Supplying one or two games
+  launches their resolved ISOs and tiles them in argument order. `-play`
+  replays one shared input recording in every launched instance; `-record`
+  records only the last/rightmost instance. The `.p2m2` extension is added
+  automatically when omitted. Each result reports the ordered game, process,
+  PINE port, and window position.
 - `workshop input` regenerates every complete PCSX2 input profile from the
   tracked base and partial overrides without changing GameSettings assignments.
 - `workshop input <profile>` also regenerates every complete profile, then
