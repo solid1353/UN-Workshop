@@ -10,7 +10,9 @@ param(
 
     [string]$r,
 
-    [string]$t
+    [string]$t,
+
+    [string]$o
 )
 
 $ErrorActionPreference = 'Stop'
@@ -27,7 +29,8 @@ function Invoke-UnWorkshopGameLaunch {
         [string[]]$Games,
         [string]$Play,
         [string]$Record,
-        [string]$RegressionTest
+        [string]$RegressionTest,
+        [string]$CaptureDirectory
     )
 
     $games = @($Games | Where-Object { -not [string]::IsNullOrEmpty($_) })
@@ -45,6 +48,10 @@ function Invoke-UnWorkshopGameLaunch {
         $games.Count -ne 1) {
         throw '-t requires exactly one game.'
     }
+    if (-not [string]::IsNullOrWhiteSpace($CaptureDirectory) -and
+        [string]::IsNullOrWhiteSpace($RegressionTest)) {
+        throw '-Output is valid only with -t.'
+    }
 
     $parameters = @{
         Games = @($games)
@@ -55,6 +62,9 @@ function Invoke-UnWorkshopGameLaunch {
     if (-not [string]::IsNullOrWhiteSpace($RegressionTest)) {
         $parameters.Play = $RegressionTest
         $parameters.Test = $true
+        if (-not [string]::IsNullOrWhiteSpace($CaptureDirectory)) {
+            $parameters.CaptureDirectory = $CaptureDirectory
+        }
     }
     & $paths.Files.pcsx2_game_launch_command @parameters
 }
@@ -114,12 +124,12 @@ switch ($normalizedCommand) {
             'UN Workshop'
             ''
             '  workshop [game] [game] [-p name|-r name]  Launch one or two games; pairs close existing user PCSX2 first.'
-            '  workshop <game> -t name              Replay one game and capture regression markers.'
+            '  workshop <game> -t name [-o path]  Replay one game and capture regression markers.'
             '  workshop input [profile]             Regenerate all profiles; optionally assign one.'
             '  workshop pcsx2                       Launch development PCSX2 without a game.'
             '  workshop resolve [game] [property]   Resolve all games, one game, or one property.'
             '  workshop ss extract <subpath|folder-or-savestates...>  Extract embedded PNGs into screenshots/.'
-            '  workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]  Move savestates; -c recycles the destination first.'
+            '  workshop ss move <game> <subpath> [-t dev|stable] [-c]  Move savestates; -c recycles the destination first.'
             ''
             "  Sources: $($sourceSelectors -join ', ')"
             $(if ($buildSelectors.Count -gt 0) {
@@ -209,11 +219,17 @@ switch ($normalizedCommand) {
         if ($argumentList.Count -eq 0) {
             throw 'Usage: workshop ss move|extract ...'
         }
+        if (-not [string]::IsNullOrWhiteSpace($o)) {
+            throw '-o does not apply to workshop ss.'
+        }
         $cleanup = $false
         $forwardedArguments = @(
             foreach ($argument in $argumentList) {
-                if ($argument -ieq '-c' -or $argument -ieq '-Cleanup') {
+                if ($argument -ceq '-c') {
                     $cleanup = $true
+                }
+                elseif ($argument -ieq '-Cleanup' -or $argument -ieq '-Target') {
+                    throw 'Use workshop ss short options: -t dev|stable and -c.'
                 }
                 else {
                     $argument
@@ -222,6 +238,7 @@ switch ($normalizedCommand) {
         )
         $parameters = @{}
         if ($cleanup) { $parameters.Cleanup = $true }
+        if (-not [string]::IsNullOrWhiteSpace($t)) { $parameters.Target = $t }
         & (Join-Path $scripts 'savestates.ps1') @forwardedArguments @parameters
     }
     default {
@@ -233,6 +250,7 @@ switch ($normalizedCommand) {
             -Games $games `
             -Play $p `
             -Record $r `
-            -RegressionTest $t
+            -RegressionTest $t `
+            -CaptureDirectory $o
     }
 }
