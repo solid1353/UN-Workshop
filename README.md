@@ -26,10 +26,10 @@ workshop ss extract <folder-or-savestates...>
   input-recordings directory; an absolute recording path is also accepted.
 - `workshop input` regenerates every complete PCSX2 input profile from the
   tracked base and partial overrides without changing GameSettings assignments.
-- `workshop input <profile>` regenerates the selected profile and its game
-  variants, then assigns them in every configured GameSettings file. Every
-  generated profile at the root of `pcsx2/__shared/input_profiles/` is tracked
-  by Git. Profile selectors are case-insensitive and ignore `_` or `-`, so
+- `workshop input <profile>` also regenerates every complete profile, then
+  assigns the selected profile variants in every configured GameSettings file.
+  Every generated profile at the root of `pcsx2/__shared/input_profiles/` is
+  tracked by Git. Profile selectors are case-insensitive and ignore `_` or `-`, so
   `Test_Capture` selects canonical `TestCapture`.
 - Before adding override assignments to their declared sections, generation
   removes every existing assignment using an override binding across the

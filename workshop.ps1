@@ -72,7 +72,7 @@ switch ($normalizedCommand) {
             ''
             '  workshop resolve [game] [property]  Resolve all games, one game, or one property.'
             '  workshop pcsx2 <game> [input-recording]  Launch a game in development PCSX2, optionally with a recording.'
-            '  workshop input [profile]            Regenerate all profiles, or regenerate and assign one.'
+            '  workshop input [profile]            Regenerate all profiles; optionally assign one.'
             '  workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]  Move savestates; -c recycles the destination first.'
             '  workshop ss extract <folder-or-savestates...>  Extract embedded PNGs into screenshots/.'
             ''

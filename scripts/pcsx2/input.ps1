@@ -72,24 +72,8 @@ if ($usingConfiguredPaths) {
         }
 
     $selectedName = $null
-    $generateAll = [string]::IsNullOrWhiteSpace($Profile)
-    $generationProfiles = if ($generateAll) {
-        @(
-            foreach ($profileName in $availableProfiles.Keys) {
-                [pscustomobject]@{
-                    Name = $profileName
-                    Overrides = @($availableProfiles[$profileName])
-                }
-            }
-        )
-    }
-    else {
-        $requestedName = if ([string]::IsNullOrWhiteSpace($Profile)) {
-            $baseName
-        }
-        else {
-            $Profile
-        }
+    if (-not [string]::IsNullOrWhiteSpace($Profile)) {
+        $requestedName = $Profile
         if ($requestedName -cnotmatch '^[A-Za-z0-9][A-Za-z0-9_-]*$') {
             throw "Invalid input profile name: $requestedName"
         }
@@ -108,11 +92,15 @@ if ($usingConfiguredPaths) {
             throw "Ambiguous input-profile override: $requestedName"
         }
         $selectedName = [string]$matchingNames[0]
-        @([pscustomobject]@{
-            Name = $selectedName
-            Overrides = @($availableProfiles[$selectedName])
-        })
     }
+    $generationProfiles = @(
+        foreach ($profileName in $availableProfiles.Keys) {
+            [pscustomobject]@{
+                Name = $profileName
+                Overrides = @($availableProfiles[$profileName])
+            }
+        }
+    )
 
     $plans = [ordered]@{}
     $settingsProfiles = [ordered]@{}
@@ -165,7 +153,10 @@ if ($usingConfiguredPaths) {
                 }
             }
 
-            if (-not $generateAll) {
+            if (
+                $null -ne $selectedName -and
+                $profileDefinition.Name -ceq $selectedName
+            ) {
                 $settingsPath = [string]$entry.Resolved.game_settings
                 $settingsProfiles[$settingsPath] = $profileName
             }
@@ -215,7 +206,7 @@ if ($usingConfiguredPaths) {
         $configuredResult
     }
     else {
-        if ($generateAll) {
+        if ($null -eq $selectedName) {
             Write-Host (
                 "Input profiles: generated $($generated.Count); " +
                 'GameSettings unchanged.'
@@ -223,7 +214,8 @@ if ($usingConfiguredPaths) {
         }
         else {
             Write-Host (
-                "Input profile '$selectedName': generated $($generated.Count), " +
+                "Input profiles: generated $($generated.Count); " +
+                "assigned '$selectedName', " +
                 "updated GameSettings $($updatedSettings.Count)."
             )
         }
