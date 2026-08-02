@@ -106,12 +106,24 @@ function Get-Pcsx2IsoIdentity {
         (Join-Path $project 'work\__sstates\build-case\SLOP-NA228 (12345678).00.p2s') `
         'Build savestate was not filed under the invoking project work/__sstates root.'
 
-    Set-Content -LiteralPath (Join-Path $states 'SLES-55605 (C071D4C1).01.p2s') -Value 'source'
+    $sourceCase = Join-Path $workshop 'work\__sstates\source-case'
+    [void](New-Item -ItemType Directory -Path $sourceCase -Force)
+    Set-Content `
+        -LiteralPath (Join-Path $sourceCase 'SLES-55605 (C071D4C1).03.p2s') `
+        -Value 'existing'
+    Set-Content -LiteralPath (Join-Path $states 'SLES-55605 (C071D4C1).01.p2s') -Value 'first'
+    Set-Content -LiteralPath (Join-Path $states 'SLES-55605 (C071D4C1).09.p2s') -Value 'second'
     & (Join-Path $workshop 'scripts\pcsx2\move_savestates.ps1') `
         NUN5 source-case -ProjectRoot $project | Out-Null
     Assert-Exists `
-        (Join-Path $workshop 'work\__sstates\source-case\SLES-55605 (C071D4C1).01.p2s') `
-        'Source savestate was not filed under the Workshop work/__sstates root.'
+        (Join-Path $sourceCase 'SLES-55605 (C071D4C1).04.p2s') `
+        'The first source savestate did not use the next destination number.'
+    Assert-Exists `
+        (Join-Path $sourceCase 'SLES-55605 (C071D4C1).05.p2s') `
+        'The second source savestate did not continue destination numbering.'
+    if (Test-Path -LiteralPath (Join-Path $sourceCase 'SLES-55605 (C071D4C1).11.p2s')) {
+        throw 'Savestate conflict numbering still advances by ten.'
+    }
 
     $cleanupTarget = Join-Path $project 'work\__sstates\cleanup-case'
     [void](New-Item -ItemType Directory -Path $cleanupTarget -Force)

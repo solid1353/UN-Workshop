@@ -48,7 +48,8 @@ workshop ss extract <subpath|folder-or-savestates...>
 - `ss move` files matching savestates from the selected user PCSX2 installation
   below Workshop `work/__sstates/` for source games or the invoking project's
   `work/__sstates/` for project builds. `-Cleanup` first sends the existing
-  selected destination directory to the Windows Recycle Bin.
+  selected destination directory to the Windows Recycle Bin. Incoming states
+  continue sequentially after the highest existing number in that directory.
 - `ss extract <subpath>` resolves the subpath below Workshop
   `work/__sstates/` and extracts embedded screenshots beside that savestate
   folder. Explicit folder and savestate paths remain supported.
