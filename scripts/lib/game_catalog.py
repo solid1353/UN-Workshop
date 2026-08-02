@@ -135,7 +135,7 @@ def derive_game_paths(
     resolved_profile = (
         f"{DEFAULT_INPUT_PROFILE}_{canonical_name}"
         if override_enabled
-        else DEFAULT_INPUT_PROFILE
+        else f"{DEFAULT_INPUT_PROFILE}_Base"
     )
     input_profile_path = profile_root / f"{resolved_profile}.ini"
 
