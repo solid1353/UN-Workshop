@@ -28,7 +28,7 @@ workshop ss extract <subpath|folder-or-savestates...>
   resolved game ISO and replays the named input recording. Adding `-r` creates
   and records a new power-on recording instead. Adding `-t` runs the replay
   hidden, muted, and at unlimited speed, capturing every recorded L3+R3 marker
-  as a sequential savestate under `work/__sstates/regression/<game>/` and a
+  as a sequential savestate under `work/sstates/regression/<game>/` and a
   screenshot under its `screenshots/` subfolder. Each PNG is the exact standard
   640x480 screenshot embedded in its matching savestate. PCSX2 exits when the
   regression replay finishes. The `.p2m2` extension is added automatically
@@ -46,12 +46,12 @@ workshop ss extract <subpath|folder-or-savestates...>
   place, and appends only new actions. Multiple assignments declared by the
   effective override may still deliberately share one binding.
 - `ss move` files matching savestates from the selected user PCSX2 installation
-  below Workshop `work/__sstates/` for source games or the invoking project's
-  `work/__sstates/` for project builds. `-Cleanup` first sends the existing
+  below Workshop `work/sstates/` for source games or the invoking project's
+  `work/sstates/` for project builds. `-Cleanup` first sends the existing
   selected destination directory to the Windows Recycle Bin. Incoming states
   continue sequentially after the highest existing number in that directory.
 - `ss extract <subpath>` resolves the subpath below Workshop
-  `work/__sstates/` and extracts embedded screenshots beside that savestate
+  `work/sstates/` and extracts embedded screenshots beside that savestate
   folder. Explicit folder and savestate paths remain supported.
 
 When invoked inside a supported project, the command discovers that project's

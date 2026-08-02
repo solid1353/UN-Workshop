@@ -76,7 +76,7 @@ $destinationRoot = if ($canonicalCategory -eq 'Builds') {
     if ([string]::IsNullOrWhiteSpace($paths.Project)) {
         throw 'A project root is required to file build savestates.'
     }
-    Join-Path $paths.Project 'work\__sstates'
+    Join-Path $paths.Project 'work\sstates'
 }
 else {
     $paths.Savestates
@@ -213,7 +213,7 @@ if (-not (Test-Path -LiteralPath $destinationFull -PathType Container)) {
     }
 }
 
-$maximumSlot = [long]-1
+$maximumSlot = [long]0
 $slotWidth = 2
 $existingStates = @(
     if (Test-Path -LiteralPath $destinationFull -PathType Container) {
