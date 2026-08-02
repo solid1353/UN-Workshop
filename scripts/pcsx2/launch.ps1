@@ -17,6 +17,9 @@ param(
     [Parameter(ParameterSetName = 'Configured')]
     [string]$CreateInputRecording,
 
+    [Parameter(ParameterSetName = 'Configured')]
+    [string]$InputRecordingCaptureDirectory,
+
     [Parameter(ValueFromRemainingArguments)]
     [string[]]$Arguments,
 
@@ -236,6 +239,15 @@ if (-not [string]::IsNullOrWhiteSpace($CreateInputRecording)) {
     }
 }
 
+if (-not [string]::IsNullOrWhiteSpace($InputRecordingCaptureDirectory)) {
+    if ([string]::IsNullOrWhiteSpace($InputRecording)) {
+        throw 'A capture directory requires an input recording replay.'
+    }
+    $resolvedInputRecordingCaptureDirectory = [IO.Path]::GetFullPath(
+        $InputRecordingCaptureDirectory
+    )
+}
+
 if ($IsoPath -and -not (
     Test-Path -LiteralPath $resolvedIso -PathType Leaf
 )) {
@@ -268,6 +280,12 @@ if (-not [string]::IsNullOrWhiteSpace($InputRecording)) {
     $launchArguments += @(
         '-input-recording',
         "`"$inputRecordingFileName`""
+    )
+}
+if (-not [string]::IsNullOrWhiteSpace($InputRecordingCaptureDirectory)) {
+    $launchArguments += @(
+        '-input-recording-capture-directory',
+        "`"$resolvedInputRecordingCaptureDirectory`""
     )
 }
 if (-not [string]::IsNullOrWhiteSpace($CreateInputRecording)) {
