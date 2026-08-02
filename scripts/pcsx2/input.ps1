@@ -151,7 +151,7 @@ if ($usingConfiguredPaths) {
                 "$($profileDefinition.Name)_$($entry.Name)"
             }
             else {
-                $profileDefinition.Name
+                "$($profileDefinition.Name)_Base"
             }
             $overrides = @($profileDefinition.Overrides)
             if ($entry.HasGameOverride) {

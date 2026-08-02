@@ -30,8 +30,9 @@ workshop ss extract <subpath|folder-or-savestates...>
 - `workshop input <profile>` also regenerates every complete profile, then
   assigns the selected profile variants in every configured GameSettings file.
   Every generated profile at the root of `pcsx2_shared/input_profiles/` is
-  tracked by Git. Profile selectors are case-insensitive and ignore `_` or `-`, so
-  `Test_Capture` selects canonical `TestCapture`.
+  tracked by Git. Base outputs use `<profile>_Base.ini`; game-specific outputs
+  use `<profile>_<game>.ini`. Profile selectors are case-insensitive and ignore
+  `_` or `-`, so `Test_Capture` selects canonical `TestCapture`.
 - Generation first merges all selected overrides by section, action, and input
   family. It then removes conflicting bindings, replaces existing actions in
   place, and appends only new actions. Multiple assignments declared by the
