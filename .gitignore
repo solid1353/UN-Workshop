@@ -7,10 +7,14 @@ __pycache__/
 
 pcsx2/*
 !pcsx2/__shared/
-pcsx2/__shared/*
+pcsx2/__shared/**
 !pcsx2/__shared/cheats/
+!pcsx2/__shared/cheats/**
 !pcsx2/__shared/game_settings/
+!pcsx2/__shared/game_settings/**
 !pcsx2/__shared/input_profiles/
+!pcsx2/__shared/input_profiles/**
 !pcsx2/__shared/input_recordings/
+!pcsx2/__shared/input_recordings/**
 
 SLOP-NA228.ini
