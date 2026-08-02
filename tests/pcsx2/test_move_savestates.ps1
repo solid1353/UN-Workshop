@@ -61,7 +61,7 @@ function Get-Pcsx2IsoIdentity {
     "analysis": "@work",
     "tools": "tools",
     "work": "work",
-    "ss": "@work/__sstates",
+    "savestates": "@work/__sstates",
     "scripts": "scripts",
     "pcsx2_clean": "pcsx2/clean",
     "pcsx2_dev": "pcsx2/dev",

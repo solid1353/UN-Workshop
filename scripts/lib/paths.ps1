@@ -107,7 +107,7 @@ function Get-UnWorkshopPaths {
         Source = $roots.source
         Analysis = $roots.analysis
         Tools = $roots.tools
-        Savestates = $roots.ss
+        Savestates = $roots.savestates
         SourceCatalog = $files.game_catalog
         ProjectCatalog = if ($project) {
             Join-Path $project 'product.json'

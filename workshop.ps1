@@ -208,9 +208,10 @@ switch ($normalizedCommand) {
             $parameters.InputRecording = $recordingName
         }
         if ($regressionTest) {
+            $recordingStem = [IO.Path]::GetFileNameWithoutExtension($recordingName)
             $parameters.InputRecordingCaptureDirectory = Join-Path `
                 (Join-Path $paths.Savestates 'regression') `
-                $positionalArguments[0]
+                $recordingStem
             $parameters.Hidden = $true
             $parameters.Wait = $true
         }
