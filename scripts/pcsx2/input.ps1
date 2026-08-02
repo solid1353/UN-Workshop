@@ -48,6 +48,18 @@ function Get-InputBindingFamily {
     return $null
 }
 
+function Get-InputAssignmentKey {
+    param(
+        [Parameter(Mandatory)][string]$Name,
+        [AllowNull()][string]$Family
+    )
+
+    return (
+        $Name.ToLowerInvariant() + "`0" +
+        $(if ($null -eq $Family) { '' } else { $Family.ToLowerInvariant() })
+    )
+}
+
 $usingConfiguredPaths = [string]::IsNullOrWhiteSpace($TemplatePath)
 if ($usingConfiguredPaths) {
     . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
@@ -262,6 +274,7 @@ $assignmentPattern = (
     '(?<ending>\r\n|\n|\r|$)'
 )
 $newline = if ($generatedText.Contains("`r`n")) { "`r`n" } else { "`n" }
+$effectiveSections = [ordered]@{}
 foreach ($overrideFullPath in $overrideFullPaths) {
     $overrideText = [Text.Encoding]::Latin1.GetString(
         [IO.File]::ReadAllBytes($overrideFullPath)
@@ -271,57 +284,8 @@ foreach ($overrideFullPath in $overrideFullPaths) {
         throw "Input-profile override contains no sections: $overrideFullPath"
     }
 
-    $overrideValues = [Collections.Generic.HashSet[string]]::new(
-        [StringComparer]::OrdinalIgnoreCase
-    )
-    foreach ($overrideSection in $overrideSections) {
-        $overrideLines = @(
-            $overrideSection.Groups['body'].Value -split '\r\n|\n|\r' |
-                Where-Object { $_ -match '^\s*[^;#\s][^=]*=' }
-        )
-        foreach ($overrideLine in $overrideLines) {
-            $parts = $overrideLine -split '=', 2
-            $value = $parts[1].Trim()
-            $null = $overrideValues.Add($value)
-        }
-    }
-
-    $assignmentMatches = [regex]::Matches($generatedText, $assignmentPattern)
-    for (
-        $matchIndex = $assignmentMatches.Count - 1
-        $matchIndex -ge 0
-        $matchIndex--
-    ) {
-        $candidate = $assignmentMatches[$matchIndex]
-        $candidateValue = $candidate.Groups['value'].Value.Trim()
-        if ($overrideValues.Contains($candidateValue)) {
-            $generatedText = $generatedText.Remove(
-                $candidate.Index,
-                $candidate.Length
-            )
-        }
-    }
-
     foreach ($overrideSection in $overrideSections) {
         $sectionName = $overrideSection.Groups['name'].Value
-        $escapedSection = [regex]::Escape($sectionName)
-        $baseSections = @([regex]::Matches(
-            $generatedText,
-            (
-                "(?ms)^\[$escapedSection\][^\r\n]*(?:\r\n|\n|\r)" +
-                '(?<body>.*?)' +
-                '(?=^\[[^\r\n]+\][^\r\n]*(?:\r\n|\n|\r)|\z)'
-            )
-        ))
-        if ($baseSections.Count -ne 1) {
-            throw (
-                "Expected exactly one [$sectionName] section; found " +
-                "$($baseSections.Count)."
-            )
-        }
-
-        $bodyGroup = $baseSections[0].Groups['body']
-        $body = $bodyGroup.Value
         $overrideLines = @(
             $overrideSection.Groups['body'].Value -split '\r\n|\n|\r' |
                 Where-Object { $_ -match '^\s*[^;#\s][^=]*=' }
@@ -332,20 +296,89 @@ foreach ($overrideFullPath in $overrideFullPaths) {
                 $overrideFullPath
             )
         }
-
-        $overrideAssignments = @(
-            foreach ($overrideLine in $overrideLines) {
-                $parts = $overrideLine -split '=', 2
-                $value = $parts[1].Trim()
-                [pscustomobject]@{
-                    Name = $parts[0].Trim()
-                    Value = $value
-                    Family = Get-InputBindingFamily -Value $value
-                }
+        if (-not $effectiveSections.Contains($sectionName)) {
+            $effectiveSections[$sectionName] = [ordered]@{}
+        }
+        $sectionAssignments = $effectiveSections[$sectionName]
+        foreach ($overrideLine in $overrideLines) {
+            $parts = $overrideLine -split '=', 2
+            $name = $parts[0].Trim()
+            $value = $parts[1].Trim()
+            $family = Get-InputBindingFamily -Value $value
+            $key = Get-InputAssignmentKey -Name $name -Family $family
+            $sectionAssignments[$key] = [pscustomobject]@{
+                Name = $name
+                Value = $value
+                Family = $family
             }
+        }
+    }
+}
+
+$overrideValues = [Collections.Generic.HashSet[string]]::new(
+    [StringComparer]::OrdinalIgnoreCase
+)
+foreach ($sectionAssignments in $effectiveSections.Values) {
+    foreach ($assignment in $sectionAssignments.Values) {
+        $null = $overrideValues.Add($assignment.Value)
+    }
+}
+
+$removals = [Collections.Generic.List[object]]::new()
+foreach ($baseSection in [regex]::Matches($generatedText, $sectionPattern)) {
+    $sectionName = $baseSection.Groups['name'].Value
+    $bodyGroup = $baseSection.Groups['body']
+    $targetAssignments = if ($effectiveSections.Contains($sectionName)) {
+        $effectiveSections[$sectionName]
+    }
+    else { $null }
+    foreach ($candidate in [regex]::Matches(
+        $bodyGroup.Value,
+        $assignmentPattern
+    )) {
+        $candidateName = $candidate.Groups['name'].Value.Trim()
+        $candidateValue = $candidate.Groups['value'].Value.Trim()
+        $candidateFamily = Get-InputBindingFamily -Value $candidateValue
+        $candidateKey = Get-InputAssignmentKey `
+            -Name $candidateName `
+            -Family $candidateFamily
+        $isOverrideTarget = (
+            $null -ne $targetAssignments -and
+            $targetAssignments.Contains($candidateKey)
         )
-        $newAssignments = [Collections.Generic.List[string]]::new()
-        foreach ($assignment in $overrideAssignments) {
+        if ($overrideValues.Contains($candidateValue) -and -not $isOverrideTarget) {
+            $removals.Add([pscustomobject]@{
+                Index = $bodyGroup.Index + $candidate.Index
+                Length = $candidate.Length
+            })
+        }
+    }
+}
+foreach ($removal in @($removals | Sort-Object Index -Descending)) {
+    $generatedText = $generatedText.Remove($removal.Index, $removal.Length)
+}
+
+foreach ($sectionName in $effectiveSections.Keys) {
+    $escapedSection = [regex]::Escape($sectionName)
+    $baseSections = @([regex]::Matches(
+        $generatedText,
+        (
+            "(?ms)^\[$escapedSection\][^\r\n]*(?:\r\n|\n|\r)" +
+            '(?<body>.*?)' +
+            '(?=^\[[^\r\n]+\][^\r\n]*(?:\r\n|\n|\r)|\z)'
+        )
+    ))
+    if ($baseSections.Count -ne 1) {
+        throw (
+            "Expected exactly one [$sectionName] section; found " +
+            "$($baseSections.Count)."
+        )
+    }
+
+    $bodyGroup = $baseSections[0].Groups['body']
+    $body = $bodyGroup.Value
+    $newAssignments = [Collections.Generic.List[string]]::new()
+    foreach ($assignment in $effectiveSections[$sectionName].Values) {
             $name = $assignment.Name
             $value = $assignment.Value
             $escapedName = [regex]::Escape($name)
@@ -389,28 +422,26 @@ foreach ($overrideFullPath in $overrideFullPaths) {
                 $replacement +
                 $body.Substring($first.Index + $first.Length)
             )
-        }
+    }
 
-        if ($newAssignments.Count -gt 0) {
-            $body = [regex]::Replace(
-                $body,
-                '(?:[ \t]*(?:\r\n|\n|\r))+\z',
-                ''
-            )
-            $body = (
-                $body + $newline + $newline +
-                ($newAssignments -join $newline) +
-                $newline + $newline
-            )
-        }
-
-        $generatedText = (
-            $generatedText.Substring(0, $bodyGroup.Index) +
-            $body +
-            $generatedText.Substring($bodyGroup.Index + $bodyGroup.Length)
+    if ($newAssignments.Count -gt 0) {
+        $body = [regex]::Replace(
+            $body,
+            '(?:[ \t]*(?:\r\n|\n|\r))+\z',
+            ''
+        )
+        $body = (
+            $body + $newline + $newline +
+            ($newAssignments -join $newline) +
+            $newline + $newline
         )
     }
 
+    $generatedText = (
+        $generatedText.Substring(0, $bodyGroup.Index) +
+        $body +
+        $generatedText.Substring($bodyGroup.Index + $bodyGroup.Length)
+    )
 }
 $generatedBytes = [Text.Encoding]::Latin1.GetBytes($generatedText)
 
