@@ -181,9 +181,14 @@ if ($Test) {
         throw '-Test requires exactly one game.'
     }
     $recordingStem = [IO.Path]::GetFileNameWithoutExtension($recordingName)
-    $captureDirectory = Join-Path `
-        (Join-Path $paths.Savestates $recordingStem) `
-        $selectedGames[0].Selector
+    $captureRepositoryRoot = if ($paths.Project) {
+        $paths.Project
+    } else {
+        $paths.Workshop
+    }
+    $captureDirectory = Join-Path $captureRepositoryRoot 'work\captures'
+    $captureDirectory = Join-Path $captureDirectory $recordingStem
+    $captureDirectory = Join-Path $captureDirectory $selectedGames[0].Selector
     $action = "replay $($selectedGames[0].Selector) and capture regression markers"
     if (-not $PSCmdlet.ShouldProcess($captureDirectory, $action)) {
         return
