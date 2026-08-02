@@ -7,7 +7,7 @@
     "icons": "icons",
     "tools": "tools",
     "work": "work",
-    "savestates": "@work/__sstates",
+    "savestates": "@work/sstates",
     "scripts": "scripts",
     "pcsx2_scripts": "@scripts/pcsx2",
     "ghidra_scripts": "@scripts/ghidra",

@@ -61,7 +61,7 @@ function Get-Pcsx2IsoIdentity {
     "analysis": "@work",
     "tools": "tools",
     "work": "work",
-    "savestates": "@work/__sstates",
+    "savestates": "@work/sstates",
     "scripts": "scripts",
     "pcsx2_clean": "pcsx2/clean",
     "pcsx2_dev": "pcsx2/dev",
@@ -103,10 +103,10 @@ function Get-Pcsx2IsoIdentity {
     & (Join-Path $workshop 'scripts\pcsx2\move_savestates.ps1') `
         latest build-case -ProjectRoot $project | Out-Null
     Assert-Exists `
-        (Join-Path $project 'work\__sstates\build-case\SLOP-NA228 (12345678).00.p2s') `
-        'Build savestate was not filed under the invoking project work/__sstates root.'
+        (Join-Path $project 'work\sstates\build-case\SLOP-NA228 (12345678).01.p2s') `
+        'Build savestate was not filed under the invoking project work/sstates root.'
 
-    $sourceCase = Join-Path $workshop 'work\__sstates\source-case'
+    $sourceCase = Join-Path $workshop 'work\sstates\source-case'
     [void](New-Item -ItemType Directory -Path $sourceCase -Force)
     Set-Content `
         -LiteralPath (Join-Path $sourceCase 'SLES-55605 (C071D4C1).03.p2s') `
@@ -125,7 +125,7 @@ function Get-Pcsx2IsoIdentity {
         throw 'Savestate conflict numbering still advances by ten.'
     }
 
-    $cleanupTarget = Join-Path $project 'work\__sstates\cleanup-case'
+    $cleanupTarget = Join-Path $project 'work\sstates\cleanup-case'
     [void](New-Item -ItemType Directory -Path $cleanupTarget -Force)
     Set-Content -LiteralPath (Join-Path $cleanupTarget 'stale.p2s') -Value 'stale'
     Set-Content -LiteralPath (Join-Path $states 'SLOP-NA228 (12345678).02.p2s') -Value 'new'

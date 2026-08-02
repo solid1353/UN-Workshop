@@ -69,7 +69,7 @@ try {
 
     & $scriptPath extract $shortcutName
     Assert-True -Condition (Test-Path (Join-Path $shortcutDirectory 'screenshots\shortcut.png')) `
-        -Message 'Subpath mode did not resolve below Workshop work/__sstates.'
+        -Message 'Subpath mode did not resolve below Workshop work/sstates.'
 
     $screenshots = Join-Path $stateDirectory 'screenshots'
     [void](New-Item -ItemType Directory -Path $screenshots)
