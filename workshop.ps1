@@ -4,7 +4,13 @@ param(
     [string]$Action,
 
     [Parameter(Position = 1, ValueFromRemainingArguments)]
-    [string[]]$Arguments
+    [string[]]$Arguments,
+
+    [string]$p,
+
+    [string]$r,
+
+    [string]$t
 )
 
 $ErrorActionPreference = 'Stop'
@@ -15,6 +21,43 @@ $scripts = $paths.Roots.pcsx2_scripts
 $normalizedCommand = if ([string]::IsNullOrWhiteSpace($Action)) {
     ''
 } else { $Action.ToLowerInvariant() }
+
+function Invoke-UnWorkshopGameLaunch {
+    param(
+        [string[]]$Games,
+        [string]$Play,
+        [string]$Record,
+        [string]$RegressionTest
+    )
+
+    $games = @($Games | Where-Object { -not [string]::IsNullOrEmpty($_) })
+    if ($games.Count -eq 0 -or $games.Count -gt 2) {
+        throw 'Workshop launch accepts one or two games.'
+    }
+    $selectedModes = @(
+        @($Play, $Record, $RegressionTest) |
+            Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+    )
+    if ($selectedModes.Count -gt 1) {
+        throw 'Use only one of -p, -r, or -t.'
+    }
+    if (-not [string]::IsNullOrWhiteSpace($RegressionTest) -and
+        $games.Count -ne 1) {
+        throw '-t requires exactly one game.'
+    }
+
+    $parameters = @{
+        Games = @($games)
+        ProjectRoot = $paths.Project
+    }
+    if (-not [string]::IsNullOrWhiteSpace($Play)) { $parameters.Play = $Play }
+    if (-not [string]::IsNullOrWhiteSpace($Record)) { $parameters.Record = $Record }
+    if (-not [string]::IsNullOrWhiteSpace($RegressionTest)) {
+        $parameters.Play = $RegressionTest
+        $parameters.Test = $true
+    }
+    & $paths.Files.pcsx2_game_launch_command @parameters
+}
 
 switch ($normalizedCommand) {
     { [string]::IsNullOrWhiteSpace($_) -or $_ -eq 'help' } {
@@ -70,11 +113,13 @@ switch ($normalizedCommand) {
         @(
             'UN Workshop'
             ''
-            '  workshop resolve [game] [property]  Resolve all games, one game, or one property.'
-            '  workshop pcsx2 [game] [game] [-play name|-record name]  Launch and tile up to two games.'
-            '  workshop input [profile]            Regenerate all profiles; optionally assign one.'
-            '  workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]  Move savestates; -c recycles the destination first.'
+            '  workshop [game] [game] [-p name|-r name]  Launch one or two games; -p replays all, -r records the rightmost.'
+            '  workshop <game> -t name              Replay one game and capture regression markers.'
+            '  workshop input [profile]             Regenerate all profiles; optionally assign one.'
+            '  workshop pcsx2                       Launch development PCSX2 without a game.'
+            '  workshop resolve [game] [property]   Resolve all games, one game, or one property.'
             '  workshop ss extract <subpath|folder-or-savestates...>  Extract embedded PNGs into screenshots/.'
+            '  workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]  Move savestates; -c recycles the destination first.'
             ''
             "  Sources: $($sourceSelectors -join ', ')"
             $(if ($buildSelectors.Count -gt 0) {
@@ -149,50 +194,15 @@ switch ($normalizedCommand) {
             $Arguments |
                 Where-Object { -not [string]::IsNullOrEmpty($_) }
         )
-        $games = [Collections.Generic.List[string]]::new()
-        $play = $null
-        $record = $null
-        for ($index = 0; $index -lt $argumentList.Count; $index++) {
-            $argument = [string]$argumentList[$index]
-            if ($argument -ieq '-play' -or $argument -ieq '-record') {
-                if ($index + 1 -ge $argumentList.Count) {
-                    throw "$argument requires a recording name."
-                }
-                if ($null -ne $play -or $null -ne $record) {
-                    throw 'Use only one of -play or -record.'
-                }
-                $index++
-                if ($argument -ieq '-play') {
-                    $play = [string]$argumentList[$index]
-                }
-                else {
-                    $record = [string]$argumentList[$index]
-                }
-            }
-            elseif ($argument.StartsWith('-')) {
-                throw "Unknown workshop pcsx2 option: $argument"
-            }
-            else {
-                $games.Add($argument)
-            }
+        $launchModes = @(
+            @($p, $r, $t) |
+                Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+        )
+        if ($argumentList.Count -gt 0 -or
+            $launchModes.Count -gt 0) {
+            throw 'workshop pcsx2 accepts no arguments.'
         }
-        if ($games.Count -gt 2) {
-            throw 'workshop pcsx2 accepts at most two games.'
-        }
-        if ($games.Count -eq 0) {
-            if ($null -ne $play -or $null -ne $record) {
-                throw '-play and -record require at least one game.'
-            }
-            & $paths.Files.pcsx2_launch_command
-            break
-        }
-        $parameters = @{
-            Games = @($games)
-            ProjectRoot = $paths.Project
-        }
-        if ($null -ne $play) { $parameters.Play = $play }
-        if ($null -ne $record) { $parameters.Record = $record }
-        & $paths.Files.pcsx2_game_launch_command @parameters
+        & $paths.Files.pcsx2_launch_command
     }
     'ss' {
         $argumentList = @($Arguments)
@@ -215,6 +225,14 @@ switch ($normalizedCommand) {
         & (Join-Path $scripts 'savestates.ps1') @forwardedArguments @parameters
     }
     default {
-        throw "Unknown Workshop command: $Action"
+        $games = @(
+            $Action
+            $Arguments | Where-Object { -not [string]::IsNullOrEmpty($_) }
+        )
+        Invoke-UnWorkshopGameLaunch `
+            -Games $games `
+            -Play $p `
+            -Record $r `
+            -RegressionTest $t
     }
 }
