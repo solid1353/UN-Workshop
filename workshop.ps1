@@ -212,6 +212,7 @@ switch ($normalizedCommand) {
                 (Join-Path $paths.Savestates 'regression') `
                 $positionalArguments[0]
             $parameters.Hidden = $true
+            $parameters.Wait = $true
         }
         & (Join-Path $scripts 'launch.ps1') @parameters
     }
