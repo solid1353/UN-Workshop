@@ -16,3 +16,7 @@ patch=1,EE,001ED884,word,00000000
 
 // [Simple display off]
 patch=1,EE,001ED89C,word,00000000
+
+// [Default save overwrite confirmation to Yes]
+// NUN5's occupied-slot save path stores choice 1 (No); the NA228 homolog stores 0 (Yes).
+patch=1,EE,001EB18C,word,AC400014
