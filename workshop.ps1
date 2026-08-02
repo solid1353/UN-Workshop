@@ -72,8 +72,7 @@ switch ($normalizedCommand) {
             ''
             '  workshop resolve [game] [property]  Resolve all games, one game, or one property.'
             '  workshop pcsx2 [game]               Launch development PCSX2, optionally with a game.'
-            '  workshop play <game> <input-recording>  Launch development PCSX2 and replay an input recording.'
-            '  workshop record <game> <input-recording>  Launch development PCSX2 and create a power-on recording.'
+            '  workshop rec <game> <recording-name> [-r]  Replay an input recording; -r creates a new recording.'
             '  workshop input [profile]            Regenerate all profiles; optionally assign one.'
             '  workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]  Move savestates; -c recycles the destination first.'
             '  workshop ss extract <subpath|folder-or-savestates...>  Extract embedded PNGs into screenshots/.'
@@ -163,35 +162,45 @@ switch ($normalizedCommand) {
         }
         & (Join-Path $scripts 'launch.ps1') @parameters
     }
-    'play' {
+    'rec' {
         $argumentList = @(
             $Arguments |
                 Where-Object { -not [string]::IsNullOrEmpty($_) }
         )
-        if ($argumentList.Count -ne 2) {
-            throw 'Usage: workshop play <game> <input-recording>'
-        }
-        $resolved = Resolve-UnWorkshopGame `
-            -Game $argumentList[0] `
-            -ProjectRoot $paths.Project
-        & (Join-Path $scripts 'launch.ps1') `
-            -IsoPath ([string]$resolved.iso) `
-            -InputRecording $argumentList[1]
-    }
-    'record' {
-        $argumentList = @(
-            $Arguments |
-                Where-Object { -not [string]::IsNullOrEmpty($_) }
+        $record = $false
+        $positionalArguments = @(
+            foreach ($argument in $argumentList) {
+                if ($argument -ieq '-r') {
+                    $record = $true
+                }
+                else {
+                    $argument
+                }
+            }
         )
-        if ($argumentList.Count -ne 2) {
-            throw 'Usage: workshop record <game> <input-recording>'
+        if ($positionalArguments.Count -ne 2) {
+            throw 'Usage: workshop rec <game> <recording-name> [-r]'
         }
         $resolved = Resolve-UnWorkshopGame `
-            -Game $argumentList[0] `
+            -Game $positionalArguments[0] `
             -ProjectRoot $paths.Project
-        & (Join-Path $scripts 'launch.ps1') `
-            -IsoPath ([string]$resolved.iso) `
-            -CreateInputRecording $argumentList[1]
+        $recordingName = [string]$positionalArguments[1]
+        if (-not $recordingName.EndsWith(
+            '.p2m2',
+            [StringComparison]::OrdinalIgnoreCase
+        )) {
+            $recordingName += '.p2m2'
+        }
+        $parameters = @{
+            IsoPath = [string]$resolved.iso
+        }
+        if ($record) {
+            $parameters.CreateInputRecording = $recordingName
+        }
+        else {
+            $parameters.InputRecording = $recordingName
+        }
+        & (Join-Path $scripts 'launch.ps1') @parameters
     }
     'ss' {
         $argumentList = @($Arguments)
