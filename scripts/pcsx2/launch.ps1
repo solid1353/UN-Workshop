@@ -102,7 +102,9 @@ function Get-VisibleProcessWindows {
 function Hide-WorkerProcessWindows {
     param(
         [Parameter(Mandatory)]
-        [Diagnostics.Process]$Process
+        [Diagnostics.Process]$Process,
+
+        [switch]$AllowCleanExit
     )
 
     Initialize-WorkerWindowApi
@@ -110,6 +112,9 @@ function Hide-WorkerProcessWindows {
     do {
         $Process.Refresh()
         if ($Process.HasExited) {
+            if ($AllowCleanExit -and $Process.ExitCode -eq 0) {
+                return
+            }
             throw "Worker PCSX2 exited during launch (exit $($Process.ExitCode))."
         }
 
@@ -328,7 +333,15 @@ if ($hidden) {
     $startArguments.PassThru = $true
     $process = Start-Process @startArguments
     try {
-        Hide-WorkerProcessWindows -Process $process
+        Hide-WorkerProcessWindows `
+            -Process $process `
+            -AllowCleanExit:(
+                $PSCmdlet.ParameterSetName -eq 'Configured' -and
+                -not [string]::IsNullOrWhiteSpace($InputRecording) -and
+                -not [string]::IsNullOrWhiteSpace(
+                    $InputRecordingCaptureDirectory
+                )
+            )
     }
     catch {
         if (-not $process.HasExited) {
