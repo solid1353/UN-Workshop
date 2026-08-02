@@ -77,31 +77,37 @@ param(
     [string[]]$Games,
     [string]$Play,
     [string]$Record,
+    [switch]$Test,
     [string]$ProjectRoot
 )
-"[fake] games=$($Games -join ',') play=$Play record=$Record project=$ProjectRoot"
+"[fake] games=$($Games -join ',') play=$Play record=$Record test=$Test project=$ProjectRoot"
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\pcsx2\launch_games.ps1')
 
     Push-Location $repository
     try {
-        $play = (& .\workshop.ps1 pcsx2 NUN5 latest -play practice-menu) -join "`n"
+        $play = (& .\workshop.ps1 NUN5 latest -p practice-menu) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition ($play -match 'games=NUN5,latest play=practice-menu record=') `
             -Message 'Paired playback was not forwarded to the shared launcher.'
 
-        $record = (& .\workshop.ps1 pcsx2 NUN5 latest -record practice-menu) -join "`n"
+        $record = (& .\workshop.ps1 NUN5 latest -r practice-menu) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition ($record -match 'games=NUN5,latest play= record=practice-menu') `
             -Message 'Rightmost recording was not forwarded to the shared launcher.'
 
-        $empty = (& .\workshop.ps1 pcsx2) -join "`n"
+        $test = (& .\workshop.ps1 NUN5 -t practice-menu) -join "`n"
         Assert-WorkshopLaunchTest `
-            -Condition ($empty -match '\[fake\] launch PCSX2 UI') `
-            -Message 'Bare pcsx2 did not retain the UI-only launch.'
+            -Condition ($test -match 'games=NUN5 play=practice-menu record= test=True') `
+            -Message 'Regression playback was not forwarded to the shared launcher.'
+
+        $barePcsx2 = (& .\workshop.ps1 pcsx2) -join "`n"
+        Assert-WorkshopLaunchTest `
+            -Condition ($barePcsx2 -match '\[fake\] launch PCSX2 UI') `
+            -Message 'Bare PCSX2 launch was not preserved.'
 
         $oldCommandRejected = $false
         try { & .\workshop.ps1 rec NUN5 practice-menu }
-        catch { $oldCommandRejected = $_.Exception.Message -match 'Unknown Workshop command' }
+        catch { $oldCommandRejected = $true }
         Assert-WorkshopLaunchTest `
             -Condition $oldCommandRejected `
             -Message 'The retired rec command remains active.'

@@ -7,6 +7,9 @@ param(
     [Parameter(ParameterSetName = 'Play')]
     [string]$Play,
 
+    [Parameter(ParameterSetName = 'Play')]
+    [switch]$Test,
+
     [Parameter(ParameterSetName = 'Record')]
     [string]$Record,
 
@@ -116,6 +119,29 @@ foreach ($requiredFile in $requiredFiles) {
     if (-not (Test-Path -LiteralPath $requiredFile -PathType Leaf)) {
         throw "Required file does not exist: $requiredFile"
     }
+}
+
+if ($Test) {
+    if ($selectedGames.Count -ne 1) {
+        throw '-Test requires exactly one game.'
+    }
+    $recordingStem = [IO.Path]::GetFileNameWithoutExtension($recordingName)
+    $captureDirectory = Join-Path `
+        (Join-Path $paths.Savestates $recordingStem) `
+        $selectedGames[0].Selector
+    $action = "replay $($selectedGames[0].Selector) and capture regression markers"
+    if (-not $PSCmdlet.ShouldProcess($captureDirectory, $action)) {
+        return
+    }
+    [void](New-Item -ItemType Directory -Path $captureDirectory -Force)
+    & $pcsx2Launcher `
+        -Target $Target `
+        -IsoPath $selectedGames[0].IsoPath `
+        -InputRecording $recordingName `
+        -InputRecordingCaptureDirectory $captureDirectory `
+        -Hidden `
+        -Wait
+    return
 }
 
 $pinePortBase = Get-UnWorkshopConfiguredPinePort -Pcsx2Root $pcsx2Root

@@ -10,23 +10,29 @@ memory cards, savestates, logs, and task artifacts.
 `workshop.ps1` is the single user-facing entrypoint.
 
 ```powershell
-workshop resolve [game] [property]
-workshop pcsx2 [game] [game] [-play <recording>|-record <recording>]
+workshop [game] [game] [-p <recording>|-r <recording>]
+workshop <game> -t <recording>
 workshop input [profile]
-workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]
+workshop pcsx2
+workshop resolve [game] [property]
 workshop ss extract <subpath|folder-or-savestates...>
+workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]
 ```
 
 - `workshop resolve` returns every available source game and, when invoked
   inside a configured project, every available project build. Supplying a game
   returns all of its resolved properties; supplying a property prints only that
   value, such as `workshop resolve NUN5 iso`.
-- `workshop pcsx2` launches development PCSX2. Supplying one or two games
-  launches their resolved ISOs and tiles them in argument order. `-play`
-  replays one shared input recording in every launched instance; `-record`
+- Supplying one or two games launches their resolved ISOs in development PCSX2
+  and tiles them in argument order. `-p`
+  replays one shared input recording in every launched instance; `-r`
   records only the last/rightmost instance. The `.p2m2` extension is added
   automatically when omitted. Each result reports the ordered game, process,
   PINE port, and window position.
+- `workshop <game> -t <recording>` replays one game hidden and captures every
+  recorded L3+R3 regression marker below
+  `work/sstates/<recording>/<game>/`. It waits for the replay to finish.
+- `workshop pcsx2` launches development PCSX2 without a game.
 - `workshop input` regenerates every complete PCSX2 input profile from the
   tracked base and partial overrides without changing GameSettings assignments.
 - `workshop input <profile>` also regenerates every complete profile, then
