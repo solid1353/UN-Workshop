@@ -23,7 +23,8 @@ workshop ss extract <folder-or-savestates...>
   value, such as `workshop resolve NUN5 iso`.
 - `workshop pcsx2` launches development PCSX2. Supplying a game launches its
   resolved ISO. An optional input-recording filename opens from the canonical
-  shared input-recordings directory; an absolute recording path is also accepted.
+  shared input-recordings directory. An absolute canonical recording path is
+  also accepted; the launcher passes only its filename to PCSX2.
 - `workshop input` regenerates every complete PCSX2 input profile from the
   tracked base and partial overrides without changing GameSettings assignments.
 - `workshop input <profile>` also regenerates every complete profile, then
