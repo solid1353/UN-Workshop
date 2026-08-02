@@ -29,7 +29,7 @@ workshop ss extract <folder-or-savestates...>
   tracked base and partial overrides without changing GameSettings assignments.
 - `workshop input <profile>` also regenerates every complete profile, then
   assigns the selected profile variants in every configured GameSettings file.
-  Every generated profile at the root of `pcsx2/__shared/input_profiles/` is
+  Every generated profile at the root of `pcsx2_shared/input_profiles/` is
   tracked by Git. Profile selectors are case-insensitive and ignore `_` or `-`, so
   `Test_Capture` selects canonical `TestCapture`.
 - Generation first merges all selected overrides by section, action, and input
@@ -54,9 +54,9 @@ a project catalog.
 - `settings/git-authors.tsv`: shared non-secret agent commit identities.
 - `settings/notifications.json`: shared notification mute state.
 - `icons/`: reusable source-game `simple` and `detailed` icons.
-- `pcsx2/__shared/`: public cheats, GameSettings, input-profile sources, and
+- `pcsx2_shared/`: public cheats, GameSettings, input-profile sources, and
   input recordings. BIOS files and memory cards are deliberately ignored.
-- `pcsx2/__shared/input_profiles/sources/overrides/`: named input-profile
+- `pcsx2_shared/input_profiles/sources/overrides/`: named input-profile
   overrides, with game-specific overrides under `games/`.
 - `scripts/pcsx2/`: reusable PCSX2 launch, worker-copy, PINE, input-profile,
   savestate, and disc-identity utilities.
