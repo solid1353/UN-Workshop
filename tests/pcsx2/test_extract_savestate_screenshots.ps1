@@ -9,9 +9,13 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 $sourceRepository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $scriptPath = Join-Path $sourceRepository 'scripts\pcsx2\savestates.ps1'
+. (Join-Path $sourceRepository 'scripts\lib\paths.ps1')
+$workshopPaths = Get-UnWorkshopPaths
 $testRoot = Join-Path ([IO.Path]::GetTempPath()) ("un-workshop-savestate-screenshots-" + [guid]::NewGuid())
 $stateDirectory = Join-Path $testRoot 'states'
 $otherDirectory = Join-Path $testRoot 'other'
+$shortcutName = "test-extract-" + [guid]::NewGuid()
+$shortcutDirectory = Join-Path $workshopPaths.Savestates $shortcutName
 $pngBytes = [byte[]](0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A)
 
 function New-TestSavestate {
@@ -54,13 +58,18 @@ function Assert-True {
 }
 
 try {
-    [void](New-Item -ItemType Directory -Path $stateDirectory, $otherDirectory)
+    [void](New-Item -ItemType Directory -Path $stateDirectory, $otherDirectory, $shortcutDirectory)
     $firstState = Join-Path $stateDirectory 'ss1.p2s'
     $secondState = Join-Path $stateDirectory 'ss2.p2s'
     $otherState = Join-Path $otherDirectory 'ss3.p2s'
     New-TestSavestate -LiteralPath $firstState
     New-TestSavestate -LiteralPath $secondState
     New-TestSavestate -LiteralPath $otherState
+    New-TestSavestate -LiteralPath (Join-Path $shortcutDirectory 'shortcut.p2s')
+
+    & $scriptPath extract $shortcutName
+    Assert-True -Condition (Test-Path (Join-Path $shortcutDirectory 'screenshots\shortcut.png')) `
+        -Message 'Subpath mode did not resolve below Workshop work/__sstates.'
 
     $screenshots = Join-Path $stateDirectory 'screenshots'
     [void](New-Item -ItemType Directory -Path $screenshots)
@@ -104,5 +113,8 @@ try {
 finally {
     if (Test-Path -LiteralPath $testRoot) {
         Remove-Item -LiteralPath $testRoot -Recurse -Force
+    }
+    if (Test-Path -LiteralPath $shortcutDirectory) {
+        Remove-Item -LiteralPath $shortcutDirectory -Recurse -Force
     }
 }

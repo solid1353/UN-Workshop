@@ -14,7 +14,7 @@ workshop resolve [game] [property]
 workshop pcsx2 [game] [input-recording]
 workshop input [profile]
 workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]
-workshop ss extract <folder-or-savestates...>
+workshop ss extract <subpath|folder-or-savestates...>
 ```
 
 - `workshop resolve` returns every available source game and, when invoked
@@ -40,8 +40,9 @@ workshop ss extract <folder-or-savestates...>
   below Workshop `work/__sstates/` for source games or the invoking project's
   `work/__sstates/` for project builds. `-Cleanup` first sends the existing
   selected destination directory to the Windows Recycle Bin.
-- `ss extract` extracts embedded screenshots beside one selected savestate
-  folder.
+- `ss extract <subpath>` resolves the subpath below Workshop
+  `work/__sstates/` and extracts embedded screenshots beside that savestate
+  folder. Explicit folder and savestate paths remain supported.
 
 When invoked inside a supported project, the command discovers that project's
 root build catalog automatically. Shared source games remain available without

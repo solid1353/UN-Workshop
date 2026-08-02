@@ -18,6 +18,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot '..\lib\paths.ps1')
 
 switch ($Command) {
     'move' {
@@ -47,6 +48,16 @@ switch ($Command) {
         if ($PSBoundParameters.ContainsKey('Target') -or $Cleanup -or $WhatIf) {
             throw '-Target, -Cleanup, and -WhatIf apply only to the move command.'
         }
-        & (Join-Path $PSScriptRoot 'extract_savestate_screenshots.ps1') @Arguments
+        $extractArguments = @($Arguments)
+        if (
+            $extractArguments.Count -eq 1 -and
+            -not (Test-Path -LiteralPath $extractArguments[0])
+        ) {
+            $paths = Get-UnWorkshopPaths -ProjectRoot $ProjectRoot
+            $extractArguments[0] = Join-Path `
+                -Path $paths.Savestates `
+                -ChildPath $extractArguments[0]
+        }
+        & (Join-Path $PSScriptRoot 'extract_savestate_screenshots.ps1') @extractArguments
     }
 }
