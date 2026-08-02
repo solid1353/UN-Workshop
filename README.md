@@ -12,6 +12,7 @@ memory cards, savestates, logs, and task artifacts.
 ```powershell
 workshop resolve [game] [property]
 workshop pcsx2 [game] [input-recording]
+workshop record <game> <input-recording>
 workshop input [profile]
 workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]
 workshop ss extract <subpath|folder-or-savestates...>
@@ -25,6 +26,9 @@ workshop ss extract <subpath|folder-or-savestates...>
   resolved ISO. An optional input-recording filename opens from the canonical
   shared input-recordings directory. An absolute canonical recording path is
   also accepted; the launcher passes only its filename to PCSX2.
+- `workshop record <game> <input-recording>` launches development PCSX2 with
+  the resolved game ISO and creates a power-on recording with that filename in
+  the canonical shared input-recordings directory.
 - `workshop input` regenerates every complete PCSX2 input profile from the
   tracked base and partial overrides without changing GameSettings assignments.
 - `workshop input <profile>` also regenerates every complete profile, then

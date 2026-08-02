@@ -72,6 +72,7 @@ switch ($normalizedCommand) {
             ''
             '  workshop resolve [game] [property]  Resolve all games, one game, or one property.'
             '  workshop pcsx2 [game] [input-recording]  Launch development PCSX2, optionally with a game and recording.'
+            '  workshop record <game> <input-recording>  Launch development PCSX2 and create a power-on recording.'
             '  workshop input [profile]            Regenerate all profiles; optionally assign one.'
             '  workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]  Move savestates; -c recycles the destination first.'
             '  workshop ss extract <subpath|folder-or-savestates...>  Extract embedded PNGs into screenshots/.'
@@ -163,6 +164,21 @@ switch ($normalizedCommand) {
             $parameters.InputRecording = $argumentList[1]
         }
         & (Join-Path $scripts 'launch.ps1') @parameters
+    }
+    'record' {
+        $argumentList = @(
+            $Arguments |
+                Where-Object { -not [string]::IsNullOrEmpty($_) }
+        )
+        if ($argumentList.Count -ne 2) {
+            throw 'Usage: workshop record <game> <input-recording>'
+        }
+        $resolved = Resolve-UnWorkshopGame `
+            -Game $argumentList[0] `
+            -ProjectRoot $paths.Project
+        & (Join-Path $scripts 'launch.ps1') `
+            -IsoPath ([string]$resolved.iso) `
+            -CreateInputRecording $argumentList[1]
     }
     'ss' {
         $argumentList = @($Arguments)

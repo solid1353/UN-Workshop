@@ -14,6 +14,9 @@ param(
     [Parameter(ParameterSetName = 'Configured')]
     [string]$InputRecording,
 
+    [Parameter(ParameterSetName = 'Configured')]
+    [string]$CreateInputRecording,
+
     [Parameter(ValueFromRemainingArguments)]
     [string[]]$Arguments,
 
@@ -221,6 +224,15 @@ if (-not [string]::IsNullOrWhiteSpace($InputRecording)) {
     )
 }
 
+if (-not [string]::IsNullOrWhiteSpace($CreateInputRecording)) {
+    if (
+        [IO.Path]::IsPathRooted($CreateInputRecording) -or
+        [IO.Path]::GetFileName($CreateInputRecording) -cne $CreateInputRecording
+    ) {
+        throw 'New input recording must be a filename.'
+    }
+}
+
 if ($IsoPath -and -not (
     Test-Path -LiteralPath $resolvedIso -PathType Leaf
 )) {
@@ -253,6 +265,12 @@ if (-not [string]::IsNullOrWhiteSpace($InputRecording)) {
     $launchArguments += @(
         '-input-recording',
         "`"$inputRecordingFileName`""
+    )
+}
+if (-not [string]::IsNullOrWhiteSpace($CreateInputRecording)) {
+    $launchArguments += @(
+        '-input-recording-create',
+        "`"$CreateInputRecording`""
     )
 }
 if ($Arguments) {
