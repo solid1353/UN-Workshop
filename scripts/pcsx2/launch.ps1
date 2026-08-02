@@ -225,7 +225,19 @@ if (-not [string]::IsNullOrWhiteSpace($InputRecording)) {
     )) {
         throw "Input recording does not exist: $resolvedInputRecording"
     }
-    $inputRecordingFileName = [IO.Path]::GetFileName(
+    $inputRecordingRoot = [IO.Path]::GetFullPath($paths.InputRecordings)
+    $inputRecordingPrefix = $inputRecordingRoot.TrimEnd(
+        [IO.Path]::DirectorySeparatorChar,
+        [IO.Path]::AltDirectorySeparatorChar
+    ) + [IO.Path]::DirectorySeparatorChar
+    if (-not $resolvedInputRecording.StartsWith(
+        $inputRecordingPrefix,
+        [StringComparison]::OrdinalIgnoreCase
+    )) {
+        throw "Input recording must be inside $inputRecordingRoot."
+    }
+    $inputRecordingRelativePath = [IO.Path]::GetRelativePath(
+        $inputRecordingRoot,
         $resolvedInputRecording
     )
 }
@@ -269,7 +281,9 @@ if ($hidden) {
 }
 if (
     $PSCmdlet.ParameterSetName -eq 'Configured' -and
-    $Target -eq 'dev'
+    $Target -eq 'dev' -and
+    [string]::IsNullOrWhiteSpace($InputRecording) -and
+    [string]::IsNullOrWhiteSpace($CreateInputRecording)
 ) {
     $launchArguments += '-unlimited'
 }
@@ -279,7 +293,7 @@ if ($IsoPath) {
 if (-not [string]::IsNullOrWhiteSpace($InputRecording)) {
     $launchArguments += @(
         '-input-recording',
-        "`"$inputRecordingFileName`""
+        "`"$inputRecordingRelativePath`""
     )
 }
 if (-not [string]::IsNullOrWhiteSpace($InputRecordingCaptureDirectory)) {
