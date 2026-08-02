@@ -213,96 +213,81 @@ if (-not (Test-Path -LiteralPath $destinationFull -PathType Container)) {
     }
 }
 
-$reservedTargets = [Collections.Generic.HashSet[string]]::new(
-    [StringComparer]::OrdinalIgnoreCase
+$maximumSlot = [long]-1
+$slotWidth = 2
+$existingStates = @(
+    if (Test-Path -LiteralPath $destinationFull -PathType Container) {
+        Get-ChildItem `
+            -LiteralPath $destinationFull `
+            -File `
+            -Filter '*.p2s' `
+            -ErrorAction Stop
+    }
 )
+foreach ($existingState in $existingStates) {
+    $match = [regex]::Match(
+        $existingState.Name,
+        '\.(?<slot>\d+)\.p2s$',
+        [Text.RegularExpressions.RegexOptions]::IgnoreCase
+    )
+    if (-not $match.Success) { continue }
 
-$slotGroups = @(
+    $slotText = $match.Groups['slot'].Value
+    try {
+        [long]$slot = $slotText
+    }
+    catch { continue }
+
+    if ($slot -gt $maximumSlot) { $maximumSlot = $slot }
+    $slotWidth = [Math]::Max($slotWidth, $slotText.Length)
+}
+
+if ($maximumSlot -eq [long]::MaxValue) {
+    throw 'Could not allocate another savestate number.'
+}
+
+[long]$nextSlot = $maximumSlot + 1
+$orderedStates = @(
     $parsedStates |
-    Group-Object -Property Slot |
-    Sort-Object {
-        [long]$_.Name
-    }
+    Sort-Object -Property Slot, @{ Expression = { $_.File.Name } }
 )
+if (
+    $orderedStates.Count -gt 0 -and
+    $nextSlot -gt ([long]::MaxValue - ($orderedStates.Count - 1))
+) {
+    throw 'Could not allocate enough consecutive savestate numbers.'
+}
 
-foreach ($slotGroup in $slotGroups) {
-    [long]$candidateSlot = [long]$slotGroup.Name
+for ($stateIndex = 0; $stateIndex -lt $orderedStates.Count; $stateIndex++) {
+    $state = $orderedStates[$stateIndex]
+    $slotWidth = [Math]::Max($slotWidth, $state.Width)
+    $slotFormat = 'D{0}' -f $slotWidth
+    $nextSlotText = $nextSlot.ToString(
+        $slotFormat,
+        [Globalization.CultureInfo]::InvariantCulture
+    )
+    $targetName = '{0}.{1}.p2s' -f $state.Stem, $nextSlotText
+    $targetPath = Join-Path -Path $destinationFull -ChildPath $targetName
+    $sourcePath = $state.File.FullName
 
-    do {
-        $plans = @(
-            foreach ($state in $slotGroup.Group) {
-                $slotFormat = 'D{0}' -f $state.Width
-                $candidateSlotText = $candidateSlot.ToString(
-                    $slotFormat,
-                    [Globalization.CultureInfo]::InvariantCulture
-                )
-                $targetName = '{0}.{1}.p2s' -f (
-                    $state.Stem,
-                    $candidateSlotText
-                )
-                $targetPath = Join-Path `
-                    -Path $destinationFull `
-                    -ChildPath $targetName
+    if ($PSCmdlet.ShouldProcess($targetPath, "Move '$sourcePath'")) {
+        Move-Item `
+            -LiteralPath $sourcePath `
+            -Destination $targetPath `
+            -ErrorAction Stop
 
-                [pscustomobject]@{
-                    State             = $state
-                    CandidateSlot     = $candidateSlot
-                    CandidateSlotText = $candidateSlotText
-                    TargetName        = $targetName
-                    TargetPath        = $targetPath
-                }
-            }
-        )
-
-        $hasConflict = $false
-
-        foreach ($plan in $plans) {
-            if (
-                (Test-Path -LiteralPath $plan.TargetPath) -or
-                $reservedTargets.Contains($plan.TargetPath)
-            ) {
-                $hasConflict = $true
-                break
-            }
-        }
-
-        if ($hasConflict) {
-            if ($candidateSlot -gt ([long]::MaxValue - 10)) {
-                throw "Could not allocate another slot for source slot $($slotGroup.Name)."
-            }
-
-            $candidateSlot += 10
+        [pscustomobject]@{
+            Game               = $canonicalGame
+            Target             = $Target
+            Source             = $state.File.Name
+            Destination        = $targetName
+            OriginalSlot       = $state.OriginalSlotText
+            NewSlot            = $nextSlotText
+            RenamedForConflict = ($nextSlot -ne $state.Slot)
         }
     }
-    while ($hasConflict)
 
-    foreach ($plan in $plans) {
-        [void]$reservedTargets.Add($plan.TargetPath)
-    }
-
-    foreach ($plan in $plans) {
-        $sourcePath = $plan.State.File.FullName
-
-        if ($PSCmdlet.ShouldProcess(
-            $plan.TargetPath,
-            "Move '$sourcePath'"
-        )) {
-            Move-Item `
-                -LiteralPath $sourcePath `
-                -Destination $plan.TargetPath `
-                -ErrorAction Stop
-
-            [pscustomobject]@{
-                Game               = $canonicalGame
-                Target             = $Target
-                Source             = $plan.State.File.Name
-                Destination        = $plan.TargetName
-                OriginalSlot       = $plan.State.OriginalSlotText
-                NewSlot            = $plan.CandidateSlotText
-                RenamedForConflict = (
-                    $plan.CandidateSlot -ne $plan.State.Slot
-                )
-            }
-        }
+    if ($stateIndex -lt ($orderedStates.Count - 1)) {
+        $nextSlot++
     }
 }
