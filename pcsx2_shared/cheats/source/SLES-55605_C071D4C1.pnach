@@ -16,3 +16,7 @@ patch=1,EE,001ED884,word,00000000
 
 // [Simple display off]
 patch=1,EE,001ED89C,word,00000000
+
+// [Save overwrite prompt selects Yes by default]
+// The dialog constructor stores the highlighted choice at +0x10; index 1 is Yes.
+patch=1,EE,001EB5E8,word,24020001
