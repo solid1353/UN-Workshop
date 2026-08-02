@@ -71,8 +71,7 @@ switch ($normalizedCommand) {
             'UN Workshop'
             ''
             '  workshop resolve [game] [property]  Resolve all games, one game, or one property.'
-            '  workshop pcsx2 [game]               Launch development PCSX2, optionally with a game.'
-            '  workshop rec <game> <recording-name> [-r|-t]  Replay; -r records, -t captures regression markers.'
+            '  workshop pcsx2 [game] [game] [-play name|-record name]  Launch and tile up to two games.'
             '  workshop input [profile]            Regenerate all profiles; optionally assign one.'
             '  workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]  Move savestates; -c recycles the destination first.'
             '  workshop ss extract <subpath|folder-or-savestates...>  Extract embedded PNGs into screenshots/.'
@@ -150,77 +149,50 @@ switch ($normalizedCommand) {
             $Arguments |
                 Where-Object { -not [string]::IsNullOrEmpty($_) }
         )
-        if ($argumentList.Count -gt 1) {
-            throw 'Usage: workshop pcsx2 [game]'
-        }
-        $parameters = @{}
-        if ($argumentList.Count -eq 1) {
-            $resolved = Resolve-UnWorkshopGame `
-                -Game $argumentList[0] `
-                -ProjectRoot $paths.Project
-            $parameters.IsoPath = [string]$resolved.iso
-        }
-        & (Join-Path $scripts 'launch.ps1') @parameters
-    }
-    'rec' {
-        $argumentList = @(
-            $Arguments |
-                Where-Object { -not [string]::IsNullOrEmpty($_) }
-        )
-        $record = $false
-        $regressionTest = $false
-        $positionalArguments = @(
-            foreach ($argument in $argumentList) {
-                if ($argument -ieq '-r') {
-                    $record = $true
+        $games = [Collections.Generic.List[string]]::new()
+        $play = $null
+        $record = $null
+        for ($index = 0; $index -lt $argumentList.Count; $index++) {
+            $argument = [string]$argumentList[$index]
+            if ($argument -ieq '-play' -or $argument -ieq '-record') {
+                if ($index + 1 -ge $argumentList.Count) {
+                    throw "$argument requires a recording name."
                 }
-                elseif ($argument -ieq '-t') {
-                    $regressionTest = $true
+                if ($null -ne $play -or $null -ne $record) {
+                    throw 'Use only one of -play or -record.'
+                }
+                $index++
+                if ($argument -ieq '-play') {
+                    $play = [string]$argumentList[$index]
                 }
                 else {
-                    $argument
+                    $record = [string]$argumentList[$index]
                 }
             }
-        )
-        if (
-            $positionalArguments.Count -ne 2 -or
-            ($record -and $regressionTest)
-        ) {
-            throw 'Usage: workshop rec <game> <recording-name> [-r|-t]'
+            elseif ($argument.StartsWith('-')) {
+                throw "Unknown workshop pcsx2 option: $argument"
+            }
+            else {
+                $games.Add($argument)
+            }
         }
-        $resolved = Resolve-UnWorkshopGame `
-            -Game $positionalArguments[0] `
-            -ProjectRoot $paths.Project
-        $recordingName = [string]$positionalArguments[1]
-        if (-not $recordingName.EndsWith(
-            '.p2m2',
-            [StringComparison]::OrdinalIgnoreCase
-        )) {
-            $recordingName += '.p2m2'
+        if ($games.Count -gt 2) {
+            throw 'workshop pcsx2 accepts at most two games.'
+        }
+        if ($games.Count -eq 0) {
+            if ($null -ne $play -or $null -ne $record) {
+                throw '-play and -record require at least one game.'
+            }
+            & $paths.Files.pcsx2_launch_command
+            break
         }
         $parameters = @{
-            IsoPath = [string]$resolved.iso
+            Games = @($games)
+            ProjectRoot = $paths.Project
         }
-        if ($record) {
-            $parameters.CreateInputRecording = $recordingName
-        }
-        else {
-            $parameters.InputRecording = $recordingName
-        }
-        if ($regressionTest) {
-            $recordingStem = [IO.Path]::GetFileNameWithoutExtension($recordingName)
-            $buildName = ([string]$positionalArguments[0]).ToLowerInvariant()
-            $parameters.InputRecordingCaptureDirectory = Join-Path `
-                (Join-Path $paths.Savestates $recordingStem) `
-                $buildName
-            [void](New-Item `
-                -ItemType Directory `
-                -Path $parameters.InputRecordingCaptureDirectory `
-                -Force)
-            $parameters.Hidden = $true
-            $parameters.Wait = $true
-        }
-        & (Join-Path $scripts 'launch.ps1') @parameters
+        if ($null -ne $play) { $parameters.Play = $play }
+        if ($null -ne $record) { $parameters.Record = $record }
+        & $paths.Files.pcsx2_game_launch_command @parameters
     }
     'ss' {
         $argumentList = @($Arguments)
