@@ -216,6 +216,9 @@ if (-not [string]::IsNullOrWhiteSpace($InputRecording)) {
     )) {
         throw "Input recording does not exist: $resolvedInputRecording"
     }
+    $inputRecordingFileName = [IO.Path]::GetFileName(
+        $resolvedInputRecording
+    )
 }
 
 if ($IsoPath -and -not (
@@ -249,7 +252,7 @@ if ($IsoPath) {
 if (-not [string]::IsNullOrWhiteSpace($InputRecording)) {
     $launchArguments += @(
         '-input-recording',
-        "`"$resolvedInputRecording`""
+        "`"$inputRecordingFileName`""
     )
 }
 if ($Arguments) {
