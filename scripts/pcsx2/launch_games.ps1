@@ -127,6 +127,61 @@ function Wait-UnWorkshopPcsx2Window {
     throw "PCSX2 did not create a window for $Game within $TimeoutSeconds seconds."
 }
 
+function Wait-UnWorkshopPcsx2Vm {
+    param(
+        [Parameter(Mandatory)]
+        [Diagnostics.Process]$Process,
+
+        [Parameter(Mandatory)]
+        [string]$Game,
+
+        [Parameter(Mandatory)]
+        [int]$PinePort,
+
+        [Parameter(Mandatory)]
+        [int]$TimeoutSeconds
+    )
+
+    $deadline = [DateTime]::UtcNow.AddSeconds($TimeoutSeconds)
+    while ([DateTime]::UtcNow -lt $deadline) {
+        $Process.Refresh()
+        if ($Process.HasExited) {
+            throw "PCSX2 process $($Process.Id) for $Game exited before its VM started."
+        }
+
+        $client = $null
+        try {
+            $client = [Net.Sockets.TcpClient]::new()
+            $client.ReceiveTimeout = 500
+            $client.SendTimeout = 500
+            $client.Connect('127.0.0.1', $PinePort)
+            $stream = $client.GetStream()
+            $writer = [IO.BinaryWriter]::new($stream)
+            $reader = [IO.BinaryReader]::new($stream)
+            $writer.Write([uint32]5)
+            $writer.Write([byte]0x0F)
+            $writer.Flush()
+
+            $replySize = $reader.ReadUInt32()
+            $result = $reader.ReadByte()
+            $vmStatus = $reader.ReadUInt32()
+            if ($replySize -eq 9 -and $result -eq 0 -and $vmStatus -ne 2) {
+                return
+            }
+        }
+        catch {
+            # PINE is unavailable until PCSX2 has initialized the VM.
+        }
+        finally {
+            if ($null -ne $client) {
+                $client.Dispose()
+            }
+        }
+        Start-Sleep -Milliseconds 100
+    }
+    throw "PCSX2 VM for $Game did not start within $TimeoutSeconds seconds."
+}
+
 $recordingName = if ($PSCmdlet.ParameterSetName -eq 'Play') {
     Resolve-UnWorkshopRecordingName -Name $Play
 }
@@ -313,6 +368,14 @@ try {
             -Process $process `
             -Game $game.Selector `
             -TimeoutSeconds $WindowWaitSeconds
+        if ($selectedGames.Count -eq 2 -and $index -eq 0) {
+            Wait-UnWorkshopPcsx2Vm `
+                -Process $process `
+                -Game $game.Selector `
+                -PinePort $pinePort `
+                -TimeoutSeconds $WindowWaitSeconds
+            Start-Sleep -Seconds 2
+        }
     }
 
     $gameCount = $launchedGames.Count
