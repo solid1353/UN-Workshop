@@ -12,6 +12,7 @@ $workerPcsx2 = Join-Path $workerRootFull 'pcsx2'
 $workerName = Split-Path $workerRootFull -Leaf
 $template = [IO.Path]::GetFullPath($paths.Pcsx2Clean)
 $sharedBios = [IO.Path]::GetFullPath($paths.Bios)
+$defaultMemoryCard = Join-Path ([IO.Path]::GetFullPath($paths.MemoryCards)) 'Default.ps2'
 if (-not (Test-Path -LiteralPath $template -PathType Container)) {
     throw "Worker PCSX2 template does not exist: $template"
 }
@@ -20,6 +21,9 @@ if (-not (Test-Path -LiteralPath $sharedBios -PathType Container)) {
 }
 if (@(Get-ChildItem -LiteralPath $sharedBios -File -Filter '*.bin').Count -eq 0) {
     throw "Shared PCSX2 BIOS directory contains no BIOS image: $sharedBios"
+}
+if (-not (Test-Path -LiteralPath $defaultMemoryCard -PathType Leaf)) {
+    throw "Default PCSX2 memory card does not exist: $defaultMemoryCard"
 }
 if (Test-Path -LiteralPath $workerPcsx2) {
     throw (
@@ -43,6 +47,16 @@ Get-ChildItem -LiteralPath $sharedBios -Force | Copy-Item `
     -Destination $workerBios `
     -Recurse `
     -Force
+$workerMemoryCards = Join-Path $workerPcsx2 'memcards'
+New-Item -ItemType Directory -Force -Path $workerMemoryCards | Out-Null
+Copy-Item -LiteralPath $defaultMemoryCard -Destination $workerMemoryCards -Force
+$workerIni = Join-Path $workerPcsx2 'inis\PCSX2.ini'
+$workerIniText = Get-Content -Raw -LiteralPath $workerIni
+$workerIniText = $workerIniText -replace `
+    '(?m)^Slot1_Filename\s*=.*$', `
+    'Slot1_Filename = Default.ps2'
+Set-Content -LiteralPath $workerIni -Value $workerIniText -NoNewline
 
 Write-Host "[pcsx2] Worker runtime created: $workerPcsx2"
 Write-Host "[pcsx2] BIOS copied from: $sharedBios"
+Write-Host "[pcsx2] Default memory card copied from: $defaultMemoryCard"
