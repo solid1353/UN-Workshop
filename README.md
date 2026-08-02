@@ -29,8 +29,10 @@ workshop ss extract <subpath|folder-or-savestates...>
   and records a new power-on recording instead. Adding `-t` runs the replay
   hidden, muted, and at unlimited speed, capturing every recorded L3+R3 marker
   as a sequential savestate under `work/__sstates/regression/<game>/` and a
-  screenshot under its `screenshots/` subfolder. The `.p2m2` extension is
-  added automatically when omitted.
+  screenshot under its `screenshots/` subfolder. Each PNG is the exact standard
+  640x480 screenshot embedded in its matching savestate. PCSX2 exits when the
+  regression replay finishes. The `.p2m2` extension is added automatically
+  when omitted.
 - `workshop input` regenerates every complete PCSX2 input profile from the
   tracked base and partial overrides without changing GameSettings assignments.
 - `workshop input <profile>` also regenerates every complete profile, then
