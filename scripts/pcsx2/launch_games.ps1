@@ -101,6 +101,32 @@ function Get-UnWorkshopUserPcsx2Processes {
     }
 }
 
+function Wait-UnWorkshopPcsx2Window {
+    param(
+        [Parameter(Mandatory)]
+        [Diagnostics.Process]$Process,
+
+        [Parameter(Mandatory)]
+        [string]$Game,
+
+        [Parameter(Mandatory)]
+        [int]$TimeoutSeconds
+    )
+
+    $deadline = [DateTime]::UtcNow.AddSeconds($TimeoutSeconds)
+    while ([DateTime]::UtcNow -lt $deadline) {
+        $Process.Refresh()
+        if ($Process.HasExited) {
+            throw "PCSX2 process $($Process.Id) for $Game exited before creating a window."
+        }
+        if ($Process.MainWindowHandle -ne [IntPtr]::Zero) {
+            return
+        }
+        Start-Sleep -Milliseconds 100
+    }
+    throw "PCSX2 did not create a window for $Game within $TimeoutSeconds seconds."
+}
+
 $recordingName = if ($PSCmdlet.ParameterSetName -eq 'Play') {
     Resolve-UnWorkshopRecordingName -Name $Play
 }
@@ -229,8 +255,13 @@ if ($selectedGames.Count -eq 2) {
             $targetDescription,
             'close before the two-game launch'
         )) {
-            Stop-Process -Id $process.Id -Force
-            Wait-Process -Id $process.Id -ErrorAction SilentlyContinue
+            if (-not $process.HasExited) {
+                [void]$process.CloseMainWindow()
+                if (-not $process.WaitForExit(5000)) {
+                    Stop-Process -Id $process.Id -Force
+                    Wait-Process -Id $process.Id -ErrorAction SilentlyContinue
+                }
+            }
         }
     }
 }
@@ -278,33 +309,10 @@ try {
             Process = $process
             PinePort = $pinePort
         })
-    }
-
-    $deadline = [DateTime]::UtcNow.AddSeconds($WindowWaitSeconds)
-    while ([DateTime]::UtcNow -lt $deadline) {
-        foreach ($launch in $launchedGames) {
-            $launch.Process.Refresh()
-            if ($launch.Process.HasExited) {
-                throw "PCSX2 process $($launch.Process.Id) for $($launch.Game) exited before creating a window."
-            }
-        }
-
-        $missingWindows = @(
-            $launchedGames |
-                Where-Object { $_.Process.MainWindowHandle -eq [IntPtr]::Zero }
-        )
-        if ($missingWindows.Count -eq 0) {
-            break
-        }
-        Start-Sleep -Milliseconds 100
-    }
-
-    $missingWindows = @(
-        $launchedGames |
-            Where-Object { $_.Process.MainWindowHandle -eq [IntPtr]::Zero }
-    )
-    if ($missingWindows.Count -gt 0) {
-        throw "PCSX2 did not create every window within $WindowWaitSeconds seconds: $($missingWindows.Game -join ', ')."
+        Wait-UnWorkshopPcsx2Window `
+            -Process $process `
+            -Game $game.Selector `
+            -TimeoutSeconds $WindowWaitSeconds
     }
 
     $gameCount = $launchedGames.Count
