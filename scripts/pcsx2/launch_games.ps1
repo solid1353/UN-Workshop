@@ -194,13 +194,22 @@ if ($Test) {
         return
     }
     [void](New-Item -ItemType Directory -Path $captureDirectory -Force)
-    & $pcsx2Launcher `
+    $process = & $pcsx2Launcher `
         -Target $Target `
         -IsoPath $selectedGames[0].IsoPath `
         -InputRecording $recordingName `
         -InputRecordingCaptureDirectory $captureDirectory `
         -Hidden `
-        -Wait
+        -PassThru
+    try {
+        Wait-Process -Id $process.Id
+    }
+    finally {
+        if (-not $process.HasExited) {
+            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+            Wait-Process -Id $process.Id -ErrorAction SilentlyContinue
+        }
+    }
     return
 }
 
