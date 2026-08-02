@@ -71,7 +71,8 @@ switch ($normalizedCommand) {
             'UN Workshop'
             ''
             '  workshop resolve [game] [property]  Resolve all games, one game, or one property.'
-            '  workshop pcsx2 [game] [input-recording]  Launch development PCSX2, optionally with a game and recording.'
+            '  workshop pcsx2 [game]               Launch development PCSX2, optionally with a game.'
+            '  workshop play <game> <input-recording>  Launch development PCSX2 and replay an input recording.'
             '  workshop record <game> <input-recording>  Launch development PCSX2 and create a power-on recording.'
             '  workshop input [profile]            Regenerate all profiles; optionally assign one.'
             '  workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]  Move savestates; -c recycles the destination first.'
@@ -150,20 +151,32 @@ switch ($normalizedCommand) {
             $Arguments |
                 Where-Object { -not [string]::IsNullOrEmpty($_) }
         )
-        if ($argumentList.Count -gt 2) {
-            throw 'Usage: workshop pcsx2 [game] [input-recording]'
+        if ($argumentList.Count -gt 1) {
+            throw 'Usage: workshop pcsx2 [game]'
         }
         $parameters = @{}
-        if ($argumentList.Count -ge 1) {
+        if ($argumentList.Count -eq 1) {
             $resolved = Resolve-UnWorkshopGame `
                 -Game $argumentList[0] `
                 -ProjectRoot $paths.Project
             $parameters.IsoPath = [string]$resolved.iso
         }
-        if ($argumentList.Count -eq 2) {
-            $parameters.InputRecording = $argumentList[1]
-        }
         & (Join-Path $scripts 'launch.ps1') @parameters
+    }
+    'play' {
+        $argumentList = @(
+            $Arguments |
+                Where-Object { -not [string]::IsNullOrEmpty($_) }
+        )
+        if ($argumentList.Count -ne 2) {
+            throw 'Usage: workshop play <game> <input-recording>'
+        }
+        $resolved = Resolve-UnWorkshopGame `
+            -Game $argumentList[0] `
+            -ProjectRoot $paths.Project
+        & (Join-Path $scripts 'launch.ps1') `
+            -IsoPath ([string]$resolved.iso) `
+            -InputRecording $argumentList[1]
     }
     'record' {
         $argumentList = @(
