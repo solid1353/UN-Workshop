@@ -10,6 +10,9 @@ param(
     [Parameter(ParameterSetName = 'Play')]
     [switch]$Test,
 
+    [Parameter(ParameterSetName = 'Play')]
+    [string]$CaptureDirectory,
+
     [Parameter(ParameterSetName = 'Record')]
     [string]$Record,
 
@@ -180,15 +183,18 @@ if ($Test) {
     if ($selectedGames.Count -ne 1) {
         throw '-Test requires exactly one game.'
     }
-    $recordingStem = [IO.Path]::GetFileNameWithoutExtension($recordingName)
-    $captureRepositoryRoot = if ($paths.Project) {
-        $paths.Project
-    } else {
-        $paths.Workshop
+    $captureDirectory = if (-not [string]::IsNullOrWhiteSpace($CaptureDirectory)) {
+        [IO.Path]::GetFullPath($CaptureDirectory)
     }
-    $captureDirectory = Join-Path $captureRepositoryRoot 'work\captures'
-    $captureDirectory = Join-Path $captureDirectory $recordingStem
-    $captureDirectory = Join-Path $captureDirectory $selectedGames[0].Selector
+    else {
+        $recordingStem = [IO.Path]::GetFileNameWithoutExtension($recordingName)
+        $captureRepositoryRoot = if ($paths.Project) {
+            $paths.Project
+        } else {
+            $paths.Workshop
+        }
+        Join-Path $captureRepositoryRoot "work\captures\$recordingStem\$($selectedGames[0].Selector)"
+    }
     $action = "replay $($selectedGames[0].Selector) and capture regression markers"
     if (-not $PSCmdlet.ShouldProcess($captureDirectory, $action)) {
         return

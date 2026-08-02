@@ -16,7 +16,7 @@ workshop input [profile]
 workshop pcsx2
 workshop resolve [game] [property]
 workshop ss extract <subpath|folder-or-savestates...>
-workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]
+workshop ss move <game> <subpath> [-t dev|stable] [-c]
 ```
 
 - `workshop resolve` returns every available source game and, when invoked
@@ -29,9 +29,10 @@ workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]
   records only the last/rightmost instance. The `.p2m2` extension is added
   automatically when omitted. Each result reports the ordered game, process,
   PINE port, and window position.
-- `workshop <game> -t <recording>` replays one game hidden and captures every
-  recorded L3+R3 regression marker below
-  `work/sstates/<recording>/<game>/`. It waits for the replay to finish.
+- `workshop <game> -t <recording> [-o <path>]` replays one game hidden and
+  captures every recorded L3+R3 regression marker. `-o` writes directly
+  to the requested directory; without it, captures go below
+  `work/captures/<recording>/<game>/`. It waits for the replay to finish.
 - `workshop pcsx2` launches development PCSX2 without a game.
 - `workshop input` regenerates every complete PCSX2 input profile from the
   tracked base and partial overrides without changing GameSettings assignments.
@@ -47,7 +48,7 @@ workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]
   effective override may still deliberately share one binding.
 - `ss move` files matching savestates from the selected user PCSX2 installation
   below Workshop `work/sstates/` for source games or the invoking project's
-  `work/sstates/` for project builds. `-Cleanup` first sends the existing
+  `work/sstates/` for project builds. `-c` first sends the existing
   selected destination directory to the Windows Recycle Bin. Incoming states
   continue sequentially after the highest existing number in that directory.
 - `ss extract <subpath>` resolves the subpath below Workshop

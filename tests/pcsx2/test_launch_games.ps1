@@ -78,9 +78,10 @@ param(
     [string]$Play,
     [string]$Record,
     [switch]$Test,
+    [string]$CaptureDirectory,
     [string]$ProjectRoot
 )
-"[fake] games=$($Games -join ',') play=$Play record=$Record test=$Test project=$ProjectRoot"
+"[fake] games=$($Games -join ',') play=$Play record=$Record test=$Test capture=$CaptureDirectory project=$ProjectRoot"
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\pcsx2\launch_games.ps1')
 
     Push-Location $repository
@@ -99,6 +100,21 @@ param(
         Assert-WorkshopLaunchTest `
             -Condition ($test -match 'games=NUN5 play=practice-menu record= test=True') `
             -Message 'Regression playback was not forwarded to the shared launcher.'
+
+        $capturePath = Join-Path $repository 'direct-capture'
+        $directCapture = (
+            & .\workshop.ps1 NUN5 -t practice-menu -o $capturePath
+        ) -join "`n"
+        Assert-WorkshopLaunchTest `
+            -Condition ($directCapture -match ('capture=' + [regex]::Escape($capturePath))) `
+            -Message 'Explicit regression capture output was not forwarded to the shared launcher.'
+
+        $outputWithoutTestRejected = $false
+        try { & .\workshop.ps1 NUN5 -o $capturePath }
+        catch { $outputWithoutTestRejected = $_.Exception.Message -match 'valid only with -t' }
+        Assert-WorkshopLaunchTest `
+            -Condition $outputWithoutTestRejected `
+            -Message 'Explicit capture output was accepted without regression replay.'
 
         $barePcsx2 = (& .\workshop.ps1 pcsx2) -join "`n"
         Assert-WorkshopLaunchTest `
