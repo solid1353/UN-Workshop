@@ -209,9 +209,14 @@ switch ($normalizedCommand) {
         }
         if ($regressionTest) {
             $recordingStem = [IO.Path]::GetFileNameWithoutExtension($recordingName)
+            $buildName = ([string]$positionalArguments[0]).ToLowerInvariant()
             $parameters.InputRecordingCaptureDirectory = Join-Path `
-                (Join-Path $paths.Savestates 'regression') `
-                $recordingStem
+                (Join-Path $paths.Savestates $recordingStem) `
+                $buildName
+            [void](New-Item `
+                -ItemType Directory `
+                -Path $parameters.InputRecordingCaptureDirectory `
+                -Force)
             $parameters.Hidden = $true
             $parameters.Wait = $true
         }
