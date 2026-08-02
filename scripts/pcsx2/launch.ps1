@@ -22,7 +22,10 @@ param(
 
     [switch]$Wait,
 
-    [switch]$PassThru
+    [switch]$PassThru,
+
+    [Parameter(ParameterSetName = 'Configured')]
+    [switch]$Hidden
 )
 
 $ErrorActionPreference = 'Stop'
@@ -202,7 +205,7 @@ else {
             $paths.Pcsx2Dev
         )
     }
-    $hidden = $false
+    $hidden = $Hidden.IsPresent
 }
 
 if (-not [string]::IsNullOrWhiteSpace($InputRecording)) {

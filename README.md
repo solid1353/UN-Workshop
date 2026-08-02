@@ -13,6 +13,7 @@ memory cards, savestates, logs, and task artifacts.
 workshop resolve [game] [property]
 workshop pcsx2 [game]
 workshop rec <game> <recording-name> [-r]
+workshop reg <game> <recording-name>
 workshop input [profile]
 workshop ss move <game> <subpath> [-Target dev|stable] [-Cleanup|-c]
 workshop ss extract <subpath|folder-or-savestates...>
@@ -28,6 +29,11 @@ workshop ss extract <subpath|folder-or-savestates...>
   resolved game ISO and replays the named input recording. Adding `-r` creates
   and records a new power-on recording instead. The `.p2m2` extension is added
   automatically when omitted.
+- `workshop reg <game> <recording-name>` replays the named power-on recording
+  and captures every recorded L3+R3 marker for regression testing. Each marker
+  produces a sequential savestate and screenshot. PCSX2 runs hidden, muted,
+  and at unlimited speed. The `.p2m2` extension is added automatically when
+  omitted.
 - `workshop input` regenerates every complete PCSX2 input profile from the
   tracked base and partial overrides without changing GameSettings assignments.
 - `workshop input <profile>` also regenerates every complete profile, then
