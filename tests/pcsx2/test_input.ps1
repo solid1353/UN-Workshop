@@ -80,7 +80,8 @@ TakeScreenshot = Keyboard/F1
     [IO.File]::WriteAllText(
         $captureOverridePath,
         (
-            "[Pad1]`nL3 = Keyboard/F1`nR3 = Keyboard/F1`n`n" +
+            "[Pad1]`nTriangle = SDL-9/FaceSouth`n" +
+            "L3 = Keyboard/F1`nR3 = Keyboard/F1`n`n" +
             "[Hotkeys]`nPreviousSaveStateSlot = Keyboard/Q`n" +
             "NextSaveStateSlot = Keyboard/E`n" +
             "SaveStateAndSelectNextSlot = Keyboard/Alt`n"
@@ -161,6 +162,9 @@ TakeScreenshot = Keyboard/F1
     Assert-Condition `
         (-not $actualText.Contains('TakeScreenshot = Keyboard/F1')) `
         'The override left another action bound to Keyboard/F1.'
+    Assert-Condition `
+        (-not $actualText.Contains('Triangle = SDL-9/FaceSouth')) `
+        'A later game override did not replace the profile override.'
     foreach ($hotkey in @(
         'PreviousSaveStateSlot = Keyboard/Q',
         'NextSaveStateSlot = Keyboard/E',
@@ -185,12 +189,20 @@ TakeScreenshot = Keyboard/F1
         ([regex]::IsMatch(
             $actualText,
             (
+                'Triangle = SDL-0/FaceEast\r?\n' +
+                'Circle = SDL-0/FaceSouth\r?\n' +
+                'Cross = SDL-0/FaceNorth\r?\n' +
+                'Square = SDL-0/FaceWest'
+            )
+        )) `
+        'Merged overrides did not replace existing bindings in place.'
+    Assert-Condition `
+        ([regex]::IsMatch(
+            $actualText,
+            (
                 'R2 = Keyboard/C\r?\n\r?\n' +
                 'L3 = Keyboard/F1\r?\n' +
                 'R3 = Keyboard/F1\r?\n\r?\n' +
-                'Triangle = SDL-0/FaceEast\r?\n' +
-                'Circle = SDL-0/FaceSouth\r?\n' +
-                'Cross = SDL-0/FaceNorth\r?\n\r?\n' +
                 '\[Pad2\]'
             )
         )) `

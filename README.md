@@ -31,10 +31,10 @@ workshop ss extract <folder-or-savestates...>
   Every generated profile at the root of `pcsx2/__shared/input_profiles/` is
   tracked by Git. Profile selectors are case-insensitive and ignore `_` or `-`, so
   `Test_Capture` selects canonical `TestCapture`.
-- Before adding override assignments to their declared sections, generation
-  removes every existing assignment using an override binding across the
-  complete profile. Multiple assignments declared by the override may still
-  deliberately share that binding.
+- Generation first merges all selected overrides by section, action, and input
+  family. It then removes conflicting bindings, replaces existing actions in
+  place, and appends only new actions. Multiple assignments declared by the
+  effective override may still deliberately share one binding.
 - `ss move` files matching savestates from the selected user PCSX2 installation
   below Workshop `work/__sstates/` for source games or the invoking project's
   `work/__sstates/` for project builds. `-Cleanup` first sends the existing
