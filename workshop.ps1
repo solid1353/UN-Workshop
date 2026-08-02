@@ -113,7 +113,7 @@ switch ($normalizedCommand) {
         @(
             'UN Workshop'
             ''
-            '  workshop [game] [game] [-p name|-r name]  Launch one or two games; -p replays all, -r records the rightmost.'
+            '  workshop [game] [game] [-p name|-r name]  Launch one or two games; pairs close existing user PCSX2 first.'
             '  workshop <game> -t name              Replay one game and capture regression markers.'
             '  workshop input [profile]             Regenerate all profiles; optionally assign one.'
             '  workshop pcsx2                       Launch development PCSX2 without a game.'

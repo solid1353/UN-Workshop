@@ -72,6 +72,35 @@ function Resolve-UnWorkshopRecordingName {
     return $Name
 }
 
+function Get-UnWorkshopUserPcsx2Processes {
+    param(
+        [Parameter(Mandatory)]
+        [string[]]$Roots
+    )
+
+    $rootPrefixes = @(
+        foreach ($root in $Roots) {
+            [IO.Path]::GetFullPath($root).TrimEnd(
+                [IO.Path]::DirectorySeparatorChar,
+                [IO.Path]::AltDirectorySeparatorChar
+            ) + [IO.Path]::DirectorySeparatorChar
+        }
+    )
+    foreach ($process in @(Get-Process -Name 'pcsx2*' -ErrorAction SilentlyContinue)) {
+        try {
+            $processPath = [IO.Path]::GetFullPath([string]$process.Path)
+        }
+        catch {
+            continue
+        }
+        if (@($rootPrefixes | Where-Object {
+            $processPath.StartsWith($_, [StringComparison]::OrdinalIgnoreCase)
+        }).Count -gt 0) {
+            $process
+        }
+    }
+}
+
 $recordingName = if ($PSCmdlet.ParameterSetName -eq 'Play') {
     Resolve-UnWorkshopRecordingName -Name $Play
 }
@@ -177,9 +206,33 @@ public static class UnWorkshopLaunchWindow
 
 $workingArea = [Windows.Forms.Screen]::PrimaryScreen.WorkingArea
 $gameList = $selectedGames.Selector -join ', '
-$action = "launch $gameList and tile their windows"
+$action = if ($selectedGames.Count -eq 2) {
+    "close configured user PCSX2 instances, launch $gameList, and tile their windows"
+}
+else {
+    "launch $gameList and tile its window"
+}
 if (-not $PSCmdlet.ShouldProcess($pcsx2Root, $action)) {
     return
+}
+
+if ($selectedGames.Count -eq 2) {
+    $userProcesses = @(
+        Get-UnWorkshopUserPcsx2Processes -Roots @(
+            $paths.Pcsx2Dev,
+            $paths.Pcsx2Stable
+        )
+    )
+    foreach ($process in $userProcesses) {
+        $targetDescription = "PCSX2 process $($process.Id) ($($process.Path))"
+        if ($PSCmdlet.ShouldProcess(
+            $targetDescription,
+            'close before the two-game launch'
+        )) {
+            Stop-Process -Id $process.Id -Force
+            Wait-Process -Id $process.Id -ErrorAction SilentlyContinue
+        }
+    }
 }
 
 $usedPinePorts = [Collections.Generic.HashSet[int]]::new()
