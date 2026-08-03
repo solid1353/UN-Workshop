@@ -65,7 +65,7 @@ a project catalog.
 - `games.json`: stable source-game selectors, aliases, serials, and CRCs.
 - `settings/git-authors.tsv`: shared non-secret agent commit identities.
 - `settings/notifications.json`: shared notification mute state.
-- `icons/`: reusable source-game `simple` and `detailed` icons.
+- `assets/icons/`: reusable source-game `simple` and `detailed` icons.
 - `pcsx2_shared/`: public cheats, GameSettings, input-profile sources, and
   input recordings. BIOS files and memory cards are deliberately ignored.
 - `pcsx2_shared/input_profiles/sources/overrides/`: named input-profile

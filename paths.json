@@ -4,7 +4,7 @@
     "repository": ".",
     "source": "source",
     "analysis": "@work",
-    "icons": "icons",
+    "icons": "assets/icons",
     "tools": "tools",
     "work": "work",
     "savestates": "@work/sstates",
