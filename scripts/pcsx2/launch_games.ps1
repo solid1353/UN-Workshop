@@ -224,22 +224,13 @@ if ($Test) {
         return
     }
     [void](New-Item -ItemType Directory -Path $captureDirectory -Force)
-    $process = & $pcsx2Launcher `
+    & $pcsx2Launcher `
         -Target $Target `
         -IsoPath $selectedGames[0].IsoPath `
         -InputRecording $recordingName `
         -InputRecordingCaptureDirectory $captureDirectory `
         -Hidden `
-        -PassThru
-    try {
-        Wait-Process -InputObject $process
-    }
-    finally {
-        if (-not $process.HasExited) {
-            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
-            Wait-Process -InputObject $process -ErrorAction SilentlyContinue
-        }
-    }
+        -Wait
     return
 }
 
