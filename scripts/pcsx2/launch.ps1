@@ -104,7 +104,9 @@ function Hide-WorkerProcessWindows {
         [Parameter(Mandatory)]
         [Diagnostics.Process]$Process,
 
-        [switch]$AllowCleanExit
+        [switch]$AllowCleanExit,
+
+        [switch]$UntilExit
     )
 
     Initialize-WorkerWindowApi
@@ -122,7 +124,7 @@ function Hide-WorkerProcessWindows {
             [void][UnWorkshopWorkerWindowApi]::ShowWindowAsync($window, 0)
         }
         Start-Sleep -Milliseconds 50
-    } while ([DateTime]::UtcNow -lt $deadline)
+    } while ($UntilExit -or [DateTime]::UtcNow -lt $deadline)
 
     $visibleWindows = @(
         Get-VisibleProcessWindows -OwnerProcessId $Process.Id
@@ -332,24 +334,29 @@ if ($hidden) {
     $startArguments.WindowStyle = 'Hidden'
     $startArguments.PassThru = $true
     $process = Start-Process @startArguments
+    $launchCompleted = $false
     try {
         Hide-WorkerProcessWindows `
             -Process $process `
+            -UntilExit:$Wait `
             -AllowCleanExit:(
-                $PSCmdlet.ParameterSetName -eq 'Configured' -and
-                -not [string]::IsNullOrWhiteSpace($InputRecording) -and
-                -not [string]::IsNullOrWhiteSpace(
-                    $InputRecordingCaptureDirectory
+                $Wait -or
+                (
+                    $PSCmdlet.ParameterSetName -eq 'Configured' -and
+                    -not [string]::IsNullOrWhiteSpace($InputRecording) -and
+                    -not [string]::IsNullOrWhiteSpace(
+                        $InputRecordingCaptureDirectory
+                    )
                 )
             )
+        $launchCompleted = $true
     }
-    catch {
-        if (-not $process.HasExited) {
+    finally {
+        if (-not $launchCompleted -and -not $process.HasExited) {
             Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
         }
-        throw
     }
-    if ($Wait) {
+    if ($Wait -and -not $process.HasExited) {
         $process.WaitForExit()
     }
     if ($PassThru) {

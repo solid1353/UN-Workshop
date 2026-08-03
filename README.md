@@ -29,10 +29,11 @@ workshop ss move <game> <subpath> [-t dev|stable] [-c]
   records only the last/rightmost instance. The `.p2m2` extension is added
   automatically when omitted. Each result reports the ordered game, process,
   PINE port, and window position.
-- `workshop <game> -t <recording> [-o <path>]` replays one game hidden and
-  captures every recorded L3+R3 regression marker. `-o` writes directly
-  to the requested directory; without it, captures go below
-  `work/captures/<recording>/<game>/`. It waits for the replay to finish.
+- `workshop <game> -t <recording> [-o <path>]` replays one game hidden for the
+  complete process lifetime and captures every recorded L3+R3 regression
+  marker. `-o` writes directly to the requested directory; without it,
+  captures go below `work/captures/<recording>/<game>/`. It waits for the
+  replay to finish.
 - `workshop pcsx2` launches development PCSX2 without a game.
 - `workshop input` regenerates every complete PCSX2 input profile from the
   tracked base and partial overrides without changing GameSettings assignments.
