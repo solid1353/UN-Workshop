@@ -31,7 +31,10 @@ param(
     [switch]$Capped,
 
     [Parameter(ParameterSetName = 'Configured')]
-    [switch]$Surfaceless
+    [switch]$Surfaceless,
+
+    [Parameter(ParameterSetName = 'Configured')]
+    [switch]$DiscardMemoryCardWrites
 )
 
 $ErrorActionPreference = 'Stop'
@@ -188,6 +191,9 @@ if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) {
 $launchArguments = @()
 if ($surfaceless) {
     $launchArguments += @('-nogui', '-surfaceless')
+}
+if ($DiscardMemoryCardWrites) {
+    $launchArguments += '-discard-memory-card-writes'
 }
 if (
     $PSCmdlet.ParameterSetName -eq 'Configured' -and

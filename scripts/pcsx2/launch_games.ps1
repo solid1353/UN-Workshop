@@ -230,6 +230,7 @@ if ($Test) {
         -InputRecording $recordingName `
         -InputRecordingCaptureDirectory $captureDirectory `
         -Surfaceless `
+        -DiscardMemoryCardWrites `
         -Wait
     return
 }
