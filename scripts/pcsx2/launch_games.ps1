@@ -53,49 +53,6 @@ function Get-UnWorkshopConfiguredPinePort {
     return $port
 }
 
-function Resolve-UnWorkshopRecordingName {
-    param(
-        [Parameter(Mandatory)]
-        [string]$Name,
-
-        [string]$Root,
-
-        [switch]$AllowRelativePath
-    )
-
-    if (
-        [string]::IsNullOrWhiteSpace($Name) -or
-        [IO.Path]::IsPathRooted($Name)
-    ) {
-        throw 'Input recording must be a relative path.'
-    }
-    if (-not $AllowRelativePath -and [IO.Path]::GetFileName($Name) -cne $Name) {
-        throw 'New input recording must be a filename.'
-    }
-    if (-not $Name.EndsWith(
-        '.p2m2',
-        [StringComparison]::OrdinalIgnoreCase
-    )) {
-        $Name = "$Name.p2m2"
-    }
-    if ($AllowRelativePath) {
-        $recordingRoot = [IO.Path]::GetFullPath($Root)
-        $recordingPrefix = $recordingRoot.TrimEnd(
-            [IO.Path]::DirectorySeparatorChar,
-            [IO.Path]::AltDirectorySeparatorChar
-        ) + [IO.Path]::DirectorySeparatorChar
-        $recordingPath = [IO.Path]::GetFullPath((Join-Path $recordingRoot $Name))
-        if (-not $recordingPath.StartsWith(
-            $recordingPrefix,
-            [StringComparison]::OrdinalIgnoreCase
-        )) {
-            throw "Input recording must be inside $recordingRoot."
-        }
-        return [IO.Path]::GetRelativePath($recordingRoot, $recordingPath)
-    }
-    return $Name
-}
-
 function Get-UnWorkshopUserPcsx2Processes {
     param(
         [Parameter(Mandatory)]
@@ -154,11 +111,12 @@ function Wait-UnWorkshopPcsx2Window {
 $recordingName = if ($PSCmdlet.ParameterSetName -eq 'Play') {
     Resolve-UnWorkshopRecordingName `
         -Name $Play `
-        -Root $paths.InputRecordings `
-        -AllowRelativePath
+        -Root $paths.InputRecordings
 }
 elseif ($PSCmdlet.ParameterSetName -eq 'Record') {
-    Resolve-UnWorkshopRecordingName -Name $Record
+    Resolve-UnWorkshopRecordingName `
+        -Name $Record `
+        -Root $paths.InputRecordings
 }
 else {
     $null

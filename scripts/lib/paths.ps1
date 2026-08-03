@@ -155,6 +155,42 @@ function Get-UnWorkshopCatalog {
     [pscustomobject]$result
 }
 
+function Resolve-UnWorkshopRecordingName {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Name,
+        [Parameter(Mandatory)]
+        [string]$Root,
+        [switch]$CreateParent
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Name) -or [IO.Path]::IsPathRooted($Name)) {
+        throw 'Input recording must be a relative path.'
+    }
+    if (-not $Name.EndsWith('.p2m2', [StringComparison]::OrdinalIgnoreCase)) {
+        $Name = "$Name.p2m2"
+    }
+    $recordingRoot = [IO.Path]::GetFullPath($Root)
+    $recordingPrefix = $recordingRoot.TrimEnd(
+        [IO.Path]::DirectorySeparatorChar,
+        [IO.Path]::AltDirectorySeparatorChar
+    ) + [IO.Path]::DirectorySeparatorChar
+    $recordingPath = [IO.Path]::GetFullPath((Join-Path $recordingRoot $Name))
+    if (-not $recordingPath.StartsWith(
+        $recordingPrefix,
+        [StringComparison]::OrdinalIgnoreCase
+    )) {
+        throw "Input recording must be inside $recordingRoot."
+    }
+    if ($CreateParent) {
+        [void](New-Item -ItemType Directory -Path (
+            [IO.Path]::GetDirectoryName($recordingPath)
+        ) -Force)
+    }
+    return [IO.Path]::GetRelativePath($recordingRoot, $recordingPath)
+}
+
 function Resolve-UnWorkshopGame {
     [CmdletBinding()]
     param(

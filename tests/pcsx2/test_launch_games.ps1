@@ -22,6 +22,34 @@ $testRoot = Join-Path `
 $repository = Join-Path $testRoot 'repo'
 
 try {
+    . (Join-Path $sourceRepository 'scripts\lib\paths.ps1')
+    $recordingRoot = Join-Path $testRoot 'recordings'
+    $nestedRecording = Resolve-UnWorkshopRecordingName `
+        -Name 'font/collection/generic' `
+        -Root $recordingRoot `
+        -CreateParent
+    Assert-WorkshopLaunchTest `
+        -Condition (
+            $nestedRecording -ceq 'font\collection\generic.p2m2' -and
+            (Test-Path -LiteralPath (
+                Join-Path $recordingRoot 'font\collection'
+            ) -PathType Container)
+        ) `
+        -Message 'Nested recording creation did not resolve below the shared root.'
+    $escapingRecordingRejected = $false
+    try {
+        Resolve-UnWorkshopRecordingName `
+            -Name '..\outside' `
+            -Root $recordingRoot `
+            -CreateParent
+    }
+    catch {
+        $escapingRecordingRejected = $_.Exception.Message -match 'must be inside'
+    }
+    Assert-WorkshopLaunchTest `
+        -Condition $escapingRecordingRejected `
+        -Message 'Nested recording creation accepted a path outside the shared root.'
+
     New-Item -ItemType Directory -Force -Path (Join-Path $repository 'scripts\lib') | Out-Null
     New-Item -ItemType Directory -Force -Path (Join-Path $repository 'scripts\pcsx2') | Out-Null
     Copy-Item -LiteralPath (Join-Path $sourceRepository 'workshop.ps1') -Destination $repository
@@ -91,10 +119,10 @@ param(
             -Condition ($play -match 'games=NUN5,latest play=practice-menu record=') `
             -Message 'Paired playback was not forwarded to the shared launcher.'
 
-        $record = (& .\workshop.ps1 NUN5 latest -r practice-menu) -join "`n"
+        $record = (& .\workshop.ps1 NUN5 latest -r font/collection/generic) -join "`n"
         Assert-WorkshopLaunchTest `
-            -Condition ($record -match 'games=NUN5,latest play= record=practice-menu') `
-            -Message 'Rightmost recording was not forwarded to the shared launcher.'
+            -Condition ($record -match 'games=NUN5,latest play= record=font/collection/generic') `
+            -Message 'Nested rightmost recording was not forwarded to the shared launcher.'
 
         $test = (& .\workshop.ps1 NUN5 -t practice-menu) -join "`n"
         Assert-WorkshopLaunchTest `
