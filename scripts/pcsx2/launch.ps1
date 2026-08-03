@@ -156,12 +156,10 @@ if (-not [string]::IsNullOrWhiteSpace($InputRecording)) {
 }
 
 if (-not [string]::IsNullOrWhiteSpace($CreateInputRecording)) {
-    if (
-        [IO.Path]::IsPathRooted($CreateInputRecording) -or
-        [IO.Path]::GetFileName($CreateInputRecording) -cne $CreateInputRecording
-    ) {
-        throw 'New input recording must be a filename.'
-    }
+    $createInputRecordingRelativePath = Resolve-UnWorkshopRecordingName `
+        -Name $CreateInputRecording `
+        -Root $paths.InputRecordings `
+        -CreateParent
 }
 
 if (-not [string]::IsNullOrWhiteSpace($InputRecordingCaptureDirectory)) {
@@ -221,7 +219,7 @@ if (-not [string]::IsNullOrWhiteSpace($InputRecordingCaptureDirectory)) {
 if (-not [string]::IsNullOrWhiteSpace($CreateInputRecording)) {
     $launchArguments += @(
         '-input-recording-create',
-        "`"$CreateInputRecording`""
+        "`"$createInputRecordingRelativePath`""
     )
 }
 if ($Arguments) {

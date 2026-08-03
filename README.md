@@ -26,9 +26,10 @@ workshop ss move <game> <subpath> [-t dev|stable] [-c]
 - Supplying one or two games launches their resolved ISOs in development PCSX2
   and tiles them in argument order. `-p`
   replays one shared input recording in every launched instance; `-r`
-  records only the last/rightmost instance. The `.p2m2` extension is added
-  automatically when omitted. Each result reports the ordered game, process,
-  PINE port, and window position.
+  records only the last/rightmost instance. Recording names may be relative
+  paths below `pcsx2_shared/input_recordings/`, and the `.p2m2` extension is
+  added automatically. For `-r`, missing parent directories are created. Each
+  result reports the ordered game, process, PINE port, and window position.
 - `workshop <game> -t <recording> [-o <path>]` replays one game in PCSX2's
   surfaceless no-GUI mode and captures every recorded L3+R3 regression marker
   without creating a render window or taking focus. `-o` writes directly to the
