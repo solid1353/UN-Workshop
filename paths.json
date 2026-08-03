@@ -38,6 +38,7 @@
     "pcsx2_copy_worker_command": "@repository/scripts/pcsx2/copy_worker.ps1",
     "pcsx2_pine_command": "@repository/scripts/pcsx2/pine.py",
     "pcsx2_iso_identity": "@repository/scripts/pcsx2/iso_identity.ps1",
+    "pcsx2_sync_build_game_settings_command": "@repository/scripts/pcsx2/sync_build_game_settings.ps1",
     "ghidra_runtime": "@repository/scripts/ghidra/runtime.ps1",
     "notification_state": "@repository/settings/notifications.json",
     "git_authors": "@repository/settings/git-authors.tsv"
