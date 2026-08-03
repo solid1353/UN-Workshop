@@ -46,6 +46,11 @@ workshop ss move <game> <subpath> [-t dev|stable] [-c]
   family. It then removes conflicting bindings, replaces existing actions in
   place, and appends only new actions. Multiple assignments declared by the
   effective override may still deliberately share one binding.
+- Project build paths call `scripts/pcsx2/sync_build_game_settings.ps1` after a
+  successful shared build. It resolves each selected ISO's boot-ELF CRC and
+  atomically updates the matching `[CRC.<crc>.MemoryCards]` section in the
+  serial-wide GameSettings file. It writes only the configured card filename;
+  it never creates, copies, resets, validates, or otherwise touches card files.
 - `ss move` files matching savestates from the selected user PCSX2 installation
   below Workshop `work/sstates/` for source games or the invoking project's
   `work/sstates/` for project builds. `-c` first sends the existing
