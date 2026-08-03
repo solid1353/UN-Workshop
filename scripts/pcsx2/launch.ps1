@@ -31,112 +31,12 @@ param(
     [switch]$Capped,
 
     [Parameter(ParameterSetName = 'Configured')]
-    [switch]$Hidden
+    [switch]$Surfaceless
 )
 
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
 $paths = Get-UnWorkshopPaths
-
-function Initialize-WorkerWindowApi {
-    if ('UnWorkshopWorkerWindowApi' -as [type]) {
-        return
-    }
-
-    Add-Type -TypeDefinition @'
-using System;
-using System.Runtime.InteropServices;
-
-public static class UnWorkshopWorkerWindowApi
-{
-    public delegate bool EnumWindowsCallback(IntPtr window, IntPtr parameter);
-
-    [DllImport("user32.dll")]
-    public static extern bool EnumWindows(
-        EnumWindowsCallback callback,
-        IntPtr parameter
-    );
-
-    [DllImport("user32.dll")]
-    public static extern uint GetWindowThreadProcessId(
-        IntPtr window,
-        out uint processId
-    );
-
-    [DllImport("user32.dll")]
-    public static extern bool IsWindowVisible(IntPtr window);
-
-    [DllImport("user32.dll")]
-    public static extern bool ShowWindowAsync(IntPtr window, int command);
-}
-'@
-}
-
-function Get-VisibleProcessWindows {
-    param(
-        [Parameter(Mandatory)]
-        [int]$OwnerProcessId
-    )
-
-    $windows = [Collections.Generic.List[IntPtr]]::new()
-    $callback = [UnWorkshopWorkerWindowApi+EnumWindowsCallback]{
-        param([IntPtr]$window, [IntPtr]$parameter)
-
-        [uint32]$windowProcessId = 0
-        [void][UnWorkshopWorkerWindowApi]::GetWindowThreadProcessId(
-            $window,
-            [ref]$windowProcessId
-        )
-        if (
-            $windowProcessId -eq [uint32]$OwnerProcessId -and
-            [UnWorkshopWorkerWindowApi]::IsWindowVisible($window)
-        ) {
-            $windows.Add($window)
-        }
-        return $true
-    }
-    [void][UnWorkshopWorkerWindowApi]::EnumWindows($callback, [IntPtr]::Zero)
-    return @($windows)
-}
-
-function Hide-WorkerProcessWindows {
-    param(
-        [Parameter(Mandatory)]
-        [Diagnostics.Process]$Process,
-
-        [switch]$AllowCleanExit,
-
-        [switch]$UntilExit
-    )
-
-    Initialize-WorkerWindowApi
-    $deadline = [DateTime]::UtcNow.AddSeconds(5)
-    do {
-        $Process.Refresh()
-        if ($Process.HasExited) {
-            if ($AllowCleanExit -and $Process.ExitCode -eq 0) {
-                return
-            }
-            throw "Worker PCSX2 exited during launch (exit $($Process.ExitCode))."
-        }
-
-        foreach ($window in @(Get-VisibleProcessWindows -OwnerProcessId $Process.Id)) {
-            [void][UnWorkshopWorkerWindowApi]::ShowWindowAsync($window, 0)
-        }
-        Start-Sleep -Milliseconds 50
-    } while ($UntilExit -or [DateTime]::UtcNow -lt $deadline)
-
-    $visibleWindows = @(
-        Get-VisibleProcessWindows -OwnerProcessId $Process.Id
-    )
-    if ($visibleWindows.Count -gt 0) {
-        Stop-Process -Id $Process.Id -Force -ErrorAction SilentlyContinue
-        throw (
-            'Worker PCSX2 did not remain hidden; terminated process ' +
-            "$($Process.Id)."
-        )
-    }
-}
 
 if ($PSCmdlet.ParameterSetName -eq 'Worker') {
     $workerRootFull = [IO.Path]::GetFullPath($WorkerRoot)
@@ -191,7 +91,7 @@ if ($PSCmdlet.ParameterSetName -eq 'Worker') {
     }
     $executable = $workerExecutables[0].FullName
     $workingDirectory = $workerPcsx2
-    $hidden = $true
+    $surfaceless = $true
 }
 else {
     if ($IsoPath) {
@@ -218,7 +118,7 @@ else {
             $paths.Pcsx2Dev
         )
     }
-    $hidden = $Hidden.IsPresent
+    $surfaceless = $Surfaceless.IsPresent
 }
 
 if (-not [string]::IsNullOrWhiteSpace($InputRecording)) {
@@ -286,8 +186,8 @@ if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) {
 }
 
 $launchArguments = @()
-if ($hidden) {
-    $launchArguments += '-nogui'
+if ($surfaceless) {
+    $launchArguments += @('-nogui', '-surfaceless')
 }
 if (
     $PSCmdlet.ParameterSetName -eq 'Configured' -and
@@ -330,34 +230,24 @@ $startArguments = @{
 if ($launchArguments.Count -gt 0) {
     $startArguments.ArgumentList = $launchArguments
 }
-if ($hidden) {
-    $startArguments.WindowStyle = 'Hidden'
+if ($surfaceless) {
     $startArguments.PassThru = $true
     $process = Start-Process @startArguments
-    $launchCompleted = $false
-    try {
-        Hide-WorkerProcessWindows `
-            -Process $process `
-            -UntilExit:$Wait `
-            -AllowCleanExit:(
-                $Wait -or
-                (
-                    $PSCmdlet.ParameterSetName -eq 'Configured' -and
-                    -not [string]::IsNullOrWhiteSpace($InputRecording) -and
-                    -not [string]::IsNullOrWhiteSpace(
-                        $InputRecordingCaptureDirectory
-                    )
-                )
-            )
-        $launchCompleted = $true
-    }
-    finally {
-        if (-not $launchCompleted -and -not $process.HasExited) {
-            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+    if ($Wait) {
+        try {
+            Wait-Process -InputObject $process
         }
-    }
-    if ($Wait -and -not $process.HasExited) {
-        $process.WaitForExit()
+        finally {
+            if (-not $process.HasExited) {
+                Stop-Process `
+                    -Id $process.Id `
+                    -Force `
+                    -ErrorAction SilentlyContinue
+                Wait-Process `
+                    -InputObject $process `
+                    -ErrorAction SilentlyContinue
+            }
+        }
     }
     if ($PassThru) {
         $process

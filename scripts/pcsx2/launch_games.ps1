@@ -229,7 +229,7 @@ if ($Test) {
         -IsoPath $selectedGames[0].IsoPath `
         -InputRecording $recordingName `
         -InputRecordingCaptureDirectory $captureDirectory `
-        -Hidden `
+        -Surfaceless `
         -Wait
     return
 }
