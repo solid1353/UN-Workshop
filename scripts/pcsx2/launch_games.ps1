@@ -141,6 +141,7 @@ foreach ($requestedGame in $Games) {
     $selectedGames.Add([pscustomobject]@{
         Selector = $selector
         IsoPath = $isoPath
+        MemoryCardPath = [IO.Path]::GetFullPath([string]$resolved.memory_card)
     })
 }
 
@@ -155,6 +156,7 @@ $pcsx2Launcher = [IO.Path]::GetFullPath(
 )
 $requiredFiles = @($pcsx2Launcher)
 $requiredFiles += @($selectedGames.IsoPath)
+$requiredFiles += @($selectedGames.MemoryCardPath)
 foreach ($requiredFile in $requiredFiles) {
     if (-not (Test-Path -LiteralPath $requiredFile -PathType Leaf)) {
         throw "Required file does not exist: $requiredFile"
@@ -185,6 +187,7 @@ if ($Test) {
     & $pcsx2Launcher `
         -Target $Target `
         -IsoPath $selectedGames[0].IsoPath `
+        -MemoryCard $selectedGames[0].MemoryCardPath `
         -InputRecording $recordingName `
         -InputRecordingCaptureDirectory $captureDirectory `
         -Surfaceless `
@@ -308,6 +311,7 @@ try {
         $launchParameters = @{
             Target = $Target
             IsoPath = $game.IsoPath
+            MemoryCard = $game.MemoryCardPath
             Arguments = @('-pine-port', [string]$pinePort)
             PassThru = $true
         }
