@@ -10,8 +10,8 @@ memory cards, savestates, logs, and task artifacts.
 `workshop.ps1` is the single user-facing entrypoint.
 
 ```powershell
-workshop [game] [game] [-p <recording>|-r <recording>]
-workshop <game> -t <recording>
+workshop [game] [game] [-p <recording>|-r <recording>] [-mc <card>] [-dw]
+workshop <game> -t <recording> [-mc <card>]
 workshop input [profile]
 workshop pcsx2
 workshop resolve [game] [property]
@@ -30,10 +30,15 @@ workshop ss move <game> <subpath> [-t dev|stable] [-c]
   paths below `pcsx2_shared/input_recordings/`, and the `.p2m2` extension is
   added automatically. For `-r`, missing parent directories are created. Each
   result reports the ordered game, process, PINE port, and window position.
-- `workshop <game> -t <recording> [-o <path>]` replays one game in PCSX2's
+- `-mc` selects one memory-card file for every launched game. A relative value
+  resolves below `pcsx2_shared/memory_cards/`; an absolute path is also accepted.
+  The `.ps2` extension is added automatically when omitted. A bare name falls
+  back to `pcsx2_shared/memory_cards/templates/` when no root-level card exists.
+  `-dw` makes ordinary launches report memory-card writes as successful without
+  persisting them. Regression replay with `-t` always discards writes.
+- `workshop <game> -t <recording>` replays one game in PCSX2's
   surfaceless no-GUI mode and captures every recorded L3+R3 regression marker
-  without creating a render window or taking focus. `-o` writes directly to the
-  requested directory; without it, captures go below
+  without creating a render window or taking focus. Captures go below
   `work/captures/<recording>/<game>/`. It waits for the replay to finish.
 - `workshop pcsx2` launches development PCSX2 without a game.
 - `workshop input` regenerates every complete PCSX2 input profile from the

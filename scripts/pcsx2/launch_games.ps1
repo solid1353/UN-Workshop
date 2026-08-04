@@ -16,6 +16,10 @@ param(
     [Parameter(ParameterSetName = 'Record')]
     [string]$Record,
 
+    [string]$MemoryCard,
+
+    [switch]$DiscardMemoryCardWrites,
+
     [ValidateSet('stable', 'dev')]
     [string]$Target = 'dev',
 
@@ -122,6 +126,38 @@ else {
     $null
 }
 
+$memoryCardOverridePath = if (-not [string]::IsNullOrWhiteSpace($MemoryCard)) {
+    $memoryCardName = if ($MemoryCard.EndsWith(
+        '.ps2',
+        [StringComparison]::OrdinalIgnoreCase
+    )) {
+        $MemoryCard
+    }
+    else {
+        "$MemoryCard.ps2"
+    }
+    $isRootedMemoryCard = [IO.Path]::IsPathRooted($memoryCardName)
+    $candidate = if ($isRootedMemoryCard) {
+        $memoryCardName
+    }
+    else {
+        Join-Path $paths.MemoryCards $memoryCardName
+    }
+    if (
+        -not $isRootedMemoryCard -and
+        -not (Test-Path -LiteralPath $candidate -PathType Leaf) -and
+        [IO.Path]::GetFileName($memoryCardName) -ceq $memoryCardName
+    ) {
+        $candidate = Join-Path `
+            (Join-Path $paths.MemoryCards 'templates') `
+            $memoryCardName
+    }
+    [IO.Path]::GetFullPath($candidate)
+}
+else {
+    $null
+}
+
 $selectedGames = [Collections.Generic.List[object]]::new()
 $seenImages = [Collections.Generic.HashSet[string]]::new(
     [StringComparer]::OrdinalIgnoreCase
@@ -141,7 +177,12 @@ foreach ($requestedGame in $Games) {
     $selectedGames.Add([pscustomobject]@{
         Selector = $selector
         IsoPath = $isoPath
-        MemoryCardPath = [IO.Path]::GetFullPath([string]$resolved.memory_card)
+        MemoryCardPath = if ($null -ne $memoryCardOverridePath) {
+            $memoryCardOverridePath
+        }
+        else {
+            [IO.Path]::GetFullPath([string]$resolved.memory_card)
+        }
     })
 }
 
@@ -266,7 +307,7 @@ if ($selectedGames.Count -eq 2) {
 $playbackRecordings = @()
 if ($PSCmdlet.ParameterSetName -eq 'Play') {
     if ($selectedGames.Count -eq 2) {
-        $generatedDirectory = Join-Path $paths.InputRecordings 'generated'
+        $generatedDirectory = Join-Path $paths.InputRecordings '__generated'
         if (Test-Path -LiteralPath $generatedDirectory) {
             Remove-Item -LiteralPath $generatedDirectory -Recurse -Force
         }
@@ -274,8 +315,8 @@ if ($PSCmdlet.ParameterSetName -eq 'Play') {
 
         $sourceRecording = Join-Path $paths.InputRecordings $recordingName
         $playbackRecordings = @(
-            'generated\left.p2m2',
-            'generated\right.p2m2'
+            '__generated\left.p2m2',
+            '__generated\right.p2m2'
         )
         foreach ($stagedRecording in $playbackRecordings) {
             Copy-Item `
@@ -314,6 +355,9 @@ try {
             MemoryCard = $game.MemoryCardPath
             Arguments = @('-pine-port', [string]$pinePort)
             PassThru = $true
+        }
+        if ($DiscardMemoryCardWrites) {
+            $launchParameters.DiscardMemoryCardWrites = $true
         }
         if (
             $selectedGames.Count -eq 2 -and
