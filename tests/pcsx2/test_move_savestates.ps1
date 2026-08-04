@@ -97,6 +97,25 @@ function Get-Pcsx2IsoIdentity {
 }
 '@
     Set-Content -LiteralPath (Join-Path $project 'build\NA v2.28 - Latest.iso') -Value 'test'
+    Set-Content `
+        -LiteralPath (Join-Path $workshop 'pcsx2\shared\game_settings\SLOP-NA228.ini') `
+        -Value "[MemoryCards]`nSlot1_Filename = NA v2.28.ps2"
+
+    $resolvedLatest = (
+        & python `
+            (Join-Path $workshop 'scripts\lib\resolve_game.py') `
+            latest `
+            --project-root $project
+    ) | ConvertFrom-Json
+    $expectedLatestCard = Join-Path (
+        $workshop
+    ) 'pcsx2\shared\memory_cards\NA v2.28 - Latest.ps2'
+    if (
+        [IO.Path]::GetFullPath([string]$resolvedLatest.memory_card) -cne
+        [IO.Path]::GetFullPath($expectedLatestCard)
+    ) {
+        throw 'Build memory-card path was not derived from the GameSettings base plus postfix.'
+    }
 
     $states = Join-Path $workshop 'pcsx2\dev\sstates'
     Set-Content -LiteralPath (Join-Path $states 'SLOP-NA228 (12345678).00.p2s') -Value 'build'

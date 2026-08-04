@@ -34,7 +34,10 @@ param(
     [switch]$Surfaceless,
 
     [Parameter(ParameterSetName = 'Configured')]
-    [switch]$DiscardMemoryCardWrites
+    [switch]$DiscardMemoryCardWrites,
+
+    [Parameter(ParameterSetName = 'Configured')]
+    [string]$MemoryCard
 )
 
 $ErrorActionPreference = 'Stop'
@@ -171,6 +174,13 @@ if (-not [string]::IsNullOrWhiteSpace($InputRecordingCaptureDirectory)) {
     )
 }
 
+if (-not [string]::IsNullOrWhiteSpace($MemoryCard)) {
+    $resolvedMemoryCard = [IO.Path]::GetFullPath($MemoryCard)
+    if (-not (Test-Path -LiteralPath $resolvedMemoryCard -PathType Leaf)) {
+        throw "Memory card does not exist: $resolvedMemoryCard"
+    }
+}
+
 if ($IsoPath -and -not (
     Test-Path -LiteralPath $resolvedIso -PathType Leaf
 )) {
@@ -192,6 +202,9 @@ if ($surfaceless) {
 }
 if ($DiscardMemoryCardWrites) {
     $launchArguments += '-discard-memory-card-writes'
+}
+if (-not [string]::IsNullOrWhiteSpace($MemoryCard)) {
+    $launchArguments += @('-memory-card', "`"$resolvedMemoryCard`"")
 }
 if (
     $PSCmdlet.ParameterSetName -eq 'Configured' -and
