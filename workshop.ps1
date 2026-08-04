@@ -12,7 +12,9 @@ param(
 
     [string]$t,
 
-    [string]$o
+    [string]$mc,
+
+    [switch]$dw
 )
 
 $ErrorActionPreference = 'Stop'
@@ -30,7 +32,8 @@ function Invoke-UnWorkshopGameLaunch {
         [string]$Play,
         [string]$Record,
         [string]$RegressionTest,
-        [string]$CaptureDirectory
+        [string]$MemoryCard,
+        [switch]$DiscardMemoryCardWrites
     )
 
     $games = @($Games | Where-Object { -not [string]::IsNullOrEmpty($_) })
@@ -48,23 +51,21 @@ function Invoke-UnWorkshopGameLaunch {
         $games.Count -ne 1) {
         throw '-t requires exactly one game.'
     }
-    if (-not [string]::IsNullOrWhiteSpace($CaptureDirectory) -and
-        [string]::IsNullOrWhiteSpace($RegressionTest)) {
-        throw '-Output is valid only with -t.'
-    }
-
     $parameters = @{
         Games = @($games)
         ProjectRoot = $paths.Project
     }
     if (-not [string]::IsNullOrWhiteSpace($Play)) { $parameters.Play = $Play }
     if (-not [string]::IsNullOrWhiteSpace($Record)) { $parameters.Record = $Record }
+    if (-not [string]::IsNullOrWhiteSpace($MemoryCard)) {
+        $parameters.MemoryCard = $MemoryCard
+    }
+    if ($DiscardMemoryCardWrites) {
+        $parameters.DiscardMemoryCardWrites = $true
+    }
     if (-not [string]::IsNullOrWhiteSpace($RegressionTest)) {
         $parameters.Play = $RegressionTest
         $parameters.Test = $true
-        if (-not [string]::IsNullOrWhiteSpace($CaptureDirectory)) {
-            $parameters.CaptureDirectory = $CaptureDirectory
-        }
     }
     & $paths.Files.pcsx2_game_launch_command @parameters
 }
@@ -123,13 +124,24 @@ switch ($normalizedCommand) {
         @(
             'UN Workshop'
             ''
-            '  workshop [game] [game] [-p name|-r name]  Launch one or two games; pairs close existing user PCSX2 first.'
-            '  workshop <game> -t name [-o path]  Replay one game and capture regression markers.'
+            '  workshop [game] [game] [-p name|-r name] [-mc card] [-dw]  Launch one or two games; pairs close existing user PCSX2 first.'
+            '  workshop <game> -t name [-mc card]  Replay one game and capture regression markers.'
             '  workshop input [profile]             Regenerate all profiles; optionally assign one.'
             '  workshop pcsx2                       Launch development PCSX2 without a game.'
             '  workshop resolve [game] [property]   Resolve all games, one game, or one property.'
             '  workshop ss extract <subpath|folder-or-savestates...>  Extract embedded PNGs into screenshots/.'
-            '  workshop ss move <game> <subpath> [-t dev|stable] [-c]  Move savestates; -c recycles the destination first.'
+            '  workshop ss move <game> <subpath> [-t dev|stable] [-c]  Move savestates.'
+            ''
+            '  Launch options:'
+            '    -p <name>        Replay an input recording.'
+            '    -r <name>        Create an input recording; paired launches record the rightmost game.'
+            '    -t <name>        Replay one game and capture regression markers; card writes are discarded.'
+            '    -mc <card>       Use one shared card or template; .ps2 is added automatically.'
+            '    -dw              Discard memory-card writes for an ordinary launch.'
+            ''
+            '  Savestate move options:'
+            '    -t <dev|stable>  Select the PCSX2 installation containing the savestates.'
+            '    -c               Recycle the existing destination before moving savestates.'
             ''
             "  Sources: $($sourceSelectors -join ', ')"
             $(if ($buildSelectors.Count -gt 0) {
@@ -205,11 +217,11 @@ switch ($normalizedCommand) {
                 Where-Object { -not [string]::IsNullOrEmpty($_) }
         )
         $launchModes = @(
-            @($p, $r, $t) |
+            @($p, $r, $t, $mc) |
                 Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
         )
         if ($argumentList.Count -gt 0 -or
-            $launchModes.Count -gt 0) {
+            $launchModes.Count -gt 0 -or $dw) {
             throw 'workshop pcsx2 accepts no arguments.'
         }
         & $paths.Files.pcsx2_launch_command
@@ -219,8 +231,8 @@ switch ($normalizedCommand) {
         if ($argumentList.Count -eq 0) {
             throw 'Usage: workshop ss move|extract ...'
         }
-        if (-not [string]::IsNullOrWhiteSpace($o)) {
-            throw '-o does not apply to workshop ss.'
+        if (-not [string]::IsNullOrWhiteSpace($mc) -or $dw) {
+            throw '-mc and -dw apply only to game launches.'
         }
         $cleanup = $false
         $forwardedArguments = @(
@@ -251,6 +263,7 @@ switch ($normalizedCommand) {
             -Play $p `
             -Record $r `
             -RegressionTest $t `
-            -CaptureDirectory $o
+            -MemoryCard $mc `
+            -DiscardMemoryCardWrites:$dw
     }
 }

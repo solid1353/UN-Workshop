@@ -16,6 +16,21 @@ function Assert-WorkshopLaunchTest {
 }
 
 $sourceRepository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
+$help = (& (Join-Path $sourceRepository 'workshop.ps1') help) -join "`n"
+foreach ($expectedOption in @(
+    '-p <name>',
+    '-r <name>',
+    '-t <name>',
+    '-mc <card>',
+    '-dw',
+    '-t <dev|stable>',
+    '-c'
+)) {
+    Assert-WorkshopLaunchTest `
+        -Condition ($help.Contains($expectedOption)) `
+        -Message "Workshop help did not document public option: $expectedOption"
+}
+
 $testRoot = Join-Path `
     ([IO.Path]::GetTempPath()) `
     "workshop-launch-tests-$PID-$([Guid]::NewGuid().ToString('N'))"
@@ -107,9 +122,11 @@ param(
     [string]$Record,
     [switch]$Test,
     [string]$CaptureDirectory,
+    [string]$MemoryCard,
+    [switch]$DiscardMemoryCardWrites,
     [string]$ProjectRoot
 )
-"[fake] games=$($Games -join ',') play=$Play record=$Record test=$Test capture=$CaptureDirectory project=$ProjectRoot"
+"[fake] games=$($Games -join ',') play=$Play record=$Record test=$Test capture=$CaptureDirectory memory=$MemoryCard discard=$DiscardMemoryCardWrites project=$ProjectRoot"
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\pcsx2\launch_games.ps1')
 
     Push-Location $repository
@@ -118,6 +135,15 @@ param(
         Assert-WorkshopLaunchTest `
             -Condition ($play -match 'games=NUN5,latest play=practice-menu record=') `
             -Message 'Paired playback was not forwarded to the shared launcher.'
+
+        $memoryCardLaunch = (
+            & .\workshop.ps1 NUN5 latest -mc 'Custom.ps2' -dw
+        ) -join "`n"
+        Assert-WorkshopLaunchTest `
+            -Condition (
+                $memoryCardLaunch -match 'memory=Custom\.ps2 discard=True'
+            ) `
+            -Message 'Memory-card override and discard-write mode were not forwarded.'
 
         $record = (& .\workshop.ps1 NUN5 latest -r font/collection/generic) -join "`n"
         Assert-WorkshopLaunchTest `
@@ -129,20 +155,12 @@ param(
             -Condition ($test -match 'games=NUN5 play=practice-menu record= test=True') `
             -Message 'Regression playback was not forwarded to the shared launcher.'
 
-        $capturePath = Join-Path $repository 'direct-capture'
-        $directCapture = (
-            & .\workshop.ps1 NUN5 -t practice-menu -o $capturePath
-        ) -join "`n"
+        $outputOverrideRejected = $false
+        try { & .\workshop.ps1 NUN5 -t practice-menu -o ignored }
+        catch { $outputOverrideRejected = $true }
         Assert-WorkshopLaunchTest `
-            -Condition ($directCapture -match ('capture=' + [regex]::Escape($capturePath))) `
-            -Message 'Explicit regression capture output was not forwarded to the shared launcher.'
-
-        $outputWithoutTestRejected = $false
-        try { & .\workshop.ps1 NUN5 -o $capturePath }
-        catch { $outputWithoutTestRejected = $_.Exception.Message -match 'valid only with -t' }
-        Assert-WorkshopLaunchTest `
-            -Condition $outputWithoutTestRejected `
-            -Message 'Explicit capture output was accepted without regression replay.'
+            -Condition $outputOverrideRejected `
+            -Message 'Retired public -o capture override remained accepted.'
 
         $barePcsx2 = (& .\workshop.ps1 pcsx2) -join "`n"
         Assert-WorkshopLaunchTest `

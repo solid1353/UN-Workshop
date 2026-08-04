@@ -16,6 +16,6 @@ pcsx2_shared/*
 !pcsx2_shared/input_profiles/**
 !pcsx2_shared/input_recordings/
 !pcsx2_shared/input_recordings/**
-pcsx2_shared/input_recordings/generated/
+pcsx2_shared/input_recordings/__generated/
 
 SLOP-NA228.ini
