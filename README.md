@@ -43,7 +43,7 @@ workshop ss move <game> <subpath> [-t dev|stable] [-c]
   Every generated profile at the root of `pcsx2_shared/input_profiles/` is
   tracked by Git. Base outputs use `<profile>_Base.ini`; game-specific outputs
   use `<profile>_<game>.ini`. Profile selectors are case-insensitive and ignore
-  `_` or `-`, so `Test_Capture` selects canonical `TestCapture`.
+  `_` or `-`, so `Cap_ture` selects canonical `Capture`.
 - Generation first merges all selected overrides by section, action, and input
   family. It then removes conflicting bindings, replaces existing actions in
   place, and appends only new actions. Multiple assignments declared by the

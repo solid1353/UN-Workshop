@@ -32,11 +32,11 @@ New-Item -ItemType Directory -Path $temporaryRoot | Out-Null
 try {
     $templatePath = Join-Path $temporaryRoot 'Default.ini'
     $overridePath = Join-Path $temporaryRoot 'sources\overrides\games\NA2.ini'
-    $captureOverridePath = Join-Path $temporaryRoot 'sources\overrides\TestCapture.ini'
-    $outputPath = Join-Path $temporaryRoot 'TestCapture_NA2.ini'
+    $captureOverridePath = Join-Path $temporaryRoot 'sources\overrides\Capture.ini'
+    $outputPath = Join-Path $temporaryRoot 'Capture_NA2.ini'
     $trailingTemplatePath = Join-Path $temporaryRoot 'TrailingT.ini'
     $trailingOutputPath = Join-Path $temporaryRoot 'TrailingT_NA2.ini'
-    $linkedOutputPath = Join-Path $temporaryRoot 'PCSX2_TestCapture_NA2.ini'
+    $linkedOutputPath = Join-Path $temporaryRoot 'PCSX2_Capture_NA2.ini'
     $templateText = @'
 [Pad1]
 Type = DualShock2
