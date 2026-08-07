@@ -35,11 +35,22 @@ workshop ss move <game> <subpath> [-t dev|stable] [-c]
   The `.ps2` extension is added automatically when omitted. A bare name falls
   back to `pcsx2_shared/memory_cards/templates/` when no root-level card exists.
   `-dw` makes ordinary launches report memory-card writes as successful without
-  persisting them. Regression replay with `-t` always discards writes.
+  persisting them. File-backed cards use shared access with or without `-dw`;
+  discard mode additionally suppresses memory-card busy state. Regression replay
+  with `-t` always discards writes.
 - `workshop <game> -t <recording>` replays one game in PCSX2's
   surfaceless no-GUI mode and captures every recorded L3+R3 regression marker
   without creating a render window or taking focus. Captures go below
-  `work/captures/<recording>/<game>/`. It waits for the replay to finish.
+  `work/captures/<recording>/<game>/`. A marker is the rising edge of the chord,
+  so holding both buttons creates one capture. A successful marker savestate and
+  its standalone PNG use the same encoded screenshot. If actual memory-card
+  activity blocks the savestate outside discard mode, the standalone PNG is
+  still written. The command waits for the replay to finish.
+- Regression recordings are power-on timelines. They may be shortened without
+  rerecording only by removing trailing frames after the final required marker;
+  cutting the prefix or middle changes controller timing and the resulting game
+  state. A physical tail trim must update the recording's total-frame value and
+  truncate the file at the matching frame boundary.
 - `workshop pcsx2` launches development PCSX2 without a game.
 - `workshop input` regenerates every complete PCSX2 input profile from the
   tracked base and partial overrides without changing GameSettings assignments.
