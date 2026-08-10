@@ -65,8 +65,10 @@ workshop ss move <game> <subpath> [-t dev|stable] [-c]
   place, and appends only new actions. Multiple assignments declared by the
   effective override may still deliberately share one binding.
 - Configured launches pass the catalog-derived memory-card path directly to
-  PCSX2 without changing GameSettings. Project build card names insert the
-  selected build postfix after the project's serial-wide memory-card base.
+  PCSX2 without changing GameSettings. Build postfixes derive from canonical
+  build keys by replacing underscores with spaces and title-casing the result.
+  Project build card names insert that postfix after the project's serial-wide
+  memory-card base.
 - `ss move` files matching savestates from the selected user PCSX2 installation
   below Workshop `work/sstates/` for source games or the invoking project's
   `work/sstates/` for project builds. `-c` first sends the existing
