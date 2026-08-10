@@ -107,7 +107,7 @@ try {
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'paths.json')
     '{"schema_version":1,"sources":{"NUN5":{"serial":"SLES-55605","crc":"C071D4C1"}}}' |
         Set-Content -NoNewline -LiteralPath (Join-Path $repository 'games.json')
-    '{"schema_version":1,"title":"NA v2.28","serial":"SLOP-NA228","builds":{"latest":{"aliases":["l"],"postfix":"Latest"}}}' |
+    '{"schema_version":1,"title":"NA v2.28","serial":"SLOP-NA228","builds":{"latest":{"aliases":["l"]}}}' |
         Set-Content -NoNewline -LiteralPath (Join-Path $repository 'product.json')
     'raise SystemExit("fake resolver must not run")' |
         Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\lib\resolve_game.py')

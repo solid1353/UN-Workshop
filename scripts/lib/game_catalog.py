@@ -69,6 +69,11 @@ def _required_text(value: object, label: str) -> str:
     return value
 
 
+def derive_build_postfix(canonical_name: str) -> str:
+    """Derive a display postfix from a canonical snake-case build name."""
+    return canonical_name.replace("_", " ").title()
+
+
 def _root(roots: Mapping[str, Path], name: str) -> Path:
     try:
         return roots[name]
@@ -185,9 +190,7 @@ def derive_game_paths(
 
     title = _required_text(catalog.get("title"), "Build title")
     serial = _required_text(catalog.get("serial"), "Build serial")
-    postfix = _required_text(
-        definition.get("postfix"), f"Game {canonical_name!r} postfix"
-    )
+    postfix = derive_build_postfix(canonical_name)
     game_settings = _root(roots, "pcsx2_game_settings") / f"{serial}.ini"
     memory_card_base = (
         _read_memory_card_base(game_settings)
@@ -226,7 +229,11 @@ def resolve_game(
         "pcsx2_input_profiles": workshop_paths.roots["pcsx2_input_profiles"],
         "pcsx2_memory_cards": workshop_paths.roots["pcsx2_memory_cards"],
     }
-    return {
+    result = {
         name: os.path.abspath(path)
         for name, path in derive_game_paths(selector, catalog, roots).items()
     }
+    category, canonical_name, _, _ = find_definition(selector, catalog)
+    if category == "builds":
+        result["postfix"] = derive_build_postfix(canonical_name)
+    return result

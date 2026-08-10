@@ -93,7 +93,7 @@ function Get-Pcsx2IsoIdentity {
   "schema_version": 1,
   "title": "NA v2.28",
   "serial": "SLOP-NA228",
-  "builds": { "latest": { "aliases": ["l"], "postfix": "Latest" } }
+  "builds": { "latest": { "aliases": ["l"] } }
 }
 '@
     Set-Content -LiteralPath (Join-Path $project 'build\NA v2.28 - Latest.iso') -Value 'test'
