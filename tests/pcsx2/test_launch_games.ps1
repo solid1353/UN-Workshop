@@ -173,6 +173,68 @@ param(
         Assert-WorkshopLaunchTest `
             -Condition $oldCommandRejected `
             -Message 'The retired rec command remains active.'
+
+        Copy-Item `
+            -LiteralPath (Join-Path $sourceRepository 'scripts\pcsx2\launch_games.ps1') `
+            -Destination (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
+            -Force
+        foreach ($name in @('resolve_game.py', 'game_catalog.py', 'paths.py')) {
+            Copy-Item `
+                -LiteralPath (Join-Path $sourceRepository "scripts\lib\$name") `
+                -Destination (Join-Path $repository "scripts\lib\$name")
+        }
+        New-Item `
+            -ItemType Directory `
+            -Force `
+            -Path (Join-Path $repository 'source'), `
+                (Join-Path $repository 'pcsx2_shared\memory_cards') | Out-Null
+        New-Item `
+            -ItemType File `
+            -Force `
+            -Path (Join-Path $repository 'source\NUN5.iso'), `
+                (Join-Path $repository 'pcsx2_shared\memory_cards\NUN5.ps2') | Out-Null
+        @'
+param(
+    [string]$Target,
+    [string]$IsoPath,
+    [string]$MemoryCard,
+    [string]$InputRecording,
+    [string]$InputRecordingCaptureDirectory,
+    [switch]$Surfaceless,
+    [switch]$DiscardMemoryCardWrites,
+    [switch]$Unlimited,
+    [switch]$Wait,
+    [string[]]$Arguments
+)
+"[fake] arguments=$($Arguments -join ',') surfaceless=$Surfaceless discard=$DiscardMemoryCardWrites unlimited=$Unlimited wait=$Wait"
+'@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\pcsx2\launch.ps1')
+
+        $regressionLaunch = (
+            & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
+                -Games NUN5 `
+                -Play practice-menu `
+                -Test `
+                -CaptureDirectory (Join-Path $repository 'captures') `
+                -ProjectRoot $repository
+        ) -join "`n"
+        Assert-WorkshopLaunchTest `
+            -Condition (
+                $regressionLaunch -match 'arguments=-mute surfaceless=True discard=True unlimited=True wait=True'
+            ) `
+            -Message 'Regression playback did not force process-local PCSX2 muting.'
+
+        $stableRegressionLaunch = (
+            & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
+                -Games NUN5 `
+                -Play practice-menu `
+                -Test `
+                -Target stable `
+                -CaptureDirectory (Join-Path $repository 'captures-stable') `
+                -ProjectRoot $repository
+        ) -join "`n"
+        Assert-WorkshopLaunchTest `
+            -Condition ($stableRegressionLaunch -match 'arguments= surfaceless=True') `
+            -Message 'Regression playback passed the fork-only mute flag to stable PCSX2.'
     }
     finally {
         Pop-Location
