@@ -23,12 +23,13 @@ workshop ss move <game> <subpath> [-t dev|stable] [-c]
   inside a configured project, every available project build. Supplying a game
   returns all of its resolved properties; supplying a property prints only that
   value, such as `workshop resolve NUN5 iso`.
-- Supplying one or two games launches their resolved ISOs in development PCSX2
-  and tiles them in argument order. `-p`
+- Supplying one or two games normally launches their resolved ISOs in
+  development PCSX2 turbo mode and tiles them in argument order. `-p`
   replays one shared input recording in every launched instance; `-r`
-  records only the last/rightmost instance. Recording names may be relative
-  paths below `pcsx2_shared/input_recordings/`, and the `.p2m2` extension is
-  added automatically. For `-r`, missing parent directories are created. Each
+  records only the last/rightmost instance at nominal speed. Recording names
+  may be relative paths below `pcsx2_shared/input_recordings/`, and the
+  `.p2m2` extension is added automatically. For `-r`, missing parent
+  directories are created. Each
   result reports the ordered game, process, PINE port, and window position.
 - `-mc` selects one memory-card file for every launched game. A relative value
   resolves below `pcsx2_shared/memory_cards/`; an absolute path is also accepted.
@@ -68,7 +69,10 @@ workshop ss move <game> <subpath> [-t dev|stable] [-c]
   PCSX2 without changing GameSettings. Build postfixes derive from canonical
   build keys by replacing underscores with spaces and title-casing the result.
   Project build card names insert that postfix after the project's serial-wide
-  memory-card base.
+  memory-card base. The low-level configured launcher defaults development
+  launches to turbo, and ordinary Workshop launches and NA2.28 also select its
+  explicit `-Turbo` switch. E2E regression replay instead selects `-Unlimited`.
+  Recording creation remains nominal.
 - `ss move` files matching savestates from the selected user PCSX2 installation
   below Workshop `work/sstates/` for source games or the invoking project's
   `work/sstates/` for project builds. `-c` first sends the existing

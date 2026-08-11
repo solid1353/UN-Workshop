@@ -31,6 +31,12 @@ param(
     [switch]$Capped,
 
     [Parameter(ParameterSetName = 'Configured')]
+    [switch]$Turbo,
+
+    [Parameter(ParameterSetName = 'Configured')]
+    [switch]$Unlimited,
+
+    [Parameter(ParameterSetName = 'Configured')]
     [switch]$Surfaceless,
 
     [Parameter(ParameterSetName = 'Configured')]
@@ -43,6 +49,10 @@ param(
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
 $paths = Get-UnWorkshopPaths
+
+if ($Turbo -and $Unlimited) {
+    throw 'Use only one of -Turbo or -Unlimited.'
+}
 
 if ($PSCmdlet.ParameterSetName -eq 'Worker') {
     $workerRootFull = [IO.Path]::GetFullPath($WorkerRoot)
@@ -206,13 +216,18 @@ if ($DiscardMemoryCardWrites) {
 if (-not [string]::IsNullOrWhiteSpace($MemoryCard)) {
     $launchArguments += @('-memory-card', "`"$resolvedMemoryCard`"")
 }
-if (
-    $PSCmdlet.ParameterSetName -eq 'Configured' -and
-    $Target -eq 'dev' -and
-    -not $Capped -and
-    [string]::IsNullOrWhiteSpace($CreateInputRecording)
-) {
+if ($Unlimited) {
     $launchArguments += '-unlimited'
+}
+elseif (
+    $Turbo -or (
+        $PSCmdlet.ParameterSetName -eq 'Configured' -and
+        $Target -eq 'dev' -and
+        -not $Capped -and
+        [string]::IsNullOrWhiteSpace($CreateInputRecording)
+    )
+) {
+    $launchArguments += '-turbo'
 }
 if ($IsoPath) {
     $launchArguments += @('-batch', "`"$resolvedIso`"")

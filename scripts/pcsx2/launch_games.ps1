@@ -233,6 +233,7 @@ if ($Test) {
         -InputRecordingCaptureDirectory $captureDirectory `
         -Surfaceless `
         -DiscardMemoryCardWrites `
+        -Unlimited `
         -Wait
     return
 }
@@ -355,6 +356,9 @@ try {
             MemoryCard = $game.MemoryCardPath
             Arguments = @('-pine-port', [string]$pinePort)
             PassThru = $true
+        }
+        if ($PSCmdlet.ParameterSetName -ne 'Record') {
+            $launchParameters.Turbo = $true
         }
         if ($DiscardMemoryCardWrites) {
             $launchParameters.DiscardMemoryCardWrites = $true
