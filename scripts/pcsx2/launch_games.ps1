@@ -225,16 +225,21 @@ if ($Test) {
         return
     }
     [void](New-Item -ItemType Directory -Path $captureDirectory -Force)
-    & $pcsx2Launcher `
-        -Target $Target `
-        -IsoPath $selectedGames[0].IsoPath `
-        -MemoryCard $selectedGames[0].MemoryCardPath `
-        -InputRecording $recordingName `
-        -InputRecordingCaptureDirectory $captureDirectory `
-        -Surfaceless `
-        -DiscardMemoryCardWrites `
-        -Unlimited `
-        -Wait
+    $launchParameters = @{
+        Target = $Target
+        IsoPath = $selectedGames[0].IsoPath
+        MemoryCard = $selectedGames[0].MemoryCardPath
+        InputRecording = $recordingName
+        InputRecordingCaptureDirectory = $captureDirectory
+        Surfaceless = $true
+        DiscardMemoryCardWrites = $true
+        Unlimited = $true
+        Wait = $true
+    }
+    if ($Target -eq 'dev') {
+        $launchParameters.Arguments = @('-mute')
+    }
+    & $pcsx2Launcher @launchParameters
     return
 }
 
