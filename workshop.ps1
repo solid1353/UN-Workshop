@@ -124,8 +124,8 @@ switch ($normalizedCommand) {
         @(
             'UN Workshop'
             ''
-            '  workshop [game] [game] [-p name|-r name] [-mc card] [-dw]  Launch one or two games; pairs close existing user PCSX2 first.'
-            '  workshop <game> -t name [-mc card]  Replay one game and capture regression markers.'
+            '  workshop [game] [game] [-p name|-r name] [-mc card] [-dw]  Launch one or two games; turbo except nominal-speed recording; pairs close existing user PCSX2 first.'
+            '  workshop <game> -t name [-mc card]  Replay one game at unlimited speed and capture regression markers.'
             '  workshop input [profile]             Regenerate all profiles; optionally assign one.'
             '  workshop pcsx2                       Launch development PCSX2 without a game.'
             '  workshop resolve [game] [property]   Resolve all games, one game, or one property.'
