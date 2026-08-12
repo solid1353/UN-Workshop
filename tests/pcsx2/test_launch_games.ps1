@@ -23,6 +23,7 @@ foreach ($expectedOption in @(
     '-t <name>',
     '-mc <card>',
     '-dw',
+    '-n',
     '-t <dev|stable>',
     '-c'
 )) {
@@ -124,9 +125,10 @@ param(
     [string]$CaptureDirectory,
     [string]$MemoryCard,
     [switch]$DiscardMemoryCardWrites,
+    [switch]$NormalSpeed,
     [string]$ProjectRoot
 )
-"[fake] games=$($Games -join ',') play=$Play record=$Record test=$Test capture=$CaptureDirectory memory=$MemoryCard discard=$DiscardMemoryCardWrites project=$ProjectRoot"
+"[fake] games=$($Games -join ',') play=$Play record=$Record test=$Test capture=$CaptureDirectory memory=$MemoryCard discard=$DiscardMemoryCardWrites normalSpeed=$NormalSpeed project=$ProjectRoot"
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\pcsx2\launch_games.ps1')
 
     Push-Location $repository
@@ -145,6 +147,11 @@ param(
             ) `
             -Message 'Memory-card override and discard-write mode were not forwarded.'
 
+        $normalSpeedLaunch = (& .\workshop.ps1 NUN5 -n) -join "`n"
+        Assert-WorkshopLaunchTest `
+            -Condition ($normalSpeedLaunch -match 'games=NUN5 .*normalSpeed=True') `
+            -Message 'Normal-speed launch was not forwarded to the shared launcher.'
+
         $record = (& .\workshop.ps1 NUN5 latest -r font/collection/generic) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition ($record -match 'games=NUN5,latest play= record=font/collection/generic') `
@@ -154,6 +161,13 @@ param(
         Assert-WorkshopLaunchTest `
             -Condition ($test -match 'games=NUN5 play=practice-menu record= test=True') `
             -Message 'Regression playback was not forwarded to the shared launcher.'
+
+        $normalSpeedRegressionRejected = $false
+        try { & .\workshop.ps1 NUN5 -t practice-menu -n }
+        catch { $normalSpeedRegressionRejected = $true }
+        Assert-WorkshopLaunchTest `
+            -Condition $normalSpeedRegressionRejected `
+            -Message 'Normal-speed flag was accepted for unlimited regression playback.'
 
         $outputOverrideRejected = $false
         try { & .\workshop.ps1 NUN5 -t practice-menu -o ignored }
