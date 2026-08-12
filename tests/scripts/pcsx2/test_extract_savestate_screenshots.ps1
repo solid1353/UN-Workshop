@@ -7,7 +7,7 @@ $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
-$sourceRepository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
+$sourceRepository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
 $scriptPath = Join-Path $sourceRepository 'scripts\pcsx2\savestates.ps1'
 . (Join-Path $sourceRepository 'scripts\lib\paths.ps1')
 $workshopPaths = Get-UnWorkshopPaths
@@ -100,7 +100,7 @@ try {
 
     $moveDispatched = $false
     try {
-        & $scriptPath move __unknown_game__ destination -Target stable
+        & $scriptPath move __unknown_game__ destination
     }
     catch {
         $moveDispatched = $_.Exception.Message -like 'Unknown game or alias*'

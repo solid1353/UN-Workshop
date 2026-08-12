@@ -15,7 +15,7 @@ function Assert-WorkshopLaunchTest {
     if (-not $Condition) { throw $Message }
 }
 
-$sourceRepository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
+$sourceRepository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
 $help = (& (Join-Path $sourceRepository 'workshop.ps1') help) -join "`n"
 foreach ($expectedOption in @(
     '-p <name>',
@@ -25,7 +25,6 @@ foreach ($expectedOption in @(
     '-dw',
     '-t',
     '-u',
-    '-t <dev|stable>',
     '-c'
 )) {
     Assert-WorkshopLaunchTest `
@@ -87,10 +86,9 @@ try {
     "scripts": "scripts",
     "pcsx2_scripts": "@scripts/pcsx2",
     "pcsx2": "pcsx2",
-    "pcsx2_stable": "@pcsx2/stable",
-    "pcsx2_dev": "@pcsx2/dev",
+    "pcsx2_dev": "@pcsx2",
     "pcsx2_fork": "pcsx2/fork",
-    "pcsx2_files": "pcsx2_shared",
+    "pcsx2_files": "pcsx2_files",
     "pcsx2_bios": "@pcsx2_files/bios",
     "pcsx2_cheats": "@pcsx2_files/cheats",
     "pcsx2_game_settings": "@pcsx2_files/game_settings",
@@ -195,15 +193,14 @@ param(
             -ItemType Directory `
             -Force `
             -Path (Join-Path $repository 'source'), `
-                (Join-Path $repository 'pcsx2_shared\memory_cards') | Out-Null
+                (Join-Path $repository 'pcsx2_files\memory_cards') | Out-Null
         New-Item `
             -ItemType File `
             -Force `
             -Path (Join-Path $repository 'source\NUN5.iso'), `
-                (Join-Path $repository 'pcsx2_shared\memory_cards\NUN5.ps2') | Out-Null
+                (Join-Path $repository 'pcsx2_files\memory_cards\NUN5.ps2') | Out-Null
         @'
 param(
-    [string]$Target,
     [string]$IsoPath,
     [string]$MemoryCard,
     [string]$InputRecording,
@@ -234,26 +231,11 @@ param(
             ) `
             -Message 'Snapshot playback did not force process-local muting and read-only settings.'
 
-        $stableSnapshotLaunch = (
-            & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
-                -Games NUN5 `
-                -Play practice-menu `
-                -Snapshots `
-                -Target stable `
-                -CaptureDirectory (Join-Path $repository 'captures-stable') `
-                -ProjectRoot $repository
-        ) -join "`n"
-        Assert-WorkshopLaunchTest `
-            -Condition (
-                $stableSnapshotLaunch -match 'arguments= surfaceless=True discard=True readOnly=False'
-            ) `
-            -Message 'Snapshot playback passed fork-only flags to stable PCSX2.'
-
         Copy-Item `
             -LiteralPath (Join-Path $sourceRepository 'scripts\pcsx2\launch.ps1') `
             -Destination (Join-Path $repository 'scripts\pcsx2\launch.ps1') `
             -Force
-        $fakeDevRoot = Join-Path $repository 'pcsx2\dev'
+        $fakeDevRoot = Join-Path $repository 'pcsx2'
         New-Item -ItemType Directory -Force -Path $fakeDevRoot | Out-Null
         New-Item `
             -ItemType File `

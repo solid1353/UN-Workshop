@@ -4,7 +4,7 @@ param()
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$repository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
+$repository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
 $root = Join-Path ([IO.Path]::GetTempPath()) (
     'un-workshop-move-savestates-{0}' -f [guid]::NewGuid().ToString('N')
 )
@@ -23,14 +23,13 @@ try {
         'tools',
         'work',
         'pcsx2\fork',
-        'pcsx2\dev\sstates',
-        'pcsx2\stable',
-        'pcsx2\shared\bios',
-        'pcsx2\shared\cheats',
-        'pcsx2\shared\game_settings',
-        'pcsx2\shared\input_profiles',
-        'pcsx2\shared\input_recordings',
-        'pcsx2\shared\memory_cards'
+        'pcsx2\sstates',
+        'pcsx2_files\bios',
+        'pcsx2_files\cheats',
+        'pcsx2_files\game_settings',
+        'pcsx2_files\input_profiles',
+        'pcsx2_files\input_recordings',
+        'pcsx2_files\memory_cards'
     )) {
         [void](New-Item -ItemType Directory -Path (Join-Path $workshop $path) -Force)
     }
@@ -64,9 +63,8 @@ function Get-Pcsx2IsoIdentity {
     "savestates": "@work/sstates",
     "scripts": "scripts",
     "pcsx2_fork": "pcsx2/fork",
-    "pcsx2_dev": "pcsx2/dev",
-    "pcsx2_stable": "pcsx2/stable",
-    "pcsx2_files": "pcsx2/shared",
+    "pcsx2_dev": "pcsx2",
+    "pcsx2_files": "pcsx2_files",
     "pcsx2_bios": "@pcsx2_files/bios",
     "pcsx2_cheats": "@pcsx2_files/cheats",
     "pcsx2_game_settings": "@pcsx2_files/game_settings",
@@ -100,7 +98,7 @@ function Get-Pcsx2IsoIdentity {
 '@
     Set-Content -LiteralPath (Join-Path $project 'build\NA v2.28 - Latest.iso') -Value 'test'
     Set-Content `
-        -LiteralPath (Join-Path $workshop 'pcsx2\shared\game_settings\SLOP-NA228.ini') `
+        -LiteralPath (Join-Path $workshop 'pcsx2_files\game_settings\SLOP-NA228.ini') `
         -Value "[MemoryCards]`nSlot1_Filename = NA v2.28.ps2"
 
     $resolvedLatest = (
@@ -111,7 +109,7 @@ function Get-Pcsx2IsoIdentity {
     ) | ConvertFrom-Json
     $expectedLatestCard = Join-Path (
         $workshop
-    ) 'pcsx2\shared\memory_cards\NA v2.28 - Latest.ps2'
+    ) 'pcsx2_files\memory_cards\NA v2.28 - Latest.ps2'
     if (
         [IO.Path]::GetFullPath([string]$resolvedLatest.memory_card) -cne
         [IO.Path]::GetFullPath($expectedLatestCard)
@@ -119,7 +117,7 @@ function Get-Pcsx2IsoIdentity {
         throw 'Build memory-card path was not derived from the GameSettings base plus postfix.'
     }
 
-    $states = Join-Path $workshop 'pcsx2\dev\sstates'
+    $states = Join-Path $workshop 'pcsx2\sstates'
     Set-Content -LiteralPath (Join-Path $states 'SLOP-NA228 (12345678).00.p2s') -Value 'build'
     & (Join-Path $workshop 'scripts\pcsx2\move_savestates.ps1') `
         latest build-case -ProjectRoot $project | Out-Null

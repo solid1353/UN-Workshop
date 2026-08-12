@@ -4,4 +4,4 @@
 *.png binary
 *.p2m2 binary
 
-pcsx2_shared/game_settings/** text eol=crlf
+pcsx2_files/game_settings/** text eol=crlf

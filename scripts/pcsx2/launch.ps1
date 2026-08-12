@@ -1,9 +1,5 @@
 [CmdletBinding(DefaultParameterSetName = 'Configured')]
 param(
-    [Parameter(ParameterSetName = 'Configured')]
-    [ValidateSet('stable', 'dev')]
-    [string]$Target = 'dev',
-
     [Parameter(Mandatory, ParameterSetName = 'Worker')]
     [string]$WorkerRoot,
 
@@ -128,22 +124,12 @@ else {
                 [IO.Path]::GetFullPath($IsoPath)
         }
     }
-    if ($Target -eq 'stable') {
-        $executable = [IO.Path]::GetFullPath(
-            (Join-Path $paths.Pcsx2Stable 'pcsx2-qt.exe')
-        )
-        $workingDirectory = [IO.Path]::GetFullPath(
-            $paths.Pcsx2Stable
-        )
-    }
-    else {
-        $executable = [IO.Path]::GetFullPath(
-            (Join-Path $paths.Pcsx2Dev 'pcsx2-qtx64-avx2-dev.exe')
-        )
-        $workingDirectory = [IO.Path]::GetFullPath(
-            $paths.Pcsx2Dev
-        )
-    }
+    $executable = [IO.Path]::GetFullPath(
+        (Join-Path $paths.Pcsx2Dev 'pcsx2-qtx64-avx2-dev.exe')
+    )
+    $workingDirectory = [IO.Path]::GetFullPath(
+        $paths.Pcsx2Dev
+    )
     $surfaceless = $Surfaceless.IsPresent
 }
 

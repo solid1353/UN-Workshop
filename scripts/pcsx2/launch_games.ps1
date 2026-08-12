@@ -26,9 +26,6 @@ param(
 
     [UInt64]$UnlimitedForFrames = 0,
 
-    [ValidateSet('stable', 'dev')]
-    [string]$Target = 'dev',
-
     [string]$ProjectRoot,
 
     [ValidateRange(5, 120)]
@@ -206,12 +203,7 @@ foreach ($requestedGame in $Games) {
     })
 }
 
-$pcsx2Root = if ($Target -eq 'stable') {
-    $paths.Pcsx2Stable
-}
-else {
-    $paths.Pcsx2Dev
-}
+$pcsx2Root = $paths.Pcsx2Dev
 $pcsx2Launcher = [IO.Path]::GetFullPath(
     $paths.Files.pcsx2_launch_command
 )
@@ -246,7 +238,6 @@ if ($Snapshots) {
     }
     [void](New-Item -ItemType Directory -Path $captureDirectory -Force)
     $launchParameters = @{
-        Target = $Target
         IsoPath = $selectedGames[0].IsoPath
         MemoryCard = $selectedGames[0].MemoryCardPath
         InputRecording = $recordingName
@@ -256,10 +247,8 @@ if ($Snapshots) {
         Unlimited = $true
         Wait = $true
     }
-    if ($Target -eq 'dev') {
-        $launchParameters.Arguments = @('-mute')
-        $launchParameters.ReadOnlySettings = $true
-    }
+    $launchParameters.Arguments = @('-mute')
+    $launchParameters.ReadOnlySettings = $true
     & $pcsx2Launcher @launchParameters
     return
 }
@@ -309,10 +298,7 @@ if (-not $PSCmdlet.ShouldProcess($pcsx2Root, $action)) {
 
 if ($selectedGames.Count -eq 2) {
     $userProcesses = @(
-        Get-UnWorkshopUserPcsx2Processes -Roots @(
-            $paths.Pcsx2Dev,
-            $paths.Pcsx2Stable
-        )
+        Get-UnWorkshopUserPcsx2Processes -Roots @($paths.Pcsx2Dev)
     )
     foreach ($process in $userProcesses) {
         $targetDescription = "PCSX2 process $($process.Id) ($($process.Path))"
@@ -377,7 +363,6 @@ try {
         $nextPinePort++
 
         $launchParameters = @{
-            Target = $Target
             IsoPath = $game.IsoPath
             MemoryCard = $game.MemoryCardPath
             Arguments = @('-pine-port', [string]$pinePort)

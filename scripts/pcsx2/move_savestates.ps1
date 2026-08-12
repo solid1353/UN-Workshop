@@ -9,10 +9,6 @@ param(
     [ValidateNotNullOrEmpty()]
     [string]$SubPath,
 
-    [Parameter(Position = 2)]
-    [ValidateSet('stable', 'dev')]
-    [string]$Target = 'dev',
-
     [Alias('c')]
     [switch]$Cleanup,
 
@@ -67,11 +63,7 @@ else {
 }
 $expectedStem = "$serial ($crc)"
 
-$sourceInstallation = switch ($Target) {
-    'stable' { $paths.Pcsx2Stable }
-    'dev' { $paths.Pcsx2Dev }
-}
-$sourceRoot = Join-Path $sourceInstallation 'sstates'
+$sourceRoot = Join-Path $paths.Pcsx2Dev 'sstates'
 $destinationRoot = if ($canonicalCategory -eq 'Builds') {
     if ([string]::IsNullOrWhiteSpace($paths.Project)) {
         throw 'A project root is required to file build savestates.'
@@ -278,7 +270,6 @@ for ($stateIndex = 0; $stateIndex -lt $orderedStates.Count; $stateIndex++) {
 
         [pscustomobject]@{
             Game               = $canonicalGame
-            Target             = $Target
             Source             = $state.File.Name
             Destination        = $targetName
             OriginalSlot       = $state.OriginalSlotText
