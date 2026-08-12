@@ -20,6 +20,8 @@ param(
 
     [switch]$DiscardMemoryCardWrites,
 
+    [switch]$NormalSpeed,
+
     [ValidateSet('stable', 'dev')]
     [string]$Target = 'dev',
 
@@ -32,6 +34,10 @@ param(
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
 $paths = Get-UnWorkshopPaths -ProjectRoot $ProjectRoot
+
+if ($Test -and $NormalSpeed) {
+    throw 'Normal-speed mode cannot be used with unlimited-speed regression playback.'
+}
 
 function Get-UnWorkshopConfiguredPinePort {
     param(
@@ -362,8 +368,11 @@ try {
             Arguments = @('-pine-port', [string]$pinePort)
             PassThru = $true
         }
-        if ($PSCmdlet.ParameterSetName -ne 'Record') {
+        if ($PSCmdlet.ParameterSetName -ne 'Record' -and -not $NormalSpeed) {
             $launchParameters.Turbo = $true
+        }
+        elseif ($NormalSpeed) {
+            $launchParameters.Capped = $true
         }
         if ($DiscardMemoryCardWrites) {
             $launchParameters.DiscardMemoryCardWrites = $true

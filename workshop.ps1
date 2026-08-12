@@ -14,7 +14,9 @@ param(
 
     [string]$mc,
 
-    [switch]$dw
+    [switch]$dw,
+
+    [switch]$n
 )
 
 $ErrorActionPreference = 'Stop'
@@ -33,7 +35,8 @@ function Invoke-UnWorkshopGameLaunch {
         [string]$Record,
         [string]$RegressionTest,
         [string]$MemoryCard,
-        [switch]$DiscardMemoryCardWrites
+        [switch]$DiscardMemoryCardWrites,
+        [switch]$NormalSpeed
     )
 
     $games = @($Games | Where-Object { -not [string]::IsNullOrEmpty($_) })
@@ -51,6 +54,9 @@ function Invoke-UnWorkshopGameLaunch {
         $games.Count -ne 1) {
         throw '-t requires exactly one game.'
     }
+    if (-not [string]::IsNullOrWhiteSpace($RegressionTest) -and $NormalSpeed) {
+        throw '-n cannot be used with unlimited-speed regression playback.'
+    }
     $parameters = @{
         Games = @($games)
         ProjectRoot = $paths.Project
@@ -62,6 +68,9 @@ function Invoke-UnWorkshopGameLaunch {
     }
     if ($DiscardMemoryCardWrites) {
         $parameters.DiscardMemoryCardWrites = $true
+    }
+    if ($NormalSpeed) {
+        $parameters.NormalSpeed = $true
     }
     if (-not [string]::IsNullOrWhiteSpace($RegressionTest)) {
         $parameters.Play = $RegressionTest
@@ -124,7 +133,7 @@ switch ($normalizedCommand) {
         @(
             'UN Workshop'
             ''
-            '  workshop [game] [game] [-p name|-r name] [-mc card] [-dw]  Launch one or two games; turbo except nominal-speed recording; pairs close existing user PCSX2 first.'
+            '  workshop [game] [game] [-p name|-r name] [-mc card] [-dw] [-n]  Launch one or two games; turbo by default, normal for recording or -n; pairs close existing user PCSX2 first.'
             '  workshop <game> -t name [-mc card]  Replay one game at unlimited speed and capture regression markers.'
             '  workshop input [profile]             Regenerate all profiles; optionally assign one.'
             '  workshop pcsx2                       Launch development PCSX2 without a game.'
@@ -138,6 +147,7 @@ switch ($normalizedCommand) {
             '    -t <name>        Replay one game and capture regression markers; card writes are discarded.'
             '    -mc <card>       Use one shared card or template; .ps2 is added automatically.'
             '    -dw              Discard memory-card writes for an ordinary launch.'
+            '    -n               Launch at normal speed.'
             ''
             '  Savestate move options:'
             '    -t <dev|stable>  Select the PCSX2 installation containing the savestates.'
@@ -221,7 +231,7 @@ switch ($normalizedCommand) {
                 Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
         )
         if ($argumentList.Count -gt 0 -or
-            $launchModes.Count -gt 0 -or $dw) {
+            $launchModes.Count -gt 0 -or $dw -or $n) {
             throw 'workshop pcsx2 accepts no arguments.'
         }
         & $paths.Files.pcsx2_launch_command
@@ -231,8 +241,8 @@ switch ($normalizedCommand) {
         if ($argumentList.Count -eq 0) {
             throw 'Usage: workshop ss move|extract ...'
         }
-        if (-not [string]::IsNullOrWhiteSpace($mc) -or $dw) {
-            throw '-mc and -dw apply only to game launches.'
+        if (-not [string]::IsNullOrWhiteSpace($mc) -or $dw -or $n) {
+            throw '-mc, -dw, and -n apply only to game launches.'
         }
         $cleanup = $false
         $forwardedArguments = @(
@@ -264,6 +274,7 @@ switch ($normalizedCommand) {
             -Record $r `
             -RegressionTest $t `
             -MemoryCard $mc `
-            -DiscardMemoryCardWrites:$dw
+            -DiscardMemoryCardWrites:$dw `
+            -NormalSpeed:$n
     }
 }
