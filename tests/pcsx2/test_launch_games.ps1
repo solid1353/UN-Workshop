@@ -20,10 +20,11 @@ $help = (& (Join-Path $sourceRepository 'workshop.ps1') help) -join "`n"
 foreach ($expectedOption in @(
     '-p <name>',
     '-r <name>',
-    '-t <name>',
+    '-s <name>',
     '-mc <card>',
     '-dw',
-    '-n',
+    '-t',
+    '-u',
     '-t <dev|stable>',
     '-c'
 )) {
@@ -79,7 +80,7 @@ try {
   "roots": {
     "repository": ".",
     "source": "source",
-    "analysis": "work",
+    "disassembly": "@work/disassembly",
     "tools": "tools",
     "work": "work",
     "savestates": "@work/sstates",
@@ -88,7 +89,7 @@ try {
     "pcsx2": "pcsx2",
     "pcsx2_stable": "@pcsx2/stable",
     "pcsx2_dev": "@pcsx2/dev",
-    "pcsx2_clean": "pcsx2/clean",
+    "pcsx2_fork": "pcsx2/fork",
     "pcsx2_files": "pcsx2_shared",
     "pcsx2_bios": "@pcsx2_files/bios",
     "pcsx2_cheats": "@pcsx2_files/cheats",
@@ -108,27 +109,29 @@ try {
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'paths.json')
     '{"schema_version":1,"sources":{"NUN5":{"serial":"SLES-55605","crc":"C071D4C1"}}}' |
         Set-Content -NoNewline -LiteralPath (Join-Path $repository 'games.json')
-    '{"schema_version":1,"title":"NA v2.28","serial":"SLOP-NA228","builds":{"latest":{"aliases":["l"]}}}' |
-        Set-Content -NoNewline -LiteralPath (Join-Path $repository 'product.json')
+    '{"schema_version":1,"title":"NA v2.28","serial":"SLOP-NA228","output_boot_path":"SLOP_NA2.28","startup_fast_forward_frames":321,"builds":{"latest":{"aliases":["l"]}}}' |
+        Set-Content -NoNewline -LiteralPath (Join-Path $repository 'settings.json')
     'raise SystemExit("fake resolver must not run")' |
         Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\lib\resolve_game.py')
     @'
-param()
-'[fake] launch PCSX2 UI'
+param([switch]$Turbo)
+"[fake] launch PCSX2 UI turbo=$Turbo"
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\pcsx2\launch.ps1')
     @'
 param(
     [string[]]$Games,
     [string]$Play,
     [string]$Record,
-    [switch]$Test,
+    [switch]$Snapshots,
     [string]$CaptureDirectory,
     [string]$MemoryCard,
     [switch]$DiscardMemoryCardWrites,
-    [switch]$NormalSpeed,
+    [switch]$Turbo,
+    [switch]$Unlimited,
+    [UInt64]$UnlimitedForFrames,
     [string]$ProjectRoot
 )
-"[fake] games=$($Games -join ',') play=$Play record=$Record test=$Test capture=$CaptureDirectory memory=$MemoryCard discard=$DiscardMemoryCardWrites normalSpeed=$NormalSpeed project=$ProjectRoot"
+"[fake] games=$($Games -join ',') play=$Play record=$Record snapshots=$Snapshots capture=$CaptureDirectory memory=$MemoryCard discard=$DiscardMemoryCardWrites turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames project=$ProjectRoot"
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\pcsx2\launch_games.ps1')
 
     Push-Location $repository
@@ -147,46 +150,37 @@ param(
             ) `
             -Message 'Memory-card override and discard-write mode were not forwarded.'
 
-        $normalSpeedLaunch = (& .\workshop.ps1 NUN5 -n) -join "`n"
+        $turboLaunch = (& .\workshop.ps1 NUN5 -t) -join "`n"
         Assert-WorkshopLaunchTest `
-            -Condition ($normalSpeedLaunch -match 'games=NUN5 .*normalSpeed=True') `
-            -Message 'Normal-speed launch was not forwarded to the shared launcher.'
+            -Condition ($turboLaunch -match 'games=NUN5 .*turbo=True unlimited=False') `
+            -Message 'Turbo launch was not forwarded to the shared launcher.'
+
+        $unlimitedLaunch = (& .\workshop.ps1 NUN5 -u) -join "`n"
+        Assert-WorkshopLaunchTest `
+            -Condition ($unlimitedLaunch -match 'games=NUN5 .*turbo=False unlimited=True') `
+            -Message 'Unlimited launch was not forwarded to the shared launcher.'
 
         $record = (& .\workshop.ps1 NUN5 latest -r font/collection/generic) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition ($record -match 'games=NUN5,latest play= record=font/collection/generic') `
             -Message 'Nested rightmost recording was not forwarded to the shared launcher.'
 
-        $test = (& .\workshop.ps1 NUN5 -t practice-menu) -join "`n"
+        $snapshots = (& .\workshop.ps1 NUN5 -s practice-menu) -join "`n"
         Assert-WorkshopLaunchTest `
-            -Condition ($test -match 'games=NUN5 play=practice-menu record= test=True') `
-            -Message 'Regression playback was not forwarded to the shared launcher.'
+            -Condition ($snapshots -match 'games=NUN5 play=practice-menu record= snapshots=True') `
+            -Message 'Snapshot playback was not forwarded to the shared launcher.'
 
-        $normalSpeedRegressionRejected = $false
-        try { & .\workshop.ps1 NUN5 -t practice-menu -n }
-        catch { $normalSpeedRegressionRejected = $true }
+        $conflictingSpeedRejected = $false
+        try { & .\workshop.ps1 NUN5 -t -u }
+        catch { $conflictingSpeedRejected = $true }
         Assert-WorkshopLaunchTest `
-            -Condition $normalSpeedRegressionRejected `
-            -Message 'Normal-speed flag was accepted for unlimited regression playback.'
-
-        $outputOverrideRejected = $false
-        try { & .\workshop.ps1 NUN5 -t practice-menu -o ignored }
-        catch { $outputOverrideRejected = $true }
-        Assert-WorkshopLaunchTest `
-            -Condition $outputOverrideRejected `
-            -Message 'Retired public -o capture override remained accepted.'
+            -Condition $conflictingSpeedRejected `
+            -Message 'Turbo and Unlimited were accepted together.'
 
         $barePcsx2 = (& .\workshop.ps1 pcsx2) -join "`n"
         Assert-WorkshopLaunchTest `
-            -Condition ($barePcsx2 -match '\[fake\] launch PCSX2 UI') `
-            -Message 'Bare PCSX2 launch was not preserved.'
-
-        $oldCommandRejected = $false
-        try { & .\workshop.ps1 rec NUN5 practice-menu }
-        catch { $oldCommandRejected = $true }
-        Assert-WorkshopLaunchTest `
-            -Condition $oldCommandRejected `
-            -Message 'The retired rec command remains active.'
+            -Condition ($barePcsx2 -match '\[fake\] launch PCSX2 UI turbo=True') `
+            -Message 'Bare PCSX2 launch did not preserve permanent Turbo.'
 
         Copy-Item `
             -LiteralPath (Join-Path $sourceRepository 'scripts\pcsx2\launch_games.ps1') `
@@ -216,41 +210,104 @@ param(
     [string]$InputRecordingCaptureDirectory,
     [switch]$Surfaceless,
     [switch]$DiscardMemoryCardWrites,
+    [switch]$Turbo,
     [switch]$Unlimited,
+    [UInt64]$UnlimitedForFrames,
     [switch]$Wait,
     [string[]]$Arguments
 )
-"[fake] arguments=$($Arguments -join ',') surfaceless=$Surfaceless discard=$DiscardMemoryCardWrites unlimited=$Unlimited wait=$Wait"
+"[fake] arguments=$($Arguments -join ',') surfaceless=$Surfaceless discard=$DiscardMemoryCardWrites turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames wait=$Wait"
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\pcsx2\launch.ps1')
 
-        $regressionLaunch = (
+        $snapshotLaunch = (
             & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
                 -Games NUN5 `
                 -Play practice-menu `
-                -Test `
+                -Snapshots `
                 -CaptureDirectory (Join-Path $repository 'captures') `
                 -ProjectRoot $repository
         ) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition (
-                $regressionLaunch -match 'arguments=-mute surfaceless=True discard=True unlimited=True wait=True'
+                $snapshotLaunch -match 'arguments=-mute surfaceless=True discard=True turbo=False unlimited=True frames=0 wait=True'
             ) `
-            -Message 'Regression playback did not force process-local PCSX2 muting.'
+            -Message 'Snapshot playback did not force process-local PCSX2 muting.'
 
-        $stableRegressionLaunch = (
+        $stableSnapshotLaunch = (
             & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
                 -Games NUN5 `
                 -Play practice-menu `
-                -Test `
+                -Snapshots `
                 -Target stable `
                 -CaptureDirectory (Join-Path $repository 'captures-stable') `
                 -ProjectRoot $repository
         ) -join "`n"
         Assert-WorkshopLaunchTest `
-            -Condition ($stableRegressionLaunch -match 'arguments= surfaceless=True') `
-            -Message 'Regression playback passed the fork-only mute flag to stable PCSX2.'
+            -Condition ($stableSnapshotLaunch -match 'arguments= surfaceless=True') `
+            -Message 'Snapshot playback passed the fork-only mute flag to stable PCSX2.'
+
+        Copy-Item `
+            -LiteralPath (Join-Path $sourceRepository 'scripts\pcsx2\launch.ps1') `
+            -Destination (Join-Path $repository 'scripts\pcsx2\launch.ps1') `
+            -Force
+        $fakeDevRoot = Join-Path $repository 'pcsx2\dev'
+        New-Item -ItemType Directory -Force -Path $fakeDevRoot | Out-Null
+        New-Item `
+            -ItemType File `
+            -Force `
+            -Path (Join-Path $fakeDevRoot 'pcsx2-qtx64-avx2-dev.exe') | Out-Null
+        function Start-Process {
+            param(
+                [string]$FilePath,
+                [string]$WorkingDirectory,
+                [string[]]$ArgumentList,
+                [switch]$Wait,
+                [switch]$PassThru
+            )
+            $global:UnWorkshopCapturedStartArguments = @($ArgumentList)
+        }
+
+        & (Join-Path $repository 'scripts\pcsx2\launch.ps1') `
+            -IsoPath (Join-Path $repository 'source\NUN5.iso') `
+            -Turbo `
+            -UnlimitedForFrames 321
+        $timedArguments = @($global:UnWorkshopCapturedStartArguments)
+        Assert-WorkshopLaunchTest `
+            -Condition (
+                ($timedArguments -join '|') -match (
+                    '^-turbo\|-unlimited-for-frames\|321\|-batch\|'
+                )
+            ) `
+            -Message 'Configured launcher did not compose timed Unlimited with a Turbo fallback.'
+
+        & (Join-Path $repository 'scripts\pcsx2\launch.ps1') `
+            -IsoPath (Join-Path $repository 'source\NUN5.iso') `
+            -Unlimited
+        $unlimitedArguments = @($global:UnWorkshopCapturedStartArguments)
+        Assert-WorkshopLaunchTest `
+            -Condition (
+                $unlimitedArguments -contains '-unlimited' -and
+                $unlimitedArguments -notcontains '-turbo' -and
+                $unlimitedArguments -notcontains '-unlimited-for-frames'
+            ) `
+            -Message 'Configured launcher did not compose permanent Unlimited independently.'
+
+        & (Join-Path $repository 'scripts\pcsx2\launch.ps1') `
+            -IsoPath (Join-Path $repository 'source\NUN5.iso')
+        $normalArguments = @($global:UnWorkshopCapturedStartArguments)
+        Assert-WorkshopLaunchTest `
+            -Condition (
+                $normalArguments -notcontains '-turbo' -and
+                $normalArguments -notcontains '-unlimited' -and
+                $normalArguments -notcontains '-unlimited-for-frames'
+            ) `
+            -Message 'Configured launcher no longer has a Normal fallback.'
     }
     finally {
+        Remove-Variable `
+            -Name UnWorkshopCapturedStartArguments `
+            -Scope Global `
+            -ErrorAction SilentlyContinue
         Pop-Location
     }
 

@@ -1,28 +1,15 @@
-[CmdletBinding()]
-param(
-    [Parameter(Position = 0)]
-    [string]$Action,
-
-    [Parameter(Position = 1, ValueFromRemainingArguments)]
-    [string[]]$Arguments,
-
-    [string]$p,
-
-    [string]$r,
-
-    [string]$t,
-
-    [string]$mc,
-
-    [switch]$dw,
-
-    [switch]$n
-)
-
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'scripts\lib\paths.ps1')
 $paths = Get-UnWorkshopPaths
 $scripts = $paths.Roots.pcsx2_scripts
+
+$rawArguments = @($args)
+$Action = if ($rawArguments.Count -gt 0) { $rawArguments[0] } else { '' }
+$Arguments = @(
+    if ($rawArguments.Count -gt 1) {
+        $rawArguments[1..($rawArguments.Count - 1)]
+    }
+)
 
 $normalizedCommand = if ([string]::IsNullOrWhiteSpace($Action)) {
     ''
@@ -33,10 +20,11 @@ function Invoke-UnWorkshopGameLaunch {
         [string[]]$Games,
         [string]$Play,
         [string]$Record,
-        [string]$RegressionTest,
+        [string]$Snapshots,
         [string]$MemoryCard,
         [switch]$DiscardMemoryCardWrites,
-        [switch]$NormalSpeed
+        [switch]$Turbo,
+        [switch]$Unlimited
     )
 
     $games = @($Games | Where-Object { -not [string]::IsNullOrEmpty($_) })
@@ -44,18 +32,22 @@ function Invoke-UnWorkshopGameLaunch {
         throw 'Workshop launch accepts one or two games.'
     }
     $selectedModes = @(
-        @($Play, $Record, $RegressionTest) |
+        @($Play, $Record, $Snapshots) |
             Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
     )
     if ($selectedModes.Count -gt 1) {
-        throw 'Use only one of -p, -r, or -t.'
+        throw 'Use only one of -p, -r, or -s.'
     }
-    if (-not [string]::IsNullOrWhiteSpace($RegressionTest) -and
+    if (-not [string]::IsNullOrWhiteSpace($Snapshots) -and
         $games.Count -ne 1) {
-        throw '-t requires exactly one game.'
+        throw '-s requires exactly one game.'
     }
-    if (-not [string]::IsNullOrWhiteSpace($RegressionTest) -and $NormalSpeed) {
-        throw '-n cannot be used with unlimited-speed regression playback.'
+    if ($Turbo -and $Unlimited) {
+        throw 'Use only one of -t or -u.'
+    }
+    if (-not [string]::IsNullOrWhiteSpace($Snapshots) -and
+        ($Turbo -or $Unlimited)) {
+        throw '-s owns its permanent Unlimited speed mode.'
     }
     $parameters = @{
         Games = @($games)
@@ -69,14 +61,84 @@ function Invoke-UnWorkshopGameLaunch {
     if ($DiscardMemoryCardWrites) {
         $parameters.DiscardMemoryCardWrites = $true
     }
-    if ($NormalSpeed) {
-        $parameters.NormalSpeed = $true
-    }
-    if (-not [string]::IsNullOrWhiteSpace($RegressionTest)) {
-        $parameters.Play = $RegressionTest
-        $parameters.Test = $true
+    if ($Turbo) { $parameters.Turbo = $true }
+    if ($Unlimited) { $parameters.Unlimited = $true }
+    if (-not [string]::IsNullOrWhiteSpace($Snapshots)) {
+        $parameters.Play = $Snapshots
+        $parameters.Snapshots = $true
     }
     & $paths.Files.pcsx2_game_launch_command @parameters
+}
+
+function ConvertFrom-UnWorkshopLaunchArguments {
+    param([string[]]$Tokens)
+
+    $games = [Collections.Generic.List[string]]::new()
+    $values = [ordered]@{
+        Play = ''
+        Record = ''
+        Snapshots = ''
+        MemoryCard = ''
+    }
+    $discardMemoryCardWrites = $false
+    $turbo = $false
+    $unlimited = $false
+    $valueOptions = @{
+        '-p' = 'Play'
+        '-r' = 'Record'
+        '-s' = 'Snapshots'
+        '-mc' = 'MemoryCard'
+    }
+
+    for ($index = 0; $index -lt $Tokens.Count; $index++) {
+        $token = [string]$Tokens[$index]
+        $option = $token.ToLowerInvariant()
+        if ($valueOptions.ContainsKey($option)) {
+            $name = $valueOptions[$option]
+            if (-not [string]::IsNullOrWhiteSpace([string]$values[$name])) {
+                throw "$option may be specified only once."
+            }
+            if ($index + 1 -ge $Tokens.Count) {
+                throw "$option requires a value."
+            }
+            $index++
+            $values[$name] = [string]$Tokens[$index]
+            continue
+        }
+        switch ($option) {
+            '-dw' {
+                if ($discardMemoryCardWrites) {
+                    throw '-dw may be specified only once.'
+                }
+                $discardMemoryCardWrites = $true
+            }
+            '-t' {
+                if ($turbo) { throw '-t may be specified only once.' }
+                $turbo = $true
+            }
+            '-u' {
+                if ($unlimited) { throw '-u may be specified only once.' }
+                $unlimited = $true
+            }
+            default {
+                if ($token.StartsWith('-')) {
+                    throw "Unknown Workshop launch option: $token"
+                }
+                $games.Add($token)
+            }
+        }
+    }
+
+    [pscustomobject]@{
+        Games = @($games)
+        Play = $values.Play
+        Record = $values.Record
+        Snapshots = $values.Snapshots
+        MemoryCard = $values.MemoryCard
+        DiscardMemoryCardWrites = $discardMemoryCardWrites
+        Turbo = $turbo
+        Unlimited = $unlimited
+    }
 }
 
 switch ($normalizedCommand) {
@@ -133,8 +195,8 @@ switch ($normalizedCommand) {
         @(
             'UN Workshop'
             ''
-            '  workshop [game] [game] [-p name|-r name] [-mc card] [-dw] [-n]  Launch one or two games; turbo by default, normal for recording or -n; pairs close existing user PCSX2 first.'
-            '  workshop <game> -t name [-mc card]  Replay one game at unlimited speed and capture regression markers.'
+            '  workshop [game] [game] [-p name|-r name] [-mc card] [-dw] [-t|-u]  Launch one or two games; pairs close existing user PCSX2 first.'
+            '  workshop <game> -s name [-mc card]  Replay one game at unlimited speed and take snapshots.'
             '  workshop input [profile]             Regenerate all profiles; optionally assign one.'
             '  workshop pcsx2                       Launch development PCSX2 without a game.'
             '  workshop resolve [game] [property]   Resolve all games, one game, or one property.'
@@ -144,10 +206,11 @@ switch ($normalizedCommand) {
             '  Launch options:'
             '    -p <name>        Replay an input recording.'
             '    -r <name>        Create an input recording; paired launches record the rightmost game.'
-            '    -t <name>        Replay one game and capture regression markers; card writes are discarded.'
+            '    -s <name>        Replay one game and take snapshots; card writes are discarded.'
             '    -mc <card>       Use one shared card or template; .ps2 is added automatically.'
             '    -dw              Discard memory-card writes for an ordinary launch.'
-            '    -n               Launch at normal speed.'
+            '    -t               Launch in Turbo.'
+            '    -u               Launch in Unlimited.'
             ''
             '  Savestate move options:'
             '    -t <dev|stable>  Select the PCSX2 installation containing the savestates.'
@@ -226,55 +289,62 @@ switch ($normalizedCommand) {
             $Arguments |
                 Where-Object { -not [string]::IsNullOrEmpty($_) }
         )
-        $launchModes = @(
-            @($p, $r, $t, $mc) |
-                Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
-        )
-        if ($argumentList.Count -gt 0 -or
-            $launchModes.Count -gt 0 -or $dw -or $n) {
+        if ($argumentList.Count -gt 0) {
             throw 'workshop pcsx2 accepts no arguments.'
         }
-        & $paths.Files.pcsx2_launch_command
+        & $paths.Files.pcsx2_launch_command -Turbo
     }
     'ss' {
         $argumentList = @($Arguments)
         if ($argumentList.Count -eq 0) {
             throw 'Usage: workshop ss move|extract ...'
         }
-        if (-not [string]::IsNullOrWhiteSpace($mc) -or $dw -or $n) {
-            throw '-mc, -dw, and -n apply only to game launches.'
-        }
         $cleanup = $false
-        $forwardedArguments = @(
-            foreach ($argument in $argumentList) {
-                if ($argument -ceq '-c') {
-                    $cleanup = $true
-                }
-                elseif ($argument -ieq '-Cleanup' -or $argument -ieq '-Target') {
-                    throw 'Use workshop ss short options: -t dev|stable and -c.'
-                }
-                else {
-                    $argument
-                }
+        $target = ''
+        $forwardedArguments = [Collections.Generic.List[string]]::new()
+        for ($index = 0; $index -lt $argumentList.Count; $index++) {
+            $argument = [string]$argumentList[$index]
+            if ($argument -ceq '-c') {
+                $cleanup = $true
             }
-        )
+            elseif ($argument -ceq '-t') {
+                if (-not [string]::IsNullOrWhiteSpace($target)) {
+                    throw 'workshop ss -t may be specified only once.'
+                }
+                if ($index + 1 -ge $argumentList.Count) {
+                    throw 'workshop ss -t requires dev or stable.'
+                }
+                $index++
+                $target = [string]$argumentList[$index]
+            }
+            elseif ($argument -ieq '-Cleanup' -or $argument -ieq '-Target') {
+                throw 'Use workshop ss short options: -t dev|stable and -c.'
+            }
+            else {
+                $forwardedArguments.Add($argument)
+            }
+        }
         $parameters = @{}
         if ($cleanup) { $parameters.Cleanup = $true }
-        if (-not [string]::IsNullOrWhiteSpace($t)) { $parameters.Target = $t }
-        & (Join-Path $scripts 'savestates.ps1') @forwardedArguments @parameters
+        if (-not [string]::IsNullOrWhiteSpace($target)) {
+            $parameters.Target = $target
+        }
+        $forwardedArgumentArray = @($forwardedArguments)
+        & (Join-Path $scripts 'savestates.ps1') @forwardedArgumentArray @parameters
     }
     default {
-        $games = @(
+        $launch = ConvertFrom-UnWorkshopLaunchArguments -Tokens @(
             $Action
-            $Arguments | Where-Object { -not [string]::IsNullOrEmpty($_) }
+            $Arguments
         )
         Invoke-UnWorkshopGameLaunch `
-            -Games $games `
-            -Play $p `
-            -Record $r `
-            -RegressionTest $t `
-            -MemoryCard $mc `
-            -DiscardMemoryCardWrites:$dw `
-            -NormalSpeed:$n
+            -Games $launch.Games `
+            -Play $launch.Play `
+            -Record $launch.Record `
+            -Snapshots $launch.Snapshots `
+            -MemoryCard $launch.MemoryCard `
+            -DiscardMemoryCardWrites:$launch.DiscardMemoryCardWrites `
+            -Turbo:$launch.Turbo `
+            -Unlimited:$launch.Unlimited
     }
 }

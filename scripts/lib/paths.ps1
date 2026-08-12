@@ -20,7 +20,7 @@ function Find-UnWorkshopProjectRoot {
     while ($null -ne $candidate) {
         if (
             (Test-Path -LiteralPath (Join-Path $candidate.FullName 'paths.json') -PathType Leaf) -and
-            (Test-Path -LiteralPath (Join-Path $candidate.FullName 'product.json') -PathType Leaf)
+            (Test-Path -LiteralPath (Join-Path $candidate.FullName 'settings.json') -PathType Leaf)
         ) {
             return $candidate.FullName
         }
@@ -105,16 +105,16 @@ function Get-UnWorkshopPaths {
         Workshop = $roots.repository
         Project = $project
         Source = $roots.source
-        Analysis = $roots.analysis
+        Disassembly = $roots.disassembly
         Tools = $roots.tools
         Savestates = $roots.savestates
         SourceCatalog = $files.game_catalog
-        ProjectCatalog = if ($project) {
-            Join-Path $project 'product.json'
+        ProjectSettings = if ($project) {
+            Join-Path $project 'settings.json'
         } else { $null }
         Pcsx2Stable = $roots.pcsx2_stable
         Pcsx2Dev = $roots.pcsx2_dev
-        Pcsx2Clean = $roots.pcsx2_clean
+        Pcsx2Fork = $roots.pcsx2_fork
         Pcsx2Files = $roots.pcsx2_files
         Bios = $roots.pcsx2_bios
         Cheats = $roots.pcsx2_cheats
@@ -143,10 +143,10 @@ function Get-UnWorkshopCatalog {
         Serial = $null
         Builds = $null
     }
-    if ($paths.ProjectCatalog) {
-        $project = Get-Content -Raw -LiteralPath $paths.ProjectCatalog | ConvertFrom-Json
+    if ($paths.ProjectSettings) {
+        $project = Get-Content -Raw -LiteralPath $paths.ProjectSettings | ConvertFrom-Json
         if ([int]$project.schema_version -ne 1) {
-            throw "Unsupported project game catalog schema: $($project.schema_version)"
+            throw "Unsupported project settings schema: $($project.schema_version)"
         }
         $result.Title = $project.title
         $result.Serial = $project.serial

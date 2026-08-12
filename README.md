@@ -10,8 +10,8 @@ memory cards, savestates, logs, and task artifacts.
 `workshop.ps1` is the single user-facing entrypoint.
 
 ```powershell
-workshop [game] [game] [-p <recording>|-r <recording>] [-mc <card>] [-dw]
-workshop <game> -t <recording> [-mc <card>]
+workshop [game] [game] [-p <recording>|-r <recording>] [-mc <card>] [-dw] [-t|-u]
+workshop <game> -s <recording> [-mc <card>]
 workshop input [profile]
 workshop pcsx2
 workshop resolve [game] [property]
@@ -23,10 +23,11 @@ workshop ss move <game> <subpath> [-t dev|stable] [-c]
   inside a configured project, every available project build. Supplying a game
   returns all of its resolved properties; supplying a property prints only that
   value, such as `workshop resolve NUN5 iso`.
-- Supplying one or two games normally launches their resolved ISOs in
-  development PCSX2 turbo mode and tiles them in argument order. `-p`
-  replays one shared input recording in every launched instance; `-r`
-  records only the last/rightmost instance at nominal speed. Recording names
+- Supplying one or two games launches their resolved ISOs at normal speed and
+  tiles them in argument order. `-t` selects Turbo, while `-u` selects
+  Unlimited; the two speed options are mutually exclusive. `-p` replays one
+  shared input recording in every launched instance; `-r` records only the
+  last/rightmost instance. Recording names
   may be relative paths below `pcsx2_shared/input_recordings/`, and the
   `.p2m2` extension is added automatically. For `-r`, missing parent
   directories are created. Each
@@ -37,22 +38,22 @@ workshop ss move <game> <subpath> [-t dev|stable] [-c]
   back to `pcsx2_shared/memory_cards/templates/` when no root-level card exists.
   `-dw` makes ordinary launches report memory-card writes as successful without
   persisting them. File-backed cards use shared access with or without `-dw`;
-  discard mode additionally suppresses memory-card busy state. Regression replay
-  with `-t` always discards writes.
-- `workshop <game> -t <recording>` replays one game in PCSX2's
-  surfaceless no-GUI mode and captures every recorded L3+R3 regression marker
+  discard mode additionally suppresses memory-card busy state. Snapshot replay
+  with `-s` always discards writes.
+- `workshop <game> -s <recording>` replays one game in PCSX2's
+  surfaceless no-GUI mode and captures every recorded L3+R3 snapshot marker
   without creating a render window or taking focus. Captures go below
   `work/captures/<recording>/<game>/`. A marker is the rising edge of the chord,
   so holding both buttons creates one capture. A successful marker savestate and
   its standalone PNG use the same encoded screenshot. If actual memory-card
   activity blocks the savestate outside discard mode, the standalone PNG is
   still written. The command waits for the replay to finish.
-- Regression recordings are power-on timelines. They may be shortened without
+- Snapshot recordings are power-on timelines. They may be shortened without
   rerecording only by removing trailing frames after the final required marker;
   cutting the prefix or middle changes controller timing and the resulting game
   state. A physical tail trim must update the recording's total-frame value and
   truncate the file at the matching frame boundary.
-- `workshop pcsx2` launches development PCSX2 without a game.
+- `workshop pcsx2` launches development PCSX2 without a game in Turbo.
 - `workshop input` regenerates every complete PCSX2 input profile from the
   tracked base and partial overrides without changing GameSettings assignments.
 - `workshop input <profile>` also regenerates every complete profile, then
@@ -69,10 +70,10 @@ workshop ss move <game> <subpath> [-t dev|stable] [-c]
   PCSX2 without changing GameSettings. Build postfixes derive from canonical
   build keys by replacing underscores with spaces and title-casing the result.
   Project build card names insert that postfix after the project's serial-wide
-  memory-card base. The low-level configured launcher defaults development
-  launches to turbo, and ordinary Workshop launches and NA2.28 also select its
-  explicit `-Turbo` switch. E2E regression replay instead selects `-Unlimited`.
-  Recording creation remains nominal.
+  memory-card base. Speed selection is positive throughout the launcher:
+  callers may request Turbo, permanent Unlimited, or frame-limited Unlimited;
+  no speed option means Normal. Turbo may accompany frame-limited Unlimited and
+  becomes its fallback. Snapshot replay explicitly selects permanent Unlimited.
 - `ss move` files matching savestates from the selected user PCSX2 installation
   below Workshop `work/sstates/` for source games or the invoking project's
   `work/sstates/` for project builds. `-c` first sends the existing
@@ -83,8 +84,8 @@ workshop ss move <game> <subpath> [-t dev|stable] [-c]
   folder. Explicit folder and savestate paths remain supported.
 
 When invoked inside a supported project, the command discovers that project's
-root build catalog automatically. Shared source games remain available without
-a project catalog.
+root settings automatically. Shared source games remain available without
+project settings.
 
 ## Tracked layout
 
