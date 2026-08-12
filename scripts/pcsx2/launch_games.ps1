@@ -258,6 +258,7 @@ if ($Snapshots) {
     }
     if ($Target -eq 'dev') {
         $launchParameters.Arguments = @('-mute')
+        $launchParameters.ReadOnlySettings = $true
     }
     & $pcsx2Launcher @launchParameters
     return

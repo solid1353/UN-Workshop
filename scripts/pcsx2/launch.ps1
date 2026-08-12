@@ -43,6 +43,9 @@ param(
     [switch]$DiscardMemoryCardWrites,
 
     [Parameter(ParameterSetName = 'Configured')]
+    [switch]$ReadOnlySettings,
+
+    [Parameter(ParameterSetName = 'Configured')]
     [string]$MemoryCard
 )
 
@@ -219,6 +222,9 @@ if ($surfaceless) {
 }
 if ($DiscardMemoryCardWrites) {
     $launchArguments += '-discard-memory-card-writes'
+}
+if ($ReadOnlySettings) {
+    $launchArguments += '-read-only-settings'
 }
 if (-not [string]::IsNullOrWhiteSpace($MemoryCard)) {
     $launchArguments += @('-memory-card', "`"$resolvedMemoryCard`"")
