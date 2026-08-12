@@ -91,8 +91,6 @@ project settings.
 
 - `paths.json`: authoritative Workshop roots and named reusable files.
 - `games.json`: stable source-game selectors, aliases, serials, and CRCs.
-- `settings/git-authors.tsv`: shared non-secret agent commit identities.
-- `settings/notifications.json`: shared notification mute state.
 - `assets/icons/`: reusable source-game `simple` and `detailed` icons.
 - `pcsx2_files/`: public cheats, GameSettings, input-profile sources, and
   input recordings. BIOS files and memory cards are deliberately ignored.
