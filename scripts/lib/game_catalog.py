@@ -22,12 +22,12 @@ _PATHS = _load_paths_module()
 DEFAULT_INPUT_PROFILE = "Default"
 
 
-def _read_catalog(path: Path, label: str) -> dict[str, object]:
+def _read_definition(path: Path, label: str) -> dict[str, object]:
     if not path.is_file():
-        raise FileNotFoundError(f"{label} catalog not found: {path}")
+        raise FileNotFoundError(f"{label} not found: {path}")
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict) or value.get("schema_version") != 1:
-        raise ValueError(f"Unsupported {label} catalog schema")
+        raise ValueError(f"Unsupported {label} schema")
     return value
 
 
@@ -37,7 +37,9 @@ def load_catalog(
 ) -> dict[str, object]:
     workshop_root = workshop_root.resolve()
     workshop_paths = _PATHS.load_workshop_paths(workshop_root)
-    shared = _read_catalog(workshop_paths.files["game_catalog"], "Workshop game")
+    shared = _read_definition(
+        workshop_paths.files["game_catalog"], "Workshop game catalog"
+    )
     sources = shared.get("sources")
     if not isinstance(sources, dict) or not sources:
         raise ValueError("Workshop game catalog has no source games")
@@ -47,16 +49,16 @@ def load_catalog(
         "sources": sources,
     }
     if project_root is not None:
-        project = _read_catalog(
-            project_root.resolve() / "product.json",
-            "Project game",
+        project = _read_definition(
+            project_root.resolve() / "settings.json",
+            "Project settings",
         )
         title = project.get("title")
         serial = project.get("serial")
         builds = project.get("builds")
         if builds is not None:
             if not isinstance(builds, dict) or not builds:
-                raise ValueError("Project game catalog builds must be an object")
+                raise ValueError("Project settings builds must be an object")
             merged["title"] = title
             merged["serial"] = serial
             merged["builds"] = builds

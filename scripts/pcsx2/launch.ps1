@@ -28,13 +28,13 @@ param(
     [switch]$PassThru,
 
     [Parameter(ParameterSetName = 'Configured')]
-    [switch]$Capped,
-
-    [Parameter(ParameterSetName = 'Configured')]
     [switch]$Turbo,
 
     [Parameter(ParameterSetName = 'Configured')]
     [switch]$Unlimited,
+
+    [Parameter(ParameterSetName = 'Configured')]
+    [UInt64]$UnlimitedForFrames = 0,
 
     [Parameter(ParameterSetName = 'Configured')]
     [switch]$Surfaceless,
@@ -52,6 +52,13 @@ $paths = Get-UnWorkshopPaths
 
 if ($Turbo -and $Unlimited) {
     throw 'Use only one of -Turbo or -Unlimited.'
+}
+if ($PSBoundParameters.ContainsKey('UnlimitedForFrames') -and
+    $UnlimitedForFrames -eq 0) {
+    throw '-UnlimitedForFrames requires a positive frame count.'
+}
+if ($Unlimited -and $UnlimitedForFrames -gt 0) {
+    throw 'Permanent Unlimited cannot be combined with frame-limited Unlimited.'
 }
 
 if ($PSCmdlet.ParameterSetName -eq 'Worker') {
@@ -219,15 +226,16 @@ if (-not [string]::IsNullOrWhiteSpace($MemoryCard)) {
 if ($Unlimited) {
     $launchArguments += '-unlimited'
 }
-elseif (
-    $Turbo -or (
-        $PSCmdlet.ParameterSetName -eq 'Configured' -and
-        $Target -eq 'dev' -and
-        -not $Capped -and
-        [string]::IsNullOrWhiteSpace($CreateInputRecording)
-    )
-) {
-    $launchArguments += '-turbo'
+else {
+    if ($Turbo) {
+        $launchArguments += '-turbo'
+    }
+    if ($UnlimitedForFrames -gt 0) {
+        $launchArguments += @(
+            '-unlimited-for-frames',
+            [string]$UnlimitedForFrames
+        )
+    }
 }
 if ($IsoPath) {
     $launchArguments += @('-batch', "`"$resolvedIso`"")

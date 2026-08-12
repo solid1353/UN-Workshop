@@ -8,7 +8,7 @@ param(
     [string]$Play,
 
     [Parameter(ParameterSetName = 'Play')]
-    [switch]$Test,
+    [switch]$Snapshots,
 
     [Parameter(ParameterSetName = 'Play')]
     [string]$CaptureDirectory,
@@ -20,7 +20,11 @@ param(
 
     [switch]$DiscardMemoryCardWrites,
 
-    [switch]$NormalSpeed,
+    [switch]$Turbo,
+
+    [switch]$Unlimited,
+
+    [UInt64]$UnlimitedForFrames = 0,
 
     [ValidateSet('stable', 'dev')]
     [string]$Target = 'dev',
@@ -35,8 +39,18 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
 $paths = Get-UnWorkshopPaths -ProjectRoot $ProjectRoot
 
-if ($Test -and $NormalSpeed) {
-    throw 'Normal-speed mode cannot be used with unlimited-speed regression playback.'
+if ($Turbo -and $Unlimited) {
+    throw 'Use only one of -Turbo or -Unlimited.'
+}
+if ($PSBoundParameters.ContainsKey('UnlimitedForFrames') -and
+    $UnlimitedForFrames -eq 0) {
+    throw '-UnlimitedForFrames requires a positive frame count.'
+}
+if ($Unlimited -and $UnlimitedForFrames -gt 0) {
+    throw 'Permanent Unlimited cannot be combined with frame-limited Unlimited.'
+}
+if ($Snapshots -and ($Turbo -or $Unlimited -or $UnlimitedForFrames -gt 0)) {
+    throw 'Snapshot replay owns its permanent Unlimited speed mode.'
 }
 
 function Get-UnWorkshopConfiguredPinePort {
@@ -210,9 +224,9 @@ foreach ($requiredFile in $requiredFiles) {
     }
 }
 
-if ($Test) {
+if ($Snapshots) {
     if ($selectedGames.Count -ne 1) {
-        throw '-Test requires exactly one game.'
+        throw '-Snapshots requires exactly one game.'
     }
     $captureDirectory = if (-not [string]::IsNullOrWhiteSpace($CaptureDirectory)) {
         [IO.Path]::GetFullPath($CaptureDirectory)
@@ -226,7 +240,7 @@ if ($Test) {
         }
         Join-Path $captureRepositoryRoot "work\captures\$recordingStem\$($selectedGames[0].Selector)"
     }
-    $action = "replay $($selectedGames[0].Selector) and capture regression markers"
+    $action = "replay $($selectedGames[0].Selector) and capture snapshot markers"
     if (-not $PSCmdlet.ShouldProcess($captureDirectory, $action)) {
         return
     }
@@ -368,20 +382,17 @@ try {
             Arguments = @('-pine-port', [string]$pinePort)
             PassThru = $true
         }
-        if ($PSCmdlet.ParameterSetName -ne 'Record' -and -not $NormalSpeed) {
+        if ($Turbo) {
             $launchParameters.Turbo = $true
         }
-        elseif ($NormalSpeed) {
-            $launchParameters.Capped = $true
+        if ($Unlimited) {
+            $launchParameters.Unlimited = $true
+        }
+        elseif ($UnlimitedForFrames -gt 0) {
+            $launchParameters.UnlimitedForFrames = $UnlimitedForFrames
         }
         if ($DiscardMemoryCardWrites) {
             $launchParameters.DiscardMemoryCardWrites = $true
-        }
-        if (
-            $selectedGames.Count -eq 2 -and
-            $PSCmdlet.ParameterSetName -eq 'Record'
-        ) {
-            $launchParameters.Capped = $true
         }
         if ($PSCmdlet.ParameterSetName -eq 'Play') {
             $launchParameters.InputRecording = $playbackRecordings[$index]

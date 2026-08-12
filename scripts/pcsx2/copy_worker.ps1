@@ -10,7 +10,7 @@ $paths = Get-UnWorkshopPaths
 $workerRootFull = [IO.Path]::GetFullPath($WorkerRoot)
 $workerPcsx2 = Join-Path $workerRootFull 'pcsx2'
 $workerName = Split-Path $workerRootFull -Leaf
-$template = [IO.Path]::GetFullPath($paths.Pcsx2Clean)
+$template = [IO.Path]::GetFullPath($paths.Pcsx2Fork)
 $sharedBios = [IO.Path]::GetFullPath($paths.Bios)
 $defaultMemoryCard = Join-Path ([IO.Path]::GetFullPath($paths.MemoryCards)) 'Default.ps2'
 if (-not (Test-Path -LiteralPath $template -PathType Container)) {
@@ -34,7 +34,7 @@ if (Test-Path -LiteralPath $workerPcsx2) {
 
 if (-not $PSCmdlet.ShouldProcess(
     $workerPcsx2,
-    "copy the clean PCSX2 template and shared BIOS for $workerName"
+    "copy the PCSX2 fork template and shared BIOS for $workerName"
 )) {
     return
 }

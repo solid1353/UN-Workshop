@@ -22,7 +22,7 @@ try {
         'source',
         'tools',
         'work',
-        'pcsx2\clean',
+        'pcsx2\fork',
         'pcsx2\dev\sstates',
         'pcsx2\stable',
         'pcsx2\shared\bios',
@@ -58,12 +58,12 @@ function Get-Pcsx2IsoIdentity {
   "roots": {
     "repository": ".",
     "source": "source",
-    "analysis": "@work",
+    "disassembly": "@work/disassembly",
     "tools": "tools",
     "work": "work",
     "savestates": "@work/sstates",
     "scripts": "scripts",
-    "pcsx2_clean": "pcsx2/clean",
+    "pcsx2_fork": "pcsx2/fork",
     "pcsx2_dev": "pcsx2/dev",
     "pcsx2_stable": "pcsx2/stable",
     "pcsx2_files": "pcsx2/shared",
@@ -88,11 +88,13 @@ function Get-Pcsx2IsoIdentity {
   }
 }
 '@
-    Set-Content -LiteralPath (Join-Path $project 'product.json') -Value @'
+    Set-Content -LiteralPath (Join-Path $project 'settings.json') -Value @'
 {
   "schema_version": 1,
   "title": "NA v2.28",
   "serial": "SLOP-NA228",
+  "output_boot_path": "SLOP_NA2.28",
+  "startup_fast_forward_frames": 321,
   "builds": { "latest": { "aliases": ["l"] } }
 }
 '@
