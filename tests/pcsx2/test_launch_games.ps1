@@ -210,13 +210,14 @@ param(
     [string]$InputRecordingCaptureDirectory,
     [switch]$Surfaceless,
     [switch]$DiscardMemoryCardWrites,
+    [switch]$ReadOnlySettings,
     [switch]$Turbo,
     [switch]$Unlimited,
     [UInt64]$UnlimitedForFrames,
     [switch]$Wait,
     [string[]]$Arguments
 )
-"[fake] arguments=$($Arguments -join ',') surfaceless=$Surfaceless discard=$DiscardMemoryCardWrites turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames wait=$Wait"
+"[fake] arguments=$($Arguments -join ',') surfaceless=$Surfaceless discard=$DiscardMemoryCardWrites readOnly=$ReadOnlySettings turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames wait=$Wait"
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\pcsx2\launch.ps1')
 
         $snapshotLaunch = (
@@ -229,9 +230,9 @@ param(
         ) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition (
-                $snapshotLaunch -match 'arguments=-mute surfaceless=True discard=True turbo=False unlimited=True frames=0 wait=True'
+                $snapshotLaunch -match 'arguments=-mute surfaceless=True discard=True readOnly=True turbo=False unlimited=True frames=0 wait=True'
             ) `
-            -Message 'Snapshot playback did not force process-local PCSX2 muting.'
+            -Message 'Snapshot playback did not force process-local muting and read-only settings.'
 
         $stableSnapshotLaunch = (
             & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
@@ -243,8 +244,10 @@ param(
                 -ProjectRoot $repository
         ) -join "`n"
         Assert-WorkshopLaunchTest `
-            -Condition ($stableSnapshotLaunch -match 'arguments= surfaceless=True') `
-            -Message 'Snapshot playback passed the fork-only mute flag to stable PCSX2.'
+            -Condition (
+                $stableSnapshotLaunch -match 'arguments= surfaceless=True discard=True readOnly=False'
+            ) `
+            -Message 'Snapshot playback passed fork-only flags to stable PCSX2.'
 
         Copy-Item `
             -LiteralPath (Join-Path $sourceRepository 'scripts\pcsx2\launch.ps1') `
@@ -269,16 +272,17 @@ param(
 
         & (Join-Path $repository 'scripts\pcsx2\launch.ps1') `
             -IsoPath (Join-Path $repository 'source\NUN5.iso') `
+            -ReadOnlySettings `
             -Turbo `
             -UnlimitedForFrames 321
         $timedArguments = @($global:UnWorkshopCapturedStartArguments)
         Assert-WorkshopLaunchTest `
             -Condition (
                 ($timedArguments -join '|') -match (
-                    '^-turbo\|-unlimited-for-frames\|321\|-batch\|'
+                    '^-read-only-settings\|-turbo\|-unlimited-for-frames\|321\|-batch\|'
                 )
             ) `
-            -Message 'Configured launcher did not compose timed Unlimited with a Turbo fallback.'
+            -Message 'Configured launcher did not compose read-only settings with timed Unlimited and a Turbo fallback.'
 
         & (Join-Path $repository 'scripts\pcsx2\launch.ps1') `
             -IsoPath (Join-Path $repository 'source\NUN5.iso') `
