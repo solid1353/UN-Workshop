@@ -3,7 +3,7 @@ param()
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-$sourceRepository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
+$sourceRepository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
 
 function Assert-Condition {
     param(

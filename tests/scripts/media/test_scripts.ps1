@@ -4,7 +4,7 @@ param()
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$workshop = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
+$workshop = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
 . (Join-Path $workshop 'scripts\lib\paths.ps1')
 $paths = Get-UnWorkshopPaths
 

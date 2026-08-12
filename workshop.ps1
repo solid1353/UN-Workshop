@@ -201,7 +201,7 @@ switch ($normalizedCommand) {
             '  workshop pcsx2                       Launch development PCSX2 without a game.'
             '  workshop resolve [game] [property]   Resolve all games, one game, or one property.'
             '  workshop ss extract <subpath|folder-or-savestates...>  Extract embedded PNGs into screenshots/.'
-            '  workshop ss move <game> <subpath> [-t dev|stable] [-c]  Move savestates.'
+            '  workshop ss move <game> <subpath> [-c]  Move development savestates.'
             ''
             '  Launch options:'
             '    -p <name>        Replay an input recording.'
@@ -213,8 +213,7 @@ switch ($normalizedCommand) {
             '    -u               Launch in Unlimited.'
             ''
             '  Savestate move options:'
-            '    -t <dev|stable>  Select the PCSX2 installation containing the savestates.'
-            '    -c               Recycle the existing destination before moving savestates.'
+            '    -c  Recycle the existing destination before moving savestates.'
             ''
             "  Sources: $($sourceSelectors -join ', ')"
             $(if ($buildSelectors.Count -gt 0) {
@@ -300,25 +299,14 @@ switch ($normalizedCommand) {
             throw 'Usage: workshop ss move|extract ...'
         }
         $cleanup = $false
-        $target = ''
         $forwardedArguments = [Collections.Generic.List[string]]::new()
         for ($index = 0; $index -lt $argumentList.Count; $index++) {
             $argument = [string]$argumentList[$index]
             if ($argument -ceq '-c') {
                 $cleanup = $true
             }
-            elseif ($argument -ceq '-t') {
-                if (-not [string]::IsNullOrWhiteSpace($target)) {
-                    throw 'workshop ss -t may be specified only once.'
-                }
-                if ($index + 1 -ge $argumentList.Count) {
-                    throw 'workshop ss -t requires dev or stable.'
-                }
-                $index++
-                $target = [string]$argumentList[$index]
-            }
-            elseif ($argument -ieq '-Cleanup' -or $argument -ieq '-Target') {
-                throw 'Use workshop ss short options: -t dev|stable and -c.'
+            elseif ($argument -ieq '-Cleanup') {
+                throw 'Use the workshop ss -c short option.'
             }
             else {
                 $forwardedArguments.Add($argument)
@@ -326,9 +314,6 @@ switch ($normalizedCommand) {
         }
         $parameters = @{}
         if ($cleanup) { $parameters.Cleanup = $true }
-        if (-not [string]::IsNullOrWhiteSpace($target)) {
-            $parameters.Target = $target
-        }
         $forwardedArgumentArray = @($forwardedArguments)
         & (Join-Path $scripts 'savestates.ps1') @forwardedArgumentArray @parameters
     }

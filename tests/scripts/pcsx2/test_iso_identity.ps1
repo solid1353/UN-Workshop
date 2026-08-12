@@ -3,7 +3,7 @@ param()
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-$sourceRepository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
+$sourceRepository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
 . (Join-Path $sourceRepository 'scripts\pcsx2\iso_identity.ps1')
 
 if ((Get-Pcsx2DiscSerialFromBootPath 'SLPS_258.37') -cne 'SLPS-25837') {

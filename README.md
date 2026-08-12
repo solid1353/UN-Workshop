@@ -16,7 +16,7 @@ workshop input [profile]
 workshop pcsx2
 workshop resolve [game] [property]
 workshop ss extract <subpath|folder-or-savestates...>
-workshop ss move <game> <subpath> [-t dev|stable] [-c]
+workshop ss move <game> <subpath> [-c]
 ```
 
 - `workshop resolve` returns every available source game and, when invoked
@@ -28,14 +28,14 @@ workshop ss move <game> <subpath> [-t dev|stable] [-c]
   Unlimited; the two speed options are mutually exclusive. `-p` replays one
   shared input recording in every launched instance; `-r` records only the
   last/rightmost instance. Recording names
-  may be relative paths below `pcsx2_shared/input_recordings/`, and the
+  may be relative paths below `pcsx2_files/input_recordings/`, and the
   `.p2m2` extension is added automatically. For `-r`, missing parent
   directories are created. Each
   result reports the ordered game, process, PINE port, and window position.
 - `-mc` selects one memory-card file for every launched game. A relative value
-  resolves below `pcsx2_shared/memory_cards/`; an absolute path is also accepted.
+  resolves below `pcsx2_files/memory_cards/`; an absolute path is also accepted.
   The `.ps2` extension is added automatically when omitted. A bare name falls
-  back to `pcsx2_shared/memory_cards/templates/` when no root-level card exists.
+  back to `pcsx2_files/memory_cards/templates/` when no root-level card exists.
   `-dw` makes ordinary launches report memory-card writes as successful without
   persisting them. File-backed cards use shared access with or without `-dw`;
   discard mode additionally suppresses memory-card busy state. Snapshot replay
@@ -58,7 +58,7 @@ workshop ss move <game> <subpath> [-t dev|stable] [-c]
   tracked base and partial overrides without changing GameSettings assignments.
 - `workshop input <profile>` also regenerates every complete profile, then
   assigns the selected profile variants in every configured GameSettings file.
-  Every generated profile at the root of `pcsx2_shared/input_profiles/` is
+  Every generated profile at the root of `pcsx2_files/input_profiles/` is
   tracked by Git. Base outputs use `<profile>_Base.ini`; game-specific outputs
   use `<profile>_<game>.ini`. Profile selectors are case-insensitive and ignore
   `_` or `-`, so `Cap_ture` selects canonical `Capture`.
@@ -74,7 +74,7 @@ workshop ss move <game> <subpath> [-t dev|stable] [-c]
   callers may request Turbo, permanent Unlimited, or frame-limited Unlimited;
   no speed option means Normal. Turbo may accompany frame-limited Unlimited and
   becomes its fallback. Snapshot replay explicitly selects permanent Unlimited.
-- `ss move` files matching savestates from the selected user PCSX2 installation
+- `ss move` files matching savestates from the development PCSX2 installation
   below Workshop `work/sstates/` for source games or the invoking project's
   `work/sstates/` for project builds. `-c` first sends the existing
   selected destination directory to the Windows Recycle Bin. Incoming states
@@ -94,15 +94,16 @@ project settings.
 - `settings/git-authors.tsv`: shared non-secret agent commit identities.
 - `settings/notifications.json`: shared notification mute state.
 - `assets/icons/`: reusable source-game `simple` and `detailed` icons.
-- `pcsx2_shared/`: public cheats, GameSettings, input-profile sources, and
+- `pcsx2_files/`: public cheats, GameSettings, input-profile sources, and
   input recordings. BIOS files and memory cards are deliberately ignored.
-- `pcsx2_shared/input_profiles/sources/overrides/`: named input-profile
+- `pcsx2_files/input_profiles/sources/overrides/`: named input-profile
   overrides, with game-specific overrides under `games/`.
 - `scripts/pcsx2/`: reusable PCSX2 launch, worker-copy, PINE, input-profile,
   savestate, and disc-identity utilities.
 - `scripts/ghidra/`: reusable headless Ghidra Java scripts and runtime setup.
 - `scripts/media/`: reusable ISO, AFS, and encrypted-CVM extractors.
-- `tests/`: focused tests for Workshop-owned utilities.
+- `tests/scripts/`: focused tests mirroring Workshop-owned script components,
+  including PCSX2 and media utilities.
 
 Run the Workshop tests with:
 

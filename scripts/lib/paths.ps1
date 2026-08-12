@@ -112,7 +112,6 @@ function Get-UnWorkshopPaths {
         ProjectSettings = if ($project) {
             Join-Path $project 'settings.json'
         } else { $null }
-        Pcsx2Stable = $roots.pcsx2_stable
         Pcsx2Dev = $roots.pcsx2_dev
         Pcsx2Fork = $roots.pcsx2_fork
         Pcsx2Files = $roots.pcsx2_files
