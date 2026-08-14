@@ -256,9 +256,9 @@ param(
         ) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition (
-                $snapshotLaunch -match 'arguments=-mute surfaceless=True discard=True readOnly=True turbo=False unlimited=True frames=0 wait=True'
+                $snapshotLaunch -match 'arguments= surfaceless=True discard=True readOnly=True turbo=False unlimited=True frames=0 wait=True'
             ) `
-            -Message 'Snapshot playback did not force process-local muting and read-only settings.'
+            -Message 'Snapshot playback did not delegate background muting while forcing read-only settings.'
 
         $workerIso = Join-Path $repository 'work\Docs chat\build\candidate.iso'
         New-Item `
@@ -277,7 +277,7 @@ param(
         Assert-WorkshopLaunchTest `
             -Condition (
                 $isoSnapshotLaunch.Contains("iso=$workerIso memory=") -and
-                $isoSnapshotLaunch -match 'arguments=-mute surfaceless=True discard=True readOnly=True turbo=False unlimited=True frames=0 wait=True'
+                $isoSnapshotLaunch -match 'arguments= surfaceless=True discard=True readOnly=True turbo=False unlimited=True frames=0 wait=True'
             ) `
             -Message 'Snapshot playback did not accept an explicit ISO path.'
 
@@ -343,6 +343,19 @@ param(
                 $unlimitedArguments -notcontains '-unlimited-for-frames'
             ) `
             -Message 'Configured launcher did not compose permanent Unlimited independently.'
+
+        & (Join-Path $repository 'scripts\pcsx2\launch.ps1') `
+            -IsoPath (Join-Path $repository 'source\NUN5.iso') `
+            -Surfaceless
+        $backgroundArguments = @($global:UnWorkshopCapturedStartArguments)
+        Assert-WorkshopLaunchTest `
+            -Condition (
+                $backgroundArguments -contains '-surfaceless' -and
+                $backgroundArguments -contains '-mute' -and
+                $backgroundArguments -notcontains '-nogui' -and
+                @($backgroundArguments | Where-Object { $_ -eq '-mute' }).Count -eq 1
+            ) `
+            -Message 'Surfaceless launcher did not centrally select one mute flag without redundant no-GUI.'
 
         & (Join-Path $repository 'scripts\pcsx2\launch.ps1') `
             -IsoPath (Join-Path $repository 'source\NUN5.iso')

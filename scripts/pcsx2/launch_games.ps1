@@ -271,7 +271,6 @@ if ($Snapshots) {
     if (-not [string]::IsNullOrWhiteSpace($selectedGames[0].MemoryCardPath)) {
         $launchParameters.MemoryCard = $selectedGames[0].MemoryCardPath
     }
-    $launchParameters.Arguments = @('-mute')
     $launchParameters.ReadOnlySettings = $true
     & $pcsx2Launcher @launchParameters
     return
