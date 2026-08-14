@@ -21,6 +21,7 @@ function Invoke-UnWorkshopGameLaunch {
         [string]$Play,
         [string]$Record,
         [string]$Snapshots,
+        [string]$CaptureDirectory,
         [string]$MemoryCard,
         [switch]$DiscardMemoryCardWrites,
         [switch]$Turbo,
@@ -41,6 +42,10 @@ function Invoke-UnWorkshopGameLaunch {
     if (-not [string]::IsNullOrWhiteSpace($Snapshots) -and
         $games.Count -ne 1) {
         throw '-s requires exactly one game.'
+    }
+    if (-not [string]::IsNullOrWhiteSpace($CaptureDirectory) -and
+        [string]::IsNullOrWhiteSpace($Snapshots)) {
+        throw 'A snapshot capture path requires -s.'
     }
     if ($Turbo -and $Unlimited) {
         throw 'Use only one of -t or -u.'
@@ -66,6 +71,9 @@ function Invoke-UnWorkshopGameLaunch {
     if (-not [string]::IsNullOrWhiteSpace($Snapshots)) {
         $parameters.Play = $Snapshots
         $parameters.Snapshots = $true
+        if (-not [string]::IsNullOrWhiteSpace($CaptureDirectory)) {
+            $parameters.CaptureDirectory = $CaptureDirectory
+        }
     }
     & $paths.Files.pcsx2_game_launch_command @parameters
 }
@@ -83,6 +91,7 @@ function ConvertFrom-UnWorkshopLaunchArguments {
     $discardMemoryCardWrites = $false
     $turbo = $false
     $unlimited = $false
+    $captureDirectory = ''
     $valueOptions = @{
         '-p' = 'Play'
         '-r' = 'Record'
@@ -129,11 +138,22 @@ function ConvertFrom-UnWorkshopLaunchArguments {
         }
     }
 
+    if (-not [string]::IsNullOrWhiteSpace([string]$values.Snapshots)) {
+        if ($games.Count -gt 2) {
+            throw '-s accepts one game and one optional capture path.'
+        }
+        if ($games.Count -eq 2) {
+            $captureDirectory = $games[1]
+            $games.RemoveAt(1)
+        }
+    }
+
     [pscustomobject]@{
         Games = @($games)
         Play = $values.Play
         Record = $values.Record
         Snapshots = $values.Snapshots
+        CaptureDirectory = $captureDirectory
         MemoryCard = $values.MemoryCard
         DiscardMemoryCardWrites = $discardMemoryCardWrites
         Turbo = $turbo
@@ -196,7 +216,7 @@ switch ($normalizedCommand) {
             'UN Workshop'
             ''
             '  workshop [game] [game] [-p name|-r name] [-mc card] [-dw] [-t|-u]  Launch one or two games; pairs close existing user PCSX2 first.'
-            '  workshop <game> -s name [-mc card]  Replay one game at unlimited speed and take snapshots.'
+            '  workshop <game> -s name [path] [-mc card]  Replay one game at unlimited speed and take snapshots.'
             '  workshop input [profile]             Regenerate all profiles; optionally assign one.'
             '  workshop pcsx2                       Launch development PCSX2 without a game.'
             '  workshop resolve [game] [property]   Resolve all games, one game, or one property.'
@@ -206,7 +226,7 @@ switch ($normalizedCommand) {
             '  Launch options:'
             '    -p <name>        Replay an input recording.'
             '    -r <name>        Create an input recording; paired launches record the rightmost game.'
-            '    -s <name>        Replay one game and take snapshots; card writes are discarded.'
+            '    -s <name> [path] Replay one game and take snapshots; optionally select the capture directory.'
             '    -mc <card>       Use one shared card or template; .ps2 is added automatically.'
             '    -dw              Discard memory-card writes for an ordinary launch.'
             '    -t               Launch in Turbo.'
@@ -327,6 +347,7 @@ switch ($normalizedCommand) {
             -Play $launch.Play `
             -Record $launch.Record `
             -Snapshots $launch.Snapshots `
+            -CaptureDirectory $launch.CaptureDirectory `
             -MemoryCard $launch.MemoryCard `
             -DiscardMemoryCardWrites:$launch.DiscardMemoryCardWrites `
             -Turbo:$launch.Turbo `

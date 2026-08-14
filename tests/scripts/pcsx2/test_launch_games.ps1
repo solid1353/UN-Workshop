@@ -168,6 +168,18 @@ param(
             -Condition ($snapshots -match 'games=NUN5 play=practice-menu record= snapshots=True') `
             -Message 'Snapshot playback was not forwarded to the shared launcher.'
 
+        $snapshotsWithPath = (
+            & .\workshop.ps1 NUN5 -s practice-menu 'captures/custom'
+        ) -join "`n"
+        Assert-WorkshopLaunchTest `
+            -Condition (
+                $snapshotsWithPath -match (
+                    'games=NUN5 play=practice-menu record= snapshots=True ' +
+                    'capture=captures/custom'
+                )
+            ) `
+            -Message 'The optional snapshot capture path was not forwarded.'
+
         $conflictingSpeedRejected = $false
         try { & .\workshop.ps1 NUN5 -t -u }
         catch { $conflictingSpeedRejected = $true }
