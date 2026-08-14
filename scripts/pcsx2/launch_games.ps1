@@ -180,26 +180,45 @@ $seenImages = [Collections.Generic.HashSet[string]]::new(
     [StringComparer]::OrdinalIgnoreCase
 )
 foreach ($requestedGame in $Games) {
-    $selector = $requestedGame.Trim().ToLowerInvariant()
-    if ([string]::IsNullOrWhiteSpace($selector)) {
-        throw 'Game selectors must not be empty.'
+    $target = $requestedGame.Trim()
+    if ([string]::IsNullOrWhiteSpace($target)) {
+        throw 'Game or ISO targets must not be empty.'
     }
-    $resolved = Resolve-UnWorkshopGame `
-        -Game $selector `
-        -ProjectRoot $paths.Project
-    $isoPath = [IO.Path]::GetFullPath([string]$resolved.iso)
+    $isIsoPath = $target.EndsWith(
+        '.iso',
+        [StringComparison]::OrdinalIgnoreCase
+    )
+    if ($isIsoPath -and -not $Snapshots) {
+        throw 'Explicit ISO paths are supported only with -Snapshots.'
+    }
+    if ($isIsoPath) {
+        $isoPath = [IO.Path]::GetFullPath($target)
+        if (-not (Test-Path -LiteralPath $isoPath -PathType Leaf)) {
+            throw "ISO does not exist: $isoPath"
+        }
+        $selector = [IO.Path]::GetFileNameWithoutExtension($isoPath)
+        $resolvedMemoryCardPath = $memoryCardOverridePath
+    }
+    else {
+        $selector = $target.ToLowerInvariant()
+        $resolved = Resolve-UnWorkshopGame `
+            -Game $selector `
+            -ProjectRoot $paths.Project
+        $isoPath = [IO.Path]::GetFullPath([string]$resolved.iso)
+        $resolvedMemoryCardPath = if ($null -ne $memoryCardOverridePath) {
+            $memoryCardOverridePath
+        }
+        else {
+            [IO.Path]::GetFullPath([string]$resolved.memory_card)
+        }
+    }
     if (-not $seenImages.Add($isoPath)) {
         throw "Each resolved game image may be launched only once: $selector"
     }
     $selectedGames.Add([pscustomobject]@{
         Selector = $selector
         IsoPath = $isoPath
-        MemoryCardPath = if ($null -ne $memoryCardOverridePath) {
-            $memoryCardOverridePath
-        }
-        else {
-            [IO.Path]::GetFullPath([string]$resolved.memory_card)
-        }
+        MemoryCardPath = $resolvedMemoryCardPath
     })
 }
 
@@ -209,7 +228,10 @@ $pcsx2Launcher = [IO.Path]::GetFullPath(
 )
 $requiredFiles = @($pcsx2Launcher)
 $requiredFiles += @($selectedGames.IsoPath)
-$requiredFiles += @($selectedGames.MemoryCardPath)
+$requiredFiles += @(
+    $selectedGames.MemoryCardPath |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+)
 foreach ($requiredFile in $requiredFiles) {
     if (-not (Test-Path -LiteralPath $requiredFile -PathType Leaf)) {
         throw "Required file does not exist: $requiredFile"
@@ -239,13 +261,15 @@ if ($Snapshots) {
     [void](New-Item -ItemType Directory -Path $captureDirectory -Force)
     $launchParameters = @{
         IsoPath = $selectedGames[0].IsoPath
-        MemoryCard = $selectedGames[0].MemoryCardPath
         InputRecording = $recordingName
         InputRecordingCaptureDirectory = $captureDirectory
         Surfaceless = $true
         DiscardMemoryCardWrites = $true
         Unlimited = $true
         Wait = $true
+    }
+    if (-not [string]::IsNullOrWhiteSpace($selectedGames[0].MemoryCardPath)) {
+        $launchParameters.MemoryCard = $selectedGames[0].MemoryCardPath
     }
     $launchParameters.Arguments = @('-mute')
     $launchParameters.ReadOnlySettings = $true

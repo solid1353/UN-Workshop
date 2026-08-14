@@ -11,7 +11,7 @@ memory cards, savestates, logs, and task artifacts.
 
 ```powershell
 workshop [game] [game] [-p <recording>|-r <recording>] [-mc <card>] [-dw] [-t|-u]
-workshop <game> -s <recording> [path] [-mc <card>]
+workshop <game|iso-path> -s <recording> [path] [-mc <card>]
 workshop input [profile]
 workshop pcsx2
 workshop resolve [game] [property]
@@ -40,11 +40,14 @@ workshop ss move <game> <subpath> [-c]
   persisting them. File-backed cards use shared access with or without `-dw`;
   discard mode additionally suppresses memory-card busy state. Snapshot replay
   with `-s` always discards writes.
-- `workshop <game> -s <recording> [path]` replays one game in PCSX2's
+- `workshop <game|iso-path> -s <recording> [path]` replays one configured game
+  or explicit ISO in PCSX2's
   surfaceless no-GUI mode and captures every recorded L3+R3 snapshot marker
   without creating a render window or taking focus. The optional path selects
   the exact capture directory and resolves relative to the invoking directory;
-  otherwise captures go below `work/captures/<recording>/<game>/`. A marker is
+  otherwise captures go below `work/captures/<recording>/<game>/`.
+  An explicit ISO path is accepted only with `-s`; without `-mc`, PCSX2's
+  configured memory-card selection remains in effect. A marker is
   the rising edge of the chord,
   so holding both buttons creates one capture. A successful marker savestate and
   its standalone PNG use the same encoded screenshot. If actual memory-card
