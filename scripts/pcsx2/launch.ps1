@@ -204,7 +204,7 @@ if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) {
 
 $launchArguments = @()
 if ($surfaceless) {
-    $launchArguments += @('-nogui', '-surfaceless')
+    $launchArguments += @('-surfaceless', '-mute')
 }
 if ($DiscardMemoryCardWrites) {
     $launchArguments += '-discard-memory-card-writes'
