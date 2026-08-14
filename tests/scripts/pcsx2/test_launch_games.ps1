@@ -17,6 +17,9 @@ function Assert-WorkshopLaunchTest {
 
 $sourceRepository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
 $help = (& (Join-Path $sourceRepository 'workshop.ps1') help) -join "`n"
+Assert-WorkshopLaunchTest `
+    -Condition ($help.Contains('workshop <game|iso-path> -s name')) `
+    -Message 'Workshop help did not document ISO-path snapshot replay.'
 foreach ($expectedOption in @(
     '-p <name>',
     '-r <name>',
@@ -180,6 +183,20 @@ param(
             ) `
             -Message 'The optional snapshot capture path was not forwarded.'
 
+        $isoTarget = 'work/Docs chat/build/candidate.iso'
+        $isoSnapshots = (
+            & .\workshop.ps1 $isoTarget -s practice-menu 'captures/worker'
+        ) -join "`n"
+        Assert-WorkshopLaunchTest `
+            -Condition (
+                $isoSnapshots -match (
+                    'games=work/Docs chat/build/candidate\.iso ' +
+                    'play=practice-menu record= snapshots=True ' +
+                    'capture=captures/worker'
+                )
+            ) `
+            -Message 'The ISO snapshot target was not forwarded.'
+
         $conflictingSpeedRejected = $false
         try { & .\workshop.ps1 NUN5 -t -u }
         catch { $conflictingSpeedRejected = $true }
@@ -226,7 +243,7 @@ param(
     [switch]$Wait,
     [string[]]$Arguments
 )
-"[fake] arguments=$($Arguments -join ',') surfaceless=$Surfaceless discard=$DiscardMemoryCardWrites readOnly=$ReadOnlySettings turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames wait=$Wait"
+"[fake] iso=$IsoPath memory=$MemoryCard arguments=$($Arguments -join ',') surfaceless=$Surfaceless discard=$DiscardMemoryCardWrites readOnly=$ReadOnlySettings turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames wait=$Wait"
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\pcsx2\launch.ps1')
 
         $snapshotLaunch = (
@@ -242,6 +259,43 @@ param(
                 $snapshotLaunch -match 'arguments=-mute surfaceless=True discard=True readOnly=True turbo=False unlimited=True frames=0 wait=True'
             ) `
             -Message 'Snapshot playback did not force process-local muting and read-only settings.'
+
+        $workerIso = Join-Path $repository 'work\Docs chat\build\candidate.iso'
+        New-Item `
+            -ItemType Directory `
+            -Force `
+            -Path ([IO.Path]::GetDirectoryName($workerIso)) | Out-Null
+        New-Item -ItemType File -Force -Path $workerIso | Out-Null
+        $isoSnapshotLaunch = (
+            & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
+                -Games $workerIso `
+                -Play practice-menu `
+                -Snapshots `
+                -CaptureDirectory (Join-Path $repository 'captures-worker') `
+                -ProjectRoot $repository
+        ) -join "`n"
+        Assert-WorkshopLaunchTest `
+            -Condition (
+                $isoSnapshotLaunch.Contains("iso=$workerIso memory=") -and
+                $isoSnapshotLaunch -match 'arguments=-mute surfaceless=True discard=True readOnly=True turbo=False unlimited=True frames=0 wait=True'
+            ) `
+            -Message 'Snapshot playback did not accept an explicit ISO path.'
+
+        $missingIsoRejected = $false
+        try {
+            & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
+                -Games (Join-Path $repository 'work\missing.iso') `
+                -Play practice-menu `
+                -Snapshots `
+                -CaptureDirectory (Join-Path $repository 'captures-missing') `
+                -ProjectRoot $repository
+        }
+        catch {
+            $missingIsoRejected = $_.Exception.Message -match 'ISO does not exist'
+        }
+        Assert-WorkshopLaunchTest `
+            -Condition $missingIsoRejected `
+            -Message 'Snapshot playback did not reject a missing explicit ISO path.'
 
         Copy-Item `
             -LiteralPath (Join-Path $sourceRepository 'scripts\pcsx2\launch.ps1') `
