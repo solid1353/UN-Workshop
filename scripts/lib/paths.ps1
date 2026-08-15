@@ -20,7 +20,7 @@ function Find-UnWorkshopProjectRoot {
     while ($null -ne $candidate) {
         if (
             (Test-Path -LiteralPath (Join-Path $candidate.FullName 'paths.json') -PathType Leaf) -and
-            (Test-Path -LiteralPath (Join-Path $candidate.FullName 'settings.json') -PathType Leaf)
+            (Test-Path -LiteralPath (Join-Path $candidate.FullName 'game.json') -PathType Leaf)
         ) {
             return $candidate.FullName
         }
@@ -110,7 +110,7 @@ function Get-UnWorkshopPaths {
         Savestates = $roots.savestates
         SourceCatalog = $files.game_catalog
         ProjectSettings = if ($project) {
-            Join-Path $project 'settings.json'
+            Join-Path $project 'game.json'
         } else { $null }
         Pcsx2Dev = $roots.pcsx2_dev
         Pcsx2Fork = $roots.pcsx2_fork

@@ -111,7 +111,7 @@ try {
     '{"schema_version":1,"sources":{"NUN5":{"serial":"SLES-55605","crc":"C071D4C1"}}}' |
         Set-Content -NoNewline -LiteralPath (Join-Path $repository 'games.json')
     '{"schema_version":1,"title":"NA v2.28","serial":"SLOP-NA228","output_boot_path":"SLOP_NA2.28","startup_fast_forward_frames":321,"builds":{"latest":{"aliases":["l"]}}}' |
-        Set-Content -NoNewline -LiteralPath (Join-Path $repository 'settings.json')
+        Set-Content -NoNewline -LiteralPath (Join-Path $repository 'game.json')
     'raise SystemExit("fake resolver must not run")' |
         Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\lib\resolve_game.py')
     @'
@@ -127,12 +127,17 @@ param(
     [string]$CaptureDirectory,
     [string]$MemoryCard,
     [switch]$DiscardMemoryCardWrites,
+    [switch]$ReadOnlySettings,
+    [hashtable]$PnachByGame,
+    [hashtable]$PnachLinesByGame,
     [switch]$Turbo,
     [switch]$Unlimited,
     [UInt64]$UnlimitedForFrames,
     [string]$ProjectRoot
 )
-"[fake] games=$($Games -join ',') play=$Play record=$Record snapshots=$Snapshots capture=$CaptureDirectory memory=$MemoryCard discard=$DiscardMemoryCardWrites turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames project=$ProjectRoot"
+$pnachCount = if ($null -eq $PnachByGame) { 0 } else { $PnachByGame.Count }
+$lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.Count }
+"[fake] games=$($Games -join ',') play=$Play record=$Record snapshots=$Snapshots capture=$CaptureDirectory memory=$MemoryCard discard=$DiscardMemoryCardWrites readOnly=$ReadOnlySettings pnaches=$pnachCount lineSets=$lineSetCount turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames project=$ProjectRoot"
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\pcsx2\launch_games.ps1')
 
     Push-Location $repository
@@ -222,29 +227,91 @@ param(
             -ItemType Directory `
             -Force `
             -Path (Join-Path $repository 'source'), `
-                (Join-Path $repository 'pcsx2_files\memory_cards') | Out-Null
+                (Join-Path $repository 'pcsx2_files\games\NUN5'), `
+                (Join-Path $repository 'pcsx2_files\games\NA228'), `
+                (Join-Path $repository 'pcsx2_files\input_recordings') | Out-Null
         New-Item `
             -ItemType File `
             -Force `
             -Path (Join-Path $repository 'source\NUN5.iso'), `
-                (Join-Path $repository 'pcsx2_files\memory_cards\NUN5.ps2') | Out-Null
+                (Join-Path $repository 'pcsx2_files\games\NUN5\NUN5.pnach'), `
+                (Join-Path $repository 'pcsx2_files\games\NUN5\NUN5.ini'), `
+                (Join-Path $repository 'pcsx2_files\games\NUN5\NUN5.ps2'), `
+                (Join-Path $repository 'pcsx2_files\games\NA228\NA228.pnach'), `
+                (Join-Path $repository 'pcsx2_files\games\NA228\NA228.ini'), `
+                (Join-Path $repository 'pcsx2_files\games\NA228\NA228.ps2'), `
+                (Join-Path $repository 'pcsx2_files\input_recordings\practice-menu.p2m2') | Out-Null
         @'
 param(
     [string]$IsoPath,
     [string]$MemoryCard,
+    [string]$InputRecordingsRoot,
     [string]$InputRecording,
     [string]$InputRecordingCaptureDirectory,
     [switch]$Surfaceless,
     [switch]$DiscardMemoryCardWrites,
     [switch]$ReadOnlySettings,
+    [string]$Pnach,
+    [string[]]$PnachLines,
     [switch]$Turbo,
     [switch]$Unlimited,
     [UInt64]$UnlimitedForFrames,
     [switch]$Wait,
     [string[]]$Arguments
 )
-"[fake] iso=$IsoPath memory=$MemoryCard arguments=$($Arguments -join ',') surfaceless=$Surfaceless discard=$DiscardMemoryCardWrites readOnly=$ReadOnlySettings turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames wait=$Wait"
+"[fake] iso=$IsoPath memory=$MemoryCard arguments=$($Arguments -join ',') surfaceless=$Surfaceless discard=$DiscardMemoryCardWrites readOnly=$ReadOnlySettings pnach=$Pnach lines=$($PnachLines -join '|') turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames wait=$Wait"
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\pcsx2\launch.ps1')
+
+        $resolver = Join-Path $repository 'scripts\lib\resolve_game.py'
+        $resolvedSource = (
+            & python -B $resolver NUN5 --project-root $repository
+        ) | ConvertFrom-Json
+        Assert-WorkshopLaunchTest `
+            -Condition (
+                [string]$resolvedSource.cheats -ceq
+                (Join-Path $repository 'pcsx2_files\games\NUN5\NUN5.pnach')
+            ) `
+            -Message 'The project-owned NUN5 PNACH did not resolve from its game bundle.'
+        $resolvedBuild = (
+            & python -B $resolver latest --project-root $repository
+        ) | ConvertFrom-Json
+        Assert-WorkshopLaunchTest `
+            -Condition (
+                [string]$resolvedBuild.cheats -ceq
+                (Join-Path $repository 'pcsx2_files\games\NA228\NA228.pnach')
+            ) `
+            -Message 'Build PNACH resolution did not use the NA228 game bundle.'
+
+        $defaultSnapshotLaunch = (
+            & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
+                -Games NUN5 `
+                -Play practice-menu `
+                -Snapshots `
+                -CaptureDirectory (Join-Path $repository 'captures-default') `
+                -ProjectRoot $repository
+        ) -join "`n"
+        Assert-WorkshopLaunchTest `
+            -Condition (
+                $defaultSnapshotLaunch -match (
+                    'pnach=' + [regex]::Escape(
+                        (Join-Path $repository 'pcsx2_files\games\NUN5\NUN5.pnach')
+                    ) + ' lines='
+                )
+            ) `
+            -Message 'The configured default PNACH was not passed to PCSX2.'
+
+        $practicePnach = Join-Path $repository 'practice.pnach'
+        Set-Content `
+            -NoNewline `
+            -LiteralPath $practicePnach `
+            -Value '[+Practice]'
+        $practicePnachByGame = @{ nun5 = $practicePnach }
+        $practiceLinesByGame = @{
+            nun5 = [string[]]@(
+                'patch=1,EE,003D0FF0,word,00000039',
+                'patch=1,EE,003D0FF4,word,00000025'
+            )
+        }
 
         $snapshotLaunch = (
             & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
@@ -252,13 +319,40 @@ param(
                 -Play practice-menu `
                 -Snapshots `
                 -CaptureDirectory (Join-Path $repository 'captures') `
+                -PnachByGame $practicePnachByGame `
+                -PnachLinesByGame $practiceLinesByGame `
                 -ProjectRoot $repository
         ) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition (
-                $snapshotLaunch -match 'arguments= surfaceless=True discard=True readOnly=True turbo=False unlimited=True frames=0 wait=True'
+                $snapshotLaunch -match (
+                    'arguments= surfaceless=True discard=True readOnly=True ' +
+                    'pnach=' + [regex]::Escape($practicePnach) +
+                    ' lines=patch=1,EE,003D0FF0,word,00000039\|' +
+                    'patch=1,EE,003D0FF4,word,00000025 ' +
+                    'turbo=False unlimited=True frames=0 wait=True'
+                )
             ) `
-            -Message 'Snapshot playback did not delegate background muting while forcing read-only settings.'
+            -Message 'Snapshot playback did not forward the selected game PNACH and inline lines.'
+
+        $unselectedPnachRejected = $false
+        try {
+            & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
+                -Games NUN5 `
+                -Play practice-menu `
+                -Snapshots `
+                -CaptureDirectory (Join-Path $repository 'captures-invalid') `
+                -PnachByGame @{ na2 = $practicePnach } `
+                -ProjectRoot $repository
+        }
+        catch {
+            $unselectedPnachRejected = $_.Exception.Message -match (
+                '^PNACH override targets an unselected game:'
+            )
+        }
+        Assert-WorkshopLaunchTest `
+            -Condition $unselectedPnachRejected `
+            -Message 'Paired launcher accepted a PNACH override for an unselected game.'
 
         $workerIso = Join-Path $repository 'work\Docs chat\build\candidate.iso'
         New-Item `
@@ -277,9 +371,15 @@ param(
         Assert-WorkshopLaunchTest `
             -Condition (
                 $isoSnapshotLaunch.Contains("iso=$workerIso memory=") -and
-                $isoSnapshotLaunch -match 'arguments= surfaceless=True discard=True readOnly=True turbo=False unlimited=True frames=0 wait=True'
+                $isoSnapshotLaunch -match (
+                    'arguments= surfaceless=True discard=True readOnly=True ' +
+                    'pnach= lines= turbo=False unlimited=True frames=0 wait=True'
+                )
             ) `
-            -Message 'Snapshot playback did not accept an explicit ISO path.'
+            -Message (
+                "Snapshot playback did not accept an explicit ISO path. " +
+                "Output: $isoSnapshotLaunch"
+            )
 
         $missingIsoRejected = $false
         try {

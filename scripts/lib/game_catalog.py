@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import configparser
 import importlib.util
 import json
 import os
@@ -50,7 +49,7 @@ def load_catalog(
     }
     if project_root is not None:
         project = _read_definition(
-            project_root.resolve() / "settings.json",
+            project_root.resolve() / "game.json",
             "Project settings",
         )
         title = project.get("title")
@@ -81,19 +80,6 @@ def _root(roots: Mapping[str, Path], name: str) -> Path:
         return roots[name]
     except KeyError as exc:
         raise ValueError(f"Game path derivation requires root {name!r}") from exc
-
-
-def _read_memory_card_base(game_settings: Path) -> Path:
-    parser = configparser.ConfigParser(interpolation=None)
-    with game_settings.open(encoding="utf-8") as stream:
-        parser.read_file(stream)
-    value = parser.get("MemoryCards", "Slot1_Filename").strip()
-    base = Path(value)
-    if not value or base.name != value:
-        raise ValueError(
-            f"MemoryCards Slot1_Filename must be a filename: {game_settings}"
-        )
-    return base
 
 
 def find_definition(
@@ -168,21 +154,25 @@ def derive_game_paths(
             definition.get("crc"), f"Game {canonical_name!r} crc"
         ).upper()
         source = _root(roots, "source")
+        bundle = _root(roots, "pcsx2_files") / "games" / canonical_name
+        bundled = bundle.is_dir()
         result = {
             "iso": source / f"{canonical_name}.iso",
             "extracted": source / f"{canonical_name}.iso.files",
             "cheats": (
-                _root(roots, "pcsx2_cheats")
-                / "source"
-                / f"{serial}_{crc}.pnach"
-            ),
-            "game_settings": (
-                _root(roots, "pcsx2_game_settings")
-                / "source"
-                / f"{serial}_{crc}.ini"
+                bundle / f"{canonical_name}.pnach"
+                if bundled
+                else _root(roots, "pcsx2_cheats") / f"{canonical_name}.pnach"
             ),
             "memory_card": (
-                _root(roots, "pcsx2_memory_cards") / f"{canonical_name}.ps2"
+                bundle / f"{canonical_name}.ps2"
+                if bundled
+                else _root(roots, "pcsx2_memory_cards") / f"{canonical_name}.ps2"
+            ),
+            "game_settings": (
+                bundle / f"{canonical_name}.ini"
+                if bundled
+                else _root(roots, "pcsx2_game_settings") / f"{canonical_name}.ini"
             ),
             "input_profile": input_profile_path,
         }
@@ -193,20 +183,13 @@ def derive_game_paths(
     title = _required_text(catalog.get("title"), "Build title")
     serial = _required_text(catalog.get("serial"), "Build serial")
     postfix = derive_build_postfix(canonical_name)
-    game_settings = _root(roots, "pcsx2_game_settings") / f"{serial}.ini"
-    memory_card_base = (
-        _read_memory_card_base(game_settings)
-        if game_settings.is_file()
-        else Path(f"{title}.ps2")
-    )
-    memory_card_name = (
-        f"{memory_card_base.stem} - {postfix}{memory_card_base.suffix}"
-    )
+    bundle_name = serial.partition("-")[2] or serial
+    bundle = _root(roots, "pcsx2_files") / "games" / bundle_name
     result = {
         "iso": _root(roots, "build") / f"{title} - {postfix}.iso",
-        "cheats": _root(roots, "pcsx2_cheats") / f"{serial}.pnach",
-        "game_settings": game_settings,
-        "memory_card": _root(roots, "pcsx2_memory_cards") / memory_card_name,
+        "cheats": bundle / f"{bundle_name}.pnach",
+        "game_settings": bundle / f"{bundle_name}.ini",
+        "memory_card": bundle / f"{bundle_name}.ps2",
         "input_profile": input_profile_path,
     }
     if override_enabled:
@@ -224,8 +207,14 @@ def resolve_game(
     catalog = load_catalog(workshop_root, project_root)
     workshop_paths = _PATHS.load_workshop_paths(workshop_root)
     roots = {
+        "repository": project_root if project_root else workshop_root,
         "source": workshop_paths.roots["source"],
         "build": (project_root / "build") if project_root else workshop_root / "build",
+        "pcsx2_files": (
+            project_root / "pcsx2_files"
+            if project_root
+            else workshop_paths.roots["pcsx2_files"]
+        ),
         "pcsx2_cheats": workshop_paths.roots["pcsx2_cheats"],
         "pcsx2_game_settings": workshop_paths.roots["pcsx2_game_settings"],
         "pcsx2_input_profiles": workshop_paths.roots["pcsx2_input_profiles"],

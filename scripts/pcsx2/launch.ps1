@@ -16,6 +16,9 @@ param(
     [Parameter(ParameterSetName = 'Configured')]
     [string]$InputRecordingCaptureDirectory,
 
+    [Parameter(ParameterSetName = 'Configured')]
+    [string]$InputRecordingsRoot,
+
     [Parameter(ValueFromRemainingArguments)]
     [string[]]$Arguments,
 
@@ -56,6 +59,14 @@ param(
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
 $paths = Get-UnWorkshopPaths
+$resolvedInputRecordingsRoot = if (
+    [string]::IsNullOrWhiteSpace($InputRecordingsRoot)
+) {
+    [IO.Path]::GetFullPath($paths.InputRecordings)
+}
+else {
+    [IO.Path]::GetFullPath($InputRecordingsRoot)
+}
 
 if ($Turbo -and $Unlimited) {
     throw 'Use only one of -Turbo or -Unlimited.'
@@ -147,7 +158,7 @@ if (-not [string]::IsNullOrWhiteSpace($InputRecording)) {
     }
     else {
         [IO.Path]::GetFullPath(
-            (Join-Path $paths.InputRecordings $InputRecording)
+            (Join-Path $resolvedInputRecordingsRoot $InputRecording)
         )
     }
     if (-not (
@@ -155,7 +166,7 @@ if (-not [string]::IsNullOrWhiteSpace($InputRecording)) {
     )) {
         throw "Input recording does not exist: $resolvedInputRecording"
     }
-    $inputRecordingRoot = [IO.Path]::GetFullPath($paths.InputRecordings)
+    $inputRecordingRoot = $resolvedInputRecordingsRoot
     $inputRecordingPrefix = $inputRecordingRoot.TrimEnd(
         [IO.Path]::DirectorySeparatorChar,
         [IO.Path]::AltDirectorySeparatorChar
@@ -166,17 +177,18 @@ if (-not [string]::IsNullOrWhiteSpace($InputRecording)) {
     )) {
         throw "Input recording must be inside $inputRecordingRoot."
     }
-    $inputRecordingRelativePath = [IO.Path]::GetRelativePath(
-        $inputRecordingRoot,
-        $resolvedInputRecording
-    )
 }
 
 if (-not [string]::IsNullOrWhiteSpace($CreateInputRecording)) {
     $createInputRecordingRelativePath = Resolve-UnWorkshopRecordingName `
         -Name $CreateInputRecording `
-        -Root $paths.InputRecordings `
+        -Root $resolvedInputRecordingsRoot `
         -CreateParent
+    $resolvedCreateInputRecording = [IO.Path]::GetFullPath(
+        (Join-Path `
+            $resolvedInputRecordingsRoot `
+            $createInputRecordingRelativePath)
+    )
 }
 
 if (-not [string]::IsNullOrWhiteSpace($InputRecordingCaptureDirectory)) {
@@ -258,7 +270,7 @@ if ($IsoPath) {
 if (-not [string]::IsNullOrWhiteSpace($InputRecording)) {
     $launchArguments += @(
         '-input-recording',
-        "`"$inputRecordingRelativePath`""
+        "`"$resolvedInputRecording`""
     )
 }
 if (-not [string]::IsNullOrWhiteSpace($InputRecordingCaptureDirectory)) {
@@ -270,7 +282,7 @@ if (-not [string]::IsNullOrWhiteSpace($InputRecordingCaptureDirectory)) {
 if (-not [string]::IsNullOrWhiteSpace($CreateInputRecording)) {
     $launchArguments += @(
         '-input-recording-create',
-        "`"$createInputRecordingRelativePath`""
+        "`"$resolvedCreateInputRecording`""
     )
 }
 if ($Arguments) {
