@@ -20,6 +20,12 @@ param(
 
     [switch]$DiscardMemoryCardWrites,
 
+    [switch]$ReadOnlySettings,
+
+    [hashtable]$PnachByGame,
+
+    [hashtable]$PnachLinesByGame,
+
     [switch]$Turbo,
 
     [switch]$Unlimited,
@@ -28,6 +34,8 @@ param(
 
     [string]$ProjectRoot,
 
+    [string]$InputRecordingsRoot,
+
     [ValidateRange(5, 120)]
     [int]$WindowWaitSeconds = 30
 )
@@ -35,6 +43,12 @@ param(
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
 $paths = Get-UnWorkshopPaths -ProjectRoot $ProjectRoot
+$inputRecordingsRoot = if ([string]::IsNullOrWhiteSpace($InputRecordingsRoot)) {
+    [IO.Path]::GetFullPath($paths.InputRecordings)
+}
+else {
+    [IO.Path]::GetFullPath($InputRecordingsRoot)
+}
 
 if ($Turbo -and $Unlimited) {
     throw 'Use only one of -Turbo or -Unlimited.'
@@ -132,12 +146,12 @@ function Wait-UnWorkshopPcsx2Window {
 $recordingName = if ($PSCmdlet.ParameterSetName -eq 'Play') {
     Resolve-UnWorkshopRecordingName `
         -Name $Play `
-        -Root $paths.InputRecordings
+        -Root $inputRecordingsRoot
 }
 elseif ($PSCmdlet.ParameterSetName -eq 'Record') {
     Resolve-UnWorkshopRecordingName `
         -Name $Record `
-        -Root $paths.InputRecordings
+        -Root $inputRecordingsRoot
 }
 else {
     $null
@@ -179,6 +193,9 @@ $selectedGames = [Collections.Generic.List[object]]::new()
 $seenImages = [Collections.Generic.HashSet[string]]::new(
     [StringComparer]::OrdinalIgnoreCase
 )
+$seenSelectors = [Collections.Generic.HashSet[string]]::new(
+    [StringComparer]::OrdinalIgnoreCase
+)
 foreach ($requestedGame in $Games) {
     $target = $requestedGame.Trim()
     if ([string]::IsNullOrWhiteSpace($target)) {
@@ -191,6 +208,7 @@ foreach ($requestedGame in $Games) {
     if ($isIsoPath -and -not $Snapshots) {
         throw 'Explicit ISO paths are supported only with -Snapshots.'
     }
+    $defaultPnach = $null
     if ($isIsoPath) {
         $isoPath = [IO.Path]::GetFullPath($target)
         if (-not (Test-Path -LiteralPath $isoPath -PathType Leaf)) {
@@ -211,15 +229,53 @@ foreach ($requestedGame in $Games) {
         else {
             [IO.Path]::GetFullPath([string]$resolved.memory_card)
         }
+        $resolvedDefaultPnach = [IO.Path]::GetFullPath(
+            [string]$resolved.cheats
+        )
+        if (Test-Path -LiteralPath $resolvedDefaultPnach -PathType Leaf) {
+            $defaultPnach = $resolvedDefaultPnach
+        }
     }
     if (-not $seenImages.Add($isoPath)) {
         throw "Each resolved game image may be launched only once: $selector"
+    }
+    [void]$seenSelectors.Add($selector)
+    $pnach = if (
+        $null -ne $PnachByGame -and
+        $PnachByGame.ContainsKey($selector)
+    ) {
+        [IO.Path]::GetFullPath([string]$PnachByGame[$selector])
+    }
+    else {
+        $defaultPnach
+    }
+    $pnachLines = if (
+        $null -ne $PnachLinesByGame -and
+        $PnachLinesByGame.ContainsKey($selector)
+    ) {
+        [string[]]@($PnachLinesByGame[$selector])
+    }
+    else {
+        [string[]]@()
     }
     $selectedGames.Add([pscustomobject]@{
         Selector = $selector
         IsoPath = $isoPath
         MemoryCardPath = $resolvedMemoryCardPath
+        Pnach = $pnach
+        PnachLines = $pnachLines
     })
+}
+
+foreach ($mapping in @($PnachByGame, $PnachLinesByGame)) {
+    if ($null -eq $mapping) {
+        continue
+    }
+    foreach ($selector in $mapping.Keys) {
+        if (-not $seenSelectors.Contains([string]$selector)) {
+            throw "PNACH override targets an unselected game: $selector"
+        }
+    }
 }
 
 $pcsx2Root = $paths.Pcsx2Dev
@@ -230,6 +286,10 @@ $requiredFiles = @($pcsx2Launcher)
 $requiredFiles += @($selectedGames.IsoPath)
 $requiredFiles += @(
     $selectedGames.MemoryCardPath |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+)
+$requiredFiles += @(
+    $selectedGames.Pnach |
         Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
 )
 foreach ($requiredFile in $requiredFiles) {
@@ -267,9 +327,16 @@ if ($Snapshots) {
         DiscardMemoryCardWrites = $true
         Unlimited = $true
         Wait = $true
+        InputRecordingsRoot = $inputRecordingsRoot
     }
     if (-not [string]::IsNullOrWhiteSpace($selectedGames[0].MemoryCardPath)) {
         $launchParameters.MemoryCard = $selectedGames[0].MemoryCardPath
+    }
+    if (-not [string]::IsNullOrWhiteSpace($selectedGames[0].Pnach)) {
+        $launchParameters.Pnach = $selectedGames[0].Pnach
+    }
+    if (@($selectedGames[0].PnachLines).Count -gt 0) {
+        $launchParameters.PnachLines = $selectedGames[0].PnachLines
     }
     $launchParameters.ReadOnlySettings = $true
     & $pcsx2Launcher @launchParameters
@@ -343,13 +410,13 @@ if ($selectedGames.Count -eq 2) {
 $playbackRecordings = @()
 if ($PSCmdlet.ParameterSetName -eq 'Play') {
     if ($selectedGames.Count -eq 2) {
-        $generatedDirectory = Join-Path $paths.InputRecordings '__generated'
+        $generatedDirectory = Join-Path $inputRecordingsRoot '__generated'
         if (Test-Path -LiteralPath $generatedDirectory) {
             Remove-Item -LiteralPath $generatedDirectory -Recurse -Force
         }
         [void](New-Item -ItemType Directory -Path $generatedDirectory)
 
-        $sourceRecording = Join-Path $paths.InputRecordings $recordingName
+        $sourceRecording = Join-Path $inputRecordingsRoot $recordingName
         $playbackRecordings = @(
             '__generated\left.p2m2',
             '__generated\right.p2m2'
@@ -357,7 +424,7 @@ if ($PSCmdlet.ParameterSetName -eq 'Play') {
         foreach ($stagedRecording in $playbackRecordings) {
             Copy-Item `
                 -LiteralPath $sourceRecording `
-                -Destination (Join-Path $paths.InputRecordings $stagedRecording)
+                -Destination (Join-Path $inputRecordingsRoot $stagedRecording)
         }
     }
     else {
@@ -390,6 +457,7 @@ try {
             MemoryCard = $game.MemoryCardPath
             Arguments = @('-pine-port', [string]$pinePort)
             PassThru = $true
+            InputRecordingsRoot = $inputRecordingsRoot
         }
         if ($Turbo) {
             $launchParameters.Turbo = $true
@@ -402,6 +470,15 @@ try {
         }
         if ($DiscardMemoryCardWrites) {
             $launchParameters.DiscardMemoryCardWrites = $true
+        }
+        if ($ReadOnlySettings) {
+            $launchParameters.ReadOnlySettings = $true
+        }
+        if (-not [string]::IsNullOrWhiteSpace($game.Pnach)) {
+            $launchParameters.Pnach = $game.Pnach
+        }
+        if (@($game.PnachLines).Count -gt 0) {
+            $launchParameters.PnachLines = $game.PnachLines
         }
         if ($PSCmdlet.ParameterSetName -eq 'Play') {
             $launchParameters.InputRecording = $playbackRecordings[$index]

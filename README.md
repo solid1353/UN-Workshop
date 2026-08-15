@@ -79,6 +79,8 @@ workshop ss move <game> <subpath> [-c]
   callers may request Turbo, permanent Unlimited, or frame-limited Unlimited;
   no speed option means Normal. Turbo may accompany frame-limited Unlimited and
   becomes its fallback. Snapshot replay explicitly selects permanent Unlimited.
+- Shared callers may provide PNACH paths and inline PNACH lines keyed by the
+  selected game. Each process receives only its own file and ordered line set.
 - `ss move` files matching savestates from the development PCSX2 installation
   below Workshop `work/sstates/` for source games or the invoking project's
   `work/sstates/` for project builds. `-c` first sends the existing
@@ -97,8 +99,9 @@ project settings.
 - `paths.json`: authoritative Workshop roots and named reusable files.
 - `games.json`: stable source-game selectors, aliases, serials, and CRCs.
 - `assets/icons/`: reusable source-game `simple` and `detailed` icons.
-- `pcsx2_files/`: public cheats, GameSettings, input-profile sources, and
-  input recordings. BIOS files and memory cards are deliberately ignored.
+- `pcsx2_files/`: NUN3's flat PNACH, GameSettings, and memory card, shared
+  input-profile sources, and ignored BIOS, default cards, and test cards.
+  Consuming projects own their other game bundles and input recordings.
 - `pcsx2_files/input_profiles/sources/overrides/`: named input-profile
   overrides, with game-specific overrides under `games/`.
 - `scripts/pcsx2/`: reusable PCSX2 launch, worker-copy, PINE, input-profile,

@@ -34,6 +34,7 @@ try {
         [void](New-Item -ItemType Directory -Path (Join-Path $workshop $path) -Force)
     }
     [void](New-Item -ItemType Directory -Path (Join-Path $project 'build') -Force)
+    [void](New-Item -ItemType Directory -Path (Join-Path $project 'pcsx2_files\games\NA228') -Force)
 
     foreach ($name in @('paths.ps1', 'paths.py', 'game_catalog.py', 'resolve_game.py')) {
         Copy-Item `
@@ -86,7 +87,7 @@ function Get-Pcsx2IsoIdentity {
   }
 }
 '@
-    Set-Content -LiteralPath (Join-Path $project 'settings.json') -Value @'
+    Set-Content -LiteralPath (Join-Path $project 'game.json') -Value @'
 {
   "schema_version": 1,
   "title": "NA v2.28",
@@ -97,9 +98,11 @@ function Get-Pcsx2IsoIdentity {
 }
 '@
     Set-Content -LiteralPath (Join-Path $project 'build\NA v2.28 - Latest.iso') -Value 'test'
-    Set-Content `
-        -LiteralPath (Join-Path $workshop 'pcsx2_files\game_settings\SLOP-NA228.ini') `
-        -Value "[MemoryCards]`nSlot1_Filename = NA v2.28.ps2"
+    foreach ($extension in @('ini', 'pnach', 'ps2')) {
+        Set-Content `
+            -LiteralPath (Join-Path $project "pcsx2_files\games\NA228\NA228.$extension") `
+            -Value 'test'
+    }
 
     $resolvedLatest = (
         & python `
@@ -107,14 +110,12 @@ function Get-Pcsx2IsoIdentity {
             latest `
             --project-root $project
     ) | ConvertFrom-Json
-    $expectedLatestCard = Join-Path (
-        $workshop
-    ) 'pcsx2_files\memory_cards\NA v2.28 - Latest.ps2'
+    $expectedLatestCard = Join-Path $project 'pcsx2_files\games\NA228\NA228.ps2'
     if (
         [IO.Path]::GetFullPath([string]$resolvedLatest.memory_card) -cne
         [IO.Path]::GetFullPath($expectedLatestCard)
     ) {
-        throw 'Build memory-card path was not derived from the GameSettings base plus postfix.'
+        throw "Build memory-card path did not resolve from the invoking project's NA228 bundle."
     }
 
     $states = Join-Path $workshop 'pcsx2\sstates'
