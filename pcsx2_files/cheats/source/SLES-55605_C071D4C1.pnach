@@ -1,14 +1,22 @@
-// [Disable modes]
+[+Disable modes]
 patch=1,EE,005DC300,word,FFFFFFFF // Master mode
 patch=1,EE,005DC310,word,FFFFFFFF // Shop
 
-// [Skip CC2 intro]
-patch=1,EE,001E4394,word,A785FDDC
+[+Skips]
+patch=1,EE,001E4394,word,A785FDDC // Skip CC2 intro
+patch=1,EE,001E440C,word,10000007 // Skip opening
 
-// [Skip opening]
-patch=1,EE,001E440C,word,10000007
+[+Practice QoL]
+// patch=1,EE,001ED8D8,word,A0850001 // Half HP: sb a1,1(a0)
+patch=1,EE,001ED920,word,00000000 // Voice off
+patch=1,EE,001ED96C,word,A080000B // Support off
+patch=1,EE,001ED884,word,00000000 // Command display off
+patch=1,EE,001ED89C,word,00000000 // Simple display off
 
-// [Match NA228 automatic startup flow for E2E]
+[+Default save overwrite confirmation to Yes]
+patch=1,EE,001EB18C,word,AC400014
+
+[+Match NA228 automatic startup flow for E2E]
 // Select English and complete the only call to the language selector immediately.
 patch=1,EE,003D0C60,word,3C020061 // lui v0,0x61
 patch=1,EE,003D0C64,word,AC401C10 // sw zero,0x1c10(v0)
@@ -143,15 +151,135 @@ patch=1,EE,003D0E34,word,1000FFAC // b 0x003d0ce8
 patch=1,EE,003D0E38,word,0000182D // move v1,zero
 patch=1,EE,003D0E3C,word,00000000 // nop
 
-// [Support off by default]
-patch=1,EE,001ED96C,word,A080000B
+[+Practice bootstrap]
+// Requires the automatic-startup section above. Its language-selector stub makes
+// the remaining 0x003D0E40..0x003D0FFF tail resident and unreachable.
+// Route successful Continue startup into the native Practice controller.
+patch=1,EE,001EFA28,word,24020004 // li v0,4
+patch=1,EE,001EFA2C,word,AE020008 // sw v0,8(s0)
+patch=1,EE,001EFA30,word,24020003 // li v0,3
+patch=1,EE,001EFA34,word,10000029 // retain the native branch
+patch=1,EE,001EFA38,word,AE02000C // sw v0,12(s0)
 
-// [Command display off by default]
-patch=1,EE,001ED884,word,00000000
+// Replace only the state-7 Character Select and state-15 battle-update calls.
+patch=1,EE,001F2D7C,word,0C0F4390 // jal 0x003d0e40
+patch=1,EE,001F2E1C,word,0C0F43AF // jal 0x003d0ebc
 
-// [Simple display off]
-patch=1,EE,001ED89C,word,00000000
+// Configured-match wrapper at 0x003D0E40.
+patch=1,EE,003D0E40,word,3C080061 // lui t0,0x61
+patch=1,EE,003D0E44,word,8D087D00 // lw t0,32000(t0)
+patch=1,EE,003D0E48,word,1100001A // beqz t0,3d0eb4
+patch=1,EE,003D0E4C,word,00000000 // nop
+patch=1,EE,003D0E50,word,3C09003D // lui t1,0x3d
+patch=1,EE,003D0E54,word,25290FF0 // addiu t1,t1,4080
+patch=1,EE,003D0E58,word,8D2A0000 // lw t2,0(t1)
+patch=1,EE,003D0E5C,word,8D2B0004 // lw t3,4(t1)
+patch=1,EE,003D0E60,word,AD20FFFC // sw zero,-4(t1)
+patch=1,EE,003D0E64,word,240C0039 // li t4,57
+patch=1,EE,003D0E68,word,240D0001 // li t5,1
+patch=1,EE,003D0E6C,word,240E0006 // li t6,6
+patch=1,EE,003D0E70,word,AD0A004C // sw t2,76(t0)
+patch=1,EE,003D0E74,word,AD0A00C8 // sw t2,200(t0)
+patch=1,EE,003D0E78,word,AD0B0068 // sw t3,104(t0)
+patch=1,EE,003D0E7C,word,AD0B00E4 // sw t3,228(t0)
+patch=1,EE,003D0E80,word,AD0C0074 // sw t4,116(t0)
+patch=1,EE,003D0E84,word,AD0C00F0 // sw t4,240(t0)
+patch=1,EE,003D0E88,word,AD0D0090 // sw t5,144(t0)
+patch=1,EE,003D0E8C,word,AD0D010C // sw t5,268(t0)
+patch=1,EE,003D0E90,word,A10E0098 // sb t6,152(t0)
+patch=1,EE,003D0E94,word,240E0003 // li t6,3
+patch=1,EE,003D0E98,word,AC8E0004 // sw t6,4(a0)
+patch=1,EE,003D0E9C,word,240E000A // li t6,10
+patch=1,EE,003D0EA0,word,AC8E0000 // sw t6,0(a0)
+patch=1,EE,003D0EA4,word,24040001 // li a0,1
+patch=1,EE,003D0EA8,word,0000282D // move a1,zero
+patch=1,EE,003D0EAC,word,08081CE4 // j 207390
+patch=1,EE,003D0EB0,word,00000000 // nop
+patch=1,EE,003D0EB4,word,03E00008 // jr ra
+patch=1,EE,003D0EB8,word,00000000 // nop
 
-// [Default save overwrite confirmation to Yes]
-// NUN5's occupied-slot save path stores choice 1 (No); the NA228 homolog stores 0 (Yes).
-patch=1,EE,001EB18C,word,AC400014
+// Native battle update plus one requested active effect at 0x003D0EBC.
+patch=1,EE,003D0EBC,word,27BDFFF0 // addiu sp,sp,-16
+patch=1,EE,003D0EC0,word,FFBF0000 // sd ra,0(sp)
+patch=1,EE,003D0EC4,word,0C07CFD0 // jal 1f3f40
+patch=1,EE,003D0EC8,word,00000000 // nop
+patch=1,EE,003D0ECC,word,3C18003D // lui t8,0x3d
+patch=1,EE,003D0ED0,word,27180FF0 // addiu t8,t8,4080
+patch=1,EE,003D0ED4,word,8F0AFFFC // lw t2,-4(t8)
+patch=1,EE,003D0ED8,word,15400041 // bnez t2,3d0fe0
+patch=1,EE,003D0EDC,word,8F090008 // lw t1,8(t8)
+patch=1,EE,003D0EE0,word,240AFFFF // li t2,-1
+patch=1,EE,003D0EE4,word,112A003E // beq t1,t2,3d0fe0
+patch=1,EE,003D0EE8,word,3C080061 // lui t0,0x61
+patch=1,EE,003D0EEC,word,8D087D00 // lw t0,32000(t0)
+patch=1,EE,003D0EF0,word,1100003B // beqz t0,3d0fe0
+patch=1,EE,003D0EF4,word,00000000 // nop
+patch=1,EE,003D0EF8,word,8D080DE4 // lw t0,3556(t0)
+patch=1,EE,003D0EFC,word,11000038 // beqz t0,3d0fe0
+patch=1,EE,003D0F00,word,00000000 // nop
+patch=1,EE,003D0F04,word,950A08E8 // lhu t2,2280(t0)
+patch=1,EE,003D0F08,word,152A0004 // bne t1,t2,3d0f1c
+patch=1,EE,003D0F0C,word,240B0001 // li t3,1
+patch=1,EE,003D0F10,word,AF0BFFFC // sw t3,-4(t8)
+patch=1,EE,003D0F14,word,10000032 // b 3d0fe0
+patch=1,EE,003D0F18,word,00000000 // nop
+patch=1,EE,003D0F1C,word,8D0B0068 // lw t3,104(t0)
+patch=1,EE,003D0F20,word,000B6080 // sll t4,t3,0x2
+patch=1,EE,003D0F24,word,3C0D005C // lui t5,0x5c
+patch=1,EE,003D0F28,word,35AD8FD0 // ori t5,t5,0x8fd0
+patch=1,EE,003D0F2C,word,018D6021 // addu t4,t4,t5
+patch=1,EE,003D0F30,word,958C0002 // lhu t4,2(t4)
+patch=1,EE,003D0F34,word,318C003E // andi t4,t4,0x3e
+patch=1,EE,003D0F38,word,11800022 // beqz t4,3d0fc4
+patch=1,EE,003D0F3C,word,000B60C0 // sll t4,t3,0x3
+patch=1,EE,003D0F40,word,3C0D005C // lui t5,0x5c
+patch=1,EE,003D0F44,word,35AD91B0 // ori t5,t5,0x91b0
+patch=1,EE,003D0F48,word,018D6021 // addu t4,t4,t5
+patch=1,EE,003D0F4C,word,8D8D0004 // lw t5,4(t4)
+patch=1,EE,003D0F50,word,11A0001C // beqz t5,3d0fc4
+patch=1,EE,003D0F54,word,8D8C0000 // lw t4,0(t4)
+patch=1,EE,003D0F58,word,240E0001 // li t6,1
+patch=1,EE,003D0F5C,word,11AE000B // beq t5,t6,3d0f8c
+patch=1,EE,003D0F60,word,318DFFFF // andi t5,t4,0xffff
+patch=1,EE,003D0F64,word,958D0000 // lhu t5,0(t4)
+patch=1,EE,003D0F68,word,256EFFB0 // addiu t6,t3,-80
+patch=1,EE,003D0F6C,word,2DCF000C // sltiu t7,t6,12
+patch=1,EE,003D0F70,word,11E00006 // beqz t7,3d0f8c
+patch=1,EE,003D0F74,word,240F08A1 // li t7,2209
+patch=1,EE,003D0F78,word,01CF7806 // srlv t7,t7,t6
+patch=1,EE,003D0F7C,word,31EF0001 // andi t7,t7,0x1
+patch=1,EE,003D0F80,word,11E00002 // beqz t7,3d0f8c
+patch=1,EE,003D0F84,word,00000000 // nop
+patch=1,EE,003D0F88,word,958D0002 // lhu t5,2(t4)
+patch=1,EE,003D0F8C,word,152D000D // bne t1,t5,3d0fc4
+patch=1,EE,003D0F90,word,3C0A0061 // lui t2,0x61
+patch=1,EE,003D0F94,word,8D4A7F54 // lw t2,32596(t2)
+patch=1,EE,003D0F98,word,11400006 // beqz t2,3d0fb4
+patch=1,EE,003D0F9C,word,00000000 // nop
+patch=1,EE,003D0FA0,word,914A0010 // lbu t2,16(t2)
+patch=1,EE,003D0FA4,word,11400003 // beqz t2,3d0fb4
+patch=1,EE,003D0FA8,word,240B00FF // li t3,255
+patch=1,EE,003D0FAC,word,154B000C // bne t2,t3,3d0fe0
+patch=1,EE,003D0FB0,word,00000000 // nop
+patch=1,EE,003D0FB4,word,0100202D // move a0,t0
+patch=1,EE,003D0FB8,word,DFBF0000 // ld ra,0(sp)
+patch=1,EE,003D0FBC,word,08085278 // j 2149e0
+patch=1,EE,003D0FC0,word,27BD0010 // addiu sp,sp,16
+patch=1,EE,003D0FC4,word,0100202D // move a0,t0
+patch=1,EE,003D0FC8,word,0120282D // move a1,t1
+patch=1,EE,003D0FCC,word,2406FFFF // li a2,-1
+patch=1,EE,003D0FD0,word,24070001 // li a3,1
+patch=1,EE,003D0FD4,word,DFBF0000 // ld ra,0(sp)
+patch=1,EE,003D0FD8,word,080C4160 // j 310580
+patch=1,EE,003D0FDC,word,27BD0010 // addiu sp,sp,16
+patch=1,EE,003D0FE0,word,DFBF0000 // ld ra,0(sp)
+patch=1,EE,003D0FE4,word,03E00008 // jr ra
+patch=1,EE,003D0FE8,word,27BD0010 // addiu sp,sp,16
+
+// 0x003D0FEC is mutable one-shot state, reset by the selection wrapper.
+
+[+Practice bootstrap configuration]
+// Editable bootstrap inputs. PNACH word values are hexadecimal.
+patch=1,EE,003D0FF0,word,00000043 // Player 1 character ID: 67 decimal
+patch=1,EE,003D0FF4,word,00000025 // Player 1 support ID: 0x25
+patch=1,EE,003D0FF8,word,00000044 // active effect ID: 0x44; FFFFFFFF = none
