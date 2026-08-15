@@ -42,7 +42,11 @@ param(
     [switch]$ReadOnlySettings,
 
     [Parameter(ParameterSetName = 'Configured')]
-    [string]$MemoryCard
+    [string]$MemoryCard,
+
+    [Parameter(ParameterSetName = 'Configured')]
+    [Parameter(ParameterSetName = 'Worker')]
+    [string]$Pnach
 )
 
 $ErrorActionPreference = 'Stop'
@@ -187,6 +191,13 @@ if (-not [string]::IsNullOrWhiteSpace($MemoryCard)) {
     }
 }
 
+if (-not [string]::IsNullOrWhiteSpace($Pnach)) {
+    $resolvedPnach = [IO.Path]::GetFullPath($Pnach)
+    if (-not (Test-Path -LiteralPath $resolvedPnach -PathType Leaf)) {
+        throw "PNACH file does not exist: $resolvedPnach"
+    }
+}
+
 if ($IsoPath -and -not (
     Test-Path -LiteralPath $resolvedIso -PathType Leaf
 )) {
@@ -214,6 +225,9 @@ if ($ReadOnlySettings) {
 }
 if (-not [string]::IsNullOrWhiteSpace($MemoryCard)) {
     $launchArguments += @('-memory-card', "`"$resolvedMemoryCard`"")
+}
+if (-not [string]::IsNullOrWhiteSpace($Pnach)) {
+    $launchArguments += @('-pnach', "`"$resolvedPnach`"")
 }
 if ($Unlimited) {
     $launchArguments += '-unlimited'
