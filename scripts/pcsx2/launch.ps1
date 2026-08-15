@@ -46,7 +46,11 @@ param(
 
     [Parameter(ParameterSetName = 'Configured')]
     [Parameter(ParameterSetName = 'Worker')]
-    [string]$Pnach
+    [string]$Pnach,
+
+    [Parameter(ParameterSetName = 'Configured')]
+    [Parameter(ParameterSetName = 'Worker')]
+    [string[]]$PnachLines
 )
 
 $ErrorActionPreference = 'Stop'
@@ -228,6 +232,11 @@ if (-not [string]::IsNullOrWhiteSpace($MemoryCard)) {
 }
 if (-not [string]::IsNullOrWhiteSpace($Pnach)) {
     $launchArguments += @('-pnach', "`"$resolvedPnach`"")
+}
+if ($PSBoundParameters.ContainsKey('PnachLines')) {
+    foreach ($pnachLine in @($PnachLines)) {
+        $launchArguments += @('-pnach-line', "`"$pnachLine`"")
+    }
 }
 if ($Unlimited) {
     $launchArguments += '-unlimited'
