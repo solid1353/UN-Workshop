@@ -318,6 +318,7 @@ param(
                 -Games NUN5 `
                 -Play practice-menu `
                 -Snapshots `
+                -InputRecordingCaptureMode screenshots `
                 -CaptureDirectory (Join-Path $repository 'captures') `
                 -PnachByGame $practicePnachByGame `
                 -PnachLinesByGame $practiceLinesByGame `
@@ -326,7 +327,8 @@ param(
         Assert-WorkshopLaunchTest `
             -Condition (
                 $snapshotLaunch -match (
-                    'arguments= surfaceless=True discard=True readOnly=True ' +
+                    'arguments=-input-recording-capture-mode,screenshots ' +
+                    'surfaceless=True discard=True readOnly=True ' +
                     'pnach=' + [regex]::Escape($practicePnach) +
                     ' lines=patch=1,EE,003D0FF0,word,00000039\|' +
                     'patch=1,EE,003D0FF4,word,00000025 ' +
