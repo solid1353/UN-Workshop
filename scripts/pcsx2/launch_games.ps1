@@ -13,6 +13,10 @@ param(
     [Parameter(ParameterSetName = 'Play')]
     [string]$CaptureDirectory,
 
+    [Parameter(ParameterSetName = 'Play')]
+    [ValidateSet('full', 'screenshots')]
+    [string]$InputRecordingCaptureMode,
+
     [Parameter(ParameterSetName = 'Record')]
     [string]$Record,
 
@@ -328,6 +332,12 @@ if ($Snapshots) {
         Unlimited = $true
         Wait = $true
         InputRecordingsRoot = $inputRecordingsRoot
+    }
+    if (-not [string]::IsNullOrWhiteSpace($InputRecordingCaptureMode)) {
+        $launchParameters.Arguments = @(
+            '-input-recording-capture-mode',
+            $InputRecordingCaptureMode
+        )
     }
     if (-not [string]::IsNullOrWhiteSpace($selectedGames[0].MemoryCardPath)) {
         $launchParameters.MemoryCard = $selectedGames[0].MemoryCardPath
