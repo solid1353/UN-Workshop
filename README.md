@@ -10,8 +10,7 @@ memory cards, savestates, logs, and task artifacts.
 `workshop.ps1` is the single user-facing entrypoint.
 
 ```powershell
-workshop [game] [game] [-p <recording>|-r <recording>] [-mc <card>] [-dw] [-t|-u]
-workshop <game|iso-path> -s <recording> [path] [-mc <card>]
+workshop <game|iso-path> [game|iso-path] [-p <recording>|-r <recording>|-s <recording>] [-o <path>] [-mc <card>] [-dw] [-t|-u]
 workshop input [profile]
 workshop pcsx2
 workshop resolve [game] [property]
@@ -40,19 +39,20 @@ workshop ss move <game> <subpath> [-c]
   persisting them. File-backed cards use shared access with or without `-dw`;
   discard mode additionally suppresses memory-card busy state. Snapshot replay
   with `-s` always discards writes.
-- `workshop <game|iso-path> -s <recording> [path]` replays one configured game
-  or explicit ISO in PCSX2's
+- `workshop <game|iso-path> [game|iso-path] -s <recording> [-o <path>]`
+  replays one or two configured games or explicit ISOs concurrently in PCSX2's
   surfaceless no-GUI mode and captures every recorded L3+R3 snapshot marker
-  without creating a render window or taking focus. The optional path selects
-  the exact capture directory and resolves relative to the invoking directory;
-  otherwise captures go below `work/captures/<recording>/<game>/`.
+  without creating a render window or taking focus. For one game, `-o` selects
+  the exact capture directory. For two games, it selects a parent containing
+  one directory per game. Relative paths resolve from the invoking directory;
+  without `-o`, captures go below `work/captures/<recording>/<game>/`.
   An explicit ISO path is accepted only with `-s`; without `-mc`, PCSX2's
   configured memory-card selection remains in effect. A marker is
   the rising edge of the chord,
   so holding both buttons creates one capture. A successful marker savestate and
   its standalone PNG use the same encoded screenshot. If actual memory-card
   activity blocks the savestate outside discard mode, the standalone PNG is
-  still written. The command waits for the replay to finish.
+  still written. The command waits for every replay to finish.
 - Snapshot recordings are power-on timelines. They may be shortened without
   rerecording only by removing trailing frames after the final required marker;
   cutting the prefix or middle changes controller timing and the resulting game

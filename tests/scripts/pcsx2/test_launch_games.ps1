@@ -18,12 +18,18 @@ function Assert-WorkshopLaunchTest {
 $sourceRepository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
 $help = (& (Join-Path $sourceRepository 'workshop.ps1') help) -join "`n"
 Assert-WorkshopLaunchTest `
-    -Condition ($help.Contains('workshop <game|iso-path> -s name')) `
-    -Message 'Workshop help did not document ISO-path snapshot replay.'
+    -Condition (
+        $help.Contains(
+            'workshop <game|iso-path> [game|iso-path] ' +
+            '[-p name|-r name|-s name]'
+        )
+    ) `
+    -Message 'Workshop help did not present one unified launch command.'
 foreach ($expectedOption in @(
     '-p <name>',
     '-r <name>',
     '-s <name>',
+    '-o <path>',
     '-mc <card>',
     '-dw',
     '-t',
@@ -176,8 +182,19 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
             -Condition ($snapshots -match 'games=NUN5 play=practice-menu record= snapshots=True') `
             -Message 'Snapshot playback was not forwarded to the shared launcher.'
 
+        $pairedSnapshots = (
+            & .\workshop.ps1 NUN5 latest -s practice-menu
+        ) -join "`n"
+        Assert-WorkshopLaunchTest `
+            -Condition (
+                $pairedSnapshots -match (
+                    'games=NUN5,latest play=practice-menu record= snapshots=True'
+                )
+            ) `
+            -Message 'Paired snapshot playback was not forwarded to the shared launcher.'
+
         $snapshotsWithPath = (
-            & .\workshop.ps1 NUN5 -s practice-menu 'captures/custom'
+            & .\workshop.ps1 NUN5 -s practice-menu -o 'captures/custom'
         ) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition (
@@ -190,7 +207,7 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
 
         $isoTarget = 'work/Docs chat/build/candidate.iso'
         $isoSnapshots = (
-            & .\workshop.ps1 $isoTarget -s practice-menu 'captures/worker'
+            & .\workshop.ps1 $isoTarget -s practice-menu -o 'captures/worker'
         ) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition (
@@ -201,6 +218,13 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
                 )
             ) `
             -Message 'The ISO snapshot target was not forwarded.'
+
+        $captureWithoutSnapshotsRejected = $false
+        try { & .\workshop.ps1 NUN5 -o 'captures/invalid' }
+        catch { $captureWithoutSnapshotsRejected = $_.Exception.Message -ceq '-o requires -s.' }
+        Assert-WorkshopLaunchTest `
+            -Condition $captureWithoutSnapshotsRejected `
+            -Message 'Workshop accepted -o without snapshot replay.'
 
         $conflictingSpeedRejected = $false
         try { & .\workshop.ps1 NUN5 -t -u }
@@ -257,10 +281,26 @@ param(
     [switch]$Unlimited,
     [UInt64]$UnlimitedForFrames,
     [switch]$Wait,
+    [switch]$PassThru,
     [string[]]$Arguments
 )
-"[fake] iso=$IsoPath memory=$MemoryCard arguments=$($Arguments -join ',') surfaceless=$Surfaceless discard=$DiscardMemoryCardWrites readOnly=$ReadOnlySettings pnach=$Pnach lines=$($PnachLines -join '|') turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames wait=$Wait"
+$message = "[fake] iso=$IsoPath input=$InputRecording capture=$InputRecordingCaptureDirectory memory=$MemoryCard arguments=$($Arguments -join ',') surfaceless=$Surfaceless discard=$DiscardMemoryCardWrites readOnly=$ReadOnlySettings pnach=$Pnach lines=$($PnachLines -join '|') turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames wait=$Wait passThru=$PassThru"
+$message
+if ($PassThru) {
+    Start-Process `
+        -FilePath ([Diagnostics.Process]::GetCurrentProcess().MainModule.FileName) `
+        -ArgumentList @('-NoProfile', '-Command', 'Start-Sleep -Milliseconds 50') `
+        -WindowStyle Hidden `
+        -PassThru
+}
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\pcsx2\launch.ps1')
+
+        New-Item -ItemType Directory -Force -Path (
+            Join-Path $repository 'pcsx2\inis'
+        ) | Out-Null
+        'PINESlot = 28011' | Set-Content -NoNewline -LiteralPath (
+            Join-Path $repository 'pcsx2\inis\PCSX2.ini'
+        )
 
         $resolver = Join-Path $repository 'scripts\lib\resolve_game.py'
         $resolvedSource = (
@@ -332,10 +372,51 @@ param(
                     'pnach=' + [regex]::Escape($practicePnach) +
                     ' lines=patch=1,EE,003D0FF0,word,00000039\|' +
                     'patch=1,EE,003D0FF4,word,00000025 ' +
-                    'turbo=False unlimited=True frames=0 wait=True'
+                    'turbo=False unlimited=True frames=0 wait=False passThru=True'
                 )
             ) `
             -Message 'Snapshot playback did not forward the selected game PNACH and inline lines.'
+
+        $secondIso = Join-Path $repository 'source\NUN3.iso'
+        New-Item -ItemType File -Force -Path $secondIso | Out-Null
+        $pairedCaptureRoot = Join-Path $repository 'captures-paired'
+        $pairedSnapshotLaunch = @(
+            & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
+                -Games @('NUN5', $secondIso) `
+                -Play practice-menu `
+                -Snapshots `
+                -InputRecordingCaptureMode screenshots `
+                -CaptureDirectory $pairedCaptureRoot `
+                -ProjectRoot $repository
+        )
+        $pairedText = $pairedSnapshotLaunch -join "`n"
+        $leftCapture = Join-Path $pairedCaptureRoot 'nun5'
+        $rightCapture = Join-Path $pairedCaptureRoot 'NUN3'
+        $pinePorts = @(
+            [regex]::Matches($pairedText, 'arguments=-pine-port,(\d+)') |
+                ForEach-Object { $_.Groups[1].Value }
+        )
+        Assert-WorkshopLaunchTest `
+            -Condition (
+                $pairedSnapshotLaunch.Count -eq 2 -and
+                $pairedText.Contains('input=__generated\left.p2m2') -and
+                $pairedText.Contains('input=__generated\right.p2m2') -and
+                $pairedText.Contains("capture=$leftCapture") -and
+                $pairedText.Contains("capture=$rightCapture") -and
+                @($pinePorts | Select-Object -Unique).Count -eq 2 -and
+                @($pairedText -split "`n" | Where-Object {
+                    $_ -match 'surfaceless=True' -and
+                    $_ -match 'discard=True' -and
+                    $_ -match 'unlimited=True' -and
+                    $_ -match 'wait=False passThru=True'
+                }).Count -eq 2 -and
+                (Test-Path -LiteralPath $leftCapture -PathType Container) -and
+                (Test-Path -LiteralPath $rightCapture -PathType Container)
+            ) `
+            -Message (
+                'Paired snapshot replay was not launched concurrently with isolated ' +
+                "captures and PINE ports. Output: $pairedText"
+            )
 
         $unselectedPnachRejected = $false
         try {
@@ -372,10 +453,14 @@ param(
         ) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition (
-                $isoSnapshotLaunch.Contains("iso=$workerIso memory=") -and
+                $isoSnapshotLaunch.Contains("iso=$workerIso input=practice-menu.p2m2") -and
+                $isoSnapshotLaunch.Contains(
+                    "capture=$(Join-Path $repository 'captures-worker') memory="
+                ) -and
                 $isoSnapshotLaunch -match (
                     'arguments= surfaceless=True discard=True readOnly=True ' +
-                    'pnach= lines= turbo=False unlimited=True frames=0 wait=True'
+                    'pnach= lines= turbo=False unlimited=True frames=0 ' +
+                    'wait=False passThru=True'
                 )
             ) `
             -Message (
