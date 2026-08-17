@@ -39,13 +39,9 @@ function Invoke-UnWorkshopGameLaunch {
     if ($selectedModes.Count -gt 1) {
         throw 'Use only one of -p, -r, or -s.'
     }
-    if (-not [string]::IsNullOrWhiteSpace($Snapshots) -and
-        $games.Count -ne 1) {
-        throw '-s requires exactly one game.'
-    }
     if (-not [string]::IsNullOrWhiteSpace($CaptureDirectory) -and
         [string]::IsNullOrWhiteSpace($Snapshots)) {
-        throw 'A snapshot capture path requires -s.'
+        throw '-o requires -s.'
     }
     if ($Turbo -and $Unlimited) {
         throw 'Use only one of -t or -u.'
@@ -86,16 +82,17 @@ function ConvertFrom-UnWorkshopLaunchArguments {
         Play = ''
         Record = ''
         Snapshots = ''
+        CaptureDirectory = ''
         MemoryCard = ''
     }
     $discardMemoryCardWrites = $false
     $turbo = $false
     $unlimited = $false
-    $captureDirectory = ''
     $valueOptions = @{
         '-p' = 'Play'
         '-r' = 'Record'
         '-s' = 'Snapshots'
+        '-o' = 'CaptureDirectory'
         '-mc' = 'MemoryCard'
     }
 
@@ -138,22 +135,12 @@ function ConvertFrom-UnWorkshopLaunchArguments {
         }
     }
 
-    if (-not [string]::IsNullOrWhiteSpace([string]$values.Snapshots)) {
-        if ($games.Count -gt 2) {
-            throw '-s accepts one game and one optional capture path.'
-        }
-        if ($games.Count -eq 2) {
-            $captureDirectory = $games[1]
-            $games.RemoveAt(1)
-        }
-    }
-
     [pscustomobject]@{
         Games = @($games)
         Play = $values.Play
         Record = $values.Record
         Snapshots = $values.Snapshots
-        CaptureDirectory = $captureDirectory
+        CaptureDirectory = $values.CaptureDirectory
         MemoryCard = $values.MemoryCard
         DiscardMemoryCardWrites = $discardMemoryCardWrites
         Turbo = $turbo
@@ -215,8 +202,7 @@ switch ($normalizedCommand) {
         @(
             'UN Workshop'
             ''
-            '  workshop [game] [game] [-p name|-r name] [-mc card] [-dw] [-t|-u]  Launch one or two games; pairs close existing user PCSX2 first.'
-            '  workshop <game|iso-path> -s name [path] [-mc card]  Replay one game at unlimited speed and take snapshots.'
+            '  workshop <game|iso-path> [game|iso-path] [-p name|-r name|-s name] [-o path] [-mc card] [-dw] [-t|-u]  Launch or replay one or two games; pairs close existing user PCSX2 first.'
             '  workshop input [profile]             Regenerate all profiles; optionally assign one.'
             '  workshop pcsx2                       Launch development PCSX2 without a game.'
             '  workshop resolve [game] [property]   Resolve all games, one game, or one property.'
@@ -226,7 +212,8 @@ switch ($normalizedCommand) {
             '  Launch options:'
             '    -p <name>        Replay an input recording.'
             '    -r <name>        Create an input recording; paired launches record the rightmost game.'
-            '    -s <name> [path] Replay one game or ISO path and take snapshots; optionally select the capture directory.'
+            '    -s <name>        Replay one or two games or ISO paths and take snapshots.'
+            '    -o <path>        Select the snapshot capture directory or two-game parent directory.'
             '    -mc <card>       Use one shared card or template; .ps2 is added automatically.'
             '    -dw              Discard memory-card writes for an ordinary launch.'
             '    -t               Launch in Turbo.'

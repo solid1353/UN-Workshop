@@ -147,6 +147,36 @@ function Wait-UnWorkshopPcsx2Window {
     throw "PCSX2 did not create a window for $Game within $TimeoutSeconds seconds."
 }
 
+function New-UnWorkshopPlaybackRecordings {
+    param(
+        [Parameter(Mandatory)][string]$RecordingName,
+        [Parameter(Mandatory)][string]$RecordingRoot,
+        [Parameter(Mandatory)][ValidateRange(1, 2)][int]$GameCount
+    )
+
+    if ($GameCount -eq 1) {
+        return $RecordingName
+    }
+
+    $generatedDirectory = Join-Path $RecordingRoot '__generated'
+    if (Test-Path -LiteralPath $generatedDirectory) {
+        Remove-Item -LiteralPath $generatedDirectory -Recurse -Force
+    }
+    [void](New-Item -ItemType Directory -Path $generatedDirectory)
+
+    $sourceRecording = Join-Path $RecordingRoot $RecordingName
+    $playbackRecordings = @(
+        '__generated\left.p2m2',
+        '__generated\right.p2m2'
+    )
+    foreach ($stagedRecording in $playbackRecordings) {
+        Copy-Item `
+            -LiteralPath $sourceRecording `
+            -Destination (Join-Path $RecordingRoot $stagedRecording)
+    }
+    return $playbackRecordings
+}
+
 $recordingName = if ($PSCmdlet.ParameterSetName -eq 'Play') {
     Resolve-UnWorkshopRecordingName `
         -Name $Play `
@@ -303,10 +333,7 @@ foreach ($requiredFile in $requiredFiles) {
 }
 
 if ($Snapshots) {
-    if ($selectedGames.Count -ne 1) {
-        throw '-Snapshots requires exactly one game.'
-    }
-    $captureDirectory = if (-not [string]::IsNullOrWhiteSpace($CaptureDirectory)) {
+    $captureRoot = if (-not [string]::IsNullOrWhiteSpace($CaptureDirectory)) {
         [IO.Path]::GetFullPath($CaptureDirectory)
     }
     else {
@@ -316,40 +343,141 @@ if ($Snapshots) {
         } else {
             $paths.Workshop
         }
-        Join-Path $captureRepositoryRoot "work\captures\$recordingStem\$($selectedGames[0].Selector)"
+        Join-Path $captureRepositoryRoot "work\captures\$recordingStem"
     }
-    $action = "replay $($selectedGames[0].Selector) and capture snapshot markers"
-    if (-not $PSCmdlet.ShouldProcess($captureDirectory, $action)) {
+    $captureDirectories = @(
+        for ($index = 0; $index -lt $selectedGames.Count; $index++) {
+            if ($selectedGames.Count -eq 1 -and
+                -not [string]::IsNullOrWhiteSpace($CaptureDirectory)) {
+                $captureRoot
+            }
+            else {
+                Join-Path $captureRoot $selectedGames[$index].Selector
+            }
+        }
+    )
+    $gameList = $selectedGames.Selector -join ', '
+    $action = "replay $gameList and capture snapshot markers"
+    if (-not $PSCmdlet.ShouldProcess(($captureDirectories -join ', '), $action)) {
         return
     }
-    [void](New-Item -ItemType Directory -Path $captureDirectory -Force)
-    $launchParameters = @{
-        IsoPath = $selectedGames[0].IsoPath
-        InputRecording = $recordingName
-        InputRecordingCaptureDirectory = $captureDirectory
-        Surfaceless = $true
-        DiscardMemoryCardWrites = $true
-        Unlimited = $true
-        Wait = $true
-        InputRecordingsRoot = $inputRecordingsRoot
-    }
-    if (-not [string]::IsNullOrWhiteSpace($InputRecordingCaptureMode)) {
-        $launchParameters.Arguments = @(
-            '-input-recording-capture-mode',
-            $InputRecordingCaptureMode
+
+    if ($selectedGames.Count -eq 2) {
+        $userProcesses = @(
+            Get-UnWorkshopUserPcsx2Processes -Roots @($paths.Pcsx2Dev)
         )
+        foreach ($process in $userProcesses) {
+            $targetDescription = "PCSX2 process $($process.Id) ($($process.Path))"
+            if ($PSCmdlet.ShouldProcess(
+                $targetDescription,
+                'close before the two-game snapshot replay'
+            )) {
+                if (-not $process.HasExited) {
+                    [void]$process.CloseMainWindow()
+                    if (-not $process.WaitForExit(5000)) {
+                        Stop-Process -Id $process.Id -Force
+                        Wait-Process -Id $process.Id -ErrorAction SilentlyContinue
+                    }
+                }
+            }
+        }
     }
-    if (-not [string]::IsNullOrWhiteSpace($selectedGames[0].MemoryCardPath)) {
-        $launchParameters.MemoryCard = $selectedGames[0].MemoryCardPath
+
+    $snapshotPinePorts = @()
+    if ($selectedGames.Count -eq 2) {
+        $nextPinePort = Get-UnWorkshopConfiguredPinePort -Pcsx2Root $pcsx2Root
+        $usedPinePorts = [Collections.Generic.HashSet[int]]::new()
+        foreach ($endpoint in [Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().GetActiveTcpListeners()) {
+            [void]$usedPinePorts.Add($endpoint.Port)
+        }
+        for ($index = 0; $index -lt $selectedGames.Count; $index++) {
+            while ($usedPinePorts.Contains($nextPinePort)) {
+                $nextPinePort++
+            }
+            if ($nextPinePort -gt 65535) {
+                throw 'No free PINE port remains in the configured range.'
+            }
+            $snapshotPinePorts += $nextPinePort
+            [void]$usedPinePorts.Add($nextPinePort)
+            $nextPinePort++
+        }
     }
-    if (-not [string]::IsNullOrWhiteSpace($selectedGames[0].Pnach)) {
-        $launchParameters.Pnach = $selectedGames[0].Pnach
+
+    $playbackRecordings = @(
+        New-UnWorkshopPlaybackRecordings `
+            -RecordingName $recordingName `
+            -RecordingRoot $inputRecordingsRoot `
+            -GameCount $selectedGames.Count
+    )
+    foreach ($directory in $captureDirectories) {
+        [void](New-Item -ItemType Directory -Path $directory -Force)
     }
-    if (@($selectedGames[0].PnachLines).Count -gt 0) {
-        $launchParameters.PnachLines = $selectedGames[0].PnachLines
+
+    $snapshotProcesses = [Collections.Generic.List[Diagnostics.Process]]::new()
+    try {
+        for ($index = 0; $index -lt $selectedGames.Count; $index++) {
+            $game = $selectedGames[$index]
+            $launchParameters = @{
+                IsoPath = $game.IsoPath
+                InputRecording = $playbackRecordings[$index]
+                InputRecordingCaptureDirectory = $captureDirectories[$index]
+                Surfaceless = $true
+                DiscardMemoryCardWrites = $true
+                Unlimited = $true
+                PassThru = $true
+                InputRecordingsRoot = $inputRecordingsRoot
+            }
+            $arguments = [Collections.Generic.List[string]]::new()
+            if ($snapshotPinePorts.Count -gt 0) {
+                $arguments.Add('-pine-port')
+                $arguments.Add([string]$snapshotPinePorts[$index])
+            }
+            if (-not [string]::IsNullOrWhiteSpace($InputRecordingCaptureMode)) {
+                $arguments.Add('-input-recording-capture-mode')
+                $arguments.Add($InputRecordingCaptureMode)
+            }
+            if ($arguments.Count -gt 0) {
+                $launchParameters.Arguments = @($arguments)
+            }
+            if (-not [string]::IsNullOrWhiteSpace($game.MemoryCardPath)) {
+                $launchParameters.MemoryCard = $game.MemoryCardPath
+            }
+            if (-not [string]::IsNullOrWhiteSpace($game.Pnach)) {
+                $launchParameters.Pnach = $game.Pnach
+            }
+            if (@($game.PnachLines).Count -gt 0) {
+                $launchParameters.PnachLines = $game.PnachLines
+            }
+            $launchParameters.ReadOnlySettings = $true
+            $launchResult = @(& $pcsx2Launcher @launchParameters)
+            $processes = @(
+                $launchResult | Where-Object { $_ -is [Diagnostics.Process] }
+            )
+            if ($processes.Count -ne 1) {
+                throw "PCSX2 launcher did not return one process for $($game.Selector)."
+            }
+            $launchResult |
+                Where-Object { $_ -isnot [Diagnostics.Process] } |
+                Write-Output
+            $snapshotProcesses.Add($processes[0])
+        }
+        foreach ($process in $snapshotProcesses) {
+            Wait-Process -InputObject $process
+        }
     }
-    $launchParameters.ReadOnlySettings = $true
-    & $pcsx2Launcher @launchParameters
+    finally {
+        foreach ($process in $snapshotProcesses) {
+            try {
+                if (-not $process.HasExited) {
+                    Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+                    Wait-Process -InputObject $process -ErrorAction SilentlyContinue
+                }
+            }
+            catch {
+                # Preserve the original launch or replay failure.
+            }
+        }
+    }
     return
 }
 
@@ -417,30 +545,15 @@ if ($selectedGames.Count -eq 2) {
     }
 }
 
-$playbackRecordings = @()
-if ($PSCmdlet.ParameterSetName -eq 'Play') {
-    if ($selectedGames.Count -eq 2) {
-        $generatedDirectory = Join-Path $inputRecordingsRoot '__generated'
-        if (Test-Path -LiteralPath $generatedDirectory) {
-            Remove-Item -LiteralPath $generatedDirectory -Recurse -Force
-        }
-        [void](New-Item -ItemType Directory -Path $generatedDirectory)
-
-        $sourceRecording = Join-Path $inputRecordingsRoot $recordingName
-        $playbackRecordings = @(
-            '__generated\left.p2m2',
-            '__generated\right.p2m2'
-        )
-        foreach ($stagedRecording in $playbackRecordings) {
-            Copy-Item `
-                -LiteralPath $sourceRecording `
-                -Destination (Join-Path $inputRecordingsRoot $stagedRecording)
-        }
-    }
-    else {
-        $playbackRecordings = @($recordingName)
-    }
+$playbackRecordings = if ($PSCmdlet.ParameterSetName -eq 'Play') {
+    @(
+        New-UnWorkshopPlaybackRecordings `
+            -RecordingName $recordingName `
+            -RecordingRoot $inputRecordingsRoot `
+            -GameCount $selectedGames.Count
+    )
 }
+else { @() }
 
 $usedPinePorts = [Collections.Generic.HashSet[int]]::new()
 foreach ($endpoint in [Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().GetActiveTcpListeners()) {
