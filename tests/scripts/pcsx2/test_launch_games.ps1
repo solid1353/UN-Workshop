@@ -399,8 +399,9 @@ if ($PassThru) {
         Assert-WorkshopLaunchTest `
             -Condition (
                 $pairedSnapshotLaunch.Count -eq 2 -and
-                $pairedText.Contains('input=__generated\left.p2m2') -and
-                $pairedText.Contains('input=__generated\right.p2m2') -and
+                @($pairedText -split "`n" | Where-Object {
+                    $_ -match 'input=practice-menu\.p2m2'
+                }).Count -eq 2 -and
                 $pairedText.Contains("capture=$leftCapture") -and
                 $pairedText.Contains("capture=$rightCapture") -and
                 @($pinePorts | Select-Object -Unique).Count -eq 2 -and
@@ -411,11 +412,14 @@ if ($PassThru) {
                     $_ -match 'wait=False passThru=True'
                 }).Count -eq 2 -and
                 (Test-Path -LiteralPath $leftCapture -PathType Container) -and
-                (Test-Path -LiteralPath $rightCapture -PathType Container)
+                (Test-Path -LiteralPath $rightCapture -PathType Container) -and
+                -not (Test-Path -LiteralPath (
+                    Join-Path $repository 'pcsx2_files\input_recordings\__generated'
+                ))
             ) `
             -Message (
-                'Paired snapshot replay was not launched concurrently with isolated ' +
-                "captures and PINE ports. Output: $pairedText"
+                'Paired snapshot replay did not share the canonical recording while ' +
+                "using isolated captures and PINE ports. Output: $pairedText"
             )
 
         $unselectedPnachRejected = $false

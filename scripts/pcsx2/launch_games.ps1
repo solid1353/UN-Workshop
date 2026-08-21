@@ -147,36 +147,6 @@ function Wait-UnWorkshopPcsx2Window {
     throw "PCSX2 did not create a window for $Game within $TimeoutSeconds seconds."
 }
 
-function New-UnWorkshopPlaybackRecordings {
-    param(
-        [Parameter(Mandatory)][string]$RecordingName,
-        [Parameter(Mandatory)][string]$RecordingRoot,
-        [Parameter(Mandatory)][ValidateRange(1, 2)][int]$GameCount
-    )
-
-    if ($GameCount -eq 1) {
-        return $RecordingName
-    }
-
-    $generatedDirectory = Join-Path $RecordingRoot '__generated'
-    if (Test-Path -LiteralPath $generatedDirectory) {
-        Remove-Item -LiteralPath $generatedDirectory -Recurse -Force
-    }
-    [void](New-Item -ItemType Directory -Path $generatedDirectory)
-
-    $sourceRecording = Join-Path $RecordingRoot $RecordingName
-    $playbackRecordings = @(
-        '__generated\left.p2m2',
-        '__generated\right.p2m2'
-    )
-    foreach ($stagedRecording in $playbackRecordings) {
-        Copy-Item `
-            -LiteralPath $sourceRecording `
-            -Destination (Join-Path $RecordingRoot $stagedRecording)
-    }
-    return $playbackRecordings
-}
-
 $recordingName = if ($PSCmdlet.ParameterSetName -eq 'Play') {
     Resolve-UnWorkshopRecordingName `
         -Name $Play `
@@ -403,12 +373,6 @@ if ($Snapshots) {
         }
     }
 
-    $playbackRecordings = @(
-        New-UnWorkshopPlaybackRecordings `
-            -RecordingName $recordingName `
-            -RecordingRoot $inputRecordingsRoot `
-            -GameCount $selectedGames.Count
-    )
     foreach ($directory in $captureDirectories) {
         [void](New-Item -ItemType Directory -Path $directory -Force)
     }
@@ -419,7 +383,7 @@ if ($Snapshots) {
             $game = $selectedGames[$index]
             $launchParameters = @{
                 IsoPath = $game.IsoPath
-                InputRecording = $playbackRecordings[$index]
+                InputRecording = $recordingName
                 InputRecordingCaptureDirectory = $captureDirectories[$index]
                 Surfaceless = $true
                 DiscardMemoryCardWrites = $true
@@ -545,16 +509,6 @@ if ($selectedGames.Count -eq 2) {
     }
 }
 
-$playbackRecordings = if ($PSCmdlet.ParameterSetName -eq 'Play') {
-    @(
-        New-UnWorkshopPlaybackRecordings `
-            -RecordingName $recordingName `
-            -RecordingRoot $inputRecordingsRoot `
-            -GameCount $selectedGames.Count
-    )
-}
-else { @() }
-
 $usedPinePorts = [Collections.Generic.HashSet[int]]::new()
 foreach ($endpoint in [Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().GetActiveTcpListeners()) {
     [void]$usedPinePorts.Add($endpoint.Port)
@@ -604,7 +558,7 @@ try {
             $launchParameters.PnachLines = $game.PnachLines
         }
         if ($PSCmdlet.ParameterSetName -eq 'Play') {
-            $launchParameters.InputRecording = $playbackRecordings[$index]
+            $launchParameters.InputRecording = $recordingName
         }
         elseif (
             $PSCmdlet.ParameterSetName -eq 'Record' -and
