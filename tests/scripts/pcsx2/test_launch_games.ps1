@@ -88,6 +88,7 @@ try {
   "roots": {
     "repository": ".",
     "source": "source",
+    "build": "build",
     "disassembly": "@work/disassembly",
     "tools": "tools",
     "work": "work",
@@ -107,10 +108,11 @@ try {
   },
   "files": {
     "game_catalog": "@repository/games.json",
-    "game_resolver": "@repository/scripts/lib/resolve_game.py",
+    "settings": "@repository/game.json",
+    "game_resolver": "@scripts/lib/resolve_game.py",
     "workshop_command": "@repository/workshop.ps1",
-    "pcsx2_launch_command": "@repository/scripts/pcsx2/launch.ps1",
-    "pcsx2_game_launch_command": "@repository/scripts/pcsx2/launch_games.ps1"
+    "pcsx2_launch_command": "@pcsx2_scripts/launch.ps1",
+    "pcsx2_game_launch_command": "@pcsx2_scripts/launch_games.ps1"
   }
 }
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'paths.json')

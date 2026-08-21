@@ -28,14 +28,14 @@
   "files": {
     "paths": "@repository/paths.json",
     "game_catalog": "@repository/games.json",
-    "game_resolver": "@repository/scripts/lib/resolve_game.py",
+    "game_resolver": "@scripts/lib/resolve_game.py",
     "workshop_command": "@repository/workshop.ps1",
     "pcsx2_dev_exe": "@pcsx2_dev/pcsx2-qtx64-avx2-dev.exe",
-    "pcsx2_launch_command": "@repository/scripts/pcsx2/launch.ps1",
-    "pcsx2_game_launch_command": "@repository/scripts/pcsx2/launch_games.ps1",
-    "pcsx2_copy_worker_command": "@repository/scripts/pcsx2/copy_worker.ps1",
-    "pcsx2_pine_command": "@repository/scripts/pcsx2/pine.py",
-    "pcsx2_iso_identity": "@repository/scripts/pcsx2/iso_identity.ps1",
-    "ghidra_runtime": "@repository/scripts/ghidra/runtime.ps1"
+    "pcsx2_launch_command": "@pcsx2_scripts/launch.ps1",
+    "pcsx2_game_launch_command": "@pcsx2_scripts/launch_games.ps1",
+    "pcsx2_copy_worker_command": "@pcsx2_scripts/copy_worker.ps1",
+    "pcsx2_pine_command": "@pcsx2_scripts/pine.py",
+    "pcsx2_iso_identity": "@pcsx2_scripts/iso_identity.ps1",
+    "ghidra_runtime": "@ghidra_scripts/runtime.ps1"
   }
 }

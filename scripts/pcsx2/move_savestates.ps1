@@ -68,7 +68,7 @@ $destinationRoot = if ($canonicalCategory -eq 'Builds') {
     if ([string]::IsNullOrWhiteSpace($paths.Project)) {
         throw 'A project root is required to file build savestates.'
     }
-    Join-Path $paths.Project 'work\sstates'
+    Join-Path $paths.Work 'sstates'
 }
 else {
     $paths.Savestates

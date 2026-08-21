@@ -6,9 +6,11 @@ import sys
 import unittest
 from pathlib import Path
 
+from scripts.lib.paths import load_workshop_paths
+
 
 REPOSITORY = Path(__file__).resolve().parents[3]
-MODULE_PATH = REPOSITORY / "scripts" / "pcsx2" / "pine.py"
+MODULE_PATH = load_workshop_paths(REPOSITORY).files["pcsx2_pine_command"]
 SPEC = importlib.util.spec_from_file_location("workshop_pine", MODULE_PATH)
 if SPEC is None or SPEC.loader is None:
     raise RuntimeError(f"could not load {MODULE_PATH}")
