@@ -33,8 +33,9 @@ try {
     )) {
         [void](New-Item -ItemType Directory -Path (Join-Path $workshop $path) -Force)
     }
-    [void](New-Item -ItemType Directory -Path (Join-Path $project 'build') -Force)
-    [void](New-Item -ItemType Directory -Path (Join-Path $project 'pcsx2_files\games\NA228') -Force)
+    [void](New-Item -ItemType Directory -Path (Join-Path $project 'artifacts') -Force)
+    [void](New-Item -ItemType Directory -Path (Join-Path $project 'game_data\games\NA228') -Force)
+    [void](New-Item -ItemType Directory -Path (Join-Path $project 'task_work') -Force)
 
     foreach ($name in @('paths.ps1', 'paths.py', 'game_catalog.py', 'resolve_game.py')) {
         Copy-Item `
@@ -75,7 +76,8 @@ function Get-Pcsx2IsoIdentity {
   },
   "files": {
     "game_catalog": "@repository/games.json",
-    "game_resolver": "@repository/scripts/lib/resolve_game.py"
+    "settings": "@repository/game.json",
+    "game_resolver": "@scripts/lib/resolve_game.py"
   }
 }
 '@
@@ -97,10 +99,23 @@ function Get-Pcsx2IsoIdentity {
   "builds": { "latest": { "aliases": ["l"] } }
 }
 '@
-    Set-Content -LiteralPath (Join-Path $project 'build\NA v2.28 - Latest.iso') -Value 'test'
+    Set-Content -LiteralPath (Join-Path $project 'paths.json') -Value @'
+{
+  "schema_version": 1,
+  "imports": { "workshop": "../workshop/paths.json" },
+  "roots": {
+    "repository": ".",
+    "build": "artifacts",
+    "work": "task_work",
+    "pcsx2_files": "game_data"
+  },
+  "files": { "settings": "@repository/game.json" }
+}
+'@
+    Set-Content -LiteralPath (Join-Path $project 'artifacts\NA v2.28 - Latest.iso') -Value 'test'
     foreach ($extension in @('ini', 'pnach', 'ps2')) {
         Set-Content `
-            -LiteralPath (Join-Path $project "pcsx2_files\games\NA228\NA228.$extension") `
+            -LiteralPath (Join-Path $project "game_data\games\NA228\NA228.$extension") `
             -Value 'test'
     }
 
@@ -110,7 +125,7 @@ function Get-Pcsx2IsoIdentity {
             latest `
             --project-root $project
     ) | ConvertFrom-Json
-    $expectedLatestCard = Join-Path $project 'pcsx2_files\games\NA228\NA228.ps2'
+    $expectedLatestCard = Join-Path $project 'game_data\games\NA228\NA228.ps2'
     if (
         [IO.Path]::GetFullPath([string]$resolvedLatest.memory_card) -cne
         [IO.Path]::GetFullPath($expectedLatestCard)
@@ -123,8 +138,8 @@ function Get-Pcsx2IsoIdentity {
     & (Join-Path $workshop 'scripts\pcsx2\move_savestates.ps1') `
         latest build-case -ProjectRoot $project | Out-Null
     Assert-Exists `
-        (Join-Path $project 'work\sstates\build-case\SLOP-NA228 (12345678).01.p2s') `
-        'Build savestate was not filed under the invoking project work/sstates root.'
+        (Join-Path $project 'task_work\sstates\build-case\SLOP-NA228 (12345678).01.p2s') `
+        'Build savestate was not filed under the invoking project work root.'
 
     $sourceCase = Join-Path $workshop 'work\sstates\source-case'
     [void](New-Item -ItemType Directory -Path $sourceCase -Force)
@@ -145,7 +160,7 @@ function Get-Pcsx2IsoIdentity {
         throw 'Savestate conflict numbering still advances by ten.'
     }
 
-    $cleanupTarget = Join-Path $project 'work\sstates\cleanup-case'
+    $cleanupTarget = Join-Path $project 'task_work\sstates\cleanup-case'
     [void](New-Item -ItemType Directory -Path $cleanupTarget -Force)
     Set-Content -LiteralPath (Join-Path $cleanupTarget 'stale.p2s') -Value 'stale'
     Set-Content -LiteralPath (Join-Path $states 'SLOP-NA228 (12345678).02.p2s') -Value 'new'

@@ -308,12 +308,7 @@ if ($Snapshots) {
     }
     else {
         $recordingStem = [IO.Path]::GetFileNameWithoutExtension($recordingName)
-        $captureRepositoryRoot = if ($paths.Project) {
-            $paths.Project
-        } else {
-            $paths.Workshop
-        }
-        Join-Path $captureRepositoryRoot "work\captures\$recordingStem"
+        Join-Path $paths.Work "captures\$recordingStem"
     }
     $captureDirectories = @(
         for ($index = 0; $index -lt $selectedGames.Count; $index++) {

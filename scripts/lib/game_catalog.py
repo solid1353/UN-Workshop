@@ -48,8 +48,11 @@ def load_catalog(
         "sources": sources,
     }
     if project_root is not None:
+        project_paths = _PATHS.load_project_paths(
+            project_root.resolve(), workshop_paths
+        )
         project = _read_definition(
-            project_root.resolve() / "game.json",
+            project_paths.files["settings"],
             "Project settings",
         )
         title = project.get("title")
@@ -206,20 +209,25 @@ def resolve_game(
     project_root = project_root.resolve() if project_root is not None else None
     catalog = load_catalog(workshop_root, project_root)
     workshop_paths = _PATHS.load_workshop_paths(workshop_root)
+    project_paths = (
+        _PATHS.load_project_paths(project_root, workshop_paths)
+        if project_root is not None
+        else workshop_paths
+    )
     roots = {
-        "repository": project_root if project_root else workshop_root,
-        "source": workshop_paths.roots["source"],
-        "build": (project_root / "build") if project_root else workshop_root / "build",
-        "pcsx2_files": (
-            project_root / "pcsx2_files"
-            if project_root
-            else workshop_paths.roots["pcsx2_files"]
-        ),
-        "pcsx2_cheats": workshop_paths.roots["pcsx2_cheats"],
-        "pcsx2_game_settings": workshop_paths.roots["pcsx2_game_settings"],
-        "pcsx2_input_profiles": workshop_paths.roots["pcsx2_input_profiles"],
-        "pcsx2_memory_cards": workshop_paths.roots["pcsx2_memory_cards"],
+        name: project_paths.roots[name]
+        for name in (
+            "repository",
+            "source",
+            "pcsx2_files",
+            "pcsx2_cheats",
+            "pcsx2_game_settings",
+            "pcsx2_input_profiles",
+            "pcsx2_memory_cards",
+        )
     }
+    if project_root is not None:
+        roots["build"] = project_paths.roots["build"]
     result = {
         name: os.path.abspath(path)
         for name, path in derive_game_paths(selector, catalog, roots).items()
