@@ -55,7 +55,6 @@ function Get-Pcsx2IsoIdentity {
 
     Set-Content -LiteralPath (Join-Path $workshop 'paths.json') -Value @'
 {
-  "schema_version": 1,
   "roots": {
     "repository": ".",
     "source": "source",
@@ -83,7 +82,6 @@ function Get-Pcsx2IsoIdentity {
 '@
     Set-Content -LiteralPath (Join-Path $workshop 'games.json') -Value @'
 {
-  "schema_version": 1,
   "sources": {
     "NUN5": { "serial": "SLES-55605", "crc": "C071D4C1" }
   }
@@ -91,7 +89,6 @@ function Get-Pcsx2IsoIdentity {
 '@
     Set-Content -LiteralPath (Join-Path $project 'game.json') -Value @'
 {
-  "schema_version": 1,
   "title": "NA v2.28",
   "serial": "SLOP-NA228",
   "output_boot_path": "SLOP_NA2.28",
@@ -101,7 +98,6 @@ function Get-Pcsx2IsoIdentity {
 '@
     Set-Content -LiteralPath (Join-Path $project 'paths.json') -Value @'
 {
-  "schema_version": 1,
   "imports": { "workshop": "../workshop/paths.json" },
   "roots": {
     "repository": ".",

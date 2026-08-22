@@ -1,5 +1,4 @@
 {
-  "schema_version": 1,
   "roots": {
     "repository": ".",
     "source": "source",

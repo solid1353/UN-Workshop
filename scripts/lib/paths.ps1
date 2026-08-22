@@ -39,9 +39,6 @@ function Get-UnWorkshopPaths {
     $workshop = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
     $manifestPath = Join-Path $workshop 'paths.json'
     $manifest = Get-Content -Raw -LiteralPath $manifestPath | ConvertFrom-Json
-    if ([int]$manifest.schema_version -ne 1) {
-        throw "Unsupported Workshop path schema: $($manifest.schema_version)"
-    }
     $roots = [ordered]@{}
     $pending = [Collections.Generic.List[string]]::new()
     foreach ($name in $manifest.roots.PSObject.Properties.Name) {
@@ -121,9 +118,6 @@ function Get-UnWorkshopPaths {
         $projectManifestPath = Join-Path $project 'paths.json'
         $projectManifest = Get-Content -Raw -LiteralPath $projectManifestPath |
             ConvertFrom-Json
-        if ([int]$projectManifest.schema_version -ne 1) {
-            throw "Unsupported project path schema: $($projectManifest.schema_version)"
-        }
         $localRootNames = @($projectManifest.roots.PSObject.Properties.Name)
         if ($localRootNames.Count -eq 0) {
             throw 'Project path manifest has no roots.'
@@ -233,9 +227,6 @@ function Get-UnWorkshopCatalog {
 
     $paths = Get-UnWorkshopPaths -ProjectRoot $ProjectRoot
     $shared = Get-Content -Raw -LiteralPath $paths.SourceCatalog | ConvertFrom-Json
-    if ([int]$shared.schema_version -ne 1) {
-        throw "Unsupported Workshop game catalog schema: $($shared.schema_version)"
-    }
     $result = [ordered]@{
         Sources = $shared.sources
         Title = $null
@@ -244,9 +235,6 @@ function Get-UnWorkshopCatalog {
     }
     if ($paths.ProjectSettings) {
         $project = Get-Content -Raw -LiteralPath $paths.ProjectSettings | ConvertFrom-Json
-        if ([int]$project.schema_version -ne 1) {
-            throw "Unsupported project settings schema: $($project.schema_version)"
-        }
         $result.Title = $project.title
         $result.Serial = $project.serial
         $result.Builds = $project.builds
