@@ -99,8 +99,8 @@ project settings.
 - `paths.json`: authoritative Workshop roots and named reusable files.
 - `games.json`: stable source-game selectors, aliases, serials, and CRCs.
 - `@icons/`: reusable source-game `simple` and `detailed` icons.
-- `@pcsx2_files/`: NUN3's flat PNACH, GameSettings, and memory card, shared
-  input-profile sources, and ignored BIOS, default cards, and test cards.
+- `@pcsx2_files/`: NUN3's registered bundle under `games/NUN3/`, shared
+  input-profile sources, and ignored default and test cards.
   Consuming projects own their other game bundles and input recordings.
 - `@pcsx2_input_profiles/sources/overrides/`: named input-profile
   overrides, with game-specific overrides under `games/`.

@@ -24,9 +24,7 @@ try {
         'work',
         'pcsx2\fork',
         'pcsx2\sstates',
-        'pcsx2_files\bios',
-        'pcsx2_files\cheats',
-        'pcsx2_files\game_settings',
+        'pcsx2_files\games\NUN5',
         'pcsx2_files\input_profiles',
         'pcsx2_files\input_recordings',
         'pcsx2_files\memory_cards'
@@ -56,7 +54,6 @@ function Get-Pcsx2IsoIdentity {
     Set-Content -LiteralPath (Join-Path $workshop 'paths.json') -Value @'
 {
   "roots": {
-    "repository": ".",
     "source": "source",
     "disassembly": "@work/disassembly",
     "tools": "tools",
@@ -66,16 +63,13 @@ function Get-Pcsx2IsoIdentity {
     "pcsx2_fork": "pcsx2/fork",
     "pcsx2_dev": "pcsx2",
     "pcsx2_files": "pcsx2_files",
-    "pcsx2_bios": "@pcsx2_files/bios",
-    "pcsx2_cheats": "@pcsx2_files/cheats",
-    "pcsx2_game_settings": "@pcsx2_files/game_settings",
     "pcsx2_input_profiles": "@pcsx2_files/input_profiles",
     "pcsx2_input_recordings": "@pcsx2_files/input_recordings",
     "pcsx2_memory_cards": "@pcsx2_files/memory_cards"
   },
   "files": {
-    "game_catalog": "@repository/games.json",
-    "settings": "@repository/game.json",
+    "source_catalog": "games.json",
+    "project_settings": "game.json",
     "game_resolver": "@scripts/lib/resolve_game.py"
   }
 }
@@ -100,15 +94,19 @@ function Get-Pcsx2IsoIdentity {
 {
   "imports": { "workshop": "../workshop/paths.json" },
   "roots": {
-    "repository": ".",
     "build": "artifacts",
     "work": "task_work",
     "pcsx2_files": "game_data"
   },
-  "files": { "settings": "@repository/game.json" }
+  "files": { "project_settings": "game.json" }
 }
 '@
     Set-Content -LiteralPath (Join-Path $project 'artifacts\NA v2.28 - Latest.iso') -Value 'test'
+    foreach ($extension in @('ini', 'pnach', 'ps2')) {
+        Set-Content `
+            -LiteralPath (Join-Path $workshop "pcsx2_files\games\NUN5\NUN5.$extension") `
+            -Value 'test'
+    }
     foreach ($extension in @('ini', 'pnach', 'ps2')) {
         Set-Content `
             -LiteralPath (Join-Path $project "game_data\games\NA228\NA228.$extension") `
@@ -127,6 +125,20 @@ function Get-Pcsx2IsoIdentity {
         [IO.Path]::GetFullPath($expectedLatestCard)
     ) {
         throw "Build memory-card path did not resolve from the invoking project's NA228 bundle."
+    }
+
+    $resolvedSource = (
+        & python `
+            (Join-Path $workshop 'scripts\lib\resolve_game.py') `
+            NUN5 `
+            --project-root $project
+    ) | ConvertFrom-Json
+    $expectedSourceCard = Join-Path $workshop 'pcsx2_files\games\NUN5\NUN5.ps2'
+    if (
+        [IO.Path]::GetFullPath([string]$resolvedSource.memory_card) -cne
+        [IO.Path]::GetFullPath($expectedSourceCard)
+    ) {
+        throw 'Source memory-card path did not resolve from the Workshop-owned NUN5 bundle.'
     }
 
     $states = Join-Path $workshop 'pcsx2\sstates'

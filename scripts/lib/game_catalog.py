@@ -37,21 +37,43 @@ def load_catalog(
     workshop_root = workshop_root.resolve()
     workshop_paths = _PATHS.load_workshop_paths(workshop_root)
     shared = _read_definition(
-        workshop_paths.files["game_catalog"], "Workshop game catalog"
+        workshop_paths.files["source_catalog"], "Workshop game catalog"
     )
     sources = shared.get("sources")
     if not isinstance(sources, dict) or not sources:
         raise ValueError("Workshop game catalog has no source games")
 
-    merged: dict[str, object] = {
-        "sources": sources,
-    }
+    project_paths = (
+        _PATHS.load_project_paths(project_root.resolve(), workshop_paths)
+        if project_root is not None
+        else workshop_paths
+    )
+    content_roots: list[Path] = []
+    for candidate in (
+        project_paths.roots["pcsx2_files"],
+        workshop_paths.roots["pcsx2_files"],
+    ):
+        candidate = candidate.resolve()
+        if candidate not in content_roots:
+            content_roots.append(candidate)
+    available_sources: dict[str, object] = {}
+    for name, definition in sources.items():
+        matches = [
+            root for root in content_roots if (root / "games" / name).is_dir()
+        ]
+        if len(matches) > 1:
+            raise ValueError(
+                f"Registered game {name!r} exists in multiple pcsx2_files roots"
+            )
+        if matches:
+            available_sources[name] = definition
+    if not available_sources:
+        raise ValueError("No registered source games are available")
+
+    merged: dict[str, object] = {"sources": available_sources}
     if project_root is not None:
-        project_paths = _PATHS.load_project_paths(
-            project_root.resolve(), workshop_paths
-        )
         project = _read_definition(
-            project_paths.files["settings"],
+            project_paths.files["project_settings"],
             "Project settings",
         )
         title = project.get("title")
@@ -157,25 +179,12 @@ def derive_game_paths(
         ).upper()
         source = _root(roots, "source")
         bundle = _root(roots, "pcsx2_files") / "games" / canonical_name
-        bundled = bundle.is_dir()
         result = {
             "iso": source / f"{canonical_name}.iso",
             "extracted": source / f"{canonical_name}.iso.files",
-            "cheats": (
-                bundle / f"{canonical_name}.pnach"
-                if bundled
-                else _root(roots, "pcsx2_cheats") / f"{canonical_name}.pnach"
-            ),
-            "memory_card": (
-                bundle / f"{canonical_name}.ps2"
-                if bundled
-                else _root(roots, "pcsx2_memory_cards") / f"{canonical_name}.ps2"
-            ),
-            "game_settings": (
-                bundle / f"{canonical_name}.ini"
-                if bundled
-                else _root(roots, "pcsx2_game_settings") / f"{canonical_name}.ini"
-            ),
+            "cheats": bundle / f"{canonical_name}.pnach",
+            "memory_card": bundle / f"{canonical_name}.ps2",
+            "game_settings": bundle / f"{canonical_name}.ini",
             "input_profile": input_profile_path,
         }
         if override_enabled:
@@ -213,25 +222,62 @@ def resolve_game(
         if project_root is not None
         else workshop_paths
     )
+    category, canonical_name, _, _ = find_definition(selector, catalog)
+    bundle_name = canonical_name
+    if category == "builds":
+        serial = _required_text(catalog.get("serial"), "Build serial")
+        bundle_name = serial.partition("-")[2] or serial
+    candidates = [
+        project_paths.roots["pcsx2_files"],
+        workshop_paths.roots["pcsx2_files"],
+    ]
+    unique_candidates: list[Path] = []
+    for candidate in candidates:
+        candidate = candidate.resolve()
+        if candidate not in unique_candidates:
+            unique_candidates.append(candidate)
+    matches = [
+        candidate
+        for candidate in unique_candidates
+        if (candidate / "games" / bundle_name).is_dir()
+    ]
+    if len(matches) != 1:
+        raise ValueError(
+            f"Registered game {bundle_name!r} must exist in exactly one "
+            f"configured pcsx2_files root; found {len(matches)}"
+        )
+    content_root = matches[0]
+    bundle = content_root / "games" / bundle_name
+    missing = [
+        path.name
+        for path in (
+            bundle / f"{bundle_name}.pnach",
+            bundle / f"{bundle_name}.ini",
+            bundle / f"{bundle_name}.ps2",
+        )
+        if not path.is_file()
+    ]
+    if missing:
+        raise FileNotFoundError(
+            f"Registered game {bundle_name!r} is missing: "
+            + ", ".join(missing)
+        )
     roots = {
         name: project_paths.roots[name]
         for name in (
             "repository",
             "source",
             "pcsx2_files",
-            "pcsx2_cheats",
-            "pcsx2_game_settings",
             "pcsx2_input_profiles",
-            "pcsx2_memory_cards",
         )
     }
+    roots["pcsx2_files"] = content_root
     if project_root is not None:
         roots["build"] = project_paths.roots["build"]
     result = {
         name: os.path.abspath(path)
         for name, path in derive_game_paths(selector, catalog, roots).items()
     }
-    category, canonical_name, _, _ = find_definition(selector, catalog)
     if category == "builds":
         result["postfix"] = derive_build_postfix(canonical_name)
     return result
