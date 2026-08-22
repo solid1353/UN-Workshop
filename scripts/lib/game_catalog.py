@@ -25,8 +25,8 @@ def _read_definition(path: Path, label: str) -> dict[str, object]:
     if not path.is_file():
         raise FileNotFoundError(f"{label} not found: {path}")
     value = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(value, dict) or value.get("schema_version") != 1:
-        raise ValueError(f"Unsupported {label} schema")
+    if not isinstance(value, dict):
+        raise ValueError(f"{label} must be an object")
     return value
 
 
@@ -44,7 +44,6 @@ def load_catalog(
         raise ValueError("Workshop game catalog has no source games")
 
     merged: dict[str, object] = {
-        "schema_version": 1,
         "sources": sources,
     }
     if project_root is not None:

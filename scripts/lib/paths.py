@@ -23,9 +23,6 @@ def load_workshop_paths(start: Path | None = None) -> WorkshopPaths:
     root = (start or Path(__file__).resolve().parents[2]).resolve()
     manifest = root / "paths.json"
     data = json.loads(manifest.read_text(encoding="utf-8"))
-    if data.get("schema_version") != 1:
-        raise ValueError("Unsupported Workshop path schema")
-
     configured = data.get("roots")
     if not isinstance(configured, dict) or not configured:
         raise ValueError("Workshop path manifest has no roots")
@@ -93,9 +90,6 @@ def load_project_paths(
     root = start.resolve()
     manifest = root / "paths.json"
     data = json.loads(manifest.read_text(encoding="utf-8"))
-    if data.get("schema_version") != 1:
-        raise ValueError("Unsupported project path schema")
-
     configured = data.get("roots")
     if not isinstance(configured, dict) or not configured:
         raise ValueError("Project path manifest has no roots")
