@@ -39,7 +39,7 @@ function Get-UnWorkshopPaths {
     $workshop = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
     $manifestPath = Join-Path $workshop 'paths.json'
     $manifest = Get-Content -Raw -LiteralPath $manifestPath | ConvertFrom-Json
-    $roots = [ordered]@{}
+    $roots = [ordered]@{ repository = $workshop }
     $pending = [Collections.Generic.List[string]]::new()
     foreach ($name in $manifest.roots.PSObject.Properties.Name) {
         $pending.Add($name)
@@ -88,16 +88,24 @@ function Get-UnWorkshopPaths {
     $files = [ordered]@{}
     foreach ($property in $manifest.files.PSObject.Properties) {
         $raw = [string]$property.Value
-        $match = [regex]::Match(
-            $raw,
-            '^@(?<root>[^/\\]+)[/\\](?<child>.+)$'
-        )
-        if (-not $match.Success -or -not $roots.Contains($match.Groups['root'].Value)) {
-            throw "Invalid Workshop file alias: $raw"
+        if ($raw.StartsWith('@')) {
+            $match = [regex]::Match(
+                $raw,
+                '^@(?<root>[^/\\]+)[/\\](?<child>.+)$'
+            )
+            if (-not $match.Success -or -not $roots.Contains($match.Groups['root'].Value)) {
+                throw "Invalid Workshop file alias: $raw"
+            }
+            $base = [string]$roots[$match.Groups['root'].Value]
+            $child = $match.Groups['child'].Value
+        }
+        else {
+            $base = $workshop
+            $child = $raw
         }
         $files[$property.Name] = [IO.Path]::GetFullPath((Join-Path `
-            ([string]$roots[$match.Groups['root'].Value]) `
-            $match.Groups['child'].Value
+            $base `
+            $child
         ))
     }
     $project = if ($NoProject) {
@@ -123,6 +131,7 @@ function Get-UnWorkshopPaths {
             throw 'Project path manifest has no roots.'
         }
         $effectiveRoots.workshop = $roots.repository
+        $effectiveRoots.repository = $project
         $pending = [Collections.Generic.List[string]]::new()
         foreach ($name in $localRootNames) {
             $pending.Add($name)
@@ -176,17 +185,25 @@ function Get-UnWorkshopPaths {
         }
         foreach ($property in $projectManifest.files.PSObject.Properties) {
             $raw = [string]$property.Value
-            $match = [regex]::Match(
-                $raw,
-                '^@(?<root>[^/\\]+)[/\\](?<child>.+)$'
-            )
-            if (-not $match.Success -or
-                -not $effectiveRoots.Contains($match.Groups['root'].Value)) {
-                throw "Invalid project file alias: $raw"
+            if ($raw.StartsWith('@')) {
+                $match = [regex]::Match(
+                    $raw,
+                    '^@(?<root>[^/\\]+)[/\\](?<child>.+)$'
+                )
+                if (-not $match.Success -or
+                    -not $effectiveRoots.Contains($match.Groups['root'].Value)) {
+                    throw "Invalid project file alias: $raw"
+                }
+                $base = [string]$effectiveRoots[$match.Groups['root'].Value]
+                $child = $match.Groups['child'].Value
+            }
+            else {
+                $base = $project
+                $child = $raw
             }
             $effectiveFiles[$property.Name] = [IO.Path]::GetFullPath((Join-Path `
-                ([string]$effectiveRoots[$match.Groups['root'].Value]) `
-                $match.Groups['child'].Value
+                $base `
+                $child
             ))
         }
     }
@@ -202,16 +219,13 @@ function Get-UnWorkshopPaths {
         } else { $null }
         Scripts = $effectiveRoots.scripts
         Savestates = $effectiveRoots.savestates
-        SourceCatalog = $effectiveFiles.game_catalog
+        SourceCatalog = $effectiveFiles.source_catalog
         ProjectSettings = if ($project) {
-            $effectiveFiles.settings
+            $effectiveFiles.project_settings
         } else { $null }
         Pcsx2Dev = $effectiveRoots.pcsx2_dev
         Pcsx2Fork = $effectiveRoots.pcsx2_fork
         Pcsx2Files = $effectiveRoots.pcsx2_files
-        Bios = $effectiveRoots.pcsx2_bios
-        Cheats = $effectiveRoots.pcsx2_cheats
-        GameSettings = $effectiveRoots.pcsx2_game_settings
         InputProfiles = $effectiveRoots.pcsx2_input_profiles
         InputRecordings = $effectiveRoots.pcsx2_input_recordings
         MemoryCards = $effectiveRoots.pcsx2_memory_cards

@@ -26,7 +26,7 @@ def load_workshop_paths(start: Path | None = None) -> WorkshopPaths:
     configured = data.get("roots")
     if not isinstance(configured, dict) or not configured:
         raise ValueError("Workshop path manifest has no roots")
-    roots: dict[str, Path] = {}
+    roots: dict[str, Path] = {"repository": root}
     resolving: set[str] = set()
 
     def resolve_root(name: str) -> Path:
@@ -62,16 +62,21 @@ def load_workshop_paths(start: Path | None = None) -> WorkshopPaths:
 
     files: dict[str, Path] = {}
     for name, raw in data.get("files", {}).items():
-        if not isinstance(raw, str) or not raw.startswith("@"):
+        if not isinstance(raw, str) or not raw:
             raise ValueError(f"Invalid Workshop file {name!r}")
-        parts = raw[1:].replace("\\", "/").split("/", 1)
-        if len(parts) != 2 or parts[0] not in roots:
-            raise ValueError(f"Invalid Workshop file alias: {raw!r}")
-        child = Path(parts[1])
+        if raw.startswith("@"):
+            parts = raw[1:].replace("\\", "/").split("/", 1)
+            if len(parts) != 2 or parts[0] not in roots:
+                raise ValueError(f"Invalid Workshop file alias: {raw!r}")
+            base = roots[parts[0]]
+            child = Path(parts[1])
+        else:
+            base = root
+            child = Path(raw)
         if child.is_absolute() or ".." in child.parts:
             raise ValueError(f"Invalid Workshop file path: {raw!r}")
-        value = Path(os.path.abspath(roots[parts[0]] / child))
-        if roots[parts[0]] not in value.parents:
+        value = Path(os.path.abspath(base / child))
+        if base not in value.parents:
             raise ValueError(f"Workshop file escapes its root: {raw!r}")
         files[name] = value
 
@@ -94,6 +99,7 @@ def load_project_paths(
     if not isinstance(configured, dict) or not configured:
         raise ValueError("Project path manifest has no roots")
     roots = dict(workshop_paths.roots)
+    roots["repository"] = root
     files = dict(workshop_paths.files)
     imports = data.get("imports", {})
     if not isinstance(imports, dict):
@@ -146,16 +152,21 @@ def load_project_paths(
         resolve_root(name)
 
     for name, raw in data.get("files", {}).items():
-        if not isinstance(raw, str) or not raw.startswith("@"):
+        if not isinstance(raw, str) or not raw:
             raise ValueError(f"Invalid project file {name!r}")
-        parts = raw[1:].replace("\\", "/").split("/", 1)
-        if len(parts) != 2 or parts[0] not in roots:
-            raise ValueError(f"Invalid project file alias: {raw!r}")
-        child = Path(parts[1])
+        if raw.startswith("@"):
+            parts = raw[1:].replace("\\", "/").split("/", 1)
+            if len(parts) != 2 or parts[0] not in roots:
+                raise ValueError(f"Invalid project file alias: {raw!r}")
+            base = roots[parts[0]]
+            child = Path(parts[1])
+        else:
+            base = root
+            child = Path(raw)
         if child.is_absolute() or ".." in child.parts:
             raise ValueError(f"Invalid project file path: {raw!r}")
-        value = Path(os.path.abspath(roots[parts[0]] / child))
-        if roots[parts[0]] not in value.parents:
+        value = Path(os.path.abspath(base / child))
+        if base not in value.parents:
             raise ValueError(f"Project file escapes its root: {raw!r}")
         files[name] = value
 

@@ -1,22 +1,13 @@
-[CmdletBinding(DefaultParameterSetName = 'Configured')]
+[CmdletBinding()]
 param(
-    [Parameter(Mandatory, ParameterSetName = 'Worker')]
-    [string]$WorkerRoot,
-
-    [Parameter(ParameterSetName = 'Configured')]
-    [Parameter(Mandatory, ParameterSetName = 'Worker')]
     [string]$IsoPath,
 
-    [Parameter(ParameterSetName = 'Configured')]
     [string]$InputRecording,
 
-    [Parameter(ParameterSetName = 'Configured')]
     [string]$CreateInputRecording,
 
-    [Parameter(ParameterSetName = 'Configured')]
     [string]$InputRecordingCaptureDirectory,
 
-    [Parameter(ParameterSetName = 'Configured')]
     [string]$InputRecordingsRoot,
 
     [Parameter(ValueFromRemainingArguments)]
@@ -26,33 +17,22 @@ param(
 
     [switch]$PassThru,
 
-    [Parameter(ParameterSetName = 'Configured')]
     [switch]$Turbo,
 
-    [Parameter(ParameterSetName = 'Configured')]
     [switch]$Unlimited,
 
-    [Parameter(ParameterSetName = 'Configured')]
     [UInt64]$UnlimitedForFrames = 0,
 
-    [Parameter(ParameterSetName = 'Configured')]
     [switch]$Surfaceless,
 
-    [Parameter(ParameterSetName = 'Configured')]
     [switch]$DiscardMemoryCardWrites,
 
-    [Parameter(ParameterSetName = 'Configured')]
     [switch]$ReadOnlySettings,
 
-    [Parameter(ParameterSetName = 'Configured')]
     [string]$MemoryCard,
 
-    [Parameter(ParameterSetName = 'Configured')]
-    [Parameter(ParameterSetName = 'Worker')]
     [string]$Pnach,
 
-    [Parameter(ParameterSetName = 'Configured')]
-    [Parameter(ParameterSetName = 'Worker')]
     [string[]]$PnachLines
 )
 
@@ -79,78 +59,19 @@ if ($Unlimited -and $UnlimitedForFrames -gt 0) {
     throw 'Permanent Unlimited cannot be combined with frame-limited Unlimited.'
 }
 
-if ($PSCmdlet.ParameterSetName -eq 'Worker') {
-    $workerRootFull = [IO.Path]::GetFullPath($WorkerRoot)
-    $workerPcsx2 = Join-Path $workerRootFull 'pcsx2'
-    if ($IsoPath) {
-        $resolvedIso = [IO.Path]::GetFullPath($IsoPath)
-        $allowedIsoRoot = [IO.Path]::GetFullPath(
-            (Join-Path $workerRootFull 'inputs\isos')
-        )
-        $prefix = $allowedIsoRoot.TrimEnd(
-            [IO.Path]::DirectorySeparatorChar,
-            [IO.Path]::AltDirectorySeparatorChar
-        ) + [IO.Path]::DirectorySeparatorChar
-        if (-not $resolvedIso.StartsWith(
-            $prefix,
-            [StringComparison]::OrdinalIgnoreCase
-        )) {
-            throw (
-                'Worker ISO must be an independent copy under ' +
-                "$allowedIsoRoot."
-            )
-        }
+if ($IsoPath) {
+    $resolvedIso = if ([IO.Path]::IsPathRooted($IsoPath)) {
+        [IO.Path]::GetFullPath($IsoPath)
     }
-    $workerExecutables = @(
-        Get-ChildItem -LiteralPath $workerPcsx2 -File -ErrorAction SilentlyContinue |
-            Where-Object {
-                $_.Name -ceq 'pcsx2-qt.exe' -or
-                $_.Name -like 'pcsx2-qtx64-*.exe'
-            } |
-            Sort-Object @{
-                Expression = { if ($_.Name -ceq 'pcsx2-qt.exe') { 0 } else { 1 } }
-            }, Name
-    )
-    if ($workerExecutables.Count -eq 0) {
-        throw (
-            'The workstream PCSX2 copy contains no supported executable: ' +
-            $workerPcsx2
-        )
+    else {
+        [IO.Path]::GetFullPath($IsoPath)
     }
-    $workerBios = Join-Path $workerPcsx2 'bios'
-    if (@(
-        Get-ChildItem `
-            -LiteralPath $workerBios `
-            -File `
-            -Filter '*.bin' `
-            -ErrorAction SilentlyContinue
-    ).Count -eq 0) {
-        throw (
-            'The workstream PCSX2 copy contains no BIOS image. Recreate it with ' +
-            'Workshop scripts/pcsx2/copy_worker.ps1 -WorkerRoot <task root>.'
-        )
-    }
-    $executable = $workerExecutables[0].FullName
-    $workingDirectory = $workerPcsx2
-    $surfaceless = $true
 }
-else {
-    if ($IsoPath) {
-        $resolvedIso = if ([IO.Path]::IsPathRooted($IsoPath)) {
-            [IO.Path]::GetFullPath($IsoPath)
-        }
-        else {
-                [IO.Path]::GetFullPath($IsoPath)
-        }
-    }
-    $executable = [IO.Path]::GetFullPath(
-        (Join-Path $paths.Pcsx2Dev 'pcsx2-qtx64-avx2-dev.exe')
-    )
-    $workingDirectory = [IO.Path]::GetFullPath(
-        $paths.Pcsx2Dev
-    )
-    $surfaceless = $Surfaceless.IsPresent
-}
+$executable = [IO.Path]::GetFullPath(
+    (Join-Path $paths.Pcsx2Dev 'pcsx2-qtx64-avx2-dev.exe')
+)
+$workingDirectory = [IO.Path]::GetFullPath($paths.Pcsx2Dev)
+$surfaceless = $Surfaceless.IsPresent
 
 if (-not [string]::IsNullOrWhiteSpace($InputRecording)) {
     $resolvedInputRecording = if ([IO.Path]::IsPathRooted($InputRecording)) {
@@ -220,12 +141,6 @@ if ($IsoPath -and -not (
     throw "ISO does not exist: $resolvedIso"
 }
 if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) {
-    if ($PSCmdlet.ParameterSetName -eq 'Worker') {
-        throw (
-            'The workstream PCSX2 copy does not exist. Run ' +
-            'Workshop scripts/pcsx2/copy_worker.ps1 -WorkerRoot <task root> before launching.'
-        )
-    }
     throw "PCSX2 executable does not exist: $executable"
 }
 

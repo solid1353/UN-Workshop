@@ -181,23 +181,10 @@ switch ($normalizedCommand) {
                 }
             }
         )
-        $canonicalSelectors = @(
-            $catalog.Sources.PSObject.Properties |
-                ForEach-Object { [string]$_.Name }
-            if ($null -ne $catalog.Builds) {
-                $catalog.Builds.PSObject.Properties |
-                    ForEach-Object { [string]$_.Name }
-            }
-        )
         $resolvedProperties = @(
-            foreach ($selector in $canonicalSelectors) {
-                $resolved = Resolve-UnWorkshopGame `
-                    -Game $selector `
-                    -ProjectRoot $paths.Project
-                $resolved.PSObject.Properties |
-                    ForEach-Object { [string]$_.Name }
-            }
-        ) | Select-Object -Unique
+            'iso', 'extracted', 'cheats', 'game_settings', 'memory_card',
+            'input_profile', 'input_profile_overrides', 'postfix'
+        )
 
         @(
             'UN Workshop'

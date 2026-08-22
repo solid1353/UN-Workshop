@@ -85,7 +85,6 @@ try {
     @'
 {
   "roots": {
-    "repository": ".",
     "source": "source",
     "build": "build",
     "disassembly": "@work/disassembly",
@@ -94,22 +93,17 @@ try {
     "savestates": "@work/sstates",
     "scripts": "scripts",
     "pcsx2_scripts": "@scripts/pcsx2",
-    "pcsx2": "pcsx2",
-    "pcsx2_dev": "@pcsx2",
+    "pcsx2_dev": "pcsx2",
     "pcsx2_fork": "pcsx2/fork",
     "pcsx2_files": "pcsx2_files",
-    "pcsx2_bios": "@pcsx2_files/bios",
-    "pcsx2_cheats": "@pcsx2_files/cheats",
-    "pcsx2_game_settings": "@pcsx2_files/game_settings",
     "pcsx2_input_profiles": "@pcsx2_files/input_profiles",
     "pcsx2_input_recordings": "@pcsx2_files/input_recordings",
     "pcsx2_memory_cards": "@pcsx2_files/memory_cards"
   },
   "files": {
-    "game_catalog": "@repository/games.json",
-    "settings": "@repository/game.json",
+    "source_catalog": "games.json",
+    "project_settings": "game.json",
     "game_resolver": "@scripts/lib/resolve_game.py",
-    "workshop_command": "@repository/workshop.ps1",
     "pcsx2_launch_command": "@pcsx2_scripts/launch.ps1",
     "pcsx2_game_launch_command": "@pcsx2_scripts/launch_games.ps1"
   }
@@ -119,6 +113,14 @@ try {
         Set-Content -NoNewline -LiteralPath (Join-Path $repository 'games.json')
     '{"title":"NA v2.28","serial":"SLOP-NA228","output_boot_path":"SLOP_NA2.28","startup_fast_forward_frames":321,"builds":{"latest":{"aliases":["l"]}}}' |
         Set-Content -NoNewline -LiteralPath (Join-Path $repository 'game.json')
+    New-Item -ItemType Directory -Force -Path (
+        Join-Path $repository 'pcsx2_files\games\NUN5'
+    ) | Out-Null
+    foreach ($extension in @('ini', 'pnach', 'ps2')) {
+        New-Item -ItemType File -Force -Path (
+            Join-Path $repository "pcsx2_files\games\NUN5\NUN5.$extension"
+        ) | Out-Null
+    }
     'raise SystemExit("fake resolver must not run")' |
         Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\lib\resolve_game.py')
     @'
@@ -252,6 +254,7 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
             -ItemType Directory `
             -Force `
             -Path (Join-Path $repository 'source'), `
+                (Join-Path $repository 'pcsx2_files\games\NA2'), `
                 (Join-Path $repository 'pcsx2_files\games\NUN5'), `
                 (Join-Path $repository 'pcsx2_files\games\NA228'), `
                 (Join-Path $repository 'pcsx2_files\input_recordings') | Out-Null
@@ -259,6 +262,9 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
             -ItemType File `
             -Force `
             -Path (Join-Path $repository 'source\NUN5.iso'), `
+                (Join-Path $repository 'pcsx2_files\games\NA2\NA2.pnach'), `
+                (Join-Path $repository 'pcsx2_files\games\NA2\NA2.ini'), `
+                (Join-Path $repository 'pcsx2_files\games\NA2\NA2.ps2'), `
                 (Join-Path $repository 'pcsx2_files\games\NUN5\NUN5.pnach'), `
                 (Join-Path $repository 'pcsx2_files\games\NUN5\NUN5.ini'), `
                 (Join-Path $repository 'pcsx2_files\games\NUN5\NUN5.ps2'), `
