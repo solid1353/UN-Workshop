@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import socket
 import struct
 from dataclasses import dataclass
@@ -21,9 +22,14 @@ SET_PAD_STATES = 0x16
 STEP_FRAMES = 0x17
 GET_PAD_STATES = 0x18
 RELEASE_PAD_STATES = 0x19
+REPLAY_STATUS = 0x1A
+REPLAY_STEP = 0x1B
+REPLAY_SCREENSHOT = 0x1C
 
 AGENT_INPUT_VERSION = 1
+REPLAY_ANALYSIS_VERSION = 1
 PAD_STATE_SIZE = 18
+MAX_BATCH_READ_WORDS = 112_000
 PAD_NEUTRAL_STATE = bytes.fromhex(
     "FF FF 7F 7F 7F 7F 00 00 00 00 00 00 00 00 00 00 00 00"
 )
@@ -168,6 +174,21 @@ class PadReadback:
     state: PadState
 
 
+@dataclass(frozen=True)
+class ReplayStatus:
+    replay_frame: int
+    total_frames: int
+    vblank: int
+
+
+@dataclass(frozen=True)
+class ReplayStep:
+    start_replay_frame: int
+    end_replay_frame: int
+    start_vblank: int
+    end_vblank: int
+
+
 class PineClient:
     def __init__(self, port: int) -> None:
         self.socket = socket.create_connection(("127.0.0.1", port), timeout=3)
@@ -235,6 +256,56 @@ class PineClient:
 
     def screenshot(self) -> None:
         self.command(SCREENSHOT)
+
+    @staticmethod
+    def _expect_replay_version(reply: bytes, operation: str) -> bytes:
+        if not reply or reply[0] != REPLAY_ANALYSIS_VERSION:
+            raise RuntimeError(
+                f"PINE {operation} returned an unsupported replay-analysis reply"
+            )
+        return reply[1:]
+
+    def replay_status(self) -> ReplayStatus:
+        reply = self.exchange(bytes([REPLAY_STATUS, REPLAY_ANALYSIS_VERSION]))
+        body = self._expect_replay_version(reply, "ReplayStatus")
+        if len(body) != 12:
+            raise RuntimeError("PINE ReplayStatus returned a malformed reply")
+        return ReplayStatus(*struct.unpack("<III", body))
+
+    def replay_step(self, vblanks: int) -> ReplayStep:
+        if not isinstance(vblanks, int) or not 1 <= vblanks <= 0xFFFFFFFF:
+            raise ValueError("VBlank count is outside 1..4294967295")
+        reply = self.exchange(
+            bytes([REPLAY_STEP, REPLAY_ANALYSIS_VERSION])
+            + struct.pack("<I", vblanks)
+        )
+        body = self._expect_replay_version(reply, "ReplayStep")
+        if len(body) != 16:
+            raise RuntimeError("PINE ReplayStep returned a malformed reply")
+        result = ReplayStep(*struct.unpack("<IIII", body))
+        if (
+            (result.end_replay_frame - result.start_replay_frame) & 0xFFFFFFFF
+        ) != vblanks or (
+            (result.end_vblank - result.start_vblank) & 0xFFFFFFFF
+        ) != vblanks:
+            raise RuntimeError("PINE ReplayStep returned an unexpected interval")
+        return result
+
+    def replay_screenshot(self, path: str | os.PathLike[str]) -> None:
+        exact_path = os.fspath(path)
+        if not os.path.isabs(exact_path):
+            raise ValueError("replay screenshot path must be absolute")
+        encoded = exact_path.encode("utf-8")
+        if not 1 <= len(encoded) <= 32768:
+            raise ValueError("replay screenshot path is outside 1..32768 bytes")
+        reply = self.exchange(
+            bytes([REPLAY_SCREENSHOT, REPLAY_ANALYSIS_VERSION])
+            + struct.pack("<I", len(encoded))
+            + encoded
+        )
+        body = self._expect_replay_version(reply, "ReplayScreenshot")
+        if body:
+            raise RuntimeError("PINE ReplayScreenshot returned a malformed reply")
 
     def pad_pulse(
         self, button: int, duration_ms: int, controller: int = 0
@@ -382,12 +453,55 @@ class PineClient:
             raise RuntimeError("PINE Write32 returned unexpected data")
 
     def read(self, address: int, length: int) -> bytes:
-        if address % 4 or length < 0 or length % 4:
-            raise ValueError("PINE memory ranges must contain aligned EE words")
-        return b"".join(
-            struct.pack("<I", self.read32(address + offset))
-            for offset in range(0, length, 4)
-        )
+        return self.read_ranges(((address, length),))[0]
+
+    def read_ranges(
+        self, ranges: Sequence[tuple[int, int]]
+    ) -> tuple[bytes, ...]:
+        requested = tuple(ranges)
+        if not requested:
+            raise ValueError("PINE memory range batch must not be empty")
+        word_counts = []
+        payload = bytearray()
+        total_words = 0
+        for address, length in requested:
+            if (
+                not isinstance(address, int)
+                or not isinstance(length, int)
+                or not 0 <= address <= 0xFFFFFFFF
+                or address % 4
+                or length < 0
+                or length % 4
+                or (length and address + length - 4 > 0xFFFFFFFF)
+            ):
+                raise ValueError(
+                    "PINE memory ranges must contain aligned EE words"
+                )
+            word_count = length // 4
+            total_words += word_count
+            if total_words > MAX_BATCH_READ_WORDS:
+                raise ValueError("PINE memory range batch is too large")
+            word_counts.append(word_count)
+            for offset in range(0, length, 4):
+                payload.append(READ32)
+                payload.extend(struct.pack("<I", address + offset))
+        if not payload:
+            return tuple(b"" for _ in requested)
+
+        reply = self.exchange(bytes(payload))
+        if len(reply) != total_words * 4:
+            raise RuntimeError("PINE batched Read32 returned a malformed reply")
+        result = []
+        offset = 0
+        for word_count in word_counts:
+            size = word_count * 4
+            result.append(reply[offset : offset + size])
+            offset += size
+        return tuple(result)
+
+    def read_words(self, addresses: Sequence[int]) -> tuple[int, ...]:
+        values = self.read_ranges(tuple((address, 4) for address in addresses))
+        return tuple(struct.unpack("<I", value)[0] for value in values)
 
     def write(self, address: int, value: bytes) -> None:
         if address % 4 or len(value) % 4:
@@ -431,6 +545,13 @@ def pad_state_map(
     return states
 
 
+def memory_range_spec(value: str) -> tuple[int, int]:
+    address_text, separator, length_text = value.partition(":")
+    if not separator:
+        raise argparse.ArgumentTypeError("memory range must use ADDRESS:LENGTH")
+    return integer(address_text), integer(length_text)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Direct PCSX2 PINE client.")
     parser.add_argument("--port", required=True, type=int)
@@ -440,6 +561,11 @@ def parse_args() -> argparse.Namespace:
     commands.add_parser("resume")
     commands.add_parser("refresh")
     commands.add_parser("screenshot")
+    commands.add_parser("replay-status")
+    replay_step = commands.add_parser("replay-step")
+    replay_step.add_argument("vblanks", type=integer)
+    replay_screenshot = commands.add_parser("replay-screenshot")
+    replay_screenshot.add_argument("path")
     pad_pulse = commands.add_parser("pad-pulse")
     pad_pulse.add_argument("button", choices=sorted(PAD_BUTTONS))
     pad_pulse.add_argument("--controller", type=integer, default=0)
@@ -458,6 +584,8 @@ def parse_args() -> argparse.Namespace:
     read = commands.add_parser("read")
     read.add_argument("address", type=integer)
     read.add_argument("length", type=integer)
+    read_batch = commands.add_parser("read-batch")
+    read_batch.add_argument("ranges", nargs="+", type=memory_range_spec)
     write = commands.add_parser("write")
     write.add_argument("address", type=integer)
     write.add_argument("hex_bytes")
@@ -486,6 +614,21 @@ def main() -> int:
         elif args.command == "screenshot":
             client.screenshot()
             print("screenshot queued")
+        elif args.command == "replay-status":
+            status = client.replay_status()
+            print(
+                f"frame={status.replay_frame} total={status.total_frames} "
+                f"vblank={status.vblank}"
+            )
+        elif args.command == "replay-step":
+            step = client.replay_step(args.vblanks)
+            print(
+                f"replay={step.start_replay_frame}->{step.end_replay_frame} "
+                f"vblank={step.start_vblank}->{step.end_vblank}"
+            )
+        elif args.command == "replay-screenshot":
+            client.replay_screenshot(args.path)
+            print(f"screenshot saved: {os.path.abspath(args.path)}")
         elif args.command == "pad-pulse":
             client.pad_pulse(
                 PAD_BUTTONS[args.button],
@@ -519,6 +662,11 @@ def main() -> int:
             print(f"released controller state(s): {target}")
         elif args.command == "read":
             print(client.read(args.address, args.length).hex().upper())
+        elif args.command == "read-batch":
+            for (address, length), value in zip(
+                args.ranges, client.read_ranges(args.ranges), strict=True
+            ):
+                print(f"0x{address:08X}:{length}={value.hex().upper()}")
         elif args.command == "write":
             value = bytes.fromhex(args.hex_bytes)
             client.write(args.address, value)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import struct
 import sys
 import unittest
@@ -106,6 +107,93 @@ class PineAgentInputTests(unittest.TestCase):
             client.get_pad_states([0, 0])
         with self.assertRaisesRegex(ValueError, "frame count"):
             client.step_frames(0, {0: PINE.PadState.neutral()})
+
+    def test_replay_analysis_commands_match_v1_wire_schema(self) -> None:
+        requests: list[bytes] = []
+
+        def exchange(payload: bytes) -> bytes:
+            requests.append(payload)
+            if payload[0] == PINE.REPLAY_STATUS:
+                return bytes([PINE.REPLAY_ANALYSIS_VERSION]) + struct.pack(
+                    "<III", 120, 900, 4567
+                )
+            if payload[0] == PINE.REPLAY_STEP:
+                return bytes([PINE.REPLAY_ANALYSIS_VERSION]) + struct.pack(
+                    "<IIII", 120, 123, 4567, 4570
+                )
+            return bytes([PINE.REPLAY_ANALYSIS_VERSION])
+
+        client = object.__new__(PINE.PineClient)
+        client.exchange = exchange
+
+        status = client.replay_status()
+        self.assertEqual(status, PINE.ReplayStatus(120, 900, 4567))
+        self.assertEqual(
+            requests[-1],
+            bytes([PINE.REPLAY_STATUS, PINE.REPLAY_ANALYSIS_VERSION]),
+        )
+
+        step = client.replay_step(3)
+        self.assertEqual(step, PINE.ReplayStep(120, 123, 4567, 4570))
+        self.assertEqual(
+            requests[-1],
+            bytes([PINE.REPLAY_STEP, PINE.REPLAY_ANALYSIS_VERSION])
+            + struct.pack("<I", 3),
+        )
+
+        screenshot = os.path.abspath("replay-frame.png")
+        client.replay_screenshot(screenshot)
+        encoded = screenshot.encode("utf-8")
+        self.assertEqual(
+            requests[-1],
+            bytes([PINE.REPLAY_SCREENSHOT, PINE.REPLAY_ANALYSIS_VERSION])
+            + struct.pack("<I", len(encoded))
+            + encoded,
+        )
+
+    def test_replay_analysis_rejects_invalid_requests(self) -> None:
+        client = object.__new__(PINE.PineClient)
+        client.exchange = lambda _payload: bytes([PINE.REPLAY_ANALYSIS_VERSION])
+
+        with self.assertRaisesRegex(ValueError, "VBlank count"):
+            client.replay_step(0)
+        with self.assertRaisesRegex(ValueError, "must be absolute"):
+            client.replay_screenshot("relative.png")
+
+    def test_batch_read_uses_one_compound_pine_request(self) -> None:
+        requests: list[bytes] = []
+
+        def exchange(payload: bytes) -> bytes:
+            requests.append(payload)
+            return struct.pack("<III", 0x11111111, 0x22222222, 0x33333333)
+
+        client = object.__new__(PINE.PineClient)
+        client.exchange = exchange
+
+        values = client.read_ranges(((0x1000, 8), (0x2000, 4)))
+
+        self.assertEqual(
+            requests,
+            [
+                bytes([PINE.READ32])
+                + struct.pack("<I", 0x1000)
+                + bytes([PINE.READ32])
+                + struct.pack("<I", 0x1004)
+                + bytes([PINE.READ32])
+                + struct.pack("<I", 0x2000)
+            ],
+        )
+        self.assertEqual(
+            values,
+            (
+                struct.pack("<II", 0x11111111, 0x22222222),
+                struct.pack("<I", 0x33333333),
+            ),
+        )
+        self.assertEqual(
+            client.read_words((0x1000, 0x1004, 0x2000)),
+            (0x11111111, 0x22222222, 0x33333333),
+        )
 
 
 if __name__ == "__main__":
