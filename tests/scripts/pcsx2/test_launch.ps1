@@ -45,26 +45,28 @@ try {
         'patch=1,EE,00100000,word,00000001'
         'patch=1,EE,00100000,word,00000002 // later write'
     )
-    & $launcher -Pnach $firstPnach -PnachLines $inlineLines
+    & $launcher -Pnach @($firstPnach, $secondPnach) -PnachLines $inlineLines
     & $launcher -Pnach $secondPnach
 
     Assert-Pcsx2LaunchTest `
         -Condition ($global:Pcsx2PnachLaunchTestLaunches.Count -eq 2) `
         -Message 'PCSX2 launcher did not issue two independent launches.'
-    for ($index = 0; $index -lt 2; $index++) {
-        $expectedPath = if ($index -eq 0) { $firstPnach } else { $secondPnach }
-        $arguments = @($global:Pcsx2PnachLaunchTestLaunches[$index].ArgumentList)
-        $pnachIndex = [Array]::IndexOf($arguments, '-pnach')
-        Assert-Pcsx2LaunchTest `
-            -Condition (
-                $pnachIndex -ge 0 -and
-                $pnachIndex + 1 -lt $arguments.Count -and
-                $arguments[$pnachIndex + 1] -ceq "`"$expectedPath`""
-            ) `
-            -Message "Launch $index did not receive its own PNACH path."
-    }
-
     $firstArguments = @($global:Pcsx2PnachLaunchTestLaunches[0].ArgumentList)
+    $firstPnachIndex = [Array]::IndexOf($firstArguments, '-pnach')
+    $secondPnachIndex = [Array]::IndexOf(
+        $firstArguments,
+        '-pnach',
+        $firstPnachIndex + 1
+    )
+    Assert-Pcsx2LaunchTest `
+        -Condition (
+            $firstPnachIndex -ge 0 -and
+            $secondPnachIndex -eq $firstPnachIndex + 2 -and
+            $firstArguments[$firstPnachIndex + 1] -ceq "`"$firstPnach`"" -and
+            $firstArguments[$secondPnachIndex + 1] -ceq "`"$secondPnach`""
+        ) `
+        -Message 'PCSX2 launcher did not forward ordered -pnach pairs.'
+
     $firstInlineIndex = [Array]::IndexOf($firstArguments, '-pnach-line')
     $secondInlineIndex = [Array]::IndexOf(
         $firstArguments,
@@ -73,7 +75,7 @@ try {
     )
     Assert-Pcsx2LaunchTest `
         -Condition (
-            $firstInlineIndex -gt [Array]::IndexOf($firstArguments, '-pnach') -and
+            $firstInlineIndex -gt $secondPnachIndex -and
             $secondInlineIndex -eq $firstInlineIndex + 2 -and
             $firstArguments[$firstInlineIndex + 1] -ceq "`"$($inlineLines[0])`"" -and
             $firstArguments[$secondInlineIndex + 1] -ceq "`"$($inlineLines[1])`""
@@ -82,12 +84,17 @@ try {
 
     $secondArguments = @($global:Pcsx2PnachLaunchTestLaunches[1].ArgumentList)
     Assert-Pcsx2LaunchTest `
-        -Condition (-not ($secondArguments -contains '-pnach-line')) `
-        -Message 'PCSX2 launcher leaked inline PNACH lines between launches.'
+        -Condition (
+            ([Array]::IndexOf($secondArguments, '-pnach')) -ge 0 -and
+            $secondArguments[([Array]::IndexOf($secondArguments, '-pnach')) + 1] -ceq "`"$secondPnach`"" -and
+            ([Array]::LastIndexOf($secondArguments, '-pnach')) -eq ([Array]::IndexOf($secondArguments, '-pnach')) -and
+            -not ($secondArguments -contains '-pnach-line')
+        ) `
+        -Message 'PCSX2 launcher leaked PNACH state between launches.'
 
     $missingRejected = $false
     try {
-        & $launcher -Pnach (Join-Path $testRoot 'missing.pnach')
+        & $launcher -Pnach @($firstPnach, (Join-Path $testRoot 'missing.pnach'))
     }
     catch {
         $missingRejected = $_.Exception.Message -match '^PNACH file does not exist:'

@@ -31,7 +31,7 @@ param(
 
     [string]$MemoryCard,
 
-    [string]$Pnach,
+    [string[]]$Pnach,
 
     [string[]]$PnachLines
 )
@@ -128,11 +128,22 @@ if (-not [string]::IsNullOrWhiteSpace($MemoryCard)) {
     }
 }
 
-if (-not [string]::IsNullOrWhiteSpace($Pnach)) {
-    $resolvedPnach = [IO.Path]::GetFullPath($Pnach)
-    if (-not (Test-Path -LiteralPath $resolvedPnach -PathType Leaf)) {
-        throw "PNACH file does not exist: $resolvedPnach"
-    }
+if ($PSBoundParameters.ContainsKey('Pnach')) {
+    $resolvedPnach = @(
+        foreach ($pnachPath in @($Pnach)) {
+            if ([string]::IsNullOrWhiteSpace($pnachPath)) {
+                continue
+            }
+            $resolvedPath = [IO.Path]::GetFullPath($pnachPath)
+            if (-not (Test-Path -LiteralPath $resolvedPath -PathType Leaf)) {
+                throw "PNACH file does not exist: $resolvedPath"
+            }
+            $resolvedPath
+        }
+    )
+}
+else {
+    $resolvedPnach = @()
 }
 
 if ($IsoPath -and -not (
@@ -157,8 +168,8 @@ if ($ReadOnlySettings) {
 if (-not [string]::IsNullOrWhiteSpace($MemoryCard)) {
     $launchArguments += @('-memory-card', "`"$resolvedMemoryCard`"")
 }
-if (-not [string]::IsNullOrWhiteSpace($Pnach)) {
-    $launchArguments += @('-pnach', "`"$resolvedPnach`"")
+foreach ($pnachPath in $resolvedPnach) {
+    $launchArguments += @('-pnach', "`"$pnachPath`"")
 }
 if ($PSBoundParameters.ContainsKey('PnachLines')) {
     foreach ($pnachLine in @($PnachLines)) {

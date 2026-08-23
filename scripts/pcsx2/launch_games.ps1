@@ -212,7 +212,7 @@ foreach ($requestedGame in $Games) {
     if ($isIsoPath -and -not $Snapshots) {
         throw 'Explicit ISO paths are supported only with -Snapshots.'
     }
-    $defaultPnach = $null
+    $defaultPnach = [string[]]@()
     if ($isIsoPath) {
         $isoPath = [IO.Path]::GetFullPath($target)
         if (-not (Test-Path -LiteralPath $isoPath -PathType Leaf)) {
@@ -237,22 +237,24 @@ foreach ($requestedGame in $Games) {
             [string]$resolved.cheats
         )
         if (Test-Path -LiteralPath $resolvedDefaultPnach -PathType Leaf) {
-            $defaultPnach = $resolvedDefaultPnach
+            $defaultPnach = [string[]]@($resolvedDefaultPnach)
         }
     }
     if (-not $seenImages.Add($isoPath)) {
         throw "Each resolved game image may be launched only once: $selector"
     }
     [void]$seenSelectors.Add($selector)
-    $pnach = if (
+    $pnach = [string[]]@(if (
         $null -ne $PnachByGame -and
         $PnachByGame.ContainsKey($selector)
     ) {
-        [IO.Path]::GetFullPath([string]$PnachByGame[$selector])
+        foreach ($pnachPath in @($PnachByGame[$selector])) {
+            [IO.Path]::GetFullPath([string]$pnachPath)
+        }
     }
     else {
         $defaultPnach
-    }
+    })
     $pnachLines = if (
         $null -ne $PnachLinesByGame -and
         $PnachLinesByGame.ContainsKey($selector)
@@ -293,8 +295,13 @@ $requiredFiles += @(
         Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
 )
 $requiredFiles += @(
-    $selectedGames.Pnach |
-        Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+    foreach ($game in $selectedGames) {
+        foreach ($pnachPath in @($game.Pnach)) {
+            if (-not [string]::IsNullOrWhiteSpace($pnachPath)) {
+                $pnachPath
+            }
+        }
+    }
 )
 foreach ($requiredFile in $requiredFiles) {
     if (-not (Test-Path -LiteralPath $requiredFile -PathType Leaf)) {
@@ -401,7 +408,7 @@ if ($Snapshots) {
             if (-not [string]::IsNullOrWhiteSpace($game.MemoryCardPath)) {
                 $launchParameters.MemoryCard = $game.MemoryCardPath
             }
-            if (-not [string]::IsNullOrWhiteSpace($game.Pnach)) {
+            if (@($game.Pnach).Count -gt 0) {
                 $launchParameters.Pnach = $game.Pnach
             }
             if (@($game.PnachLines).Count -gt 0) {
@@ -546,7 +553,7 @@ try {
         if ($ReadOnlySettings) {
             $launchParameters.ReadOnlySettings = $true
         }
-        if (-not [string]::IsNullOrWhiteSpace($game.Pnach)) {
+        if (@($game.Pnach).Count -gt 0) {
             $launchParameters.Pnach = $game.Pnach
         }
         if (@($game.PnachLines).Count -gt 0) {

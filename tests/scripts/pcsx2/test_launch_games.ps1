@@ -282,7 +282,7 @@ param(
     [switch]$Surfaceless,
     [switch]$DiscardMemoryCardWrites,
     [switch]$ReadOnlySettings,
-    [string]$Pnach,
+    [string[]]$Pnach,
     [string[]]$PnachLines,
     [switch]$Turbo,
     [switch]$Unlimited,
@@ -291,7 +291,7 @@ param(
     [switch]$PassThru,
     [string[]]$Arguments
 )
-$message = "[fake] iso=$IsoPath input=$InputRecording capture=$InputRecordingCaptureDirectory memory=$MemoryCard arguments=$($Arguments -join ',') surfaceless=$Surfaceless discard=$DiscardMemoryCardWrites readOnly=$ReadOnlySettings pnach=$Pnach lines=$($PnachLines -join '|') turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames wait=$Wait passThru=$PassThru"
+$message = "[fake] iso=$IsoPath input=$InputRecording capture=$InputRecordingCaptureDirectory memory=$MemoryCard arguments=$($Arguments -join ',') surfaceless=$Surfaceless discard=$DiscardMemoryCardWrites readOnly=$ReadOnlySettings pnach=$($Pnach -join '|') lines=$($PnachLines -join '|') turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames wait=$Wait passThru=$PassThru"
 $message
 if ($PassThru) {
     Start-Process `
@@ -352,7 +352,12 @@ if ($PassThru) {
             -NoNewline `
             -LiteralPath $practicePnach `
             -Value '[+Practice]'
-        $practicePnachByGame = @{ nun5 = $practicePnach }
+        $secondPracticePnach = Join-Path $repository 'practice-second.pnach'
+        Set-Content `
+            -NoNewline `
+            -LiteralPath $secondPracticePnach `
+            -Value '[+Practice Second]'
+        $practicePnachByGame = @{ nun5 = @($practicePnach, $secondPracticePnach) }
         $practiceLinesByGame = @{
             nun5 = [string[]]@(
                 'patch=1,EE,003D0FF0,word,00000039',
@@ -376,7 +381,8 @@ if ($PassThru) {
                 $snapshotLaunch -match (
                     'arguments=-input-recording-capture-mode,screenshots ' +
                     'surfaceless=True discard=True readOnly=True ' +
-                    'pnach=' + [regex]::Escape($practicePnach) +
+                    'pnach=' + [regex]::Escape($practicePnach) + '\|' +
+                    [regex]::Escape($secondPracticePnach) +
                     ' lines=patch=1,EE,003D0FF0,word,00000039\|' +
                     'patch=1,EE,003D0FF4,word,00000025 ' +
                     'turbo=False unlimited=True frames=0 wait=False passThru=True'
