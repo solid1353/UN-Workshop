@@ -28,6 +28,8 @@ param(
 
     [hashtable]$PnachByGame,
 
+    [string[]]$AdditionalPnach,
+
     [hashtable]$PnachLinesByGame,
 
     [switch]$Turbo,
@@ -193,6 +195,17 @@ else {
     $null
 }
 
+$additionalPnachPaths = @(
+    if ($null -ne $AdditionalPnach) {
+        foreach ($pnachPath in @($AdditionalPnach)) {
+            if ([string]::IsNullOrWhiteSpace([string]$pnachPath)) {
+                throw 'Additional PNACH path must not be empty.'
+            }
+            [IO.Path]::GetFullPath([string]$pnachPath)
+        }
+    }
+)
+
 $selectedGames = [Collections.Generic.List[object]]::new()
 $seenImages = [Collections.Generic.HashSet[string]]::new(
     [StringComparer]::OrdinalIgnoreCase
@@ -254,7 +267,8 @@ foreach ($requestedGame in $Games) {
     }
     else {
         $defaultPnach
-    })
+    }
+    $additionalPnachPaths)
     $pnachLines = if (
         $null -ne $PnachLinesByGame -and
         $PnachLinesByGame.ContainsKey($selector)
