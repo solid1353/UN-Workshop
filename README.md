@@ -10,7 +10,7 @@ memory cards, savestates, logs, and task artifacts.
 `workshop.ps1` is the single user-facing entrypoint.
 
 ```powershell
-workshop <game|iso-path> [game|iso-path] [-p <recording>|-r <recording>|-s <recording>] [-o <path>] [-mc <card>] [-dw] [-t|-u]
+workshop <game|iso-path> [game|iso-path] [-p <recording>|-r <recording>|-s <recording>] [-o <path>] [-mc <card>] [-pnach <file>]... [-dw] [-t|-u]
 workshop input [profile]
 workshop pcsx2
 workshop resolve [game] [property]
@@ -39,6 +39,9 @@ workshop ss move <game> <subpath> [-c]
   persisting them. File-backed cards use shared access with or without `-dw`;
   discard mode additionally suppresses memory-card busy state. Snapshot replay
   with `-s` always discards writes.
+- `-pnach` appends one PNACH file to every launched game after its selected
+  default or caller-supplied per-game PNACH set. It is repeatable and preserves
+  command-line order.
 - `workshop <game|iso-path> [game|iso-path] -s <recording> [-o <path>]`
   replays one or two configured games or explicit ISOs concurrently in PCSX2's
   surfaceless no-GUI mode and captures every recorded L3+R3 snapshot marker
@@ -80,7 +83,8 @@ workshop ss move <game> <subpath> [-c]
   no speed option means Normal. Turbo may accompany frame-limited Unlimited and
   becomes its fallback. Snapshot replay explicitly selects permanent Unlimited.
 - Shared callers may provide PNACH paths and inline PNACH lines keyed by the
-  selected game. Each process receives only its own file and ordered line set.
+  selected game, plus an ordered additional PNACH list applied to every selected
+  game. Each process receives only its own ordered file and line sets.
 - `ss move` files matching savestates from the development PCSX2 installation
   below `@savestates/` for source games or the invoking project's configured
   `@work/sstates/` for project builds. `-c` first sends the existing

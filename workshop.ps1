@@ -2,6 +2,7 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'scripts\lib\paths.ps1')
 $paths = Get-UnWorkshopPaths
 $scripts = $paths.Roots.pcsx2_scripts
+. (Join-Path $scripts 'launch_arguments.ps1')
 
 $rawArguments = @($args)
 $Action = if ($rawArguments.Count -gt 0) { $rawArguments[0] } else { '' }
@@ -23,6 +24,7 @@ function Invoke-UnWorkshopGameLaunch {
         [string]$Snapshots,
         [string]$CaptureDirectory,
         [string]$MemoryCard,
+        [string[]]$Pnach,
         [switch]$DiscardMemoryCardWrites,
         [switch]$Turbo,
         [switch]$Unlimited
@@ -59,6 +61,9 @@ function Invoke-UnWorkshopGameLaunch {
     if (-not [string]::IsNullOrWhiteSpace($MemoryCard)) {
         $parameters.MemoryCard = $MemoryCard
     }
+    if (@($Pnach).Count -gt 0) {
+        $parameters.AdditionalPnach = @($Pnach)
+    }
     if ($DiscardMemoryCardWrites) {
         $parameters.DiscardMemoryCardWrites = $true
     }
@@ -72,80 +77,6 @@ function Invoke-UnWorkshopGameLaunch {
         }
     }
     & $paths.Files.pcsx2_game_launch_command @parameters
-}
-
-function ConvertFrom-UnWorkshopLaunchArguments {
-    param([string[]]$Tokens)
-
-    $games = [Collections.Generic.List[string]]::new()
-    $values = [ordered]@{
-        Play = ''
-        Record = ''
-        Snapshots = ''
-        CaptureDirectory = ''
-        MemoryCard = ''
-    }
-    $discardMemoryCardWrites = $false
-    $turbo = $false
-    $unlimited = $false
-    $valueOptions = @{
-        '-p' = 'Play'
-        '-r' = 'Record'
-        '-s' = 'Snapshots'
-        '-o' = 'CaptureDirectory'
-        '-mc' = 'MemoryCard'
-    }
-
-    for ($index = 0; $index -lt $Tokens.Count; $index++) {
-        $token = [string]$Tokens[$index]
-        $option = $token.ToLowerInvariant()
-        if ($valueOptions.ContainsKey($option)) {
-            $name = $valueOptions[$option]
-            if (-not [string]::IsNullOrWhiteSpace([string]$values[$name])) {
-                throw "$option may be specified only once."
-            }
-            if ($index + 1 -ge $Tokens.Count) {
-                throw "$option requires a value."
-            }
-            $index++
-            $values[$name] = [string]$Tokens[$index]
-            continue
-        }
-        switch ($option) {
-            '-dw' {
-                if ($discardMemoryCardWrites) {
-                    throw '-dw may be specified only once.'
-                }
-                $discardMemoryCardWrites = $true
-            }
-            '-t' {
-                if ($turbo) { throw '-t may be specified only once.' }
-                $turbo = $true
-            }
-            '-u' {
-                if ($unlimited) { throw '-u may be specified only once.' }
-                $unlimited = $true
-            }
-            default {
-                if ($token.StartsWith('-')) {
-                    throw "Unknown Workshop launch option: $token"
-                }
-                $games.Add($token)
-            }
-        }
-    }
-
-    [pscustomobject]@{
-        Games = @($games)
-        Play = $values.Play
-        Record = $values.Record
-        Snapshots = $values.Snapshots
-        CaptureDirectory = $values.CaptureDirectory
-        MemoryCard = $values.MemoryCard
-        DiscardMemoryCardWrites = $discardMemoryCardWrites
-        Turbo = $turbo
-        Unlimited = $unlimited
-    }
 }
 
 switch ($normalizedCommand) {
@@ -189,7 +120,7 @@ switch ($normalizedCommand) {
         @(
             'UN Workshop'
             ''
-            '  workshop <game|iso-path> [game|iso-path] [-p name|-r name|-s name] [-o path] [-mc card] [-dw] [-t|-u]  Launch or replay one or two games; pairs close existing user PCSX2 first.'
+            '  workshop <game|iso-path> [game|iso-path] [-p name|-r name|-s name] [-o path] [-mc card] [-pnach file]... [-dw] [-t|-u]  Launch or replay one or two games; pairs close existing user PCSX2 first.'
             '  workshop input [profile]             Regenerate all profiles; optionally assign one.'
             '  workshop pcsx2                       Launch development PCSX2 without a game.'
             '  workshop resolve [game] [property]   Resolve all games, one game, or one property.'
@@ -202,6 +133,7 @@ switch ($normalizedCommand) {
             '    -s <name>        Replay one or two games or ISO paths and take snapshots.'
             '    -o <path>        Select the snapshot capture directory or two-game parent directory.'
             '    -mc <card>       Use one shared card or template; .ps2 is added automatically.'
+            '    -pnach <file>    Append a PNACH file; repeatable and order-preserving.'
             '    -dw              Discard memory-card writes for an ordinary launch.'
             '    -t               Launch in Turbo.'
             '    -u               Launch in Unlimited.'
@@ -323,6 +255,7 @@ switch ($normalizedCommand) {
             -Snapshots $launch.Snapshots `
             -CaptureDirectory $launch.CaptureDirectory `
             -MemoryCard $launch.MemoryCard `
+            -Pnach $launch.Pnach `
             -DiscardMemoryCardWrites:$launch.DiscardMemoryCardWrites `
             -Turbo:$launch.Turbo `
             -Unlimited:$launch.Unlimited

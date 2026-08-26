@@ -31,6 +31,7 @@ foreach ($expectedOption in @(
     '-s <name>',
     '-o <path>',
     '-mc <card>',
+    '-pnach <file>',
     '-dw',
     '-t',
     '-u',
@@ -81,6 +82,9 @@ try {
     Copy-Item `
         -LiteralPath (Join-Path $sourceRepository 'scripts\lib\paths.ps1') `
         -Destination (Join-Path $repository 'scripts\lib')
+    Copy-Item `
+        -LiteralPath (Join-Path $sourceRepository 'scripts\pcsx2\launch_arguments.ps1') `
+        -Destination (Join-Path $repository 'scripts\pcsx2')
 
     @'
 {
@@ -138,6 +142,7 @@ param(
     [switch]$DiscardMemoryCardWrites,
     [switch]$ReadOnlySettings,
     [hashtable]$PnachByGame,
+    [string[]]$AdditionalPnach,
     [hashtable]$PnachLinesByGame,
     [switch]$Turbo,
     [switch]$Unlimited,
@@ -146,7 +151,7 @@ param(
 )
 $pnachCount = if ($null -eq $PnachByGame) { 0 } else { $PnachByGame.Count }
 $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.Count }
-"[fake] games=$($Games -join ',') play=$Play record=$Record snapshots=$Snapshots capture=$CaptureDirectory memory=$MemoryCard discard=$DiscardMemoryCardWrites readOnly=$ReadOnlySettings pnaches=$pnachCount lineSets=$lineSetCount turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames project=$ProjectRoot"
+"[fake] games=$($Games -join ',') play=$Play record=$Record snapshots=$Snapshots capture=$CaptureDirectory memory=$MemoryCard discard=$DiscardMemoryCardWrites readOnly=$ReadOnlySettings pnaches=$pnachCount additionalPnaches=$($AdditionalPnach -join '|') lineSets=$lineSetCount turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames project=$ProjectRoot"
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\pcsx2\launch_games.ps1')
 
     Push-Location $repository
@@ -164,6 +169,31 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
                 $memoryCardLaunch -match 'memory=Custom\.ps2 discard=True'
             ) `
             -Message 'Memory-card override and discard-write mode were not forwarded.'
+
+        $firstAdditionalPnach = Join-Path $repository 'first-extra.pnach'
+        $secondAdditionalPnach = Join-Path $repository 'second-extra.pnach'
+        $pnachLaunch = (
+            & .\workshop.ps1 `
+                NUN5 `
+                -pnach $firstAdditionalPnach `
+                -pnach $secondAdditionalPnach
+        ) -join "`n"
+        Assert-WorkshopLaunchTest `
+            -Condition ($pnachLaunch.Contains(
+                "additionalPnaches=$firstAdditionalPnach|$secondAdditionalPnach"
+            )) `
+            -Message 'Repeatable PNACH files were not forwarded in command-line order.'
+
+        $missingPnachValueRejected = $false
+        try { & .\workshop.ps1 NUN5 -pnach }
+        catch {
+            $missingPnachValueRejected = $_.Exception.Message -ceq (
+                '-pnach requires a value.'
+            )
+        }
+        Assert-WorkshopLaunchTest `
+            -Condition $missingPnachValueRejected `
+            -Message 'Workshop accepted -pnach without a file.'
 
         $turboLaunch = (& .\workshop.ps1 NUN5 -t) -join "`n"
         Assert-WorkshopLaunchTest `
@@ -329,12 +359,20 @@ if ($PassThru) {
             ) `
             -Message 'Build PNACH resolution did not use the NA228 game bundle.'
 
+        $firstAdditionalPnach = Join-Path $repository 'first-extra.pnach'
+        $secondAdditionalPnach = Join-Path $repository 'second-extra.pnach'
+        New-Item `
+            -ItemType File `
+            -Force `
+            -Path $firstAdditionalPnach, $secondAdditionalPnach | Out-Null
+
         $defaultSnapshotLaunch = (
             & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
                 -Games NUN5 `
                 -Play practice-menu `
                 -Snapshots `
                 -CaptureDirectory (Join-Path $repository 'captures-default') `
+                -AdditionalPnach @($firstAdditionalPnach, $secondAdditionalPnach) `
                 -ProjectRoot $repository
         ) -join "`n"
         Assert-WorkshopLaunchTest `
@@ -342,7 +380,8 @@ if ($PassThru) {
                 $defaultSnapshotLaunch -match (
                     'pnach=' + [regex]::Escape(
                         (Join-Path $repository 'pcsx2_files\games\NUN5\NUN5.pnach')
-                    ) + ' lines='
+                    ) + '\|' + [regex]::Escape($firstAdditionalPnach) + '\|' +
+                    [regex]::Escape($secondAdditionalPnach) + ' lines='
                 )
             ) `
             -Message 'The configured default PNACH was not passed to PCSX2.'
@@ -373,6 +412,7 @@ if ($PassThru) {
                 -InputRecordingCaptureMode screenshots `
                 -CaptureDirectory (Join-Path $repository 'captures') `
                 -PnachByGame $practicePnachByGame `
+                -AdditionalPnach @($firstAdditionalPnach, $secondAdditionalPnach) `
                 -PnachLinesByGame $practiceLinesByGame `
                 -ProjectRoot $repository
         ) -join "`n"
@@ -382,7 +422,9 @@ if ($PassThru) {
                     'arguments=-input-recording-capture-mode,screenshots ' +
                     'surfaceless=True discard=True readOnly=True ' +
                     'pnach=' + [regex]::Escape($practicePnach) + '\|' +
-                    [regex]::Escape($secondPracticePnach) +
+                    [regex]::Escape($secondPracticePnach) + '\|' +
+                    [regex]::Escape($firstAdditionalPnach) + '\|' +
+                    [regex]::Escape($secondAdditionalPnach) +
                     ' lines=patch=1,EE,003D0FF0,word,00000039\|' +
                     'patch=1,EE,003D0FF4,word,00000025 ' +
                     'turbo=False unlimited=True frames=0 wait=False passThru=True'
