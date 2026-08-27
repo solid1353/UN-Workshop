@@ -498,7 +498,7 @@ $action = if ($selectedGames.Count -eq 2) {
     "close configured user PCSX2 instances, launch $gameList, and tile their windows"
 }
 else {
-    "launch $gameList and tile its window"
+    "launch $gameList"
 }
 if (-not $PSCmdlet.ShouldProcess($pcsx2Root, $action)) {
     return
@@ -597,34 +597,36 @@ try {
     }
 
     $gameCount = $launchedGames.Count
-    $columns = $gameCount
-    $rows = 1
-    foreach ($launch in $launchedGames) {
-        [UnWorkshopLaunchWindow]::ShowWindowAsync(
-            $launch.Process.MainWindowHandle,
-            9
-        ) | Out-Null
+    if ($gameCount -eq 2) {
+        foreach ($launch in $launchedGames) {
+            [UnWorkshopLaunchWindow]::ShowWindowAsync(
+                $launch.Process.MainWindowHandle,
+                9
+            ) | Out-Null
+        }
+        Start-Sleep -Milliseconds 100
     }
-    Start-Sleep -Milliseconds 100
 
     for ($index = 0; $index -lt $gameCount; $index++) {
         $launch = $launchedGames[$index]
-        $left = $workingArea.X + [Math]::Floor(
-            $workingArea.Width * $index / $columns
-        )
-        $right = $workingArea.X + [Math]::Floor(
-            $workingArea.Width * ($index + 1) / $columns
-        )
-        $moved = [UnWorkshopLaunchWindow]::MoveWindow(
-            $launch.Process.MainWindowHandle,
-            $left,
-            $workingArea.Y,
-            $right - $left,
-            $workingArea.Height,
-            $true
-        )
-        if (-not $moved) {
-            throw "Windows rejected the PCSX2 window-placement request for $($launch.Game)."
+        if ($gameCount -eq 2) {
+            $left = $workingArea.X + [Math]::Floor(
+                $workingArea.Width * $index / $gameCount
+            )
+            $right = $workingArea.X + [Math]::Floor(
+                $workingArea.Width * ($index + 1) / $gameCount
+            )
+            $moved = [UnWorkshopLaunchWindow]::MoveWindow(
+                $launch.Process.MainWindowHandle,
+                $left,
+                $workingArea.Y,
+                $right - $left,
+                $workingArea.Height,
+                $true
+            )
+            if (-not $moved) {
+                throw "Windows rejected the PCSX2 window-placement request for $($launch.Game)."
+            }
         }
 
         [pscustomobject]@{
