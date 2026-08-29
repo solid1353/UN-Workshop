@@ -22,7 +22,7 @@ workshop ss move <game> <subpath> [-c]
   inside a configured project, every available project build. Supplying a game
   returns all of its resolved properties; supplying a property prints only that
   value, such as `workshop resolve NUN5 iso`.
-- Supplying one or two games launches their resolved ISOs at normal speed and
+- Supplying one or two games or ISO paths launches them at normal speed and
   tiles them in argument order. `-t` selects Turbo, while `-u` selects
   Unlimited; the two speed options are mutually exclusive. `-p` replays one
   shared input recording in every launched instance; `-r` records only the
@@ -49,8 +49,8 @@ workshop ss move <game> <subpath> [-c]
   the exact capture directory. For two games, it selects a parent containing
   one directory per game. Relative paths resolve from the invoking directory;
   without `-o`, captures go below `@work/captures/<recording>/<game>/`.
-  An explicit ISO path is accepted only with `-s`; without `-mc`, PCSX2's
-  configured memory-card selection remains in effect. A marker is
+  Without `-mc`, an explicit ISO path uses PCSX2's configured memory-card
+  selection. A marker is
   the rising edge of the chord,
   so holding both buttons creates one capture. A successful marker savestate and
   its standalone PNG use the same encoded screenshot. If actual memory-card
