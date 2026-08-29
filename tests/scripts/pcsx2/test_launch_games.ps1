@@ -322,7 +322,7 @@ param(
     [string[]]$Arguments
 )
 $message = "[fake] iso=$IsoPath input=$InputRecording capture=$InputRecordingCaptureDirectory memory=$MemoryCard arguments=$($Arguments -join ',') surfaceless=$Surfaceless discard=$DiscardMemoryCardWrites readOnly=$ReadOnlySettings pnach=$($Pnach -join '|') lines=$($PnachLines -join '|') turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames wait=$Wait passThru=$PassThru"
-$message
+if ($Surfaceless) { $message }
 if ($PassThru) {
     Start-Process `
         -FilePath ([Diagnostics.Process]::GetCurrentProcess().MainModule.FileName) `
@@ -526,6 +526,21 @@ if ($PassThru) {
                 "Snapshot playback did not accept an explicit ISO path. " +
                 "Output: $isoSnapshotLaunch"
             )
+
+        $normalIsoReachedLauncher = $false
+        try {
+            & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
+                -Games $workerIso `
+                -ProjectRoot $repository
+        }
+        catch {
+            $normalIsoReachedLauncher = $_.Exception.Message -match (
+                '^PCSX2 process \d+ for candidate exited before creating a window\.$'
+            )
+        }
+        Assert-WorkshopLaunchTest `
+            -Condition $normalIsoReachedLauncher `
+            -Message 'Normal launch rejected an explicit ISO path before invoking PCSX2.'
 
         $missingIsoRejected = $false
         try {

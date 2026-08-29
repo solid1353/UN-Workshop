@@ -222,9 +222,6 @@ foreach ($requestedGame in $Games) {
         '.iso',
         [StringComparison]::OrdinalIgnoreCase
     )
-    if ($isIsoPath -and -not $Snapshots) {
-        throw 'Explicit ISO paths are supported only with -Snapshots.'
-    }
     $defaultPnach = [string[]]@()
     if ($isIsoPath) {
         $isoPath = [IO.Path]::GetFullPath($target)
