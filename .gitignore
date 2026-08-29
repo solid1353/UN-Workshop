@@ -1,8 +1,10 @@
 # Common
-source/
-work/
-tools/
-logs/
+/source/
+/work/
+/tools/
+/logs/
+
+# Python
 __pycache__/
 *.pyc
 
