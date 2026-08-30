@@ -65,7 +65,7 @@ if ($usingConfiguredPaths) {
     . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
     . (Join-Path $PSScriptRoot 'ini.ps1')
     $paths = Get-UnWorkshopPaths -ProjectRoot $ProjectRoot
-    $catalog = Get-UnWorkshopCatalog -ProjectRoot $paths.Project
+    $catalog = Get-UnWorkshopCatalog
     $profileRoot = $paths.InputProfiles
     $baseName = 'Default'
     $sourcesRoot = Join-Path $profileRoot 'sources'
@@ -118,24 +118,19 @@ if ($usingConfiguredPaths) {
     $settingsProfiles = [ordered]@{}
     $entries = @(
         foreach ($property in $catalog.Sources.PSObject.Properties) {
-            [pscustomobject]@{ Name = $property.Name; Category = 'sources' }
-        }
-        if ($null -ne $catalog.Builds) {
-            foreach ($property in $catalog.Builds.PSObject.Properties) {
-                [pscustomobject]@{ Name = $property.Name; Category = 'builds' }
-            }
+            [string]$property.Name
         }
     )
     $resolvedEntries = @(
-        foreach ($entry in $entries) {
+        foreach ($entryName in $entries) {
             $resolved = Resolve-UnWorkshopGame `
-                -Game $entry.Name `
+                -Game $entryName `
                 -ProjectRoot $paths.Project
             $gameOverrideProperty = $resolved.PSObject.Properties[
                 'input_profile_overrides'
             ]
             [pscustomobject]@{
-                Name = $entry.Name
+                Name = $entryName
                 Resolved = $resolved
                 HasGameOverride = $null -ne $gameOverrideProperty
                 GameOverride = if ($null -ne $gameOverrideProperty) {

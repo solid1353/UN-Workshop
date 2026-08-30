@@ -70,33 +70,13 @@ def load_catalog(
     if not available_sources:
         raise ValueError("No registered source games are available")
 
-    merged: dict[str, object] = {"sources": available_sources}
-    if project_root is not None:
-        project = _read_definition(
-            project_paths.files["project_settings"],
-            "Project settings",
-        )
-        title = project.get("title")
-        serial = project.get("serial")
-        builds = project.get("builds")
-        if builds is not None:
-            if not isinstance(builds, dict) or not builds:
-                raise ValueError("Project settings builds must be an object")
-            merged["title"] = title
-            merged["serial"] = serial
-            merged["builds"] = builds
-    return merged
+    return {"sources": available_sources}
 
 
 def _required_text(value: object, label: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{label} must be a non-empty string")
     return value
-
-
-def derive_build_postfix(canonical_name: str) -> str:
-    """Derive a display postfix from a canonical snake-case build name."""
-    return canonical_name.replace("_", " ").title()
 
 
 def _root(roots: Mapping[str, Path], name: str) -> Path:
@@ -108,38 +88,31 @@ def _root(roots: Mapping[str, Path], name: str) -> Path:
 
 def find_definition(
     selector: str, catalog: Mapping[str, object]
-) -> tuple[str, str, Mapping[str, object], Mapping[str, object]]:
+) -> tuple[str, Mapping[str, object], Mapping[str, object]]:
     requested = selector.casefold()
-    match: tuple[str, str, Mapping[str, object], Mapping[str, object]] | None = None
+    match: tuple[str, Mapping[str, object], Mapping[str, object]] | None = None
+    definitions = catalog.get("sources")
+    if not isinstance(definitions, dict) or not definitions:
+        raise ValueError("Game catalog has no source games")
 
-    for category in ("builds", "sources"):
-        section = catalog.get(category)
-        if section is None:
-            continue
-        if not isinstance(section, dict) or not section:
-            raise ValueError(f"Game catalog has no non-empty {category!r} section")
-        definitions = section
-        if not isinstance(definitions, dict) or not definitions:
-            raise ValueError(f"Game catalog has no non-empty {category!r} entries")
-
-        for canonical_name, raw_definition in definitions.items():
-            if not isinstance(canonical_name, str) or not canonical_name:
-                raise ValueError(f"Invalid canonical game selector: {canonical_name!r}")
-            if not isinstance(raw_definition, dict):
-                raise ValueError(
-                    f"Game {canonical_name!r} definition must be an object"
-                )
-            aliases = raw_definition.get("aliases", [])
-            if not isinstance(aliases, list) or any(
-                not isinstance(alias, str) or not alias for alias in aliases
-            ):
-                raise ValueError(f"Game {canonical_name!r} aliases must be strings")
-            if any(
-                name.casefold() == requested for name in (canonical_name, *aliases)
-            ):
-                if match is not None:
-                    raise ValueError(f"Duplicate game selector or alias: {selector!r}")
-                match = (category, canonical_name, raw_definition, section)
+    for canonical_name, raw_definition in definitions.items():
+        if not isinstance(canonical_name, str) or not canonical_name:
+            raise ValueError(f"Invalid canonical game selector: {canonical_name!r}")
+        if not isinstance(raw_definition, dict):
+            raise ValueError(
+                f"Game {canonical_name!r} definition must be an object"
+            )
+        aliases = raw_definition.get("aliases", [])
+        if not isinstance(aliases, list) or any(
+            not isinstance(alias, str) or not alias for alias in aliases
+        ):
+            raise ValueError(f"Game {canonical_name!r} aliases must be strings")
+        if any(
+            name.casefold() == requested for name in (canonical_name, *aliases)
+        ):
+            if match is not None:
+                raise ValueError(f"Duplicate game selector or alias: {selector!r}")
+            match = (canonical_name, raw_definition, definitions)
 
     if match is None:
         raise KeyError(f"Unknown game selector: {selector}")
@@ -151,9 +124,7 @@ def derive_game_paths(
     catalog: Mapping[str, object],
     roots: Mapping[str, Path],
 ) -> dict[str, Path]:
-    category, canonical_name, definition, section = find_definition(
-        selector, catalog
-    )
+    canonical_name, definition, _ = find_definition(selector, catalog)
     profile_root = _root(roots, "pcsx2_input_profiles")
     override = (
         profile_root
@@ -170,37 +141,20 @@ def derive_game_paths(
     )
     input_profile_path = profile_root / f"{resolved_profile}.ini"
 
-    if category == "sources":
-        serial = _required_text(
-            definition.get("serial"), f"Game {canonical_name!r} serial"
-        )
-        crc = _required_text(
-            definition.get("crc"), f"Game {canonical_name!r} crc"
-        ).upper()
-        source = _root(roots, "source")
-        bundle = _root(roots, "pcsx2_files") / "games" / canonical_name
-        result = {
-            "iso": source / f"{canonical_name}.iso",
-            "extracted": source / f"{canonical_name}.iso.files",
-            "cheats": bundle / f"{canonical_name}.pnach",
-            "memory_card": bundle / f"{canonical_name}.ps2",
-            "game_settings": bundle / f"{canonical_name}.ini",
-            "input_profile": input_profile_path,
-        }
-        if override_enabled:
-            result["input_profile_overrides"] = override
-        return result
-
-    title = _required_text(catalog.get("title"), "Build title")
-    serial = _required_text(catalog.get("serial"), "Build serial")
-    postfix = derive_build_postfix(canonical_name)
-    bundle_name = serial.partition("-")[2] or serial
-    bundle = _root(roots, "pcsx2_files") / "games" / bundle_name
+    serial = _required_text(
+        definition.get("serial"), f"Game {canonical_name!r} serial"
+    )
+    crc = _required_text(
+        definition.get("crc"), f"Game {canonical_name!r} crc"
+    ).upper()
+    source = _root(roots, "source")
+    bundle = _root(roots, "pcsx2_files") / "games" / canonical_name
     result = {
-        "iso": _root(roots, "build") / f"{title} - {postfix}.iso",
-        "cheats": bundle / f"{bundle_name}.pnach",
-        "game_settings": bundle / f"{bundle_name}.ini",
-        "memory_card": bundle / f"{bundle_name}.ps2",
+        "iso": source / f"{canonical_name}.iso",
+        "extracted": source / f"{canonical_name}.iso.files",
+        "cheats": bundle / f"{canonical_name}.pnach",
+        "memory_card": bundle / f"{canonical_name}.ps2",
+        "game_settings": bundle / f"{canonical_name}.ini",
         "input_profile": input_profile_path,
     }
     if override_enabled:
@@ -222,11 +176,8 @@ def resolve_game(
         if project_root is not None
         else workshop_paths
     )
-    category, canonical_name, _, _ = find_definition(selector, catalog)
+    canonical_name, _, _ = find_definition(selector, catalog)
     bundle_name = canonical_name
-    if category == "builds":
-        serial = _required_text(catalog.get("serial"), "Build serial")
-        bundle_name = serial.partition("-")[2] or serial
     candidates = [
         project_paths.roots["pcsx2_files"],
         workshop_paths.roots["pcsx2_files"],
@@ -272,12 +223,7 @@ def resolve_game(
         )
     }
     roots["pcsx2_files"] = content_root
-    if project_root is not None:
-        roots["build"] = project_paths.roots["build"]
-    result = {
+    return {
         name: os.path.abspath(path)
         for name, path in derive_game_paths(selector, catalog, roots).items()
     }
-    if category == "builds":
-        result["postfix"] = derive_build_postfix(canonical_name)
-    return result
