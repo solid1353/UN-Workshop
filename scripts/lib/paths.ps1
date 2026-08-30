@@ -237,23 +237,13 @@ function Get-UnWorkshopPaths {
 
 function Get-UnWorkshopCatalog {
     [CmdletBinding()]
-    param([string]$ProjectRoot)
+    param()
 
-    $paths = Get-UnWorkshopPaths -ProjectRoot $ProjectRoot
+    $paths = Get-UnWorkshopPaths -NoProject
     $shared = Get-Content -Raw -LiteralPath $paths.SourceCatalog | ConvertFrom-Json
-    $result = [ordered]@{
+    [pscustomobject][ordered]@{
         Sources = $shared.sources
-        Title = $null
-        Serial = $null
-        Builds = $null
     }
-    if ($paths.ProjectSettings) {
-        $project = Get-Content -Raw -LiteralPath $paths.ProjectSettings | ConvertFrom-Json
-        $result.Title = $project.title
-        $result.Serial = $project.serial
-        $result.Builds = $project.builds
-    }
-    [pscustomobject]$result
 }
 
 function Resolve-UnWorkshopRecordingName {

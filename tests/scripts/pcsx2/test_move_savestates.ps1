@@ -31,9 +31,7 @@ try {
     )) {
         [void](New-Item -ItemType Directory -Path (Join-Path $workshop $path) -Force)
     }
-    [void](New-Item -ItemType Directory -Path (Join-Path $project 'artifacts') -Force)
-    [void](New-Item -ItemType Directory -Path (Join-Path $project 'game_data\games\NA228') -Force)
-    [void](New-Item -ItemType Directory -Path (Join-Path $project 'task_work') -Force)
+    [void](New-Item -ItemType Directory -Path (Join-Path $project 'game_data') -Force)
 
     foreach ($name in @('paths.ps1', 'paths.py', 'game_catalog.py', 'resolve_game.py')) {
         Copy-Item `
@@ -43,13 +41,6 @@ try {
     Copy-Item `
         -LiteralPath (Join-Path $repository 'scripts\pcsx2\move_savestates.ps1') `
         -Destination (Join-Path $workshop 'scripts\pcsx2\move_savestates.ps1')
-    Set-Content `
-        -LiteralPath (Join-Path $workshop 'scripts\pcsx2\iso_identity.ps1') `
-        -Value @'
-function Get-Pcsx2IsoIdentity {
-    [pscustomobject]@{ Serial = 'SLOP-NA228'; CRC = '12345678' }
-}
-'@
 
     Set-Content -LiteralPath (Join-Path $workshop 'paths.json') -Value @'
 {
@@ -84,47 +75,22 @@ function Get-Pcsx2IsoIdentity {
     Set-Content -LiteralPath (Join-Path $project 'game.json') -Value @'
 {
   "title": "NA v2.28",
-  "serial": "SLOP-NA228",
-  "output_boot_path": "SLOP_NA2.28",
-  "startup_fast_forward_frames": 321,
-  "builds": { "latest": { "aliases": ["l"] } }
+  "serial": "SLOP-NA228"
 }
 '@
     Set-Content -LiteralPath (Join-Path $project 'paths.json') -Value @'
 {
   "imports": { "workshop": "../workshop/paths.json" },
   "roots": {
-    "build": "artifacts",
-    "work": "task_work",
     "pcsx2_files": "game_data"
   },
   "files": { "project_settings": "game.json" }
 }
 '@
-    Set-Content -LiteralPath (Join-Path $project 'artifacts\NA v2.28 - Latest.iso') -Value 'test'
     foreach ($extension in @('ini', 'pnach', 'ps2')) {
         Set-Content `
             -LiteralPath (Join-Path $workshop "pcsx2_files\games\NUN5\NUN5.$extension") `
             -Value 'test'
-    }
-    foreach ($extension in @('ini', 'pnach', 'ps2')) {
-        Set-Content `
-            -LiteralPath (Join-Path $project "game_data\games\NA228\NA228.$extension") `
-            -Value 'test'
-    }
-
-    $resolvedLatest = (
-        & python `
-            (Join-Path $workshop 'scripts\lib\resolve_game.py') `
-            latest `
-            --project-root $project
-    ) | ConvertFrom-Json
-    $expectedLatestCard = Join-Path $project 'game_data\games\NA228\NA228.ps2'
-    if (
-        [IO.Path]::GetFullPath([string]$resolvedLatest.memory_card) -cne
-        [IO.Path]::GetFullPath($expectedLatestCard)
-    ) {
-        throw "Build memory-card path did not resolve from the invoking project's NA228 bundle."
     }
 
     $resolvedSource = (
@@ -142,13 +108,6 @@ function Get-Pcsx2IsoIdentity {
     }
 
     $states = Join-Path $workshop 'pcsx2\sstates'
-    Set-Content -LiteralPath (Join-Path $states 'SLOP-NA228 (12345678).00.p2s') -Value 'build'
-    & (Join-Path $workshop 'scripts\pcsx2\move_savestates.ps1') `
-        latest build-case -ProjectRoot $project | Out-Null
-    Assert-Exists `
-        (Join-Path $project 'task_work\sstates\build-case\SLOP-NA228 (12345678).01.p2s') `
-        'Build savestate was not filed under the invoking project work root.'
-
     $sourceCase = Join-Path $workshop 'work\sstates\source-case'
     [void](New-Item -ItemType Directory -Path $sourceCase -Force)
     Set-Content `
@@ -168,17 +127,17 @@ function Get-Pcsx2IsoIdentity {
         throw 'Savestate conflict numbering still advances by ten.'
     }
 
-    $cleanupTarget = Join-Path $project 'task_work\sstates\cleanup-case'
+    $cleanupTarget = Join-Path $workshop 'work\sstates\cleanup-case'
     [void](New-Item -ItemType Directory -Path $cleanupTarget -Force)
     Set-Content -LiteralPath (Join-Path $cleanupTarget 'stale.p2s') -Value 'stale'
-    Set-Content -LiteralPath (Join-Path $states 'SLOP-NA228 (12345678).02.p2s') -Value 'new'
+    Set-Content -LiteralPath (Join-Path $states 'SLES-55605 (C071D4C1).02.p2s') -Value 'new'
     & (Join-Path $workshop 'scripts\pcsx2\move_savestates.ps1') `
-        latest cleanup-case -ProjectRoot $project -c -WhatIf
+        NUN5 cleanup-case -ProjectRoot $project -c -WhatIf
     Assert-Exists `
         (Join-Path $cleanupTarget 'stale.p2s') `
         'Cleanup -WhatIf changed the existing destination.'
     Assert-Exists `
-        (Join-Path $states 'SLOP-NA228 (12345678).02.p2s') `
+        (Join-Path $states 'SLES-55605 (C071D4C1).02.p2s') `
         'Cleanup -WhatIf moved the incoming savestate.'
 
     $shortAliasForwarded = $false

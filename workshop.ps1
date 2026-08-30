@@ -1,8 +1,5 @@
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'scripts\lib\paths.ps1')
-$paths = Get-UnWorkshopPaths
-$scripts = $paths.Roots.pcsx2_scripts
-. (Join-Path $scripts 'launch_arguments.ps1')
 
 $rawArguments = @($args)
 $Action = if ($rawArguments.Count -gt 0) { $rawArguments[0] } else { '' }
@@ -15,6 +12,34 @@ $Arguments = @(
 $normalizedCommand = if ([string]::IsNullOrWhiteSpace($Action)) {
     ''
 } else { $Action.ToLowerInvariant() }
+
+if ([string]::IsNullOrWhiteSpace($normalizedCommand) -or
+    $normalizedCommand -eq 'help') {
+    . (Join-Path $PSScriptRoot 'scripts\lib\console_help.ps1')
+    $catalog = Get-UnWorkshopCatalog
+    $sourceSelectors = @(
+        foreach ($entry in $catalog.Sources.PSObject.Properties) {
+            $aliasesProperty = $entry.Value.PSObject.Properties['aliases']
+            $aliases = @(
+                if ($null -ne $aliasesProperty) {
+                    $aliasesProperty.Value
+                }
+            )
+            if ($aliases.Count -gt 0) {
+                "$($entry.Name) ($($aliases -join ', '))"
+            }
+            else { $entry.Name }
+        }
+    )
+    Get-UnConsoleHelp `
+        -Path (Join-Path $PSScriptRoot 'HELP.md') `
+        -Values @{ SOURCES = $sourceSelectors -join ', ' }
+    return
+}
+
+$paths = Get-UnWorkshopPaths
+$scripts = $paths.Roots.pcsx2_scripts
+. (Join-Path $scripts 'launch_arguments.ps1')
 
 function Invoke-UnWorkshopGameLaunch {
     param(
@@ -80,94 +105,19 @@ function Invoke-UnWorkshopGameLaunch {
 }
 
 switch ($normalizedCommand) {
-    { [string]::IsNullOrWhiteSpace($_) -or $_ -eq 'help' } {
-        $catalog = Get-UnWorkshopCatalog -ProjectRoot $paths.Project
-        $sourceSelectors = @(
-            foreach ($entry in $catalog.Sources.PSObject.Properties) {
-                $aliasesProperty = $entry.Value.PSObject.Properties['aliases']
-                $aliases = @(
-                    if ($null -ne $aliasesProperty) {
-                        $aliasesProperty.Value
-                    }
-                )
-                if ($aliases.Count -gt 0) {
-                    "$($entry.Name) ($($aliases -join ', '))"
-                }
-                else { $entry.Name }
-            }
-        )
-        $buildSelectors = @(
-            if ($null -ne $catalog.Builds) {
-                foreach ($entry in $catalog.Builds.PSObject.Properties) {
-                    $aliasesProperty = $entry.Value.PSObject.Properties['aliases']
-                    $aliases = @(
-                        if ($null -ne $aliasesProperty) {
-                            $aliasesProperty.Value
-                        }
-                    )
-                    if ($aliases.Count -gt 0) {
-                        "$($entry.Name) ($($aliases -join ', '))"
-                    }
-                    else { $entry.Name }
-                }
-            }
-        )
-        $resolvedProperties = @(
-            'iso', 'extracted', 'cheats', 'game_settings', 'memory_card',
-            'input_profile', 'input_profile_overrides', 'postfix'
-        )
-
-        @(
-            'UN Workshop'
-            ''
-            '  workshop <game|iso-path> [game|iso-path] [-p name|-r name|-s name] [-o path] [-mc card] [-pnach file]... [-dw] [-t|-u]  Launch or replay one or two games; pairs close existing user PCSX2 first.'
-            '  workshop input [profile]             Regenerate all profiles; optionally assign one.'
-            '  workshop pcsx2                       Launch development PCSX2 without a game.'
-            '  workshop resolve [game] [property]   Resolve all games, one game, or one property.'
-            '  workshop ss extract <subpath|folder-or-savestates...>  Extract embedded PNGs into screenshots/.'
-            '  workshop ss move <game> <subpath> [-c]  Move development savestates.'
-            ''
-            '  Launch options:'
-            '    -p <name>        Replay an input recording.'
-            '    -r <name>        Create an input recording; paired launches record the rightmost game.'
-            '    -s <name>        Replay one or two games or ISO paths and take snapshots.'
-            '    -o <path>        Select the snapshot capture directory or two-game parent directory.'
-            '    -mc <card>       Use one shared card or template; .ps2 is added automatically.'
-            '    -pnach <file>    Append a PNACH file; repeatable and order-preserving.'
-            '    -dw              Discard memory-card writes for an ordinary launch.'
-            '    -t               Launch in Turbo.'
-            '    -u               Launch in Unlimited.'
-            ''
-            '  Savestate move options:'
-            '    -c  Recycle the existing destination before moving savestates.'
-            ''
-            "  Sources: $($sourceSelectors -join ', ')"
-            $(if ($buildSelectors.Count -gt 0) {
-                "  Project builds: $($buildSelectors -join ', ')"
-            } else {
-                '  Project builds: available inside a configured project'
-            })
-            "  Properties: $($resolvedProperties -join ', ')"
-            ''
-        ) | Write-Output
-    }
     'resolve' {
         $argumentList = @(
             $Arguments |
                 Where-Object { -not [string]::IsNullOrEmpty($_) }
         )
         if ($argumentList.Count -gt 2) {
-            throw 'Usage: workshop resolve [game] [property]'
+            throw 'Usage: workshop resolve [source] [property]'
         }
         if ($argumentList.Count -eq 0) {
-            $catalog = Get-UnWorkshopCatalog -ProjectRoot $paths.Project
+            $catalog = Get-UnWorkshopCatalog
             $selectors = @(
                 $catalog.Sources.PSObject.Properties |
                     ForEach-Object { [string]$_.Name }
-                if ($null -ne $catalog.Builds) {
-                    $catalog.Builds.PSObject.Properties |
-                        ForEach-Object { [string]$_.Name }
-                }
             )
             foreach ($selector in $selectors) {
                 $values = Resolve-UnWorkshopGame `

@@ -17,62 +17,34 @@ param(
 
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
-. (Join-Path $PSScriptRoot 'iso_identity.ps1')
 $paths = Get-UnWorkshopPaths -ProjectRoot $ProjectRoot
-$catalog = Get-UnWorkshopCatalog -ProjectRoot $paths.Project
+$catalog = Get-UnWorkshopCatalog
 $canonicalGame = $null
-$canonicalCategory = $null
-foreach ($category in @('Sources', 'Builds')) {
-    $section = $catalog.$category
-    if ($null -eq $section) { continue }
-    $definitions = $section
-    foreach ($property in $definitions.PSObject.Properties) {
-        $aliasesProperty = $property.Value.PSObject.Properties['aliases']
-        $aliases = if ($null -eq $aliasesProperty) {
-            @()
-        }
-        else {
-            @($aliasesProperty.Value)
-        }
-        if (
-            $property.Name -ieq $Game -or
-            @($aliases | Where-Object { $_ -ieq $Game }).Count -gt 0
-        ) {
-            $canonicalGame = $property.Name
-            $canonicalCategory = $category
-            break
-        }
+foreach ($property in $catalog.Sources.PSObject.Properties) {
+    $aliasesProperty = $property.Value.PSObject.Properties['aliases']
+    $aliases = if ($null -eq $aliasesProperty) {
+        @()
     }
-    if ($canonicalGame) { break }
+    else {
+        @($aliasesProperty.Value)
+    }
+    if (
+        $property.Name -ieq $Game -or
+        @($aliases | Where-Object { $_ -ieq $Game }).Count -gt 0
+    ) {
+        $canonicalGame = $property.Name
+        break
+    }
 }
 if (-not $canonicalGame) { throw "Unknown game or alias '$Game'." }
-$resolved = Resolve-UnWorkshopGame -Game $Game -ProjectRoot $paths.Project
 
 $sourceDefinition = $catalog.Sources.PSObject.Properties[$canonicalGame]
-if ($null -ne $sourceDefinition) {
-    $serial = ([string]$sourceDefinition.Value.serial).ToUpperInvariant()
-    $crc = ([string]$sourceDefinition.Value.crc).ToUpperInvariant()
-}
-else {
-    if (-not (Test-Path -LiteralPath $resolved.iso -PathType Leaf)) {
-        throw "Selected build ISO does not exist: $($resolved.iso)"
-    }
-    $identity = Get-Pcsx2IsoIdentity -Path $resolved.iso
-    $serial = ([string]$identity.Serial).ToUpperInvariant()
-    $crc = ([string]$identity.CRC).ToUpperInvariant()
-}
+$serial = ([string]$sourceDefinition.Value.serial).ToUpperInvariant()
+$crc = ([string]$sourceDefinition.Value.crc).ToUpperInvariant()
 $expectedStem = "$serial ($crc)"
 
 $sourceRoot = Join-Path $paths.Pcsx2Dev 'sstates'
-$destinationRoot = if ($canonicalCategory -eq 'Builds') {
-    if ([string]::IsNullOrWhiteSpace($paths.Project)) {
-        throw 'A project root is required to file build savestates.'
-    }
-    Join-Path $paths.Work 'sstates'
-}
-else {
-    $paths.Savestates
-}
+$destinationRoot = $paths.Savestates
 
 if ([string]::IsNullOrWhiteSpace($SubPath)) {
     throw 'SubPath cannot be empty.'
