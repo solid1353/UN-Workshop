@@ -105,6 +105,27 @@ try {
             $global:Pcsx2PnachLaunchTestLaunches.Count -eq 2
         ) `
         -Message 'PCSX2 launcher did not reject a missing PNACH before launch.'
+
+    $iso = Join-Path $testRoot 'game.iso'
+    New-Item -ItemType File -Path $iso | Out-Null
+    & $launcher -IsoPath $iso -CenteredWindow
+    $centeredArguments = @(
+        $global:Pcsx2PnachLaunchTestLaunches[-1].ArgumentList
+    )
+    $centeredIndex = [Array]::IndexOf(
+        $centeredArguments,
+        '-centered-window'
+    )
+    $batchIndex = [Array]::IndexOf($centeredArguments, '-batch')
+    Assert-Pcsx2LaunchTest `
+        -Condition (
+            $centeredIndex -ge 0 -and
+            $centeredIndex -lt $batchIndex -and
+            @($centeredArguments | Where-Object {
+                $_ -ceq '-centered-window'
+            }).Count -eq 1
+        ) `
+        -Message 'PCSX2 launcher did not place -centered-window before the game path.'
 }
 finally {
     Remove-Variable `

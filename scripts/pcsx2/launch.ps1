@@ -25,6 +25,8 @@ param(
 
     [switch]$Surfaceless,
 
+    [switch]$CenteredWindow,
+
     [switch]$DiscardMemoryCardWrites,
 
     [switch]$ReadOnlySettings,
@@ -189,6 +191,9 @@ else {
             [string]$UnlimitedForFrames
         )
     }
+}
+if ($CenteredWindow) {
+    $launchArguments += '-centered-window'
 }
 if ($IsoPath) {
     $launchArguments += @('-batch', "`"$resolvedIso`"")
