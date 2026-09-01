@@ -308,6 +308,7 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
                 (Join-Path $repository 'pcsx2_files\games\NUN5\NUN5.ini'), `
                 (Join-Path $repository 'pcsx2_files\games\NUN5\NUN5.ps2'), `
                 (Join-Path $repository 'pcsx2_files\input_recordings\practice-menu.p2m2') | Out-Null
+        $global:UnWorkshopFakeCenteredWindows = @()
         @'
 param(
     [string]$IsoPath,
@@ -316,6 +317,7 @@ param(
     [string]$InputRecording,
     [string]$InputRecordingCaptureDirectory,
     [switch]$Surfaceless,
+    [switch]$CenteredWindow,
     [switch]$DiscardMemoryCardWrites,
     [switch]$ReadOnlySettings,
     [string[]]$Pnach,
@@ -330,6 +332,7 @@ param(
 $message = "[fake] iso=$IsoPath input=$InputRecording capture=$InputRecordingCaptureDirectory memory=$MemoryCard arguments=$($Arguments -join ',') surfaceless=$Surfaceless discard=$DiscardMemoryCardWrites readOnly=$ReadOnlySettings pnach=$($Pnach -join '|') lines=$($PnachLines -join '|') turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames wait=$Wait passThru=$PassThru"
 if ($Surfaceless) { $message }
 if ($PassThru) {
+    $global:UnWorkshopFakeCenteredWindows += $CenteredWindow.IsPresent
     Start-Process `
         -FilePath ([Diagnostics.Process]::GetCurrentProcess().MainModule.FileName) `
         -ArgumentList @('-NoProfile', '-Command', 'Start-Sleep -Milliseconds 50') `
@@ -537,6 +540,27 @@ if ($PassThru) {
         Assert-WorkshopLaunchTest `
             -Condition $normalIsoReachedLauncher `
             -Message 'Normal launch rejected an explicit ISO path before invoking PCSX2.'
+        Assert-WorkshopLaunchTest `
+            -Condition ($global:UnWorkshopFakeCenteredWindows[-1] -eq $true) `
+            -Message 'Single-game launch did not select centered-window placement.'
+
+        $pairedNormalReachedLauncher = $false
+        try {
+            & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
+                -Games @($workerIso, $secondIso) `
+                -ProjectRoot $repository
+        }
+        catch {
+            $pairedNormalReachedLauncher = $_.Exception.Message -match (
+                '^PCSX2 process \d+ for candidate exited before creating a window\.$'
+            )
+        }
+        Assert-WorkshopLaunchTest `
+            -Condition (
+                $pairedNormalReachedLauncher -and
+                $global:UnWorkshopFakeCenteredWindows[-1] -eq $false
+            ) `
+            -Message 'Paired launch selected single-game centered-window placement.'
 
         $missingIsoRejected = $false
         try {
@@ -636,6 +660,10 @@ if ($PassThru) {
     Write-Host 'Workshop paired-launch tests passed.' -ForegroundColor Green
 }
 finally {
+    Remove-Variable `
+        -Name UnWorkshopFakeCenteredWindows `
+        -Scope Global `
+        -ErrorAction SilentlyContinue
     if (Test-Path -LiteralPath $testRoot) {
         Remove-Item -LiteralPath $testRoot -Recurse -Force
     }

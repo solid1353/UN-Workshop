@@ -558,6 +558,9 @@ try {
         elseif ($UnlimitedForFrames -gt 0) {
             $launchParameters.UnlimitedForFrames = $UnlimitedForFrames
         }
+        if ($selectedGames.Count -eq 1) {
+            $launchParameters.CenteredWindow = $true
+        }
         if ($DiscardMemoryCardWrites) {
             $launchParameters.DiscardMemoryCardWrites = $true
         }

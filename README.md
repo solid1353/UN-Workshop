@@ -22,9 +22,11 @@ workshop ss move <game> <subpath> [-c]
   inside a configured project, every available project build. Supplying a game
   returns all of its resolved properties; supplying a property prints only that
   value, such as `workshop resolve NUN5 iso`.
-- Supplying one or two games or ISO paths launches them at normal speed and
-  tiles them in argument order. `-t` selects Turbo, while `-u` selects
-  Unlimited; the two speed options are mutually exclusive. `-p` replays one
+- Supplying one or two games or ISO paths launches them at normal speed. A
+  single launch opens a centered window whose render area matches the game's
+  effective aspect ratio; paired launches remain tiled in argument order. `-t`
+  selects Turbo, while `-u` selects Unlimited; the two speed options are
+  mutually exclusive. `-p` replays one
   shared input recording in every launched instance; `-r` records only the
   last/rightmost instance. Recording names
   may be relative paths below `@pcsx2_input_recordings/`, and the
