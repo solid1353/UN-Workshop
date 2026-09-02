@@ -34,8 +34,7 @@ function Initialize-GhidraRuntime {
 
     $runtime = [IO.Path]::GetFullPath($RuntimeRoot)
     $tools = [IO.Path]::GetFullPath($ToolsRoot)
-    $settingsRoot = Join-Path $runtime "AppData\Roaming\ghidra\ghidra_$Version"
-    $extensionsRoot = Join-Path $settingsRoot 'Extensions'
+    $extensionsRoot = Join-Path $tools 'ghidra\Ghidra\Extensions'
     $extensionDirectory = Join-Path $extensionsRoot 'ghidra-emotionengine-reloaded'
     $extensionZip = Join-Path $tools (
         "ghidra\ghidra_${Version}_20260607_ghidra-emotionengine-reloaded.zip"

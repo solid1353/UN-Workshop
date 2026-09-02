@@ -112,7 +112,8 @@ project settings.
   overrides, with game-specific overrides under `games/`.
 - `@pcsx2_scripts/`: reusable PCSX2 launch, worker-copy, PINE, input-profile,
   savestate, and disc-identity utilities.
-- `@ghidra_scripts/`: reusable headless Ghidra Java scripts and runtime setup.
+- `@ghidra_scripts/`: reusable headless Ghidra Java scripts, runtime setup, and
+  the [read-only GhidrAssistMCP integration](docs/runbooks/ghidrassistmcp.md).
 - `@media_scripts/`: reusable ISO, AFS, and encrypted-CVM extractors.
 - `tests/scripts/`: focused tests mirroring Workshop-owned script components,
   including PCSX2 and media utilities.

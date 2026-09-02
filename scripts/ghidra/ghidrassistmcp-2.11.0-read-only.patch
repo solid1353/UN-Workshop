@@ -1,0 +1,458 @@
+diff --git a/src/main/java/ghidrassistmcp/GhidrAssistMCPBackend.java b/src/main/java/ghidrassistmcp/GhidrAssistMCPBackend.java
+index 66ca182..71e8335 100644
+--- a/src/main/java/ghidrassistmcp/GhidrAssistMCPBackend.java
++++ b/src/main/java/ghidrassistmcp/GhidrAssistMCPBackend.java
+@@ -7,6 +7,7 @@ import java.util.ArrayList;
+ import java.util.HashMap;
+ import java.util.List;
+ import java.util.Map;
++import java.util.Set;
+ import java.util.concurrent.ConcurrentHashMap;
+ import java.util.concurrent.CopyOnWriteArrayList;
+ import java.util.function.Function;
+@@ -90,11 +91,39 @@ import io.modelcontextprotocol.spec.McpSchema;
+  */
+ public class GhidrAssistMCPBackend implements McpBackend {
+ 
++    private static final Set<String> READ_ONLY_TOOL_ALLOWLIST = Set.of(
++        "get_binary_info",
++        "list_binaries",
++        "get_functions",
++        "analyze_function",
++        "get_function_signature",
++        "get_segments",
++        "get_imports",
++        "get_exports",
++        "get_strings",
++        "get_data_vars",
++        "get_namespaces",
++        "get_relocations",
++        "get_current_address",
++        "get_current_function",
++        "get_data_at",
++        "xrefs",
++        "get_code",
++        "get_basic_blocks",
++        "search_bytes",
++        "classes",
++        "search_functions_by_name",
++        "get_function_statistics",
++        "get_function_stack_layout",
++        "search_strings",
++        "get_entry_points"
++    );
++
+     private final Map<String, McpTool> tools = new ConcurrentHashMap<>();
+     private final Map<String, Boolean> toolEnabledStates = new ConcurrentHashMap<>();
+     private final List<McpEventListener> eventListeners = new CopyOnWriteArrayList<>();
+     private volatile GhidrAssistMCPManager manager;
+-    private volatile boolean asyncExecutionEnabled = true;
++    private volatile boolean asyncExecutionEnabled = false;
+     private final McpTaskManager taskManager;
+     private final McpResourceRegistry resourceRegistry;
+     private final McpPromptRegistry promptRegistry;
+@@ -197,8 +226,7 @@ public class GhidrAssistMCPBackend implements McpBackend {
+     @Override
+     public void registerTool(McpTool tool) {
+         tools.put(tool.getName(), tool);
+-        // Tools are enabled by default when registered
+-        toolEnabledStates.put(tool.getName(), true);
++        toolEnabledStates.put(tool.getName(), READ_ONLY_TOOL_ALLOWLIST.contains(tool.getName()));
+         Msg.info(this, "Registered MCP tool: " + tool.getName());
+     }
+     
+@@ -216,7 +244,7 @@ public class GhidrAssistMCPBackend implements McpBackend {
+         List<McpSchema.Tool> toolList = new ArrayList<>();
+         for (McpTool tool : tools.values()) {
+             // Only include enabled tools in the available tools list
+-            if (toolEnabledStates.getOrDefault(tool.getName(), true)) {
++            if (isToolEnabled(tool.getName())) {
+                 // Augment the schema with program_name parameter for multi-program support
+                 McpSchema.JsonSchema augmentedSchema = augmentSchemaWithProgramName(tool.getInputSchema());
+ 
+@@ -298,7 +326,7 @@ public class GhidrAssistMCPBackend implements McpBackend {
+         }
+ 
+         // Check if tool is enabled
+-        if (!toolEnabledStates.getOrDefault(toolName, true)) {
++        if (!isToolEnabled(toolName)) {
+             Msg.warn(this, "Tool is disabled: " + toolName);
+             return McpSchema.CallToolResult.builder()
+                 .addTextContent("Tool is disabled: " + toolName)
+@@ -561,7 +589,25 @@ public class GhidrAssistMCPBackend implements McpBackend {
+      */
+     private Program resolveTargetProgram(Map<String, Object> arguments) {
+         if (manager == null) {
+-            // Headless mode: no manager, fall back to getCurrentProgram()
++            Object programNameObj = arguments.get("program_name");
++            if (programNameObj instanceof String) {
++                String programName = ((String) programNameObj).trim();
++                if (!programName.isEmpty()) {
++                    String normalized = programName.replace('\\', '/');
++                    for (Program candidate : getAllOpenPrograms()) {
++                        String projectPath = candidate.getDomainFile() != null
++                            ? candidate.getDomainFile().getPathname().replace('\\', '/')
++                            : "";
++                        if (candidate.getName().equalsIgnoreCase(programName) ||
++                                projectPath.equalsIgnoreCase(normalized) ||
++                                projectPath.equalsIgnoreCase("/" + normalized)) {
++                            Msg.info(this, "Resolved headless program by name: " + candidate.getName());
++                            return candidate;
++                        }
++                    }
++                    throw new IllegalArgumentException("Program is not open: " + programName);
++                }
++            }
+             return getCurrentProgram();
+         }
+ 
+@@ -806,8 +852,8 @@ public class GhidrAssistMCPBackend implements McpBackend {
+      * Set whether async execution is enabled for long-running tools.
+      */
+     public void setAsyncExecutionEnabled(boolean enabled) {
+-        this.asyncExecutionEnabled = enabled;
+-        Msg.info(this, "Async tool execution " + (enabled ? "enabled" : "disabled"));
++        this.asyncExecutionEnabled = false;
++        Msg.info(this, "Async tool execution disabled by the read-only profile");
+     }
+ 
+     /**
+@@ -822,8 +868,9 @@ public class GhidrAssistMCPBackend implements McpBackend {
+      */
+     public void setToolEnabled(String toolName, boolean enabled) {
+         if (tools.containsKey(toolName)) {
+-            toolEnabledStates.put(toolName, enabled);
+-            Msg.info(this, "Tool " + toolName + " " + (enabled ? "enabled" : "disabled"));
++            boolean effectiveState = enabled && READ_ONLY_TOOL_ALLOWLIST.contains(toolName);
++            toolEnabledStates.put(toolName, effectiveState);
++            Msg.info(this, "Tool " + toolName + " " + (effectiveState ? "enabled" : "disabled"));
+         }
+     }
+     
+@@ -831,7 +878,8 @@ public class GhidrAssistMCPBackend implements McpBackend {
+      * Get the enabled state of a tool.
+      */
+     public boolean isToolEnabled(String toolName) {
+-        return toolEnabledStates.getOrDefault(toolName, true);
++        return READ_ONLY_TOOL_ALLOWLIST.contains(toolName) &&
++            toolEnabledStates.getOrDefault(toolName, false);
+     }
+     
+     /**
+@@ -848,7 +896,8 @@ public class GhidrAssistMCPBackend implements McpBackend {
+         for (Map.Entry<String, Boolean> entry : newStates.entrySet()) {
+             String toolName = entry.getKey();
+             if (tools.containsKey(toolName)) {
+-                toolEnabledStates.put(toolName, entry.getValue());
++                toolEnabledStates.put(toolName,
++                    Boolean.TRUE.equals(entry.getValue()) && READ_ONLY_TOOL_ALLOWLIST.contains(toolName));
+             }
+         }
+         Msg.info(this, "Updated enabled states for " + newStates.size() + " tools");
+diff --git a/src/main/java/ghidrassistmcp/GhidrAssistMCPHeadlessServer.java b/src/main/java/ghidrassistmcp/GhidrAssistMCPHeadlessServer.java
+index 6e3f31e..482e92a 100644
+--- a/src/main/java/ghidrassistmcp/GhidrAssistMCPHeadlessServer.java
++++ b/src/main/java/ghidrassistmcp/GhidrAssistMCPHeadlessServer.java
+@@ -5,8 +5,10 @@
+  */
+ package ghidrassistmcp;
+ 
++import java.util.ArrayList;
+ import java.util.Collections;
+ import java.util.List;
++import java.util.concurrent.CopyOnWriteArrayList;
+ 
+ import ghidra.program.model.listing.Program;
+ import ghidra.util.Msg;
+@@ -54,10 +56,17 @@ public class GhidrAssistMCPHeadlessServer {
+      * intended only for a disposable, container-isolated analysis environment.
+      */
+     public synchronized void start(Program program, String host, int port, String toolProfile) throws Exception {
++        start(Collections.singletonList(program), host, port, toolProfile);
++    }
++
++    public synchronized void start(List<Program> programs, String host, int port, String toolProfile) throws Exception {
++        if (programs == null || programs.isEmpty()) {
++            throw new IllegalArgumentException("At least one headless program is required");
++        }
+         if (running) {
+-            Msg.info(this, "Headless MCP server already running, updating program");
++            Msg.info(this, "Headless MCP server already running, updating programs");
+             if (headlessBackend != null) {
+-                headlessBackend.setProgram(program);
++                headlessBackend.setPrograms(programs);
+             }
+             return;
+         }
+@@ -69,7 +78,7 @@ public class GhidrAssistMCPHeadlessServer {
+         }
+ 
+         // Create a backend wrapper that holds the program directly
+-        headlessBackend = new HeadlessBackend(program);
++        headlessBackend = new HeadlessBackend(programs);
+         if ("agent_lab".equals(toolProfile)) {
+             headlessBackend.enableAgentLabTools();
+             Msg.info(this, "Enabled sandbox-only agent lab MCP tool profile");
+@@ -124,60 +133,80 @@ public class GhidrAssistMCPHeadlessServer {
+         }
+     }
+ 
++    public void setPrograms(List<Program> programs) {
++        if (headlessBackend != null) {
++            headlessBackend.setPrograms(programs);
++        }
++    }
++
+     /**
+      * A thin wrapper around GhidrAssistMCPBackend that provides a direct program
+      * reference instead of going through GhidrAssistMCPManager.
+      */
+     private static class HeadlessBackend extends GhidrAssistMCPBackend {
+ 
++        private final List<Program> programs = new CopyOnWriteArrayList<>();
+         private volatile Program currentProgram;
+         private final Object programConsumer = new Object();
+ 
+-        HeadlessBackend(Program program) {
++        HeadlessBackend(List<Program> programs) {
+             super();
+-            setProgram(program);
++            setPrograms(programs);
+         }
+ 
+         synchronized void setProgram(Program program) {
+-            Program oldProgram = this.currentProgram;
+-            if (oldProgram != null) {
++            setPrograms(Collections.singletonList(program));
++        }
++
++        synchronized void setPrograms(List<Program> newPrograms) {
++            for (Program oldProgram : programs) {
+                 onProgramDeactivated(oldProgram);
+                 releaseProgram(oldProgram);
+             }
+-            this.currentProgram = program;
+-            if (program != null) {
++            programs.clear();
++            for (Program program : newPrograms) {
++                if (program == null || program.isClosed()) {
++                    continue;
++                }
+                 if (!program.isClosed()) {
+                     program.addConsumer(programConsumer);
+                 }
++                programs.add(program);
+                 onProgramActivated(program);
+             }
++            this.currentProgram = programs.isEmpty() ? null : programs.get(0);
+         }
+ 
+         @Override
+         public Program getCurrentProgram() {
+             if (currentProgram != null && currentProgram.isClosed()) {
+                 Msg.warn(this, "Headless current program is closed; clearing program reference");
+-                currentProgram = null;
++                currentProgram = programs.stream()
++                    .filter(program -> !program.isClosed())
++                    .findFirst()
++                    .orElse(null);
+             }
+             return currentProgram;
+         }
+ 
+         @Override
+         public List<Program> getAllOpenPrograms() {
+-            Program program = getCurrentProgram();
+-            if (program != null) {
+-                return Collections.singletonList(program);
++            List<Program> openPrograms = new ArrayList<>();
++            for (Program program : programs) {
++                if (!program.isClosed()) {
++                    openPrograms.add(program);
++                }
+             }
+-            return Collections.emptyList();
++            return openPrograms;
+         }
+ 
+         synchronized void shutdown() {
+-            Program program = currentProgram;
+             currentProgram = null;
+-            if (program != null) {
++            for (Program program : programs) {
+                 onProgramDeactivated(program);
+                 releaseProgram(program);
+             }
++            programs.clear();
+             getTaskManager().shutdown();
+         }
+ 
+diff --git a/src/main/java/ghidrassistmcp/GhidrAssistMCPServer.java b/src/main/java/ghidrassistmcp/GhidrAssistMCPServer.java
+index 3171f2f..d7651f3 100644
+--- a/src/main/java/ghidrassistmcp/GhidrAssistMCPServer.java
++++ b/src/main/java/ghidrassistmcp/GhidrAssistMCPServer.java
+@@ -45,7 +45,7 @@ public class GhidrAssistMCPServer {
+     }
+     
+     public GhidrAssistMCPServer(String host, int port, McpBackend backend, GhidrAssistMCPProvider provider) {
+-        this.host = host;
++        this.host = "127.0.0.1";
+         this.port = port;
+         this.backend = backend;
+         this.provider = provider;
+diff --git a/src/main/java/ghidrassistmcp/scripts/GAMCPStartServerScript.java b/src/main/java/ghidrassistmcp/scripts/GAMCPStartServerScript.java
+index 5ee8cbb..1babfe1 100644
+--- a/src/main/java/ghidrassistmcp/scripts/GAMCPStartServerScript.java
++++ b/src/main/java/ghidrassistmcp/scripts/GAMCPStartServerScript.java
+@@ -2,8 +2,14 @@ package ghidrassistmcp.scripts;
+ 
+ import java.nio.file.Files;
+ import java.nio.file.Path;
++import java.util.ArrayList;
++import java.util.List;
+ 
+ import ghidra.app.script.GhidraScript;
++import ghidra.framework.model.DomainFile;
++import ghidra.framework.model.DomainFolder;
++import ghidra.framework.model.DomainObject;
++import ghidra.program.model.listing.Program;
+ import ghidra.util.Msg;
+ import ghidrassistmcp.GhidrAssistMCPHeadlessServer;
+ 
+@@ -25,30 +31,46 @@ public class GAMCPStartServerScript extends GhidraScript {
+             return;
+         }
+ 
+-        String host = "localhost";
+-        int port = 8080;
++        String host = "127.0.0.1";
++        int port = 0;
+         boolean waitForClients = false;
+         String completionFile = null;
+         String toolProfile = "default";
+ 
+-        // Parse optional arguments: host=... port=... wait=true|false
++        // analyzeHeadless may preserve key=value or split it into key and value.
+         String[] args = getScriptArgs();
+         if (args != null) {
+-            for (String arg : args) {
+-                if (arg.startsWith("host=")) {
+-                    host = arg.substring(5);
+-                } else if (arg.startsWith("port=")) {
++            for (int index = 0; index < args.length; index++) {
++                String arg = args[index];
++                String key;
++                String value;
++                int separator = arg.indexOf('=');
++                if (separator > 0) {
++                    key = arg.substring(0, separator);
++                    value = arg.substring(separator + 1);
++                } else if ((arg.equals("host") || arg.equals("port") || arg.equals("wait") ||
++                        arg.equals("completion_file") || arg.equals("tool_profile")) &&
++                        index + 1 < args.length) {
++                    key = arg;
++                    value = args[++index];
++                } else {
++                    continue;
++                }
++
++                if (key.equals("host")) {
++                    host = value;
++                } else if (key.equals("port")) {
+                     try {
+-                        port = Integer.parseInt(arg.substring(5));
++                        port = Integer.parseInt(value);
+                     } catch (NumberFormatException e) {
+-                        Msg.warn(this, "Invalid port argument, using default 8080");
++                        Msg.warn(this, "Invalid port argument, using an OS-assigned port");
+                     }
+-                } else if (arg.startsWith("wait=")) {
+-                    waitForClients = Boolean.parseBoolean(arg.substring(5));
+-                } else if (arg.startsWith("completion_file=")) {
+-                    completionFile = arg.substring("completion_file=".length()).trim();
+-                } else if (arg.startsWith("tool_profile=")) {
+-                    toolProfile = arg.substring("tool_profile=".length()).trim();
++                } else if (key.equals("wait")) {
++                    waitForClients = Boolean.parseBoolean(value);
++                } else if (key.equals("completion_file")) {
++                    completionFile = value.trim();
++                } else if (key.equals("tool_profile")) {
++                    toolProfile = value.trim();
+                 }
+             }
+         }
+@@ -55,21 +77,64 @@ public class GAMCPStartServerScript extends GhidraScript {
+ 
+         GhidrAssistMCPHeadlessServer mcpServer = GhidrAssistMCPHeadlessServer.getInstance();
++        Object projectConsumer = new Object();
++        List<Program> acquiredPrograms = new ArrayList<>();
++        List<Program> programs = openProjectPrograms(projectConsumer, acquiredPrograms);
+ 
+-        if (mcpServer.isRunning()) {
+-            Msg.info(this, "MCP server already running, updating program reference");
+-            mcpServer.setProgram(currentProgram);
+-            if (waitForClients) {
+-                waitUntilCancelled(mcpServer, completionFile);
++        try {
++            if (mcpServer.isRunning()) {
++                Msg.info(this, "MCP server already running, updating program references");
++                mcpServer.setPrograms(programs);
++            } else {
++                Msg.info(this, "Starting headless MCP server for " + programs.size() + " programs");
++                mcpServer.start(programs, host, port, toolProfile);
++                Msg.info(this, "Headless MCP server ready on " + host + ":" + port);
+             }
+-            return;
++        } finally {
++            for (Program program : acquiredPrograms) {
++                program.release(projectConsumer);
++            }
+         }
+ 
+-        Msg.info(this, "Starting headless MCP server for: " + currentProgram.getName());
+-        mcpServer.start(currentProgram, host, port, toolProfile);
+-        Msg.info(this, "Headless MCP server ready on " + host + ":" + port);
+         if (waitForClients) {
+-                waitUntilCancelled(mcpServer, completionFile);
++            waitUntilCancelled(mcpServer, completionFile);
+         }
+     }
+ 
++    private List<Program> openProjectPrograms(Object consumer, List<Program> acquiredPrograms)
++            throws Exception {
++        List<Program> programs = new ArrayList<>();
++        programs.add(currentProgram);
++        if (state.getProject() == null) {
++            return programs;
++        }
++        collectPrograms(
++            state.getProject().getProjectData().getRootFolder(),
++            consumer,
++            programs,
++            acquiredPrograms);
++        return programs;
++    }
++
++    private void collectPrograms(
++            DomainFolder folder,
++            Object consumer,
++            List<Program> programs,
++            List<Program> acquiredPrograms) throws Exception {
++        for (DomainFile file : folder.getFiles()) {
++            if (file.equals(currentProgram.getDomainFile())) {
++                continue;
++            }
++            DomainObject domainObject = file.getDomainObject(consumer, false, false, monitor);
++            if (domainObject instanceof Program program) {
++                programs.add(program);
++                acquiredPrograms.add(program);
++            } else {
++                domainObject.release(consumer);
++            }
++        }
++        for (DomainFolder child : folder.getFolders()) {
++            collectPrograms(child, consumer, programs, acquiredPrograms);
++        }
++    }
++
+     private void waitUntilCancelled(GhidrAssistMCPHeadlessServer mcpServer, String completionFile) {
