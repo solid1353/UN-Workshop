@@ -7,6 +7,7 @@
     "scripts": "scripts",
     "pcsx2_scripts": "@scripts/pcsx2",
     "ghidra_scripts": "@scripts/ghidra",
+    "ghidra_mcp_work": "@work/ghidraMCP",
     "media_scripts": "@scripts/media",
     "work": "work",
     "disassembly": "@work/disassembly",
