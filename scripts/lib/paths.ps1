@@ -221,7 +221,6 @@ function Get-UnWorkshopPaths {
             $effectiveRoots.build
         } else { $null }
         Scripts = $effectiveRoots.scripts
-        Savestates = $effectiveRoots.savestates
         SourceCatalog = $effectiveFiles.source_catalog
         ProjectSettings = if ($project) {
             $effectiveFiles.project_settings
@@ -247,6 +246,22 @@ function Get-UnWorkshopCatalog {
     [pscustomobject][ordered]@{
         Sources = $shared.sources
     }
+}
+
+function Get-UnWorkshopResolvedPropertyNames {
+    [CmdletBinding()]
+    param([string]$ProjectRoot)
+
+    $paths = Get-UnWorkshopPaths -ProjectRoot $ProjectRoot
+    $arguments = @('-B', $paths.ResolveGame, '--properties')
+    if ($paths.Project) {
+        $arguments += @('--project-root', $paths.Project)
+    }
+    $output = & python @arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Game resolver failed to list its properties.'
+    }
+    @(($output -join "`n") | ConvertFrom-Json)
 }
 
 function Resolve-UnWorkshopRecordingName {

@@ -14,8 +14,6 @@ workshop <game|iso-path> [game|iso-path] [-p <recording>|-r <recording>|-s <reco
 workshop input [profile]
 workshop pcsx2
 workshop resolve [game] [property]
-workshop ss extract <subpath|folder-or-savestates...>
-workshop ss move <game> <subpath> [-c]
 ```
 
 - `workshop resolve` returns every available source game and, when invoked
@@ -87,15 +85,6 @@ workshop ss move <game> <subpath> [-c]
 - Shared callers may provide PNACH paths and inline PNACH lines keyed by the
   selected game, plus an ordered additional PNACH list applied to every selected
   game. Each process receives only its own ordered file and line sets.
-- `ss move` files matching savestates from the development PCSX2 installation
-  below `@savestates/` for source games or the invoking project's configured
-  `@work/sstates/` for project builds. `-c` first sends the existing
-  selected destination directory to the Windows Recycle Bin. Incoming states
-  continue sequentially after the highest existing number in that directory.
-- `ss extract <subpath>` resolves the subpath below Workshop
-  `@savestates/` and extracts embedded screenshots beside that savestate
-  folder. Explicit folder and savestate paths remain supported.
-
 When invoked inside a supported project, the command discovers that project's
 root settings automatically. Shared source games remain available without
 project settings.
@@ -111,7 +100,7 @@ project settings.
 - `@pcsx2_input_profiles/sources/overrides/`: named input-profile
   overrides, with game-specific overrides under `games/`.
 - `@pcsx2_scripts/`: reusable PCSX2 launch, worker-copy, PINE, input-profile,
-  savestate, and disc-identity utilities.
+  and disc-identity utilities.
 - `@ghidra_scripts/`: reusable headless Ghidra Java scripts, runtime setup, and
   the [read-only GhidrAssistMCP integration](docs/runbooks/ghidrassistmcp.md).
 - `@media_scripts/`: reusable ISO, AFS, and encrypted-CVM extractors.

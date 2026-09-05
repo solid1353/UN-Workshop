@@ -19,12 +19,17 @@ $sourceRepository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
 $help = (& (Join-Path $sourceRepository 'workshop.ps1') help) -join "`n"
 Assert-WorkshopLaunchTest `
     -Condition (
-        $help.Contains('ws <game|ISO> [game|ISO] [options]')
+        $help.Contains('ws <game|iso-path> [game|iso-path] [options]')
     ) `
     -Message 'Workshop help did not present one unified launch command.'
 Assert-WorkshopLaunchTest `
     -Condition ($help.Contains('Sources: NA2, NUN3, NUN5, NUN6')) `
     -Message 'Workshop help did not render the shared source catalog cleanly.'
+Assert-WorkshopLaunchTest `
+    -Condition ($help.Contains(
+        'Properties: iso, extracted, cheats, memory_card, game_settings, input_profile'
+    )) `
+    -Message 'Workshop help did not render generated resolver properties.'
 foreach ($expectedOption in @(
     '-p <name>',
     '-r <name>',
@@ -34,8 +39,7 @@ foreach ($expectedOption in @(
     '-pnach <file>',
     '-dw',
     '-t',
-    '-u',
-    '-c'
+    '-u'
 )) {
     Assert-WorkshopLaunchTest `
         -Condition ($help.Contains($expectedOption)) `
@@ -79,7 +83,7 @@ try {
     New-Item -ItemType Directory -Force -Path (Join-Path $repository 'scripts\lib') | Out-Null
     New-Item -ItemType Directory -Force -Path (Join-Path $repository 'scripts\pcsx2') | Out-Null
     Copy-Item -LiteralPath (Join-Path $sourceRepository 'workshop.ps1') -Destination $repository
-    Copy-Item -LiteralPath (Join-Path $sourceRepository 'HELP.md') -Destination $repository
+    Copy-Item -LiteralPath (Join-Path $sourceRepository 'CLI.txt') -Destination $repository
     Copy-Item `
         -LiteralPath (Join-Path $sourceRepository 'scripts\lib\paths.ps1') `
         -Destination (Join-Path $repository 'scripts\lib')
@@ -98,7 +102,6 @@ try {
     "disassembly": "@work/disassembly",
     "tools": "tools",
     "work": "work",
-    "savestates": "@work/sstates",
     "scripts": "scripts",
     "pcsx2_scripts": "@scripts/pcsx2",
     "pcsx2_dev": "pcsx2",
@@ -129,8 +132,14 @@ try {
             Join-Path $repository "pcsx2_files\games\NUN5\NUN5.$extension"
         ) | Out-Null
     }
-    'raise SystemExit("fake resolver must not run")' |
-        Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\lib\resolve_game.py')
+    @'
+import json
+import sys
+
+if "--properties" not in sys.argv[1:]:
+    raise SystemExit("fake resolver may only list properties")
+print(json.dumps(["iso", "synthetic_property"]))
+'@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\lib\resolve_game.py')
     @'
 param([switch]$Turbo)
 "[fake] launch PCSX2 UI turbo=$Turbo"
@@ -165,6 +174,9 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
         Assert-WorkshopLaunchTest `
             -Condition ($projectHelp.Contains('Sources: NUN5')) `
             -Message 'Workshop help depended on project settings.'
+        Assert-WorkshopLaunchTest `
+            -Condition ($projectHelp.Contains('Properties: iso, synthetic_property')) `
+            -Message 'Workshop help did not use generated resolver properties.'
 
         $play = (& .\workshop.ps1 NUN5 $isoTarget -p practice-menu) -join "`n"
         Assert-WorkshopLaunchTest `
