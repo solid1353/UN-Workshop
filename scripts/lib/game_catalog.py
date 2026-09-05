@@ -227,3 +227,32 @@ def resolve_game(
         name: os.path.abspath(path)
         for name, path in derive_game_paths(selector, catalog, roots).items()
     }
+
+
+def resolve_game_property_names(
+    workshop_root: Path,
+    project_root: Path | None = None,
+) -> list[str]:
+    workshop_root = workshop_root.resolve()
+    project_root = project_root.resolve() if project_root is not None else None
+    catalog = load_catalog(workshop_root, project_root)
+    workshop_paths = _PATHS.load_workshop_paths(workshop_root)
+    project_paths = (
+        _PATHS.load_project_paths(project_root, workshop_paths)
+        if project_root is not None
+        else workshop_paths
+    )
+    roots = {
+        name: project_paths.roots[name]
+        for name in (
+            "repository",
+            "source",
+            "pcsx2_files",
+            "pcsx2_input_profiles",
+        )
+    }
+    names: dict[str, None] = {}
+    for selector in catalog["sources"]:
+        for name in derive_game_paths(selector, catalog, roots):
+            names[name] = None
+    return list(names)

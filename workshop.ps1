@@ -31,9 +31,13 @@ if ([string]::IsNullOrWhiteSpace($normalizedCommand) -or
             else { $entry.Name }
         }
     )
+    $propertySelectors = Get-UnWorkshopResolvedPropertyNames
     Get-UnConsoleHelp `
-        -Path (Join-Path $PSScriptRoot 'HELP.md') `
-        -Values @{ SOURCES = $sourceSelectors -join ', ' }
+        -Path (Join-Path $PSScriptRoot 'CLI.txt') `
+        -Values @{
+            SOURCES = $sourceSelectors -join ', '
+            PROPERTIES = $propertySelectors -join ', '
+        }
     return
 }
 
@@ -168,30 +172,6 @@ switch ($normalizedCommand) {
             throw 'workshop pcsx2 accepts no arguments.'
         }
         & $paths.Files.pcsx2_launch_command -Turbo
-    }
-    'ss' {
-        $argumentList = @($Arguments)
-        if ($argumentList.Count -eq 0) {
-            throw 'Usage: workshop ss move|extract ...'
-        }
-        $cleanup = $false
-        $forwardedArguments = [Collections.Generic.List[string]]::new()
-        for ($index = 0; $index -lt $argumentList.Count; $index++) {
-            $argument = [string]$argumentList[$index]
-            if ($argument -ceq '-c') {
-                $cleanup = $true
-            }
-            elseif ($argument -ieq '-Cleanup') {
-                throw 'Use the workshop ss -c short option.'
-            }
-            else {
-                $forwardedArguments.Add($argument)
-            }
-        }
-        $parameters = @{}
-        if ($cleanup) { $parameters.Cleanup = $true }
-        $forwardedArgumentArray = @($forwardedArguments)
-        & (Join-Path $scripts 'savestates.ps1') @forwardedArgumentArray @parameters
     }
     default {
         $launch = ConvertFrom-UnWorkshopLaunchArguments -Tokens @(

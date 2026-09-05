@@ -1,0 +1,23 @@
+UN Workshop
+
+  ws <game|iso-path> [game|iso-path] [options]  Launch or replay one or two games
+  ws resolve [source] [property]                Resolve sources and their properties
+  ws input [profile]                            Regenerate profiles; optionally assign one
+  ws pcsx2                                      Launch development PCSX2
+  ws help                                       Show this help
+
+  Launch modes:
+    -p <name>        Replay an input recording
+    -r <name>        Create an input recording
+    -s <name>        Replay and capture snapshots
+      -o <path>      Snapshot output directory
+
+  Launch options:
+    -mc <card>       Memory card or template
+    -pnach <file>    Additional PNACH; repeatable
+    -dw              Discard memory-card writes
+    -t               Turbo
+    -u               Unlimited
+
+  Sources: {{SOURCES}}
+  Properties: {{PROPERTIES}}

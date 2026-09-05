@@ -11,7 +11,6 @@
     "media_scripts": "@scripts/media",
     "work": "work",
     "disassembly": "@work/disassembly",
-    "savestates": "@work/sstates",
     "logs": "logs",
     "pcsx2_dev": "pcsx2",
     "pcsx2_fork": "../../PCSX2/bin",
