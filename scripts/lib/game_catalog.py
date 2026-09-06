@@ -198,21 +198,6 @@ def resolve_game(
             f"configured pcsx2_files root; found {len(matches)}"
         )
     content_root = matches[0]
-    bundle = content_root / "games" / bundle_name
-    missing = [
-        path.name
-        for path in (
-            bundle / f"{bundle_name}.pnach",
-            bundle / f"{bundle_name}.ini",
-            bundle / f"{bundle_name}.ps2",
-        )
-        if not path.is_file()
-    ]
-    if missing:
-        raise FileNotFoundError(
-            f"Registered game {bundle_name!r} is missing: "
-            + ", ".join(missing)
-        )
     roots = {
         name: project_paths.roots[name]
         for name in (

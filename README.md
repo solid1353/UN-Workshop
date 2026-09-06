@@ -9,85 +9,8 @@ memory cards, savestates, logs, and task artifacts.
 
 `workshop.ps1` is the single user-facing entrypoint.
 
-```powershell
-workshop <game|iso-path> [game|iso-path] [-p <recording>|-r <recording>|-s <recording>] [-o <path>] [-mc <card>] [-pnach <file>]... [-dw] [-t|-u]
-workshop input [profile]
-workshop pcsx2
-workshop resolve [game] [property]
-```
-
-- `workshop resolve` returns every available source game and, when invoked
-  inside a configured project, every available project build. Supplying a game
-  returns all of its resolved properties; supplying a property prints only that
-  value, such as `workshop resolve NUN5 iso`.
-- Supplying one or two games or ISO paths launches them at normal speed. A
-  single launch opens a centered window whose render area matches the game's
-  effective aspect ratio; paired launches remain tiled in argument order. `-t`
-  selects Turbo, while `-u` selects Unlimited; the two speed options are
-  mutually exclusive. `-p` replays one
-  shared input recording in every launched instance; `-r` records only the
-  last/rightmost instance. Recording names
-  may be relative paths below `@pcsx2_input_recordings/`, and the
-  `.p2m2` extension is added automatically. For `-r`, missing parent
-  directories are created. Each
-  result reports the ordered game, process, PINE port, and window position.
-- `-mc` selects one memory-card file for every launched game. A relative value
-  resolves below `@pcsx2_memory_cards/`; an absolute path is also accepted.
-  The `.ps2` extension is added automatically when omitted. A bare name falls
-  back to `@pcsx2_memory_cards/templates/` when no root-level card exists.
-  `-dw` makes ordinary launches report memory-card writes as successful without
-  persisting them. File-backed cards use shared access with or without `-dw`;
-  discard mode additionally suppresses memory-card busy state. Snapshot replay
-  with `-s` always discards writes.
-- `-pnach` appends one PNACH file to every launched game after its selected
-  default or caller-supplied per-game PNACH set. It is repeatable and preserves
-  command-line order.
-- `workshop <game|iso-path> [game|iso-path] -s <recording> [-o <path>]`
-  replays one or two configured games or explicit ISOs concurrently in PCSX2's
-  surfaceless no-GUI mode and captures every recorded L3+R3 snapshot marker
-  without creating a render window or taking focus. For one game, `-o` selects
-  the exact capture directory. For two games, it selects a parent containing
-  one directory per game. Relative paths resolve from the invoking directory;
-  without `-o`, captures go below `@work/captures/<recording>/<game>/`.
-  Without `-mc`, an explicit ISO path uses PCSX2's configured memory-card
-  selection. A marker is
-  the rising edge of the chord,
-  so holding both buttons creates one capture. A successful marker savestate and
-  its standalone PNG use the same encoded screenshot. If actual memory-card
-  activity blocks the savestate outside discard mode, the standalone PNG is
-  still written. The command waits for every replay to finish.
-- Snapshot recordings are power-on timelines. They may be shortened without
-  rerecording only by removing trailing frames after the final required marker;
-  cutting the prefix or middle changes controller timing and the resulting game
-  state. A physical tail trim must update the recording's total-frame value and
-  truncate the file at the matching frame boundary.
-- `workshop pcsx2` launches development PCSX2 without a game in Turbo.
-- `workshop input` regenerates every complete PCSX2 input profile from the
-  tracked base and partial overrides without changing GameSettings assignments.
-- `workshop input <profile>` also regenerates every complete profile, then
-  assigns the selected profile variants in every configured GameSettings file.
-  Every generated profile at the root of `@pcsx2_input_profiles/` is
-  tracked by Git. Base outputs use `<profile>_Base.ini`; game-specific outputs
-  use `<profile>_<game>.ini`. Profile selectors are case-insensitive and ignore
-  `_` or `-`, so `Cap_ture` selects canonical `Capture`.
-- Generation first merges all selected overrides by section, action, and input
-  family. It then removes conflicting bindings, replaces existing actions in
-  place, and appends only new actions. Multiple assignments declared by the
-  effective override may still deliberately share one binding.
-- Configured launches pass the catalog-derived memory-card path directly to
-  PCSX2 without changing GameSettings. Build postfixes derive from canonical
-  build keys by replacing underscores with spaces and title-casing the result.
-  Project build card names insert that postfix after the project's serial-wide
-  memory-card base. Speed selection is positive throughout the launcher:
-  callers may request Turbo, permanent Unlimited, or frame-limited Unlimited;
-  no speed option means Normal. Turbo may accompany frame-limited Unlimited and
-  becomes its fallback. Snapshot replay explicitly selects permanent Unlimited.
-- Shared callers may provide PNACH paths and inline PNACH lines keyed by the
-  selected game, plus an ordered additional PNACH list applied to every selected
-  game. Each process receives only its own ordered file and line sets.
-When invoked inside a supported project, the command discovers that project's
-root settings automatically. Shared source games remain available without
-project settings.
+See [PCSX2 tooling](docs/pcsx2.md) for command behavior, launch and recording
+workflows, marker editing, memory cards, PNACH overlays, and input profiles.
 
 ## Tracked layout
 

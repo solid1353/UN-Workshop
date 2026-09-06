@@ -10,4 +10,6 @@ __pycache__/
 
 # PCSX2
 pcsx2/*
+/pcsx2_files/sstates/
+/pcsx2_files/PCSX2.ini
 *.ps2
