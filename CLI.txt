@@ -7,9 +7,9 @@ UN Workshop
   ws help                                       Show this help
 
   Launch modes:
-    -p <name>        Replay an input recording
+    -p <name>        Replay an input recording without captures
     -r <name>        Create an input recording
-    -s <name>        Replay and capture snapshots
+    -s <name>        Replay and capture screenshots and savestates
       -o <path>      Snapshot output directory
 
   Launch options:
@@ -19,5 +19,5 @@ UN Workshop
     -t               Turbo
     -u               Unlimited
 
-  Sources: {{SOURCES}}
-  Properties: {{PROPERTIES}}
+  sources: {{SOURCES}}
+  properties: {{PROPERTIES}}

@@ -15,7 +15,7 @@ param(
 
     [Parameter(ParameterSetName = 'Play')]
     [ValidateSet('full', 'screenshots')]
-    [string]$InputRecordingCaptureMode,
+    [string]$InputRecordingCaptureMode = 'full',
 
     [Parameter(ParameterSetName = 'Record')]
     [string]$Record,
@@ -68,6 +68,9 @@ if ($Unlimited -and $UnlimitedForFrames -gt 0) {
 }
 if ($Snapshots -and ($Turbo -or $Unlimited -or $UnlimitedForFrames -gt 0)) {
     throw 'Snapshot replay owns its permanent Unlimited speed mode.'
+}
+if (-not [string]::IsNullOrWhiteSpace($CaptureDirectory) -and -not $Snapshots) {
+    throw 'Snapshot output directory (-o) requires -s.'
 }
 
 function Get-UnWorkshopConfiguredPinePort {
@@ -223,6 +226,7 @@ foreach ($requestedGame in $Games) {
         [StringComparison]::OrdinalIgnoreCase
     )
     $defaultPnach = [string[]]@()
+    $gameSettingsPath = $null
     if ($isIsoPath) {
         $isoPath = [IO.Path]::GetFullPath($target)
         if (-not (Test-Path -LiteralPath $isoPath -PathType Leaf)) {
@@ -243,12 +247,12 @@ foreach ($requestedGame in $Games) {
         else {
             [IO.Path]::GetFullPath([string]$resolved.memory_card)
         }
-        $resolvedDefaultPnach = [IO.Path]::GetFullPath(
-            [string]$resolved.cheats
+        $gameSettingsPath = [IO.Path]::GetFullPath(
+            [string]$resolved.game_settings
         )
-        if (Test-Path -LiteralPath $resolvedDefaultPnach -PathType Leaf) {
-            $defaultPnach = [string[]]@($resolvedDefaultPnach)
-        }
+        $defaultPnach = [string[]]@(
+            [IO.Path]::GetFullPath([string]$resolved.cheats)
+        )
     }
     if (-not $seenImages.Add($isoPath)) {
         throw "Each resolved game image may be launched only once: $selector"
@@ -279,6 +283,7 @@ foreach ($requestedGame in $Games) {
         Selector = $selector
         IsoPath = $isoPath
         MemoryCardPath = $resolvedMemoryCardPath
+        GameSettingsPath = $gameSettingsPath
         Pnach = $pnach
         PnachLines = $pnachLines
     })
@@ -301,6 +306,10 @@ $pcsx2Launcher = [IO.Path]::GetFullPath(
 )
 $requiredFiles = @($pcsx2Launcher)
 $requiredFiles += @($selectedGames.IsoPath)
+$requiredFiles += @(
+    $selectedGames.GameSettingsPath |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+)
 $requiredFiles += @(
     $selectedGames.MemoryCardPath |
         Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
@@ -339,8 +348,25 @@ if ($Snapshots) {
             }
         }
     )
+    $captureInputs = @($requiredFiles) + @(
+        Join-Path $inputRecordingsRoot $recordingName
+    )
+    foreach ($directory in $captureDirectories) {
+        $resolvedDirectory = [IO.Path]::GetFullPath($directory).TrimEnd('\', '/')
+        if ($resolvedDirectory -eq [IO.Path]::GetPathRoot($directory).TrimEnd('\', '/')) {
+            throw "Capture directory cannot be a filesystem root: $directory"
+        }
+        $capturePrefix = $resolvedDirectory + [IO.Path]::DirectorySeparatorChar
+        foreach ($inputPath in $captureInputs) {
+            $resolvedInput = [IO.Path]::GetFullPath($inputPath)
+            if ($resolvedInput.Equals($resolvedDirectory, [StringComparison]::OrdinalIgnoreCase) -or
+                $resolvedInput.StartsWith($capturePrefix, [StringComparison]::OrdinalIgnoreCase)) {
+                throw "Capture directory contains a required input: $inputPath"
+            }
+        }
+    }
     $gameList = $selectedGames.Selector -join ', '
-    $action = "replay $gameList and capture snapshot markers"
+    $action = "replace capture directories, replay $gameList, and capture snapshot markers"
     if (-not $PSCmdlet.ShouldProcess(($captureDirectories -join ', '), $action)) {
         return
     }
@@ -387,6 +413,9 @@ if ($Snapshots) {
     }
 
     foreach ($directory in $captureDirectories) {
+        if (Test-Path -LiteralPath $directory) {
+            Remove-Item -LiteralPath $directory -Recurse -Force
+        }
         [void](New-Item -ItemType Directory -Path $directory -Force)
     }
 
@@ -409,13 +438,9 @@ if ($Snapshots) {
                 $arguments.Add('-pine-port')
                 $arguments.Add([string]$snapshotPinePorts[$index])
             }
-            if (-not [string]::IsNullOrWhiteSpace($InputRecordingCaptureMode)) {
-                $arguments.Add('-input-recording-capture-mode')
-                $arguments.Add($InputRecordingCaptureMode)
-            }
-            if ($arguments.Count -gt 0) {
-                $launchParameters.Arguments = @($arguments)
-            }
+            $arguments.Add('-input-recording-capture-mode')
+            $arguments.Add($InputRecordingCaptureMode)
+            $launchParameters.Arguments = @($arguments)
             if (-not [string]::IsNullOrWhiteSpace($game.MemoryCardPath)) {
                 $launchParameters.MemoryCard = $game.MemoryCardPath
             }
@@ -542,10 +567,14 @@ try {
         [void]$usedPinePorts.Add($pinePort)
         $nextPinePort++
 
+        $pcsx2Arguments = @('-pine-port', [string]$pinePort)
+        if ($selectedGames.Count -eq 2) {
+            $pcsx2Arguments += '-mute'
+        }
         $launchParameters = @{
             IsoPath = $game.IsoPath
             MemoryCard = $game.MemoryCardPath
-            Arguments = @('-pine-port', [string]$pinePort)
+            Arguments = $pcsx2Arguments
             PassThru = $true
             InputRecordingsRoot = $inputRecordingsRoot
         }

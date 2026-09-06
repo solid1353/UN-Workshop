@@ -23,11 +23,11 @@ Assert-WorkshopLaunchTest `
     ) `
     -Message 'Workshop help did not present one unified launch command.'
 Assert-WorkshopLaunchTest `
-    -Condition ($help.Contains('Sources: NA2, NUN3, NUN5, NUN6')) `
+    -Condition ($help.Contains('sources: NA2, NUN3, NUN5, NUN6')) `
     -Message 'Workshop help did not render the shared source catalog cleanly.'
 Assert-WorkshopLaunchTest `
     -Condition ($help.Contains(
-        'Properties: iso, extracted, cheats, memory_card, game_settings, input_profile'
+        'properties: iso, extracted, cheats, memory_card, game_settings, input_profile'
     )) `
     -Message 'Workshop help did not render generated resolver properties.'
 foreach ($expectedOption in @(
@@ -172,10 +172,10 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
         $isoTarget = 'build/cached.iso'
         $projectHelp = (& .\workshop.ps1 help) -join "`n"
         Assert-WorkshopLaunchTest `
-            -Condition ($projectHelp.Contains('Sources: NUN5')) `
+            -Condition ($projectHelp.Contains('sources: NUN5')) `
             -Message 'Workshop help depended on project settings.'
         Assert-WorkshopLaunchTest `
-            -Condition ($projectHelp.Contains('Properties: iso, synthetic_property')) `
+            -Condition ($projectHelp.Contains('properties: iso, synthetic_property')) `
             -Message 'Workshop help did not use generated resolver properties.'
 
         $play = (& .\workshop.ps1 NUN5 $isoTarget -p practice-menu) -join "`n"
@@ -528,7 +528,8 @@ if ($PassThru) {
                     "capture=$(Join-Path $repository 'captures-worker') memory="
                 ) -and
                 $isoSnapshotLaunch -match (
-                    'arguments= surfaceless=True discard=True readOnly=True ' +
+                    'arguments=-input-recording-capture-mode,full ' +
+                    'surfaceless=True discard=True readOnly=True ' +
                     'pnach= lines= turbo=False unlimited=True frames=0 ' +
                     'wait=False passThru=True'
                 )
