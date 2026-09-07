@@ -5,7 +5,7 @@ function Test-UnWorkshopLaunchOption {
     param([Parameter(Mandatory)][string]$Token)
 
     return $Token.ToLowerInvariant() -in @(
-        '-p', '-r', '-s', '-o', '-mc', '-pnach', '-dw', '-t', '-u'
+        '-p', '-r', '-s', '-o', '-mc', '-pnach', '-dw', '-t', '-u', '-agent-replay', '-logfile'
     )
 }
 
@@ -23,17 +23,20 @@ function ConvertFrom-UnWorkshopLaunchArguments {
         Snapshots = ''
         CaptureDirectory = ''
         MemoryCard = ''
+        LogFile = ''
     }
     $pnach = [Collections.Generic.List[string]]::new()
     $discardMemoryCardWrites = $false
     $turbo = $false
     $unlimited = $false
+    $agentReplay = $false
     $valueOptions = @{
         '-p' = 'Play'
         '-r' = 'Record'
         '-s' = 'Snapshots'
         '-o' = 'CaptureDirectory'
         '-mc' = 'MemoryCard'
+        '-logfile' = 'LogFile'
     }
 
     for ($index = 0; $index -lt $Tokens.Count; $index++) {
@@ -58,6 +61,10 @@ function ConvertFrom-UnWorkshopLaunchArguments {
             continue
         }
         switch ($option) {
+            '-agent-replay' {
+                if ($agentReplay) { throw '-agent-replay may be specified only once.' }
+                $agentReplay = $true
+            }
             '-dw' {
                 if ($discardMemoryCardWrites) {
                     throw '-dw may be specified only once.'
@@ -81,6 +88,10 @@ function ConvertFrom-UnWorkshopLaunchArguments {
         }
     }
 
+    if ($agentReplay -and ($turbo -or $unlimited)) {
+        throw '-agent-replay cannot be combined with -t or -u.'
+    }
+
     $launchParameters = @{}
     foreach ($name in $values.Keys) {
         if (-not [string]::IsNullOrWhiteSpace([string]$values[$name])) {
@@ -95,6 +106,7 @@ function ConvertFrom-UnWorkshopLaunchArguments {
     }
     if ($turbo) { $launchParameters.Turbo = $true }
     if ($unlimited) { $launchParameters.Unlimited = $true }
+    if ($agentReplay) { $launchParameters.AgentReplay = $true }
 
     [pscustomobject]@{
         Games = @($games)
@@ -103,10 +115,12 @@ function ConvertFrom-UnWorkshopLaunchArguments {
         Snapshots = $values.Snapshots
         CaptureDirectory = $values.CaptureDirectory
         MemoryCard = $values.MemoryCard
+        LogFile = $values.LogFile
         Pnach = @($pnach)
         DiscardMemoryCardWrites = $discardMemoryCardWrites
         Turbo = $turbo
         Unlimited = $unlimited
+        AgentReplay = $agentReplay
         LaunchParameters = $launchParameters
     }
 }

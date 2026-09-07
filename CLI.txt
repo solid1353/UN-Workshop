@@ -8,6 +8,7 @@ UN Workshop
 
   Launch modes:
     -p <name>        Replay an input recording without captures
+      -agent-replay  Agent-controlled playback; paused and surfaceless; requires -logfile
     -r <name>        Create an input recording
     -s <name>        Replay and capture screenshots and savestates
       -o <path>      Snapshot output directory
@@ -18,6 +19,7 @@ UN Workshop
     -dw              Discard memory-card writes
     -t               Turbo
     -u               Unlimited
+    -logfile <path>  PCSX2 log destination for a single game
 
   sources: {{SOURCES}}
   properties: {{PROPERTIES}}
