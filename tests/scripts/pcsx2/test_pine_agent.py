@@ -151,6 +151,20 @@ class PineAgentInputTests(unittest.TestCase):
             + encoded,
         )
 
+        client.replay_gs_dump(screenshot, 4)
+        self.assertEqual(
+            requests[-1],
+            bytes([PINE.REPLAY_GS_DUMP, PINE.REPLAY_ANALYSIS_VERSION])
+            + struct.pack("<II", 4, len(encoded))
+            + encoded,
+        )
+
+        client.replay_shutdown()
+        self.assertEqual(
+            requests[-1],
+            bytes([PINE.REPLAY_SHUTDOWN, PINE.REPLAY_ANALYSIS_VERSION]),
+        )
+
     def test_replay_analysis_rejects_invalid_requests(self) -> None:
         client = object.__new__(PINE.PineClient)
         client.exchange = lambda _payload: bytes([PINE.REPLAY_ANALYSIS_VERSION])
@@ -159,6 +173,17 @@ class PineAgentInputTests(unittest.TestCase):
             client.replay_step(0)
         with self.assertRaisesRegex(ValueError, "must be absolute"):
             client.replay_screenshot("relative.png")
+        with self.assertRaisesRegex(ValueError, "must be absolute"):
+            client.replay_gs_dump("relative.png", 4)
+
+    def test_replay_step_accepts_initial_vblank_offset(self) -> None:
+        client = object.__new__(PINE.PineClient)
+        client.exchange = lambda _payload: (
+            bytes([PINE.REPLAY_ANALYSIS_VERSION])
+            + struct.pack("<IIII", 0, 1, 0, 0)
+        )
+
+        self.assertEqual(client.replay_step(1), PINE.ReplayStep(0, 1, 0, 0))
 
     def test_batch_read_uses_one_compound_pine_request(self) -> None:
         requests: list[bytes] = []

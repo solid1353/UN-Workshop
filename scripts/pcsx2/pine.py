@@ -25,6 +25,8 @@ RELEASE_PAD_STATES = 0x19
 REPLAY_STATUS = 0x1A
 REPLAY_STEP = 0x1B
 REPLAY_SCREENSHOT = 0x1C
+REPLAY_SHUTDOWN = 0x1D
+REPLAY_GS_DUMP = 0x1E
 
 AGENT_INPUT_VERSION = 1
 REPLAY_ANALYSIS_VERSION = 1
@@ -283,11 +285,20 @@ class PineClient:
         if len(body) != 16:
             raise RuntimeError("PINE ReplayStep returned a malformed reply")
         result = ReplayStep(*struct.unpack("<IIII", body))
-        if (
-            (result.end_replay_frame - result.start_replay_frame) & 0xFFFFFFFF
-        ) != vblanks or (
-            (result.end_vblank - result.start_vblank) & 0xFFFFFFFF
-        ) != vblanks:
+        replay_frames = (
+            result.end_replay_frame - result.start_replay_frame
+        ) & 0xFFFFFFFF
+        physical_vblanks = (
+            result.end_vblank - result.start_vblank
+        ) & 0xFFFFFFFF
+        initial_frame = (
+            result.start_replay_frame == 0
+            and result.start_vblank == 0
+            and physical_vblanks + 1 == vblanks
+        )
+        if replay_frames != vblanks or not (
+            physical_vblanks == vblanks or initial_frame
+        ):
             raise RuntimeError("PINE ReplayStep returned an unexpected interval")
         return result
 
@@ -306,6 +317,34 @@ class PineClient:
         body = self._expect_replay_version(reply, "ReplayScreenshot")
         if body:
             raise RuntimeError("PINE ReplayScreenshot returned a malformed reply")
+
+    def replay_gs_dump(
+        self, path: str | os.PathLike[str], frame_count: int
+    ) -> None:
+        exact_path = os.fspath(path)
+        if not os.path.isabs(exact_path):
+            raise ValueError("replay GS dump path must be absolute")
+        if not exact_path.lower().endswith(".png"):
+            raise ValueError("replay GS dump path must end in .png")
+        if not isinstance(frame_count, int) or not 1 <= frame_count <= 0xFFFFFFFF:
+            raise ValueError("GS dump frame count is outside 1..4294967295")
+        encoded = exact_path.encode("utf-8")
+        if not 1 <= len(encoded) <= 32768:
+            raise ValueError("replay GS dump path is outside 1..32768 bytes")
+        reply = self.exchange(
+            bytes([REPLAY_GS_DUMP, REPLAY_ANALYSIS_VERSION])
+            + struct.pack("<II", frame_count, len(encoded))
+            + encoded
+        )
+        body = self._expect_replay_version(reply, "ReplayGSDump")
+        if body:
+            raise RuntimeError("PINE ReplayGSDump returned a malformed reply")
+
+    def replay_shutdown(self) -> None:
+        reply = self.exchange(bytes([REPLAY_SHUTDOWN, REPLAY_ANALYSIS_VERSION]))
+        body = self._expect_replay_version(reply, "ReplayShutdown")
+        if body:
+            raise RuntimeError("PINE ReplayShutdown returned a malformed reply")
 
     def pad_pulse(
         self, button: int, duration_ms: int, controller: int = 0
@@ -566,6 +605,10 @@ def parse_args() -> argparse.Namespace:
     replay_step.add_argument("vblanks", type=integer)
     replay_screenshot = commands.add_parser("replay-screenshot")
     replay_screenshot.add_argument("path")
+    replay_gs_dump = commands.add_parser("replay-gs-dump")
+    replay_gs_dump.add_argument("path")
+    replay_gs_dump.add_argument("frames", type=integer)
+    commands.add_parser("replay-shutdown")
     pad_pulse = commands.add_parser("pad-pulse")
     pad_pulse.add_argument("button", choices=sorted(PAD_BUTTONS))
     pad_pulse.add_argument("--controller", type=integer, default=0)
@@ -629,6 +672,15 @@ def main() -> int:
         elif args.command == "replay-screenshot":
             client.replay_screenshot(args.path)
             print(f"screenshot saved: {os.path.abspath(args.path)}")
+        elif args.command == "replay-gs-dump":
+            client.replay_gs_dump(args.path, args.frames)
+            print(
+                f"GS dump queued: {os.path.abspath(args.path)} "
+                f"frames={args.frames}"
+            )
+        elif args.command == "replay-shutdown":
+            client.replay_shutdown()
+            print("replay shutdown requested")
         elif args.command == "pad-pulse":
             client.pad_pulse(
                 PAD_BUTTONS[args.button],

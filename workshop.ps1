@@ -53,10 +53,12 @@ function Invoke-UnWorkshopGameLaunch {
         [string]$Snapshots,
         [string]$CaptureDirectory,
         [string]$MemoryCard,
+        [string]$LogFile,
         [string[]]$Pnach,
         [switch]$DiscardMemoryCardWrites,
         [switch]$Turbo,
-        [switch]$Unlimited
+        [switch]$Unlimited,
+        [switch]$AgentReplay
     )
 
     $games = @($Games | Where-Object { -not [string]::IsNullOrEmpty($_) })
@@ -98,6 +100,10 @@ function Invoke-UnWorkshopGameLaunch {
     }
     if ($Turbo) { $parameters.Turbo = $true }
     if ($Unlimited) { $parameters.Unlimited = $true }
+    if ($AgentReplay) { $parameters.AgentReplay = $true }
+    if (-not [string]::IsNullOrWhiteSpace($LogFile)) {
+        $parameters.LogFile = $LogFile
+    }
     if (-not [string]::IsNullOrWhiteSpace($Snapshots)) {
         $parameters.Play = $Snapshots
         $parameters.Snapshots = $true
@@ -185,9 +191,11 @@ switch ($normalizedCommand) {
             -Snapshots $launch.Snapshots `
             -CaptureDirectory $launch.CaptureDirectory `
             -MemoryCard $launch.MemoryCard `
+            -LogFile $launch.LogFile `
             -Pnach $launch.Pnach `
             -DiscardMemoryCardWrites:$launch.DiscardMemoryCardWrites `
             -Turbo:$launch.Turbo `
-            -Unlimited:$launch.Unlimited
+            -Unlimited:$launch.Unlimited `
+            -AgentReplay:$launch.AgentReplay
     }
 }

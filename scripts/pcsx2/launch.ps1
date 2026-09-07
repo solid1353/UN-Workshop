@@ -17,6 +17,13 @@ param(
 
     [switch]$PassThru,
 
+    [switch]$AgentReplay,
+
+    [ValidateRange(1024, 65535)]
+    [int]$PinePort,
+
+    [string]$LogFile,
+
     [switch]$Turbo,
 
     [switch]$Unlimited,
@@ -60,6 +67,23 @@ if ($PSBoundParameters.ContainsKey('UnlimitedForFrames') -and
 if ($Unlimited -and $UnlimitedForFrames -gt 0) {
     throw 'Permanent Unlimited cannot be combined with frame-limited Unlimited.'
 }
+if ($AgentReplay) {
+    if ([string]::IsNullOrWhiteSpace($IsoPath)) {
+        throw 'Agent replay requires -IsoPath.'
+    }
+    if ([string]::IsNullOrWhiteSpace($InputRecording)) {
+        throw 'Agent replay requires -InputRecording.'
+    }
+    if (-not $PSBoundParameters.ContainsKey('PinePort')) {
+        throw 'Agent replay requires -PinePort.'
+    }
+    if ([string]::IsNullOrWhiteSpace($LogFile)) {
+        throw 'Agent replay requires -LogFile.'
+    }
+    if ($Turbo -or $Unlimited -or $UnlimitedForFrames -gt 0) {
+        throw 'Agent replay cannot be combined with fast-forward options.'
+    }
+}
 
 if ($IsoPath) {
     $resolvedIso = if ([IO.Path]::IsPathRooted($IsoPath)) {
@@ -73,7 +97,15 @@ $executable = [IO.Path]::GetFullPath(
     (Join-Path $paths.Pcsx2Dev 'pcsx2-qtx64-avx2-dev.exe')
 )
 $workingDirectory = [IO.Path]::GetFullPath($paths.Pcsx2Dev)
-$surfaceless = $Surfaceless.IsPresent
+$surfaceless = $Surfaceless.IsPresent -or $AgentReplay.IsPresent
+
+if (-not [string]::IsNullOrWhiteSpace($LogFile)) {
+    $resolvedLogFile = [IO.Path]::GetFullPath($LogFile)
+    $logDirectory = Split-Path -Parent $resolvedLogFile
+    if (-not (Test-Path -LiteralPath $logDirectory -PathType Container)) {
+        throw "Log directory does not exist: $logDirectory"
+    }
+}
 
 if (-not [string]::IsNullOrWhiteSpace($InputRecording)) {
     $resolvedInputRecording = if ([IO.Path]::IsPathRooted($InputRecording)) {
@@ -158,8 +190,17 @@ if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) {
 }
 
 $launchArguments = @()
-if ($surfaceless) {
+if ($AgentReplay) {
+    $launchArguments += '-agent-replay'
+}
+elseif ($surfaceless) {
     $launchArguments += @('-surfaceless', '-mute')
+}
+if ($PSBoundParameters.ContainsKey('PinePort')) {
+    $launchArguments += @('-pine-port', [string]$PinePort)
+}
+if (-not [string]::IsNullOrWhiteSpace($LogFile)) {
+    $launchArguments += @('-logfile', "`"$resolvedLogFile`"")
 }
 if ($DiscardMemoryCardWrites) {
     $launchArguments += '-discard-memory-card-writes'

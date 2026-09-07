@@ -128,6 +128,32 @@ try {
             }).Count -eq 1
         ) `
         -Message 'PCSX2 launcher did not place -centered-window before the game path.'
+
+    $recordings = Join-Path $testRoot 'recordings'
+    $recording = Join-Path $recordings 'agent.p2m2'
+    $log = Join-Path $testRoot 'agent.log'
+    New-Item -ItemType Directory -Path $recordings | Out-Null
+    New-Item -ItemType File -Path $recording | Out-Null
+    & $launcher `
+        -IsoPath $iso `
+        -InputRecordingsRoot $recordings `
+        -InputRecording 'agent.p2m2' `
+        -AgentReplay `
+        -PinePort 28123 `
+        -LogFile $log `
+        -Arguments @('-l', 'practice', 'naruto')
+    $agentArguments = @(
+        $global:Pcsx2PnachLaunchTestLaunches[-1].ArgumentList
+    )
+    Assert-Pcsx2LaunchTest `
+        -Condition (
+            ($agentArguments -join '|') -ceq (
+                '-agent-replay|-pine-port|28123|-logfile|' +
+                "`"$log`"|-batch|`"$iso`"|-input-recording|" +
+                "`"$recording`"|-l|practice|naruto"
+            )
+        ) `
+        -Message 'PCSX2 launcher did not compose the exact agent-replay command.'
 }
 finally {
     Remove-Variable `

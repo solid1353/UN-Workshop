@@ -39,7 +39,9 @@ foreach ($expectedOption in @(
     '-pnach <file>',
     '-dw',
     '-t',
-    '-u'
+    '-u',
+    '-agent-replay',
+    '-logfile <path>'
 )) {
     Assert-WorkshopLaunchTest `
         -Condition ($help.Contains($expectedOption)) `
@@ -152,6 +154,7 @@ param(
     [switch]$Snapshots,
     [string]$CaptureDirectory,
     [string]$MemoryCard,
+    [string]$LogFile,
     [switch]$DiscardMemoryCardWrites,
     [switch]$ReadOnlySettings,
     [hashtable]$PnachByGame,
@@ -159,12 +162,13 @@ param(
     [hashtable]$PnachLinesByGame,
     [switch]$Turbo,
     [switch]$Unlimited,
+    [switch]$AgentReplay,
     [UInt64]$UnlimitedForFrames,
     [string]$ProjectRoot
 )
 $pnachCount = if ($null -eq $PnachByGame) { 0 } else { $PnachByGame.Count }
 $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.Count }
-"[fake] games=$($Games -join ',') play=$Play record=$Record snapshots=$Snapshots capture=$CaptureDirectory memory=$MemoryCard discard=$DiscardMemoryCardWrites readOnly=$ReadOnlySettings pnaches=$pnachCount additionalPnaches=$($AdditionalPnach -join '|') lineSets=$lineSetCount turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames project=$ProjectRoot"
+"[fake] games=$($Games -join ',') play=$Play record=$Record snapshots=$Snapshots capture=$CaptureDirectory memory=$MemoryCard discard=$DiscardMemoryCardWrites readOnly=$ReadOnlySettings pnaches=$pnachCount additionalPnaches=$($AdditionalPnach -join '|') lineSets=$lineSetCount turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames project=$ProjectRoot log=$LogFile agentReplay=$AgentReplay"
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\pcsx2\launch_games.ps1')
 
     Push-Location $repository
@@ -182,6 +186,17 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
         Assert-WorkshopLaunchTest `
             -Condition ($play.Contains("games=NUN5,$isoTarget play=practice-menu record=")) `
             -Message 'Paired playback was not forwarded to the shared launcher.'
+
+        $agentReplay = (
+            & .\workshop.ps1 NUN5 -p practice-menu `
+                -agent-replay -logfile 'work/agent.log'
+        ) -join "`n"
+        Assert-WorkshopLaunchTest `
+            -Condition ($agentReplay -match (
+                'games=NUN5 play=practice-menu .*log=work/agent\.log ' +
+                'agentReplay=True$'
+            )) `
+            -Message 'Agent replay options were not forwarded to the shared launcher.'
 
         $memoryCardLaunch = (
             & .\workshop.ps1 NUN5 $isoTarget -mc 'Custom.ps2' -dw

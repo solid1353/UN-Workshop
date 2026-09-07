@@ -8,6 +8,11 @@ param(
     [string]$Play,
 
     [Parameter(ParameterSetName = 'Play')]
+    [switch]$AgentReplay,
+
+    [string]$LogFile,
+
+    [Parameter(ParameterSetName = 'Play')]
     [switch]$Snapshots,
 
     [Parameter(ParameterSetName = 'Play')]
@@ -47,6 +52,20 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+if ($AgentReplay) {
+    if ([string]::IsNullOrWhiteSpace($Play) -or $Snapshots) {
+        throw '-agent-replay requires -p and cannot be combined with -s.'
+    }
+    if ($Turbo -or $Unlimited) {
+        throw '-agent-replay cannot be combined with fast-forward options.'
+    }
+    if ([string]::IsNullOrWhiteSpace($LogFile)) {
+        throw 'Agent replay requires -logfile.'
+    }
+}
+if (-not [string]::IsNullOrWhiteSpace($LogFile) -and $Games.Count -ne 1) {
+    throw '-logfile requires a single game.'
+}
 . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
 $paths = Get-UnWorkshopPaths -ProjectRoot $ProjectRoot
 $inputRecordingsRoot = if ([string]::IsNullOrWhiteSpace($InputRecordingsRoot)) {
@@ -488,9 +507,10 @@ if ($pinePortBase + $selectedGames.Count - 1 -gt 65535) {
     throw "Not enough PINE ports remain after configured port $pinePortBase."
 }
 
-Add-Type -AssemblyName System.Windows.Forms
-if (-not ('UnWorkshopLaunchWindow' -as [type])) {
-    Add-Type -TypeDefinition @'
+if (-not $AgentReplay) {
+    Add-Type -AssemblyName System.Windows.Forms
+    if (-not ('UnWorkshopLaunchWindow' -as [type])) {
+        Add-Type -TypeDefinition @'
 using System;
 using System.Runtime.InteropServices;
 
@@ -512,11 +532,15 @@ public static class UnWorkshopLaunchWindow
     );
 }
 '@
-}
+    }
 
-$workingArea = [Windows.Forms.Screen]::PrimaryScreen.WorkingArea
+    $workingArea = [Windows.Forms.Screen]::PrimaryScreen.WorkingArea
+}
 $gameList = $selectedGames.Selector -join ', '
-$action = if ($selectedGames.Count -eq 2) {
+$action = if ($AgentReplay) {
+    "launch surfaceless agent replay for $gameList"
+}
+elseif ($selectedGames.Count -eq 2) {
     "close configured user PCSX2 instances, launch $gameList, and tile their windows"
 }
 else {
@@ -526,7 +550,7 @@ if (-not $PSCmdlet.ShouldProcess($pcsx2Root, $action)) {
     return
 }
 
-if ($selectedGames.Count -eq 2) {
+if ($selectedGames.Count -eq 2 -and -not $AgentReplay) {
     $userProcesses = @(
         Get-UnWorkshopUserPcsx2Processes -Roots @($paths.Pcsx2Dev)
     )
@@ -578,16 +602,26 @@ try {
             PassThru = $true
             InputRecordingsRoot = $inputRecordingsRoot
         }
-        if ($Turbo) {
-            $launchParameters.Turbo = $true
+        if ($AgentReplay) {
+            $launchParameters.AgentReplay = $true
+            $launchParameters.PinePort = $pinePort
+            $launchParameters.Remove('Arguments')
         }
-        if ($Unlimited) {
-            $launchParameters.Unlimited = $true
+        if (-not [string]::IsNullOrWhiteSpace($LogFile)) {
+            $launchParameters.LogFile = $LogFile
         }
-        elseif ($UnlimitedForFrames -gt 0) {
-            $launchParameters.UnlimitedForFrames = $UnlimitedForFrames
+        if (-not $AgentReplay) {
+            if ($Turbo) {
+                $launchParameters.Turbo = $true
+            }
+            if ($Unlimited) {
+                $launchParameters.Unlimited = $true
+            }
+            elseif ($UnlimitedForFrames -gt 0) {
+                $launchParameters.UnlimitedForFrames = $UnlimitedForFrames
+            }
         }
-        if ($selectedGames.Count -eq 1) {
+        if ($selectedGames.Count -eq 1 -and -not $AgentReplay) {
             $launchParameters.CenteredWindow = $true
         }
         if ($DiscardMemoryCardWrites) {
@@ -619,14 +653,16 @@ try {
             Process = $process
             PinePort = $pinePort
         })
-        Wait-UnWorkshopPcsx2Window `
-            -Process $process `
-            -Game $game.Selector `
-            -TimeoutSeconds $WindowWaitSeconds
+        if (-not $AgentReplay) {
+            Wait-UnWorkshopPcsx2Window `
+                -Process $process `
+                -Game $game.Selector `
+                -TimeoutSeconds $WindowWaitSeconds
+        }
     }
 
     $gameCount = $launchedGames.Count
-    if ($gameCount -eq 2) {
+    if ($gameCount -eq 2 -and -not $AgentReplay) {
         foreach ($launch in $launchedGames) {
             [UnWorkshopLaunchWindow]::ShowWindowAsync(
                 $launch.Process.MainWindowHandle,
@@ -638,7 +674,7 @@ try {
 
     for ($index = 0; $index -lt $gameCount; $index++) {
         $launch = $launchedGames[$index]
-        if ($gameCount -eq 2) {
+        if ($gameCount -eq 2 -and -not $AgentReplay) {
             $left = $workingArea.X + [Math]::Floor(
                 $workingArea.Width * $index / $gameCount
             )
@@ -658,12 +694,15 @@ try {
             }
         }
 
-        [pscustomobject]@{
+        $result = [ordered]@{
             Index = $index
             Game = $launch.Game
             ProcessId = $launch.Process.Id
             PinePort = $launch.PinePort
-            Position = if ($gameCount -eq 1) {
+            Position = if ($AgentReplay) {
+                'surfaceless'
+            }
+            elseif ($gameCount -eq 1) {
                 'single'
             }
             elseif ($index -eq 0) {
@@ -673,6 +712,10 @@ try {
                 'right'
             }
         }
+        if ($AgentReplay) {
+            $result.Process = $launch.Process
+        }
+        [pscustomobject]$result
     }
 }
 catch {
