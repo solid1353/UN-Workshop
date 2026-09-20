@@ -354,7 +354,7 @@ if ($Snapshots) {
     }
     else {
         $recordingStem = [IO.Path]::GetFileNameWithoutExtension($recordingName)
-        Join-Path $paths.Work "captures\$recordingStem"
+        Join-Path $paths.Project "captures\$recordingStem"
     }
     $captureDirectories = @(
         for ($index = 0; $index -lt $selectedGames.Count; $index++) {

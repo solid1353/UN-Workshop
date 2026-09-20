@@ -397,10 +397,18 @@ if ($PassThru) {
                 -Games NUN5 `
                 -Play practice-menu `
                 -Snapshots `
-                -CaptureDirectory (Join-Path $repository 'captures-default') `
                 -AdditionalPnach @($firstAdditionalPnach, $secondAdditionalPnach) `
                 -ProjectRoot $repository
         ) -join "`n"
+        $defaultCaptureDirectory = Join-Path $repository 'captures\practice-menu\nun5'
+        Assert-WorkshopLaunchTest `
+            -Condition (
+                $defaultSnapshotLaunch.Contains(
+                    "capture=$defaultCaptureDirectory memory="
+                ) -and
+                (Test-Path -LiteralPath $defaultCaptureDirectory -PathType Container)
+            ) `
+            -Message 'Snapshot playback did not use the project capture directory by default.'
         Assert-WorkshopLaunchTest `
             -Condition (
                 $defaultSnapshotLaunch -match (
