@@ -48,7 +48,7 @@ surfaceless no-GUI mode. It captures every recorded L3+R3 snapshot marker
 without creating a render window or taking focus. For one game, `-o` selects
 the exact capture directory. For two games, it selects a parent containing one
 directory per game. Relative paths resolve from the invoking directory; without
-`-o`, captures go below `@work/captures/<recording>/<game>/`.
+`-o`, captures go below the project's `captures/<recording>/<game>/` directory.
 
 Each target capture directory is deleted before replay starts. PNGs are saved
 directly in that directory as `001.png`, `002.png`, and so on. Corresponding
