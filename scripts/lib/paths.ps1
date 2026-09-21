@@ -213,7 +213,9 @@ function Get-UnWorkshopPaths {
         Source = $effectiveRoots.source
         Disassembly = $effectiveRoots.disassembly
         Tools = $effectiveRoots.tools
-        Work = $effectiveRoots.work
+        Work = if ($effectiveRoots.Contains('work')) {
+            $effectiveRoots.work
+        } else { $null }
         GhidraMcpWork = if ($effectiveRoots.Contains('ghidra_mcp_work')) {
             $effectiveRoots.ghidra_mcp_work
         } else { $null }
