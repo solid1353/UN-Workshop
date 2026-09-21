@@ -18,9 +18,11 @@ $runtimeRoot = if ([string]::IsNullOrWhiteSpace($paths.GhidraMcpWork)) {
 } else {
     [IO.Path]::GetFullPath($paths.GhidraMcpWork)
 }
-$expectedRuntimeRoot = [IO.Path]::GetFullPath((Join-Path $paths.Work 'ghidraMCP'))
-if (-not [IO.Path]::Equals($runtimeRoot, $expectedRuntimeRoot)) {
-    throw "The configured @ghidra_mcp_work root must be @work/ghidraMCP: $runtimeRoot"
+$disassemblyRoot = [IO.Path]::GetFullPath($paths.Disassembly)
+$runtimeParent = [IO.Path]::GetDirectoryName($runtimeRoot)
+$disassemblyParent = [IO.Path]::GetDirectoryName($disassemblyRoot)
+if (-not [IO.Path]::Equals($runtimeParent, $disassemblyParent)) {
+    throw 'The configured @ghidra_mcp_work and @disassembly roots must share a parent.'
 }
 
 $controlRoot = Join-Path $runtimeRoot 'control'
@@ -256,12 +258,6 @@ switch ($Action) {
         }
         Remove-CodexRegistration
         if (Test-Path -LiteralPath $runtimeRoot) {
-            if (-not [IO.Path]::Equals(
-                [IO.Path]::GetFullPath($runtimeRoot),
-                $expectedRuntimeRoot
-            )) {
-                throw "Refusing to remove an unexpected runtime root: $runtimeRoot"
-            }
             Remove-Item -LiteralPath $runtimeRoot -Recurse -Force
         }
         Get-McpStatus

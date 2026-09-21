@@ -25,7 +25,7 @@ function Assert-SharedChildPath {
     $resolvedRoot = [IO.Path]::GetFullPath($Root)
     $prefix = $resolvedRoot.TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
     if (-not $resolvedPath.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) {
-        throw "Refusing to use a GhidrAssistMCP path outside @work/ghidraMCP: $resolvedPath"
+        throw "Refusing to use a GhidrAssistMCP path outside @ghidra_mcp_work: $resolvedPath"
     }
     $resolvedPath
 }
@@ -121,11 +121,6 @@ $sharedRoot = if ([string]::IsNullOrWhiteSpace($paths.GhidraMcpWork)) {
     throw 'The configured @ghidra_mcp_work root is missing.'
 } else {
     [IO.Path]::GetFullPath($paths.GhidraMcpWork)
-}
-$workRoot = [IO.Path]::GetFullPath($paths.Work)
-$expectedSharedRoot = Join-Path $workRoot 'ghidraMCP'
-if (-not [IO.Path]::Equals($sharedRoot, $expectedSharedRoot)) {
-    throw "The configured @ghidra_mcp_work root must be @work/ghidraMCP: $sharedRoot"
 }
 $targetRuntimeRoot = Assert-SharedChildPath `
     -Path (Join-Path $sharedRoot $Target) `
@@ -271,7 +266,7 @@ try {
     })
 
     Write-BackendHostLog "GhidrAssistMCP target: @disassembly/$Target ($Program)"
-    Write-BackendHostLog "Transient project: @work/ghidraMCP/$Target/project"
+    Write-BackendHostLog "Transient project: @ghidra_mcp_work/$Target/project"
     $headlessProcess = Start-Process `
         -FilePath $headless `
         -ArgumentList $processArguments `

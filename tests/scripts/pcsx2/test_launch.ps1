@@ -13,7 +13,8 @@ function Assert-Pcsx2LaunchTest {
 }
 
 $sourceRepository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
-$tempRoot = Join-Path $sourceRepository 'work\temp'
+$workRoot = Join-Path $sourceRepository 'work'
+$tempRoot = Join-Path $workRoot 'temp'
 $testParent = Join-Path $tempRoot 'tests'
 $testRoot = Join-Path $testParent (
     'pcsx2-launch-' + $PID + '-' + [Guid]::NewGuid().ToString('N')
@@ -163,7 +164,7 @@ finally {
     if (Test-Path -LiteralPath $testRoot) {
         Remove-Item -LiteralPath $testRoot -Recurse -Force
     }
-    foreach ($parent in @($testParent, $tempRoot)) {
+    foreach ($parent in @($testParent, $tempRoot, $workRoot)) {
         if (
             (Test-Path -LiteralPath $parent -PathType Container) -and
             -not (Get-ChildItem -LiteralPath $parent -Force | Select-Object -First 1)

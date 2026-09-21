@@ -103,10 +103,10 @@ loopback port. Each backend opens every program in its transient project, so
 `program_name` selects the requested binary on each call instead of relying on
 a persistent current-program selection. Ports are private runtime state and are
 never part of Codex configuration. The supervisor copies each maintained analysis into
-`@work/ghidraMCP/<target>/project`, opens the transient copy with
+`@ghidra_mcp_work/<target>/project`, opens the transient copy with
 `-readOnly -noanalysis`, and removes it whenever the backend stops. Bounded
-current and previous logs remain under `@work/ghidraMCP/<target>/logs`; global
-supervisor state and logs remain directly below `@work/ghidraMCP`. The canonical
+current and previous logs remain under `@ghidra_mcp_work/<target>/logs`; global
+supervisor state and logs remain directly below `@ghidra_mcp_work`. The canonical
 `@disassembly/<target>` archive is never opened directly or modified.
 
 Manage the host through the same entrypoint:

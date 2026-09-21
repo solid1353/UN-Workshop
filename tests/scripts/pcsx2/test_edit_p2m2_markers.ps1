@@ -20,7 +20,8 @@ function Get-TestFileSha256 {
 }
 
 $sourceRepository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
-$testParent = Join-Path $sourceRepository 'work\tests'
+$testWorkRoot = Join-Path $sourceRepository 'work'
+$testParent = Join-Path $testWorkRoot 'tests'
 $testRoot = Join-Path $testParent (
     'edit-p2m2-markers-' + [Guid]::NewGuid().ToString('N')
 )
@@ -113,8 +114,15 @@ try {
     Write-Host 'Workshop P2M2 marker-editor tests passed.' -ForegroundColor Green
 }
 finally {
+    $resolvedTestWorkRoot = [IO.Path]::GetFullPath($testWorkRoot)
     $resolvedTestParent = [IO.Path]::GetFullPath($testParent)
     $resolvedTestRoot = [IO.Path]::GetFullPath($testRoot)
+    if (-not $resolvedTestParent.StartsWith(
+        $resolvedTestWorkRoot + [IO.Path]::DirectorySeparatorChar,
+        [StringComparison]::OrdinalIgnoreCase
+    )) {
+        throw "Refusing to remove test parent outside its work root: $resolvedTestParent"
+    }
     if (-not $resolvedTestRoot.StartsWith(
         $resolvedTestParent + [IO.Path]::DirectorySeparatorChar,
         [StringComparison]::OrdinalIgnoreCase
@@ -123,5 +131,13 @@ finally {
     }
     if (Test-Path -LiteralPath $resolvedTestRoot) {
         Remove-Item -LiteralPath $resolvedTestRoot -Recurse -Force
+    }
+    if ((Test-Path -LiteralPath $resolvedTestParent -PathType Container) -and
+        @(Get-ChildItem -LiteralPath $resolvedTestParent -Force).Count -eq 0) {
+        Remove-Item -LiteralPath $resolvedTestParent -Force
+    }
+    if ((Test-Path -LiteralPath $resolvedTestWorkRoot -PathType Container) -and
+        @(Get-ChildItem -LiteralPath $resolvedTestWorkRoot -Force).Count -eq 0) {
+        Remove-Item -LiteralPath $resolvedTestWorkRoot -Force
     }
 }
