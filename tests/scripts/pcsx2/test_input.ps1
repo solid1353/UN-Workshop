@@ -24,12 +24,12 @@ $synchronizerParameters = (Get-Command -Name $synchronizer).Parameters
 Assert-Condition `
     (-not $synchronizerParameters.ContainsKey('All')) `
     'The input generator still exposes the redundant All switch.'
-$temporaryRoot = Join-Path (
-    [IO.Path]::GetTempPath()
-) ('un-workshop-input-profile-test-{0}' -f [guid]::NewGuid().ToString('N'))
+$temporaryRoot = Join-Path (Join-Path $sourceRepository 'tests') (
+    'run-' + [guid]::NewGuid().ToString('N')
+)
 
-New-Item -ItemType Directory -Path $temporaryRoot | Out-Null
 try {
+    New-Item -ItemType Directory -Path $temporaryRoot | Out-Null
     $templatePath = Join-Path $temporaryRoot 'Default.ini'
     $overridePath = Join-Path $temporaryRoot 'sources\overrides\games\NA2.ini'
     $captureOverridePath = Join-Path $temporaryRoot 'sources\overrides\Capture.ini'
@@ -241,5 +241,7 @@ TakeScreenshot = Keyboard/F1
     Write-Host 'Input-profile synchronization tests passed.'
 }
 finally {
-    Remove-Item -LiteralPath $temporaryRoot -Recurse -Force -ErrorAction SilentlyContinue
+    if (Test-Path -LiteralPath $temporaryRoot -PathType Container) {
+        Remove-Item -LiteralPath $temporaryRoot -Recurse -Force
+    }
 }
