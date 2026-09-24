@@ -49,8 +49,8 @@ foreach ($expectedOption in @(
 }
 
 $testRoot = Join-Path `
-    ([IO.Path]::GetTempPath()) `
-    "workshop-launch-tests-$PID-$([Guid]::NewGuid().ToString('N'))"
+    (Join-Path $sourceRepository 'tests') `
+    "run-$PID-$([Guid]::NewGuid().ToString('N'))"
 $repository = Join-Path $testRoot 'repo'
 
 try {

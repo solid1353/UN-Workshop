@@ -20,10 +20,9 @@ function Get-TestFileSha256 {
 }
 
 $sourceRepository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
-$testWorkRoot = Join-Path $sourceRepository 'work'
-$testParent = Join-Path $testWorkRoot 'tests'
-$testRoot = Join-Path $testParent (
-    'edit-p2m2-markers-' + [Guid]::NewGuid().ToString('N')
+$testsRoot = Join-Path $sourceRepository 'tests'
+$testRoot = Join-Path $testsRoot (
+    'run-' + [Guid]::NewGuid().ToString('N')
 )
 $recording = Join-Path $testRoot 'synthetic.p2m2'
 $editor = Join-Path $sourceRepository 'scripts\pcsx2\edit_p2m2_markers.ps1'
@@ -114,30 +113,15 @@ try {
     Write-Host 'Workshop P2M2 marker-editor tests passed.' -ForegroundColor Green
 }
 finally {
-    $resolvedTestWorkRoot = [IO.Path]::GetFullPath($testWorkRoot)
-    $resolvedTestParent = [IO.Path]::GetFullPath($testParent)
+    $resolvedTestsRoot = [IO.Path]::GetFullPath($testsRoot)
     $resolvedTestRoot = [IO.Path]::GetFullPath($testRoot)
-    if (-not $resolvedTestParent.StartsWith(
-        $resolvedTestWorkRoot + [IO.Path]::DirectorySeparatorChar,
-        [StringComparison]::OrdinalIgnoreCase
-    )) {
-        throw "Refusing to remove test parent outside its work root: $resolvedTestParent"
-    }
     if (-not $resolvedTestRoot.StartsWith(
-        $resolvedTestParent + [IO.Path]::DirectorySeparatorChar,
+        $resolvedTestsRoot + [IO.Path]::DirectorySeparatorChar,
         [StringComparison]::OrdinalIgnoreCase
     )) {
         throw "Refusing to remove test path outside its parent: $resolvedTestRoot"
     }
     if (Test-Path -LiteralPath $resolvedTestRoot) {
         Remove-Item -LiteralPath $resolvedTestRoot -Recurse -Force
-    }
-    if ((Test-Path -LiteralPath $resolvedTestParent -PathType Container) -and
-        @(Get-ChildItem -LiteralPath $resolvedTestParent -Force).Count -eq 0) {
-        Remove-Item -LiteralPath $resolvedTestParent -Force
-    }
-    if ((Test-Path -LiteralPath $resolvedTestWorkRoot -PathType Container) -and
-        @(Get-ChildItem -LiteralPath $resolvedTestWorkRoot -Force).Count -eq 0) {
-        Remove-Item -LiteralPath $resolvedTestWorkRoot -Force
     }
 }
