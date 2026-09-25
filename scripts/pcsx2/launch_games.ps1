@@ -29,6 +29,8 @@ param(
 
     [switch]$DiscardMemoryCardWrites,
 
+    [switch]$VolatileMemoryCard,
+
     [switch]$ReadOnlySettings,
 
     [hashtable]$PnachByGame,
@@ -52,6 +54,10 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'launch_arguments.ps1')
+if ($DiscardMemoryCardWrites -and $VolatileMemoryCard) {
+    throw 'Use only one of -dmc or -vmc.'
+}
 if ($AgentReplay) {
     if ([string]::IsNullOrWhiteSpace($Play) -or $Snapshots) {
         throw '-agent-replay requires -p and cannot be combined with -s.'
@@ -185,37 +191,9 @@ else {
     $null
 }
 
-$memoryCardOverridePath = if (-not [string]::IsNullOrWhiteSpace($MemoryCard)) {
-    $memoryCardName = if ($MemoryCard.EndsWith(
-        '.ps2',
-        [StringComparison]::OrdinalIgnoreCase
-    )) {
-        $MemoryCard
-    }
-    else {
-        "$MemoryCard.ps2"
-    }
-    $isRootedMemoryCard = [IO.Path]::IsPathRooted($memoryCardName)
-    $candidate = if ($isRootedMemoryCard) {
-        $memoryCardName
-    }
-    else {
-        Join-Path $paths.MemoryCards $memoryCardName
-    }
-    if (
-        -not $isRootedMemoryCard -and
-        -not (Test-Path -LiteralPath $candidate -PathType Leaf) -and
-        [IO.Path]::GetFileName($memoryCardName) -ceq $memoryCardName
-    ) {
-        $candidate = Join-Path `
-            (Join-Path $paths.MemoryCards 'templates') `
-            $memoryCardName
-    }
-    [IO.Path]::GetFullPath($candidate)
-}
-else {
-    $null
-}
+$memoryCardOverridePath = Resolve-UnWorkshopMemoryCardPath `
+    -MemoryCard $MemoryCard `
+    -MemoryCardsRoot $paths.MemoryCards
 
 $additionalPnachPaths = @(
     if ($null -ne $AdditionalPnach) {
@@ -298,10 +276,15 @@ foreach ($requestedGame in $Games) {
     else {
         [string[]]@()
     }
+    $memoryCardMode = Resolve-UnWorkshopMemoryCardMode `
+        -DiscardMemoryCardWrites:$DiscardMemoryCardWrites `
+        -VolatileMemoryCard:$VolatileMemoryCard `
+        -DefaultDiscard:$Snapshots
     $selectedGames.Add([pscustomobject]@{
         Selector = $selector
         IsoPath = $isoPath
         MemoryCardPath = $resolvedMemoryCardPath
+        MemoryCardMode = $memoryCardMode
         GameSettingsPath = $gameSettingsPath
         Pnach = $pnach
         PnachLines = $pnachLines
@@ -331,7 +314,9 @@ $requiredFiles += @(
 )
 $requiredFiles += @(
     $selectedGames.MemoryCardPath |
-        Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+        Where-Object {
+            -not [string]::IsNullOrWhiteSpace($_) -and $_ -ine 'none'
+        }
 )
 $requiredFiles += @(
     foreach ($game in $selectedGames) {
@@ -447,7 +432,8 @@ if ($Snapshots) {
                 InputRecording = $recordingName
                 InputRecordingCaptureDirectory = $captureDirectories[$index]
                 Surfaceless = $true
-                DiscardMemoryCardWrites = $true
+                DiscardMemoryCardWrites = $game.MemoryCardMode.DiscardMemoryCardWrites
+                VolatileMemoryCard = $game.MemoryCardMode.VolatileMemoryCard
                 Unlimited = $true
                 PassThru = $true
                 InputRecordingsRoot = $inputRecordingsRoot
@@ -624,8 +610,11 @@ try {
         if ($selectedGames.Count -eq 1 -and -not $AgentReplay) {
             $launchParameters.CenteredWindow = $true
         }
-        if ($DiscardMemoryCardWrites) {
+        if ($game.MemoryCardMode.DiscardMemoryCardWrites) {
             $launchParameters.DiscardMemoryCardWrites = $true
+        }
+        if ($game.MemoryCardMode.VolatileMemoryCard) {
+            $launchParameters.VolatileMemoryCard = $true
         }
         if ($ReadOnlySettings) {
             $launchParameters.ReadOnlySettings = $true

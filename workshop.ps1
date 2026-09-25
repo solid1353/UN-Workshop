@@ -56,6 +56,7 @@ function Invoke-UnWorkshopGameLaunch {
         [string]$LogFile,
         [string[]]$Pnach,
         [switch]$DiscardMemoryCardWrites,
+        [switch]$VolatileMemoryCard,
         [switch]$Turbo,
         [switch]$Unlimited,
         [switch]$AgentReplay
@@ -98,6 +99,7 @@ function Invoke-UnWorkshopGameLaunch {
     if ($DiscardMemoryCardWrites) {
         $parameters.DiscardMemoryCardWrites = $true
     }
+    if ($VolatileMemoryCard) { $parameters.VolatileMemoryCard = $true }
     if ($Turbo) { $parameters.Turbo = $true }
     if ($Unlimited) { $parameters.Unlimited = $true }
     if ($AgentReplay) { $parameters.AgentReplay = $true }
@@ -194,6 +196,7 @@ switch ($normalizedCommand) {
             -LogFile $launch.LogFile `
             -Pnach $launch.Pnach `
             -DiscardMemoryCardWrites:$launch.DiscardMemoryCardWrites `
+            -VolatileMemoryCard:$launch.VolatileMemoryCard `
             -Turbo:$launch.Turbo `
             -Unlimited:$launch.Unlimited `
             -AgentReplay:$launch.AgentReplay

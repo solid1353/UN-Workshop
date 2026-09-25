@@ -37,7 +37,8 @@ foreach ($expectedOption in @(
     '-o <path>',
     '-mc <card>',
     '-pnach <file>',
-    '-dw',
+    '-dmc',
+    '-vmc',
     '-t',
     '-u',
     '-agent-replay',
@@ -156,6 +157,7 @@ param(
     [string]$MemoryCard,
     [string]$LogFile,
     [switch]$DiscardMemoryCardWrites,
+    [switch]$VolatileMemoryCard,
     [switch]$ReadOnlySettings,
     [hashtable]$PnachByGame,
     [string[]]$AdditionalPnach,
@@ -168,7 +170,7 @@ param(
 )
 $pnachCount = if ($null -eq $PnachByGame) { 0 } else { $PnachByGame.Count }
 $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.Count }
-"[fake] games=$($Games -join ',') play=$Play record=$Record snapshots=$Snapshots capture=$CaptureDirectory memory=$MemoryCard discard=$DiscardMemoryCardWrites readOnly=$ReadOnlySettings pnaches=$pnachCount additionalPnaches=$($AdditionalPnach -join '|') lineSets=$lineSetCount turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames project=$ProjectRoot log=$LogFile agentReplay=$AgentReplay"
+"[fake] games=$($Games -join ',') play=$Play record=$Record snapshots=$Snapshots capture=$CaptureDirectory memory=$MemoryCard discard=$DiscardMemoryCardWrites volatile=$VolatileMemoryCard readOnly=$ReadOnlySettings pnaches=$pnachCount additionalPnaches=$($AdditionalPnach -join '|') lineSets=$lineSetCount turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames project=$ProjectRoot log=$LogFile agentReplay=$AgentReplay"
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\pcsx2\launch_games.ps1')
 
     Push-Location $repository
@@ -199,13 +201,30 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
             -Message 'Agent replay options were not forwarded to the shared launcher.'
 
         $memoryCardLaunch = (
-            & .\workshop.ps1 NUN5 $isoTarget -mc 'Custom.ps2' -dw
+            & .\workshop.ps1 NUN5 $isoTarget -mc 'Custom.ps2' -dmc
         ) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition (
                 $memoryCardLaunch -match 'memory=Custom\.ps2 discard=True'
             ) `
             -Message 'Memory-card override and discard-write mode were not forwarded.'
+
+        foreach ($flag in @('-dmc', '-vmc')) {
+            foreach ($cardArguments in @(@($flag, 1), @('-mc', 1, $flag))) {
+                $cardLaunch = (& .\workshop.ps1 NUN5 @cardArguments) -join "`n"
+                $discard = $flag -eq '-dmc'
+                $volatile = $flag -eq '-vmc'
+                Assert-WorkshopLaunchTest `
+                    -Condition ($cardLaunch.Contains(
+                        "memory=1 discard=$discard volatile=$volatile"
+                    )) `
+                    -Message "Card number and mode were not forwarded for $cardArguments."
+            }
+        }
+        $namedCardLaunch = (& .\workshop.ps1 NUN5 -vmc full) -join "`n"
+        Assert-WorkshopLaunchTest `
+            -Condition ($namedCardLaunch.Contains('memory=full discard=False volatile=True')) `
+            -Message 'Named volatile card shorthand was not forwarded.'
 
         $firstAdditionalPnach = Join-Path $repository 'first-extra.pnach'
         $secondAdditionalPnach = Join-Path $repository 'second-extra.pnach'
