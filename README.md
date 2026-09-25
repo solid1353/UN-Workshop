@@ -24,9 +24,11 @@ workflows, marker editing, memory cards, PNACH overlays, and input profiles.
   overrides, with game-specific overrides under `games/`.
 - `@pcsx2_scripts/`: reusable PCSX2 launch, worker-copy, PINE, input-profile,
   and disc-identity utilities.
-- `@ghidra_scripts/`: reusable headless Ghidra Java scripts, runtime setup, and
-  the [read-only GhidrAssistMCP integration](docs/runbooks/ghidrassistmcp.md).
-- `@media_scripts/`: reusable ISO, AFS, and encrypted-CVM extractors.
+- `@ghidra_scripts/`: cross-game import, export, manifest, and read-only
+  tooling; reusable headless Ghidra Java scripts and runtime setup; and the
+  [read-only GhidrAssistMCP integration](docs/runbooks/ghidrassistmcp.md).
+- `@media_scripts/`: ISO, AFS, and encrypted-CVM extractors, recursive source
+  extraction and verification, and source read-only tooling.
 - `tests/scripts/`: focused tests mirroring Workshop-owned script components,
   including PCSX2 and media utilities.
 
