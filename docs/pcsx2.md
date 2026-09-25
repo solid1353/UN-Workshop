@@ -89,11 +89,30 @@ numbered backups to the Windows Recycle Bin.
 value resolves below `@pcsx2_memory_cards/`; an absolute path is also accepted.
 Workshop adds the `.ps2` extension automatically when omitted. A bare name
 falls back to `@pcsx2_memory_cards/templates/` when no root-level card exists.
+Numbered templates also accept their number or name: `0_full.ps2` can be
+selected with `-mc 0` or `-mc full`. Matching is case-insensitive; an exact
+filename takes precedence, and an ambiguous shortcut requires a full filename.
 
-`-dw` makes ordinary launches report memory-card writes as successful without
-persisting them. File-backed cards use shared access with or without `-dw`;
-discard mode additionally suppresses memory-card busy state. Snapshot replay
-with `-s` always discards writes.
+`-mc none` disconnects both memory-card ports, including multitap slots, for
+the launched session without changing saved settings or card files. `none` is
+case-insensitive and is forwarded as PCSX2's `-memory-card none` option. To
+select a file named `none.ps2`, include its extension or give its path.
+
+`-dmc` makes ordinary launches report memory-card writes as successful without
+persisting them. File-backed cards use shared access with or without `-dmc`;
+discard mode additionally suppresses memory-card busy state.
+
+`-vmc` uses an in-memory copy of the selected file-backed cards. Reads observe
+writes and erases during the PCSX2 process lifetime; closing PCSX2 discards the
+changes without modifying the source files. `-dmc` and `-vmc` are mutually
+exclusive. Either flag may take an optional card selector: `-vmc full` is
+equivalent to `-mc full -vmc`, and `-dmc 1` to `-mc 1 -dmc`. Without a value,
+the flag uses the normally selected card. Specify a card only once. Folder-backed
+cards are disconnected with an emulator warning in volatile mode.
+
+Ordinary launches persist writes to the selected card, including templates,
+unless `-dmc` or `-vmc` is specified. Snapshot replay with `-s` defaults to
+discarded writes for all cards; explicit `-vmc` selects volatile mode.
 
 ## PNACH overlays
 

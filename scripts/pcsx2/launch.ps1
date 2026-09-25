@@ -36,6 +36,8 @@ param(
 
     [switch]$DiscardMemoryCardWrites,
 
+    [switch]$VolatileMemoryCard,
+
     [switch]$ReadOnlySettings,
 
     [string]$MemoryCard,
@@ -46,6 +48,10 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'launch_arguments.ps1')
+if ($DiscardMemoryCardWrites -and $VolatileMemoryCard) {
+    throw 'Use only one of -dmc or -vmc.'
+}
 . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
 $paths = Get-UnWorkshopPaths
 $resolvedInputRecordingsRoot = if (
@@ -155,7 +161,10 @@ if (-not [string]::IsNullOrWhiteSpace($InputRecordingCaptureDirectory)) {
     )
 }
 
-if (-not [string]::IsNullOrWhiteSpace($MemoryCard)) {
+if ($MemoryCard -ieq 'none') {
+    $resolvedMemoryCard = 'none'
+}
+elseif (-not [string]::IsNullOrWhiteSpace($MemoryCard)) {
     $resolvedMemoryCard = [IO.Path]::GetFullPath($MemoryCard)
     if (-not (Test-Path -LiteralPath $resolvedMemoryCard -PathType Leaf)) {
         throw "Memory card does not exist: $resolvedMemoryCard"
@@ -189,6 +198,10 @@ if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) {
     throw "PCSX2 executable does not exist: $executable"
 }
 
+$memoryCardMode = Resolve-UnWorkshopMemoryCardMode `
+    -DiscardMemoryCardWrites:$DiscardMemoryCardWrites `
+    -VolatileMemoryCard:$VolatileMemoryCard
+
 $launchArguments = @()
 if ($AgentReplay) {
     $launchArguments += '-agent-replay'
@@ -202,8 +215,11 @@ if ($PSBoundParameters.ContainsKey('PinePort')) {
 if (-not [string]::IsNullOrWhiteSpace($LogFile)) {
     $launchArguments += @('-logfile', "`"$resolvedLogFile`"")
 }
-if ($DiscardMemoryCardWrites) {
+if ($memoryCardMode.DiscardMemoryCardWrites) {
     $launchArguments += '-discard-memory-card-writes'
+}
+if ($memoryCardMode.VolatileMemoryCard) {
+    $launchArguments += '-volatile-memory-card'
 }
 if ($ReadOnlySettings) {
     $launchArguments += '-read-only-settings'
