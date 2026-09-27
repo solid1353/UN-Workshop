@@ -16,13 +16,39 @@ function Find-UnWorkshopProjectRoot {
         return [IO.Path]::GetFullPath([string]$configured)
     }
 
+    $workshopManifest = [IO.Path]::GetFullPath((
+        Join-Path $PSScriptRoot '..\..\paths.json'
+    ))
     $candidate = Get-Item -LiteralPath (Get-Location).Path
     while ($null -ne $candidate) {
-        if (
-            (Test-Path -LiteralPath (Join-Path $candidate.FullName 'paths.json') -PathType Leaf) -and
-            (Test-Path -LiteralPath (Join-Path $candidate.FullName 'game.json') -PathType Leaf)
-        ) {
-            return $candidate.FullName
+        $manifestPath = Join-Path $candidate.FullName 'paths.json'
+        if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
+            try {
+                $manifest = Get-Content -Raw -LiteralPath $manifestPath |
+                    ConvertFrom-Json
+            }
+            catch {
+                $manifest = $null
+            }
+            if ($null -ne $manifest) {
+                $imports = $manifest.PSObject.Properties['imports']
+                if ($null -ne $imports) {
+                    $workshop = $imports.Value.PSObject.Properties['workshop']
+                    if ($null -ne $workshop -and
+                        -not [string]::IsNullOrWhiteSpace([string]$workshop.Value)) {
+                        $importPath = [IO.Path]::GetFullPath((
+                            Join-Path $candidate.FullName ([string]$workshop.Value)
+                        ))
+                        if ([string]::Equals(
+                            $importPath,
+                            $workshopManifest,
+                            [StringComparison]::OrdinalIgnoreCase
+                        )) {
+                            return $candidate.FullName
+                        }
+                    }
+                }
+            }
         }
         $candidate = $candidate.Parent
     }
@@ -248,6 +274,22 @@ function Get-UnWorkshopCatalog {
     [pscustomobject][ordered]@{
         Sources = $shared.sources
     }
+}
+
+function Get-UnWorkshopAvailableGameNames {
+    [CmdletBinding()]
+    param([string]$ProjectRoot)
+
+    $paths = Get-UnWorkshopPaths -ProjectRoot $ProjectRoot
+    $arguments = @('-B', $paths.ResolveGame, '--available-sources')
+    if ($paths.Project) {
+        $arguments += @('--project-root', $paths.Project)
+    }
+    $output = & python @arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Game resolver failed to list available sources.'
+    }
+    @(($output -join "`n") | ConvertFrom-Json)
 }
 
 function Get-UnWorkshopResolvedPropertyNames {

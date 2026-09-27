@@ -116,25 +116,36 @@ if ($usingConfiguredPaths) {
 
     $plans = [ordered]@{}
     $settingsProfiles = [ordered]@{}
-    $entries = @(
-        foreach ($property in $catalog.Sources.PSObject.Properties) {
-            [string]$property.Name
-        }
-    )
+    $entries = if ($null -eq $selectedName) {
+        @(
+            foreach ($property in $catalog.Sources.PSObject.Properties) {
+                [string]$property.Name
+            }
+        )
+    }
+    else {
+        @(Get-UnWorkshopAvailableGameNames -ProjectRoot $paths.Project)
+    }
     $resolvedEntries = @(
         foreach ($entryName in $entries) {
-            $resolved = Resolve-UnWorkshopGame `
-                -Game $entryName `
-                -ProjectRoot $paths.Project
-            $gameOverrideProperty = $resolved.PSObject.Properties[
-                'input_profile_overrides'
-            ]
+            $gameOverridePath = Join-Path `
+                $sourcesRoot `
+                "overrides/games/$entryName.ini"
+            $hasGameOverride = Test-Path `
+                -LiteralPath $gameOverridePath `
+                -PathType Leaf
+            $resolved = if ($null -ne $selectedName) {
+                Resolve-UnWorkshopGame `
+                    -Game $entryName `
+                    -ProjectRoot $paths.Project
+            }
+            else { $null }
             [pscustomobject]@{
                 Name = $entryName
                 Resolved = $resolved
-                HasGameOverride = $null -ne $gameOverrideProperty
-                GameOverride = if ($null -ne $gameOverrideProperty) {
-                    [string]$gameOverrideProperty.Value
+                HasGameOverride = $hasGameOverride
+                GameOverride = if ($hasGameOverride) {
+                    $gameOverridePath
                 }
                 else { $null }
             }
