@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
-from game_catalog import resolve_game, resolve_game_property_names
+from game_catalog import load_catalog, resolve_game, resolve_game_property_names
 
 
 WORKSHOP = Path(__file__).resolve().parents[2]
@@ -14,12 +14,19 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("selector", nargs="?")
     parser.add_argument("--project-root", type=Path)
-    parser.add_argument("--properties", action="store_true")
+    output_mode = parser.add_mutually_exclusive_group()
+    output_mode.add_argument("--properties", action="store_true")
+    output_mode.add_argument("--available-sources", action="store_true")
     args = parser.parse_args()
-    if args.properties:
+    if args.properties or args.available_sources:
         if args.selector is not None:
-            parser.error("selector cannot be used with --properties")
-        result = resolve_game_property_names(WORKSHOP, args.project_root)
+            option = "--properties" if args.properties else "--available-sources"
+            parser.error(f"selector cannot be used with {option}")
+        result = (
+            resolve_game_property_names(WORKSHOP, args.project_root)
+            if args.properties
+            else list(load_catalog(WORKSHOP, args.project_root)["sources"])
+        )
     else:
         if args.selector is None:
             parser.error("selector is required unless --properties is used")
