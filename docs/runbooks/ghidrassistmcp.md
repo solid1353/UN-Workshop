@@ -102,7 +102,7 @@ Each target runs in a separate hidden Ghidra backend on an OS-assigned temporary
 loopback port. Each backend opens every program in its transient project, so
 `program_name` selects the requested binary on each call instead of relying on
 a persistent current-program selection. Ports are private runtime state and are
-never part of Codex configuration. The supervisor copies each maintained analysis into
+never part of agent configuration. The supervisor copies each maintained analysis into
 `@ghidra_mcp_work/<target>/project`, opens the transient copy with
 `-readOnly -noanalysis`, and removes it whenever the backend stops. Bounded
 current and previous logs remain under `@ghidra_mcp_work/<target>/logs`; global
@@ -123,21 +123,22 @@ Do not import a source binary or create another persistent Ghidra project for
 this integration. Do not remove the launcher safeguards, retain its disposable
 project copy, or point Ghidra at the maintained archive directly.
 
-## Codex clients
+## Agent clients
 
-The Workshop manager delegates global Codex registration to the tracked
-`@codex-utils` installer. That installer owns only the `ghidrassist` entry in
-the machine-local `%USERPROFILE%/.codex/config.toml` and preserves every other
-setting. The entry launches the installed router through MCP stdio. Game
-repositories contain no MCP configuration.
+The Workshop manager delegates global Codex and Claude registration to the
+tracked `@codex-utils` installer. That installer owns only the `ghidrassist`
+entry in the machine-local `%USERPROFILE%/.codex/config.toml` and
+`%USERPROFILE%/.claude.json` and preserves every other setting. The entry
+launches the installed router through MCP stdio. Game repositories contain no
+MCP configuration.
 
 The stdio router connects to the hidden supervisor through a current-user-only
 Windows named pipe. `list_binaries` can list every target or one named target.
-Every other tool requires both `target` and `program_name`, so one Codex task
+Every other tool requires both `target` and `program_name`, so one agent task
 can switch projects on every call and concurrent tasks have no shared mutable
 selection.
 
-After installing the global registration for the first time, open a fresh Codex
+After installing the global registration for the first time, open a fresh agent
 task because an already-running task does not reload newly added MCP
 configuration. Starting or restarting the supervisor does not require opening
 another task. Full Access remains compatible; Custom permissions are not
