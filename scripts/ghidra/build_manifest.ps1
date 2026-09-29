@@ -15,7 +15,7 @@ function Resolve-SourceAlias([string]$Alias) {
 }
 
 function Get-SharingGames([object]$Item) {
-    $child = [regex]::Match($Item.source, '^@source_[^/\\]+[/\\](?<child>.+)$').Groups['child'].Value
+    $child = [regex]::Match($Item.source, '^@source[/\\][^/\\]+\.iso\.files[/\\](?<child>.+)$').Groups['child'].Value
     @(foreach ($root in Get-UnWorkshopSourceRoots -Paths $paths) {
         $candidate = Join-Path $root.Path $child
         if ((Test-Path -LiteralPath $candidate -PathType Leaf) -and
