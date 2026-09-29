@@ -23,7 +23,7 @@ Assert-WorkshopLaunchTest `
     ) `
     -Message 'Workshop help did not present one unified launch command.'
 Assert-WorkshopLaunchTest `
-    -Condition ($help.Contains('sources: NA2, NUN3, NUN5')) `
+    -Condition ($help.Contains('sources: NA2, NUN3, NUN4, NUN5')) `
     -Message 'Workshop help did not render the shared source catalog cleanly.'
 Assert-WorkshopLaunchTest `
     -Condition ($help.Contains(

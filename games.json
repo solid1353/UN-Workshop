@@ -8,6 +8,10 @@
       "serial": "SLUS-21727",
       "crc": "EE3737A4"
     },
+    "NUN4": {
+      "serial": "SLUS-21862",
+      "crc": "5C9E1148"
+    },
     "NUN5": {
       "serial": "SLES-55605",
       "crc": "C071D4C1"

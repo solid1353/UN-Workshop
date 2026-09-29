@@ -92,11 +92,10 @@ The task executes a Windows-subsystem application, and every descendant process
 is launched without a console window. It starts at logon and restarts after a
 supervisor failure.
 
-The supervisor discovers every immediate `@disassembly/<target>/ghidra/*.gpr`
-project. Program names come from the target's `manifest.tsv`, or from the
-Ghidra project index when no manifest exists. This currently exposes `NA2`,
-`NUN3`, `NUN5`, and `shared`; future projects following the same layout need no
-configuration change.
+The supervisor discovers every immediate `@disassembly/<target>/ghidra/*.gpr` project.
+Program names come from the target's `manifest.tsv`, or from the Ghidra project index
+when no manifest exists. This currently exposes `NA2`, `NUN3`, `NUN4`, `NUN5`, and
+`shared`; future projects following the same layout need no configuration change.
 
 Each target runs in a separate hidden Ghidra backend on an OS-assigned temporary
 loopback port. Each backend opens every program in its transient project, so
