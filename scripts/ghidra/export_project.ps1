@@ -13,8 +13,7 @@ $taskContext = Get-UnWorkshopGhidraTaskContext
 $paths = $taskContext.Paths
 . $paths.files.ghidra_runtime
 
-$analysisDirectory = if ($Target -eq 'shared') { 'shared' } else { $Target }
-$analysisRoot = Join-Path $paths.disassembly $analysisDirectory
+$analysisRoot = Join-Path $paths.disassembly $Target
 $projectRoot = Join-Path $analysisRoot 'ghidra'
 $tempRoot = Join-Path $taskContext.Root 'temp'
 $runtimeRoot = Join-Path $tempRoot (
@@ -37,37 +36,17 @@ try {
     $headless = $ghidra.Headless
     $sharedScriptPath = $ghidra.ScriptPath
 
-    if ($Target -eq 'shared') {
-        $targets = @(Import-Csv -LiteralPath (Join-Path $PSScriptRoot 'targets.tsv') -Delimiter "`t" |
-            Where-Object target -eq 'shared')
-        if ($Program) { $targets = @($targets | Where-Object program -eq $Program) }
-        if ($targets.Count -eq 0) { throw 'No matching shared Ghidra targets.' }
-        foreach ($item in $targets) {
-            $exportRoot = Join-Path $analysisRoot "$($item.shared_scope)\exports"
-            New-Item -ItemType Directory -Force -Path $exportRoot | Out-Null
-            $arguments = @(
-                $projectRoot, $Target,
-                '-process', $item.program, '-readOnly', '-noanalysis',
-                '-scriptPath', $sharedScriptPath,
-                '-postScript', 'ExportAnalysis.java', $exportRoot
-            )
-            & $headless @arguments
-            if ($LASTEXITCODE -ne 0) { throw "Ghidra export failed: shared/$($item.program)" }
-        }
-    }
-    else {
-        $exportRoot = Join-Path $analysisRoot 'exports'
-        New-Item -ItemType Directory -Force -Path $exportRoot | Out-Null
-        $arguments = @($projectRoot, $Target, '-process')
-        if ($Program) { $arguments += $Program }
-        $arguments += @(
-            '-readOnly', '-noanalysis',
-            '-scriptPath', $sharedScriptPath,
-            '-postScript', 'ExportAnalysis.java', $exportRoot
-        )
-        & $headless @arguments
-        if ($LASTEXITCODE -ne 0) { throw "Ghidra export failed with exit code $LASTEXITCODE" }
-    }
+    $exportRoot = Join-Path $analysisRoot 'exports'
+    New-Item -ItemType Directory -Force -Path $exportRoot | Out-Null
+    $arguments = @($projectRoot, $Target, '-process')
+    if ($Program) { $arguments += $Program }
+    $arguments += @(
+        '-readOnly', '-noanalysis',
+        '-scriptPath', $sharedScriptPath,
+        '-postScript', 'ExportAnalysis.java', $exportRoot
+    )
+    & $headless @arguments
+    if ($LASTEXITCODE -ne 0) { throw "Ghidra export failed with exit code $LASTEXITCODE" }
     & (Join-Path $PSScriptRoot 'build_manifest.ps1') -Target $Target
 }
 finally {

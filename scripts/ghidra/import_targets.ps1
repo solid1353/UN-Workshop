@@ -63,11 +63,9 @@ try {
     $sharedScriptPath = $ghidra.ScriptPath
 
     foreach ($item in $targets) {
-        $analysisDirectory = if ($item.target -eq 'shared') { 'shared' } else { $item.target }
-        $analysisRoot = Join-Path $paths.disassembly $analysisDirectory
+        $analysisRoot = Join-Path $paths.disassembly $item.target
         $projectRoot = Join-Path $analysisRoot 'ghidra'
-        $artifactRoot = if ($item.target -eq 'shared') { Join-Path $analysisRoot $item.shared_scope } else { $analysisRoot }
-        $summaryPath = Join-Path $artifactRoot "summaries\$($item.program).tsv"
+        $summaryPath = Join-Path $analysisRoot "summaries\$($item.program).tsv"
         if ($ReanalyzeExisting) {
             if (-not (Test-Path -LiteralPath $projectRoot -PathType Container)) {
                 throw "Ghidra project is missing: $($item.target)"
