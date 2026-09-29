@@ -30,6 +30,17 @@ public class SetPortableSourcePath extends GhidraScript {
                     alias = "@source_nun3/PRG/" + name;
                 }
                 break;
+            case "NUN4":
+                if (name.equals("SLUS_218.62")) {
+                    alias = "@source_nun4/SLUS_218.62";
+                }
+                else if (name.endsWith(".IRX")) {
+                    alias = "@source_nun4/MODULES/" + name;
+                }
+                else {
+                    alias = "@source_nun4/PRG/" + name;
+                }
+                break;
             case "NUN5":
                 alias = name.equals("SLES_556.05")
                     ? "@source_nun5/SLES_556.05"
