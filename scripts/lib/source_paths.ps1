@@ -26,16 +26,22 @@ function Resolve-UnWorkshopSourceAlias {
         [Parameter(Mandatory)][object]$Paths
     )
 
-    $match = [regex]::Match($Alias, '^@(?<root>source_[^/\\]+)[/\\](?<child>.+)$')
+    $match = [regex]::Match($Alias, '^@(?<root>source(_[^/\\]+)?)[/\\](?<child>.+)$')
     if (-not $match.Success) { throw "Invalid source alias: $Alias" }
-    $root = Get-UnWorkshopSourceRoots -Paths $Paths |
-        Where-Object Name -eq $match.Groups['root'].Value |
-        Select-Object -First 1
-    if ($null -eq $root) { throw "Unknown source alias: $Alias" }
+    $rootPath = if ($match.Groups['root'].Value -eq 'source') {
+        [IO.Path]::GetFullPath($Paths.Source)
+    }
+    else {
+        $root = Get-UnWorkshopSourceRoots -Paths $Paths |
+            Where-Object Name -eq $match.Groups['root'].Value |
+            Select-Object -First 1
+        if ($null -eq $root) { throw "Unknown source alias: $Alias" }
+        $root.Path
+    }
     $child = $match.Groups['child'].Value
     if ([IO.Path]::IsPathRooted($child)) { throw "Invalid source alias: $Alias" }
-    $resolved = [IO.Path]::GetFullPath((Join-Path $root.Path $child))
-    $prefix = $root.Path.TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
+    $resolved = [IO.Path]::GetFullPath((Join-Path $rootPath $child))
+    $prefix = $rootPath.TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
     if (-not $resolved.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) {
         throw "Source alias escapes its root: $Alias"
     }
