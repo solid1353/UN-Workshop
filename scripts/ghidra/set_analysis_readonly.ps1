@@ -7,7 +7,7 @@ $ErrorActionPreference = 'Stop'
 $paths = Get-UnWorkshopPaths -NoProject
 
 if (-not $AnalysisDirs -or $AnalysisDirs.Count -eq 0) {
-    $AnalysisDirs = @('NA2', 'NUN3', 'NUN5', 'NUN6', 'shared') | ForEach-Object {
+    $AnalysisDirs = @('NA2', 'NUN3', 'NUN4', 'NUN5', 'NUN6', 'shared') | ForEach-Object {
         Join-Path $paths.disassembly $_
     }
 }

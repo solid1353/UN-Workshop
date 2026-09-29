@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('all', 'NA2', 'NUN3', 'NUN5', 'NUN6', 'shared')]
+    [ValidateSet('all', 'NA2', 'NUN3', 'NUN4', 'NUN5', 'NUN6', 'shared')]
     [string]$Target = 'all',
     [string]$Program,
     [switch]$ReanalyzeExisting,

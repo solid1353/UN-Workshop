@@ -95,7 +95,7 @@ supervisor failure.
 The supervisor discovers every immediate `@disassembly/<target>/ghidra/*.gpr`
 project. Program names come from the target's `manifest.tsv`, or from the
 Ghidra project index when no manifest exists. This currently exposes `NA2`,
-`NUN3`, `NUN5`, `NUN6`, and `shared`; future projects following the same layout
+`NUN3`, `NUN4`, `NUN5`, `NUN6`, and `shared`; future projects following the same layout
 need no configuration change.
 
 Each target runs in a separate hidden Ghidra backend on an OS-assigned temporary
