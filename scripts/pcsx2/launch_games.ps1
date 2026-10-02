@@ -49,6 +49,8 @@ param(
 
     [string]$InputRecordingsRoot,
 
+    [string]$CaptureRoot,
+
     [ValidateRange(5, 120)]
     [int]$WindowWaitSeconds = 30
 )
@@ -334,21 +336,27 @@ foreach ($requiredFile in $requiredFiles) {
 }
 
 if ($Snapshots) {
-    $captureRoot = if (-not [string]::IsNullOrWhiteSpace($CaptureDirectory)) {
+    $recordingCaptureRoot = if (-not [string]::IsNullOrWhiteSpace($CaptureDirectory)) {
         [IO.Path]::GetFullPath($CaptureDirectory)
     }
     else {
+        $captureParent = if ([string]::IsNullOrWhiteSpace($CaptureRoot)) {
+            Join-Path $paths.Project 'captures'
+        }
+        else {
+            [IO.Path]::GetFullPath($CaptureRoot)
+        }
         $recordingStem = [IO.Path]::GetFileNameWithoutExtension($recordingName)
-        Join-Path $paths.Project "captures\$recordingStem"
+        Join-Path $captureParent $recordingStem
     }
     $captureDirectories = @(
         for ($index = 0; $index -lt $selectedGames.Count; $index++) {
             if ($selectedGames.Count -eq 1 -and
                 -not [string]::IsNullOrWhiteSpace($CaptureDirectory)) {
-                $captureRoot
+                $recordingCaptureRoot
             }
             else {
-                Join-Path $captureRoot $selectedGames[$index].Selector
+                Join-Path $recordingCaptureRoot $selectedGames[$index].Selector
             }
         }
     )
