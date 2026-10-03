@@ -188,9 +188,9 @@ typedef struct Fighter {
     int copied_character_id; // +0x8C from character record
     char *character_display_name;
     char *body_filename;
-    char (*palette_names)[30];
-    char (*texture_names)[30];
-    char (*model_names)[30];
+    void *palette_names /* contiguous name records, 30 chars per record */;
+    void *texture_names /* contiguous name records, 30 chars per record */;
+    void *model_names /* contiguous name records, 30 chars per record */;
     char *effect_anchor_name;
     void *character_callbacks;
     unsigned char _unknown_00ac[8];
@@ -1744,9 +1744,9 @@ typedef struct AwakeningCharacterRecord {
     int character_id;
     char *display_name;
     char *body_filename;
-    char (*palette_names)[30];
-    char (*texture_names)[30];
-    char (*model_names)[30];
+    void *palette_names /* contiguous name records, 30 chars per record */;
+    void *texture_names /* contiguous name records, 30 chars per record */;
+    void *model_names /* contiguous name records, 30 chars per record */;
     char *effect_anchor_name;
     void *callbacks;
     unsigned char _pad_0020[8];
@@ -4167,7 +4167,7 @@ typedef struct PadClientSlot {
 
 typedef struct BtlSaveResultController { unsigned char _unknown_0000[8]; int state; int ranking_result; unsigned char _unknown_0010[8]; int reward_amount; short modal_gate; unsigned char _unknown_001e[2]; void *presentation; unsigned char _unknown_0024[4]; void *dialog_presentation; unsigned char _unknown_002c[0xC]; struct SurvivalCourseDescriptor *descriptor; struct SurvivalRankingView *ranking_child; int character_id; int elapsed_seconds; int course_index; int result_kind; unsigned char _unknown_0050[4]; short ordinal; } BtlSaveResultController;
 
-typedef struct SurvivalSaveCourse { unsigned char row; unsigned char group; unsigned char _unknown_0002[2]; unsigned char (*opponents)[3]; short battle_count; unsigned short counter_id; signed char counter_increment; unsigned char _unknown_000d; unsigned short reward_bonus; char *native_name; } SurvivalSaveCourse;
+typedef struct SurvivalSaveCourse { unsigned char row; unsigned char group; unsigned char _unknown_0002[2]; void *opponents /* contiguous three-byte rows */; short battle_count; unsigned short counter_id; signed char counter_increment; unsigned char _unknown_000d; unsigned short reward_bonus; char *native_name; } SurvivalSaveCourse;
 
 typedef struct SaveRpcClient { unsigned int active_request; unsigned char _unknown_0004[0x14]; unsigned int callback_gp; void *callback; void *callback_argument; } SaveRpcClient;
 
@@ -6132,7 +6132,7 @@ typedef struct BattleCountdown { unsigned char flags; unsigned char _unknown_01[
 
 typedef struct BattleConditionDefinition { unsigned char _unknown_00[0x18]; signed char count; unsigned char _unknown_19; short ids[4]; unsigned char _unknown_22[2]; unsigned int presentation_payloads[4]; unsigned char _unknown_34[0x18]; } BattleConditionDefinition;
 
-typedef struct EncounterSequenceDefinition { unsigned char _unknown_00[4]; unsigned char (*records)[3]; short limit; } EncounterSequenceDefinition;
+typedef struct EncounterSequenceDefinition { unsigned char _unknown_00[4]; void *records /* contiguous three-byte rows */; short limit; } EncounterSequenceDefinition;
 
 typedef struct EncounterFlow { int state; int ordinal; int limit; int elapsed; int ranking_row; int type; BattleConditionDefinition *conditions; void *sequence_data; unsigned char _unknown_20[4]; void *transition; unsigned char _unknown_28[4]; void *result_helper; EncounterSequenceDefinition *definition; RngShuffledIds *selection_table; } EncounterFlow;
 
