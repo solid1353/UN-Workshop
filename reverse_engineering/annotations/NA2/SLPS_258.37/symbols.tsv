@@ -1,0 +1,313 @@
+address	kind	name	type	comment
+0x00113710	function	pad_read_packet_words	void pad_read_packet_words(PadRecord *pad)	Invert packet button bytes and produce held, pressed, and released pad words.
+0x00114D90	function	pad_direction_from_analog	int pad_direction_from_analog(float angle, unsigned int *held, unsigned char magnitude)	Derive native direction bits from analog angle and magnitude.
+0x00114E60	function	pad_analog_from_direction	int pad_analog_from_direction(float *angle, unsigned char *magnitude, unsigned int held)	Derive analog angle and magnitude from native direction bits.
+0x0016E6F0	function	soft_double_abs		Absolute value of a soft-float double: clears the sign bit.
+0x0017FD90	function	prng_next		Stateful pseudo-random generator.
+0x00180210	function	prng_inclusive	int prng_inclusive(int max)	Random integer 0..max: prng_next modulo max + 1.
+0x001805A0	function	angle_to_point	float angle_to_point(float *from, float *to)	Wrapped atan2(dy, dx) + pi/2 from one position to another.
+0x00180680	function	planar_distance	float planar_distance(float *from, float *to)	sqrt(dx^2 + dy^2); the third component is cleared first.
+0x00180D10	function	angle_within_half_tolerance	int angle_within_half_tolerance(float angle, float target, float tolerance)	Wrap an angular difference and apply the strict half-tolerance test.
+0x001A8F00	function	animation_find_by_name		Look up an animation object by ANM_ name.
+0x001B1470	function	ccs_load		Resident CCS loader; stores an animation chunk's (0xCCCC0700) second word as the animation frame count +0x0C.
+0x001B99B0	function	animation_attach		Attach an animation; argument 3 zero discards any blend object and creates none.
+0x001BB210	function	animation_advance_position		Advance a non-looping animation; reports the end once the position reaches (frame_count - 1) * 256.
+0x001EF330	function	battle_create_graph	void battle_create_graph(void *battle)	Create the overlay battle graph and retain both input-object pointers.
+0x001EF8F0	function	battle_loop_active	int battle_loop_active(void *battle)	Active battle-loop branch that collects scheduler masks and runs the input phase.
+0x001F0290	function	battle_collect_scheduler_masks	void battle_collect_scheduler_masks(void *battle)	Collect the two resident scheduler enable masks.
+0x001F03E0	function	battle_dispatch_phases	void battle_dispatch_phases(void *battle)	Call the battle registry slots +0x0C, +0x10, and +0x14 in that order.
+0x001F1370	function	camera_reference_get		Return the camera/reference object whose rotation +0x40/+0x48 the battle input uses; null gives zeros.
+0x001F3DC0	function	bindings_update	void bindings_update(int side, short *bindings)	Update configured binding arrays and notify an existing battle input object.
+0x001F3F10	function	bindings_get	short * bindings_get(int side)	Return the configured eight-binding array for a controller side.
+0x0020D030	function	input_sector_widen_state_a		Fighter-state routine that sets both input sector thresholds to about 2.09419 rad (0x40060723).
+0x0020D910	function	input_sector_widen_state_b		Second fighter-state routine that sets both input sector thresholds to about 2.09419 rad.
+0x0020EAE0	function	awakened_vertical_input	void awakened_vertical_input(Fighter *fighter)	Awakened Gaara/Deidara branch: low direction bits 0x4/0x8 adjust vertical velocity.
+0x002118A0	function	timeline_event_crossed	int timeline_event_crossed(TimelineBlock *timeline, int event)	Nonzero on the update where the timeline crosses the event; event 0 fires on the first update after state entry.
+0x00211D80	function	timeline_advance	void timeline_advance(float rate, TimelineBlock *timeline)	Advance a timeline block by a floating-point rate.
+0x00211E70	function	countdown_decrement	void countdown_decrement(float rate, TimelineBlock *countdown)	Decrement a countdown block and clamp it at zero.
+0x00214A40	function	fighter_init	void fighter_init(Fighter *fighter)	Fighter initialization: recovery source/record cleared, update_rate_multiplier 1.0, statistics reset then reloaded from the per-side bank.
+0x002151E0	function	fighter_load_character_record		Copy the static character record to fighter +0x8C..+0x164, set action counts from record +0x28 and the action array from record +0x30, else +0x2C.
+0x00215950	function	fighter_load_character		Main character loader; keeps the ANM_ name index order, uses the common container for cmn names.
+0x002166A0	function	fighter_placement_check_a	int fighter_placement_check_a(Fighter *fighter)	Rejects recovery substates 0x61/0x62 and other flags; used by a visual-state path.
+0x00216720	function	fighter_placement_check_b	int fighter_placement_check_b(Fighter *fighter)	Rejects recovery substates 0x61/0x62 and other flags; used by a visual-state path.
+0x002167A0	function	fighter_participant_eligible	int fighter_participant_eligible(Fighter *fighter)	False for state_flags 0x80, major 6, substates 0x42..0x49, or nonzero exchange_roles; used to choose participants, not to accept hits.
+0x00216820	function	context_mode_word	int context_mode_word(void)	Reads a word through the global context pointer; zero admits recovery-source retention.
+0x00216A60	function	fighter_end_exchange	void fighter_end_exchange(Fighter *fighter)	Unless status_flags 0x01: tear down the Extra Hit exchange, release held (5,0x50) to neutral, set status_flags 0x01/0x02.
+0x00216D00	function	fighter_paired_event		Paired event callback; response 0x59 calls it with 5 at primary event 1.
+0x002171C0	function	input_history_clear	void input_history_clear(Fighter *fighter)	Clear all 32 input-history samples, the current input and the ring index.
+0x00217260	function	input_history_has	int input_history_has(Fighter *fighter, unsigned int mask, int count, int offset)	Nonzero when one of count stored samples before offset contains mask.
+0x00217320	function	fighter_copy_input_outputs	void fighter_copy_input_outputs(Fighter *fighter)	Copy translated input outputs to the fighter.
+0x002173D0	function	fighter_pre_phase_step	void fighter_pre_phase_step(Fighter *fighter)	Runs between the input bridge and the phase updater in the active-fighter pass.
+0x00217860	function	fighter_current_action_index		Current character-local action index.
+0x00217930	function	fighter_action_record	ActionRecord * fighter_action_record(Fighter *fighter, short index)	Action record by index; -3 gives the current record.
+0x00217990	function	fighter_chart_action_record	ActionRecord * fighter_chart_action_record(Fighter *fighter, short index)	Action record lookup used by the move chart.
+0x00217BD0	function	fighter_action_exit	void fighter_action_exit(Fighter *fighter)	Per-major action-exit dispatcher called by the state setter.
+0x00217E40	function	fighter_set_action_state	int fighter_set_action_state(Fighter *fighter, short major, short substate, int force)	Store major state and substate, reset the action cursors, and select the state descriptor.
+0x00218060	function	fighter_start_phase_animation		Start the phase animation without blending, seeking to the start frame (frame 1 when rate < 256 and start is 0).
+0x00218190	function	fighter_select_phase_animation	int fighter_select_phase_animation(Fighter *fighter, short slot)	Select a descriptor-specified animation slot; clears +0xB88 when it changes.
+0x002183D0	function	apply_gravity	void apply_gravity(float gravity, Fighter *fighter, float *speed)	Apply gravity to a vertical speed.
+0x00218D30	function	actions_resolve_thresholds		Resolve the -17320.508 threshold sentinel in the working action array.
+0x00218FE0	function	actions_resolve_rows		Convert action record rows to pointers; records 0..3 use rows 0, 4, 6, 10.
+0x00219620	function	actions_setup_working_array		Build the working action array: jutsu-selector records 0..3, default records 4.., one retained jutsu slot among 4..9.
+0x0021ACB0	function	response_motion_update	void response_motion_update(Fighter *fighter, void *row, void *source)	Shared response-table motion and event-gate engine.
+0x0021C9A0	function	stage_correct_position		Stage position correction; response dispatch compares the corrected +0x30 component.
+0x0021D200	function	action_entry_cleanup	void action_entry_cleanup(Fighter *fighter)	Major-8 entry/cleanup; clears pending_action.
+0x0021D380	function	action_queue_set		Replace, fill or clear the pending action through the retained direct-action chain (Battle AI).
+0x0021DAE0	function	action_queue_dispatch	void action_queue_dispatch(Fighter *fighter)	Continue a retained chain; input selection calls it instead of building a signature while queued_chain != -1.
+0x0021DDB0	function	action_stage_exchange_candidate	int action_stage_exchange_candidate(Fighter *fighter)	AI candidate staging for exchange groups or mode 1; mask built once before the full-array scan.
+0x0021DF60	function	action_find_by_masks	short action_find_by_masks(Fighter *fighter, unsigned int category, unsigned int secondary, char continuation)	First record with all requested category and secondary bits; secondary 0xFFFFFFFF skips that test.
+0x0021ED70	function	hit_resolve_pair	void hit_resolve_pair(Fighter *fighter)	Pair hit resolver; edits both fighters' +0xE3C hit bits.
+0x0021F610	function	hit_classify_pair	int hit_classify_pair(Fighter *attacker)	Pre-response classifier: 1 ordinary, -1 guarded, -2 substitution, 0 rejected (defender rejection count positive).
+0x00220690	function	hit_attacker_landed	void hit_attacker_landed(Fighter *fighter, int mode)	Attacker-side handling of a landed hit, including the attacker pause.
+0x002209A0	function	hit_route_accepted	int hit_route_accepted(Fighter *fighter, int mode)	Route an accepted hit to the ordinary or guarded response from +0x95A.
+0x00221120	function	hit_enter_trade		Simultaneous hits with no rejection count: both fighters enter 0x5B (grounded) or 0x5C.
+0x00221600	function	hit_handle_bit2		Handles hit request bit 0x2 after the per-action pass.
+0x00222A40	function	hit_replacement_record		Replacement attack record for router mode 0.
+0x00222B20	function	hit_lookup_record		Attack-record lookup for router mode 0.
+0x00222BD0	function	hit_expected_repeat	short hit_expected_repeat(Fighter *fighter)	Expected repeat count: positive attack_repeat_countdown while exchange_roles is 0, else 1.
+0x00222F00	function	stats_reset_block	void stats_reset_block(Fighter *fighter, int block)	Clear all 24 statistic pairs of a block.
+0x00223100	function	stats_clear_count		
+0x00223120	function	stats_clear_max		
+0x00223140	function	stats_increment	int stats_increment(Fighter *fighter, int index, int block)	Increment a statistic up to 9999 and raise its maximum, unless status_flags 0x01.
+0x00223450	function	stats_condition		Statistic-derived condition evaluator; case 0x1B reads ordinary hits, 0x19 guarded hits.
+0x00224510	function	hit_init_update_pause	int hit_init_update_pause(Fighter *fighter, ActionRecord *attack, int flags)	Initialize the fighter-update pause from attack record +0x30.
+0x002247A0	function	hit_rejection_active	int hit_rejection_active(Fighter *fighter)	hit_rejection.current > 0.
+0x002247D0	function	hit_set_rejection	void hit_set_rejection(Fighter *fighter, short count, char force)	Stage -count with the pending flag when positive; skipped while pending unless forced.
+0x00224870	function	hit_init_rejection_count	int hit_init_rejection_count(Fighter *fighter, ActionRecord *attack)	Initialize countdown +0x230 from attack record +0x32.
+0x00225B60	function	chakra_staged_gate	int chakra_staged_gate(Fighter *fighter)	Gate the Triangle-initiated staged-chakra path.
+0x002260D0	function	chakra_cancel_stage		Cancel staged chakra; clears pending_action only for a jutsu-category record.
+0x00226FA0	function	fighter_attached_object_update		Attached-object branch clears a nonempty pending action when status_flags 0x10 is clear.
+0x00228130	function	guard_stance_exit		Exit cleanup of guard stance (0,5).
+0x00228320	function	guard_update_input	void guard_update_input(Fighter *fighter, unsigned int logical_input)	Update guard-input age and temporal state; enter guard stance when eligible.
+0x00228550	function	guard_response_exit		Exit cleanup of guarded responses (0,6)/(0,7).
+0x00228760	function	guard_enter_response	void guard_enter_response(Fighter *fighter, void *source, ActionRecord *attack)	Select the guarded-hit state and initialize the guarded response.
+0x00228B50	function	guard_response_init	void guard_response_init(Fighter *fighter)	Apply the guarded-response row: pause fallback, rejection count, action lock, phase rate; count guarded hits.
+0x00228E90	function	guard_update_stance	void guard_update_stance(Fighter *fighter)	Continue guard stance or reaction and select its exit.
+0x00229130	function	input_match_trigger_binding		Direct trigger-binding history-matcher consumer.
+0x002297D0	function	hit_intercept		Substitution interception: store the code, clear the action lock, damp speeds, force (0,8).
+0x00229B80	function	paired_state_update		Paired state machine; its state 7 clears the other fighter's pending action.
+0x0022A890	function	recovery_late_window	int recovery_late_window(Fighter *fighter)	Cursor window test of the later ordinary-response recovery; random windows are drawn per call.
+0x0022AAB0	function	recovery0_enter	void recovery0_enter(Fighter *fighter)	Enter ACT_RCV_0 (0,0x09) without the ordinary input gates.
+0x0022AB80	function	recovery0_motion	void recovery0_motion(Fighter *fighter)	ACT_RCV_0 motion: vertical sqrt(2*g*250) - g/2 with g = 3 * motion_scale.
+0x0022AF10	function	recovery1_enter	void recovery1_enter(float planar_scale, float vertical_scale, Fighter *fighter, int count)	Enter ACT_RCV_1 (0,0x0A), clear the action lock; count nonzero records the input-recovery statistic.
+0x0022B160	function	recovery1_motion	void recovery1_motion(Fighter *fighter)	ACT_RCV_1 motion at secondary event 0 of phase 1.
+0x0022B630	function	action_rewrite_logical_mask	int action_rewrite_logical_mask(Fighter *fighter, unsigned int *mask)	Optionally rewrite the local logical mask before action selection.
+0x0022BA30	function	action_consume_binding2_route	void action_consume_binding2_route(Fighter *fighter)	Consume the state-gated 0x00040000 binding-2 route.
+0x0022D5B0	function	fighter_reaction_variant_high	int fighter_reaction_variant_high(Fighter *fighter)	(+0x9B8 & 3) > 1: the fighter is outside the grounded-family reaction variant.
+0x0022E760	function	section_transfer_request	int section_transfer_request(Fighter *fighter, short direction)	Section-transfer request; 1 for native Up, -1 for native Down.
+0x0022F200	function	jump_request	int jump_request(Fighter *fighter)	Jump request from logical 0x00010000.
+0x002302C0	function	section_transfer_down_allowed	int section_transfer_down_allowed(Fighter *fighter)	
+0x00230A70	function	response_exit_cleanup	void response_exit_cleanup(Fighter *fighter, short major)	Major-5 exit: clears the streak when leaving major 5; zeroes landing speed and movement mode while exchange_roles is 0.
+0x00230F20	function	response_class_interaction		Classifies ordinary response substates for interaction handling.
+0x00230FF0	function	response_class_motion		Classifies ordinary response substates for motion handling.
+0x002310F0	function	response_contact_proposal	int response_contact_proposal(Fighter *fighter, short *substate, short *code)	Automatic contact rebound proposal: 0x48 for side contact, 0x49 for grounding.
+0x002312B0	function	response_contact_enter	void response_contact_enter(Fighter *fighter, short code)	Contact entry: 0x48 turns and clears the repeat count; 0x49 restores attack_scale.
+0x002316D0	function	response_held_handoff	void response_held_handoff(Fighter *fighter)	Held 0x4A..0x4E handoff synchronized to the paired fighter's action.
+0x00231A40	function	response_4f_rate_sequence	void response_4f_rate_sequence(Fighter *fighter)	Run the paired update-rate sequence of the normal 0x4F exit.
+0x00231BF0	function	hit_repeat_value	short hit_repeat_value(Fighter *source, Fighter *receiver)	Record-sensitive repeat value: expected repeat for the retained record, else the record's repeat_count.
+0x00231C60	function	response_select_substate		Convert attack record +0x2C and fighter context into an ordinary response substate.
+0x00232A50	function	response_retain_attack_record	int response_retain_attack_record(Fighter *fighter, void *source, ActionRecord *attack)	Retain a new attack record, repeat count, and knockback scale, then re-enter the router.
+0x00232B80	function	response_enter_ordinary	void response_enter_ordinary(Fighter *fighter, void *source, ActionRecord *attack, int flags)	Enter ordinary major state 5, retain hit provenance, and start response side effects.
+0x002333A0	function	hit_retain_source		Source-retaining wrapper: writes recovery provenance and adds a pending combo count without a response.
+0x00233540	function	hit_paired_marker_consume		Consumes the paired marker written by router mode 2; only ordinary marker 1 notifies.
+0x00233870	function	response_dispatch_transition	void response_dispatch_transition(Fighter *fighter, unsigned int flags)	Ordinary-response transitions: completion, contact, and downed handoffs.
+0x002346B0	function	response_apply_table_timing	void response_apply_table_timing(Fighter *fighter)	Apply response-table timing and lock values and per-response side effects.
+0x00234DA0	function	response_update_ordinary	void response_update_ordinary(Fighter *fighter)	Per-update ordinary-response driver; advances table motion and event impulses.
+0x00235100	function	recovery_init		Recovery initialization for 0x61/0x62; removes effects 0 and 1.
+0x00235200	function	recovery_exit_cleanup		Major-6 exit: stages rejection count 4/3/2 for 0x5E/0x5F/0x60, clears response_repeat_count except toward (5,0x3A/0x3B).
+0x002354C0	function	fighter_restore_gate_a		Gate of the effect 0x4A restore branch.
+0x00235510	function	downed_recovery_enter	void downed_recovery_enter(float scale, Fighter *fighter)	Initialize timed downed recovery and enter (6, 0x5D).
+0x00235690	function	downed_recovery_update	void downed_recovery_update(Fighter *fighter, int flags)	Update downed and recovery substates 0x5D..0x62.
+0x00235B70	function	downed_first_event	void downed_first_event(Fighter *fighter)	First event of 0x5D: rejection count 1 when inactive; clears the whole action-lock block.
+0x00235C60	function	downed_motion_update	void downed_motion_update(Fighter *fighter)	Downed motion; 0x61 installs the self/dummy recovery pair at primary event 0.
+0x00237060	function	contact_consume_chakra	void contact_consume_chakra(Fighter *fighter)	Called on a contact rebound; can consume the struck fighter's chakra.
+0x002378F0	function	action_exit_clear_pending		Common action exit followed by an explicit pending_action clear.
+0x00238A70	function	fighter_enter_action_record	void fighter_enter_action_record(Fighter *fighter, short index)	Select the live current record and clear the action bytes.
+0x002391B0	function	fighter_clear_action_bytes	void fighter_clear_action_bytes(Fighter *fighter)	Clears action bytes +0xA40/+0xA42/+0xA43/+0xA44.
+0x00239230	function	combo_add_pending		Add a pending combo count.
+0x00239250	function	action_window_progress	float action_window_progress(Fighter *fighter, int interval)	Authored execution-window progress; -1.0 outside the window.
+0x00239530	function	action_select_record	int action_select_record(Fighter *fighter, unsigned int signature, int mode)	Select a special, then an ordinary, action record.
+0x00239920	function	action_scan_jutsu_slots	int action_scan_jutsu_slots(Fighter *fighter, unsigned int signature)	Scan jutsu-class action slots 4 through 9.
+0x00239B00	function	action_stage_chain_slot	int action_stage_chain_slot(Fighter *fighter, unsigned int signature, int mode)	Stage the first qualifying chain slot 10 through 18.
+0x00239E50	function	action_entry_allowed	int action_entry_allowed(Fighter *fighter, int mode)	Action-entry eligibility predicate; false while +0x254 is nonzero.
+0x0023A0D0	function	action_selector_mode	int action_selector_mode(Fighter *fighter)	Selector mode -1..3 from exchange_roles; mode 0 when effect 0 or 1 is attached.
+0x0023A390	function	action_select_from_signature	int action_select_from_signature(Fighter *fighter, unsigned int logical_mask)	Build an action signature and drive selection and validation.
+0x0023A9A0	function	action_dispatch_index	int action_dispatch_index(Fighter *fighter, short index, int force)	Gate and dispatch an accepted action index.
+0x0023B280	function	action_stage_outcome_continuation		Stage a validated outcome-driven continuation.
+0x0023BEE0	function	action_slot19_allowed	int action_slot19_allowed(Fighter *fighter)	State gate of the fixed slot-19 route.
+0x0023BF80	function	action_reselect_allowed	int action_reselect_allowed(Fighter *fighter)	Routes an active major-8 fighter through immediate selection (current category 0x2 and fixed halfword values).
+0x0023E3C0	function	fighter_side_query		Side query used by the mode-1 signature rewrite.
+0x0023F170	function	attack_landing_recovery		On grounded completion of an attack with category 0x200 and flags 0x04000000 enters ACT_RCV_1 without the statistic.
+0x002406B0	function	rehit_classify_response_window	int rehit_classify_response_window(Fighter *fighter)	Classify current response windows for conditional rehit suppression.
+0x00240990	function	hit_attacker_gate_bits		Sibling of hit_response_gate_bits used by the attacker pause.
+0x002409E0	function	hit_response_gate_bits	unsigned char hit_response_gate_bits(Fighter *fighter, ActionRecord *attack, Fighter *receiver)	Combine incoming-attack, current-response, and repeat-record conditions into router gate bits.
+0x00240C40	function	action_build_chain_masks	void action_build_chain_masks(Fighter *fighter, int mode, unsigned int *category_mask, unsigned int *secondary_mask)	Build the two mode-specific eligibility masks for the chain scan.
+0x00241F10	function	exchange_set_roles		Extra Hit role writer; sets exchange_window of the opposite fighter.
+0x002426C0	function	exchange_receiver_update	int exchange_receiver_update(Fighter *fighter)	Extra Hit receiver handler; discards a pending counter at exchange count 15.
+0x00243EF0	function	exchange_teardown	void exchange_teardown(Fighter *fighter)	Retire the Extra Hit roles.
+0x002440C0	function	action_current_category_c0000	int action_current_category_c0000(Fighter *fighter)	Nonzero when the current action record has category mask 0xC0000; zero for a null record.
+0x00244110	function	fighter_restore_gate_b		Gate of the effect 0x4A restore branch.
+0x00244190	function	action_validate_candidate	int action_validate_candidate(Fighter *fighter, short index)	Validate an action-table candidate before dispatch.
+0x002445D0	function	action_prepare_companion	void action_prepare_companion(Fighter *fighter, int result)	Called for validator results 2 and 3 before dispatch.
+0x002449C0	function	jutsu_slots_rewrite		Rewrite category, display name and cost of slots 4..9, keeping one or none; signature and continuation unchanged.
+0x00244E00	function	special_record_gate		Special-record dispatch gate.
+0x00244EA0	function	special_admission	int special_admission(Fighter *fighter)	Rejects +0x168, special_block_check, +0x84, any exchange role, and an executing jutsu-category record.
+0x00244F80	function	opponent_lock_override		Zero admits the 0x5B/0x5C ordinary-response override.
+0x002455B0	function	paired_binding1_intercept	int paired_binding1_intercept(Fighter *fighter)	Can take logical binding-1 input for paired state before ordinary selection.
+0x00246D10	function	exchange_rate_cleanup		Restores update_rate_override/multiplier on arguments other than 2.
+0x00247310	function	paired_rate_sequence	void paired_rate_sequence(Fighter *fighter)	Sets both rate fields to 0.5 at counter 30 and restores 1.0 after.
+0x00247D40	function	input_params_template		Initialize the 24-byte input-parameter template.
+0x00247DC0	function	input_params_apply	void input_params_apply(Fighter *fighter, short *params)	Copy twelve parameter halfwords to hold_cooldown.. and input_params_shadow.
+0x00247F00	function	input_params_default_hold_release		Default hold/release parameters; cap zero disables synthesis.
+0x00248020	function	input_match_binding1_release		Current-record binding-1 release matcher consumer.
+0x00248540	function	input_params_default_multi_press		Default multi-press parameters: threshold 2, distance 12.
+0x00248580	function	fighter_update_phase_and_exits	void fighter_update_phase_and_exits(Fighter *fighter)	Run the phase updater and the per-major exit dispatchers.
+0x00248EC0	function	fighter_consume_logical_input	void fighter_consume_logical_input(Fighter *fighter)	Consume the translated logical mask in order; passes +0x338 to guard_update_input.
+0x00249640	function	fighter_dispatch_action_update	void fighter_dispatch_action_update(Fighter *fighter)	Per-action update dispatch: major 5 to the ordinary response, major 6 to recovery.
+0x0024A660	function	fighter_apply_movement	void fighter_apply_movement(Fighter *fighter)	Movement, ground contact, and gravity application.
+0x0024C440	function	fighter_update_countdowns	void fighter_update_countdowns(Fighter *fighter)	Main fighter countdown maintenance (+0x20C, then +0x254) and resident post-translation synthesis.
+0x0024CCD0	function	input_synthesize_multi_press	void input_synthesize_multi_press(Fighter *fighter)	Synthesize a multi-press logical bit from the count helper.
+0x0024CDA0	function	input_synthesize_hold_release	void input_synthesize_hold_release(Fighter *fighter)	Synthesize hold and release logical bits through boolean wrapper calls.
+0x0024CFD0	function	fighter_movement_pass	void fighter_movement_pass(Fighter *fighter)	Movement pass of virtual slot +0x10; calls fighter_apply_movement.
+0x0024D1C0	function	fighter_advance_animation	void fighter_advance_animation(Fighter *fighter)	Advance the current animation and store its end result at +0xB88.
+0x0024D5E0	function	fighter_advance_timelines	void fighter_advance_timelines(Fighter *fighter)	Advance the primary and secondary action timelines while the update pause is inactive.
+0x0024DA50	function	fighter_update_movement_slot	int fighter_update_movement_slot(Fighter *fighter)	Fighter virtual slot +0x10: movement and animation, or input selection during a pause.
+0x0024DE40	function	fighter_update_timelines_slot	void fighter_update_timelines_slot(Fighter *fighter)	Fighter virtual slot +0x18: advances the action timelines.
+0x0024FD80	function	fighters_update	void fighters_update(void *fighters)	Active-fighter loop: synthesis, bridge, consumption, and state passes; skips action updates while +0x20C is positive.
+0x002504B0	function	fighters_phase_slot_0c		Coordinator slot +0x0C: fighters_update, then the generic removal pass.
+0x00250800	function	fighters_phase_slot_14		Coordinator slot +0x14: every fighter's timeline slot +0x18.
+0x00250C50	function	naruto_classic_construct		ID 1 constructor; sets record +0x30 to the fighter's embedded action array before loading.
+0x002536C0	function	naruto_classic_hit_response	int naruto_classic_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 1 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002541D0	function	sasuke_classic_hit_response	int sasuke_classic_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 2 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002554D0	function	rock_lee_classic_hit_response	int rock_lee_classic_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 3 hit-response callback (source, receiver, mode); -1 keeps the authored response. Action 0x1A phases 2/3: 0x3D when facings match, else 0x3C; mode 2 sets attack_scale 1.35.
+0x00257BD0	function	gaara_classic_hit_response	int gaara_classic_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 4 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x00258950	function	shikamaru_classic_hit_response	int shikamaru_classic_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 5 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x00259C90	function	neji_classic_hit_response	int neji_classic_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 6 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x0025A8B0	function	sakura_classic_hit_response	int sakura_classic_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 7 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x0025B5D0	function	haku_hit_response	int haku_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 10 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x0025C070	function	zabuza_hit_response	int zabuza_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 11 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x0025D5C0	function	hinata_classic_hit_response	int hinata_classic_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 12 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x0025E510	function	tenten_classic_hit_response	int tenten_classic_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 13 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x0025FDA0	function	choji_classic_hit_response	int choji_classic_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 14 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x00260C90	function	ino_classic_hit_response	int ino_classic_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 15 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x00262F60	function	kiba_classic_hit_response	int kiba_classic_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 16 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x00264A90	function	shino_classic_hit_response	int shino_classic_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 17 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x0026B5D0	function	kankuro_classic_hit_response	int kankuro_classic_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 18 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x0026D760	function	temari_classic_hit_response	int temari_classic_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 19 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x0026F000	function	third_hokage_hit_response	int third_hokage_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 22 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x0026FAA0	function	char_rcv1_callback_b		Character-local callback: action 0x29 phase 1 enters ACT_RCV_1 with scale 0.5 after secondary cursor 6.
+0x00270270	function	jirobo_hit_response	int jirobo_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 34 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x00271920	function	kidomaru_hit_response	int kidomaru_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 35 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002730C0	function	tayuya_hit_response	int tayuya_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 36 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002746A0	function	sakon_hit_response	int sakon_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 37 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x00276370	function	kimimaro_hit_response	int kimimaro_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 38 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x00278310	function	yellow_flash_hit_response	int yellow_flash_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 39 hit-response callback (source, receiver, mode); -1 keeps the authored response. Action 0x1B phase 2: 0x51/0x52 below repeat 2, else 0x35; action 0x28: 0x4C below 2, else 0x33.
+0x00278930	function	konohamaru_squad_construct		ID 40 constructor; hold/release cooldown 2, threshold 2, cap 60.
+0x00279EB0	function	konohamaru_squad_channel3		ID 40 channel 3: action 0x19 sets or clears flags 0x400000 by input ratio.
+0x0027AA80	function	konohamaru_squad_hit_response	int konohamaru_squad_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 40 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x0027B330	function	hanabi_hit_response	int hanabi_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 41 hit-response callback (source, receiver, mode); -1 keeps the authored response. Action 0x18: 0x3F with attack_scale 1.0 below repeat 2, else 0x32 with 0.5; writes in both modes.
+0x0027CEC0	function	first_hokage_hit_response	int first_hokage_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 42 hit-response callback (source, receiver, mode); -1 keeps the authored response. Returns -1 (li v0,-1; jr ra).
+0x0027D9C0	function	second_hokage_hit_response	int second_hokage_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 43 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x0027E4F0	function	anko_hit_response	int anko_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 46 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002806A0	function	naruto_nine_tails_hit_response	int naruto_nine_tails_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 47 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x00280DE0	function	sasuke_stage2_construct		ID 48 constructor; hold/release cooldown 24, threshold 24, cap 60.
+0x00280FF0	function	sasuke_stage2_channel3		ID 48 channel 3: action 0x2A phase 2 toggles flags 0x40000 by the opponent's grounded bit.
+0x002821D0	function	sasuke_stage2_hit_response	int sasuke_stage2_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 48 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x00283A70	function	lee_loopy_channel3		ID 49 channel 3: action 0x22 replaces the pending index with 0x23 when the cost fails.
+0x00284FE0	function	lee_loopy_hit_response	int lee_loopy_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 49 hit-response callback (source, receiver, mode); -1 keeps the authored response. Action 0x1B phases 0/1/2 select 0x4A/0x2B/0x39; actions 0x18/0x20/0x2B branch on the repeat value.
+0x002860D0	function	gaara_possessed_hit_response	int gaara_possessed_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 50 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x00287770	function	choji_super_hit_response	int choji_super_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 51 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x00287F50	function	char_rcv1_callback_a		Character-local callback: action 0x29 phase 1 enters ACT_RCV_1 with scale 0.25 after secondary cursor 6.
+0x00288870	function	jirobo_stage2_hit_response	int jirobo_stage2_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 52 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x00288D60	function	kidomaru_stage2_construct		ID 53 constructor; hold/release cooldown 24, threshold 12, cap 36.
+0x00289A90	function	kidomaru_stage2_hit_response	int kidomaru_stage2_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 53 hit-response callback (source, receiver, mode); -1 keeps the authored response. Calls hit_repeat_value and returns -1.
+0x0028BFA0	function	tayuya_stage2_construct		ID 54 constructor; hold/release cooldown 24, threshold 24, cap 60.
+0x002911C0	function	tayuya_stage2_hit_response	int tayuya_stage2_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 54 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x00293C50	function	sakon_stage2_hit_response	int sakon_stage2_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 55 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x00295410	function	kimimaro_stage2_hit_response	int kimimaro_stage2_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 56 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x00295DB0	function	naruto_construct		ID 57 constructor; hold/release cooldown 16, threshold 16, cap 30.
+0x0029AC50	function	naruto_hit_response	int naruto_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 57 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x0029B430	function	sakura_channel3		ID 58 channel 3: action 0x2A toggles flags 0x100000 by a private count.
+0x0029B8A0	function	sakura_hit_response	int sakura_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 58 hit-response callback (source, receiver, mode); -1 keeps the authored response. Always returns -1; changes response motion or live attack fields.
+0x0029C1E0	function	gaara_kazekage_variant_categories		ID 59 working-array category switches; disabled rows get category zero.
+0x0029E6E0	function	gaara_kazekage_hit_response	int gaara_kazekage_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 59 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002A47B0	function	kankuro_hit_response	int kankuro_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 60 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002A7A90	function	temari_hit_response	int temari_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 61 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002AE680	function	chiyo_hit_response	int chiyo_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 62 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002B34D0	function	sasori_hit_response	int sasori_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 63 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002B37E0	function	deidara_construct		ID 64 constructor; hold/release cooldown 2, threshold 2, cap 36.
+0x002B49C0	function	deidara_variant_categories		ID 64 working-array category switches; disabled rows get category zero.
+0x002B4D60	function	deidara_channel2		ID 64 channel 2: changes action 0x2C motion rows at phase events.
+0x002B5250	function	deidara_channel3		ID 64 channel 3: flags 0x8000 by count/outcome; action 0x17 restores flags; action 0x2C resets bytes +0x5BCC/+0x5BCD.
+0x002B68F0	function	deidara_hit_response	int deidara_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 64 hit-response callback (source, receiver, mode); -1 keeps the authored response. Action 0x2C: flags 0x80000 when the receiver streak is at least 3; response-window baseline in bytes +0x5BCC/+0x5BCD; action 0x2B: 0x3F below repeat 3, else 0x34.
+0x002B84F0	function	neji_hit_response	int neji_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 65 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002B9660	function	tenten_channel3		ID 66 channel 3: action 0x25 toggles flags 0x80000 by a private count.
+0x002BB960	function	tenten_hit_response	int tenten_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 66 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002BCCB0	function	rock_lee_construct		ID 67 constructor; zeroes the 0x20-byte private block at +0x67F8.
+0x002BDB50	function	rock_lee_channel2		ID 67 channel 2: clears private bytes +0x67FC/+0x67FD while the opponent is not in major 5.
+0x002BDF80	function	rock_lee_channel3		ID 67 channel 3: action flag toggles and embedded-record resets.
+0x002BF9A0	function	rock_lee_hit_response	int rock_lee_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 67 hit-response callback (source, receiver, mode); -1 keeps the authored response. Action 0x18 phase 3 returns 0x3D with rejection_count 0x7FFF; action 0x36 toggles flags 0x80000 by byte +0x67FC, incremented in mode 2.
+0x002C1380	function	shikamaru_hit_response	int shikamaru_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 68 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002C4710	function	might_guy_channel3		ID 69 channel 3: action 0x34 toggles flags 0x80000 by a private count.
+0x002C55B0	function	might_guy_hit_response	int might_guy_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 69 hit-response callback (source, receiver, mode); -1 keeps the authored response. Action 0x25 sets flags 0x100000 while byte +0x69B0 < 2; delegates to guy_response_delegate.
+0x002C6380	function	guy_response_delegate		Might Guy delegated response handler; action 0x1C phase 3 returns 0x39 with rejection_count 0x7FFF.
+0x002C7E90	function	kakashi_hit_response	int kakashi_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 70 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002C8690	function	effect_4a_callback		Effect 0x4A callback: writes update_rate_multiplier of both fighters; can force paired 0x5D to 0x5F.
+0x002CB950	function	itachi_hit_response	int itachi_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 71 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002CDA90	function	kisame_hit_response	int kisame_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 72 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002D2560	function	nine_tails_fourth_hit_response	int nine_tails_fourth_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 73 hit-response callback (source, receiver, mode); -1 keeps the authored response. Action 0x28: 0x40 then random 0x27/0x29/0x2A when grounded; writes the record's repeat/pause/rejection.
+0x002D3F70	function	sasori_puppet_hit_response	int sasori_puppet_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 75 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002D4C10	function	sasori_hiruko_channel3		ID 76 channel 3: action 0x1E restores flags from the default array and sets 0x800000 in phase 1.
+0x002D5320	function	sasori_hiruko_hit_response	int sasori_hiruko_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 76 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002D7D70	function	chiyo_taijutsu_construct		ID 77 constructor; hold/release cooldown 16, threshold 8, cap 90; multi-press distance 30.
+0x002DA970	function	chiyo_taijutsu_hit_response	int chiyo_taijutsu_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 77 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002E2360	function	kiba_hit_response	int kiba_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 78 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002E5340	function	shino_hit_response	int shino_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 79 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002E7FC0	function	hinata_hit_response	int hinata_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 80 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002EAD30	function	choji_hit_response	int choji_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 81 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002EBB50	function	ino_hit_response	int ino_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 82 hit-response callback (source, receiver, mode); -1 keeps the authored response. Always returns -1; changes response motion or live attack fields.
+0x002ED720	function	jiraiya_hit_response	int jiraiya_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 83 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002EE1A0	function	tsunade_construct		ID 84 constructor; hold/release cooldown 16, threshold 12, cap 90.
+0x002EE380	function	tsunade_set_mode		ID 84 mode change: hold/release cap 60 in mode 1, 90 in mode 0.
+0x002EE660	function	tsunade_channel3		ID 84 channel 3: action 0x1D sets flags 0x400000 or 0x800000 by input ratio.
+0x002EF7E0	function	tsunade_hit_response	int tsunade_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 84 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002EFFD0	function	shizune_construct		ID 85 constructor; hold/release cooldown 16, threshold 5, cap 60.
+0x002F0B10	function	shizune_hit_response	int shizune_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 85 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002F1760	function	asuma_hit_response	int asuma_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 86 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002F37A0	function	kurenai_hit_response	int kurenai_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 87 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002F7890	function	orochimaru_hit_response	int orochimaru_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 89 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002F8DC0	function	kabuto_hit_response	int kabuto_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 90 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002FCA90	function	yamato_hit_response	int yamato_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 91 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x002FEF00	function	sai_hit_response	int sai_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 92 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x00303010	function	sasuke_hit_response	int sasuke_hit_response(Fighter *source, Fighter *receiver, int mode)	ID 93 hit-response callback (source, receiver, mode); -1 keeps the authored response.
+0x00303F60	function	effect_7d_construct		Effect 0x7D constructor; installs vtable 0x005DA0A0.
+0x00304070	function	effect_7d_update		Effect 0x7D callback: clears the rejection count in grounded phases and after cursor 60 can enter ACT_RCV_0.
+0x00305C30	function	effect_apply		Apply an effect; IDs 0 and 1 are local and install only on the supplied fighter.
+0x00306A60	function	fighter_has_effect_0_1	int fighter_has_effect_0_1(Fighter *fighter)	1 when an effect node with ID 0 or 1 is attached, regardless of its countdown.
+0x00306B00	function	fighter_remove_effects_0_1		Reason-1 removal request for effects 0 and 1; a locked countdown -2 survives.
+0x00306D30	function	fighter_effect_rate_factor	float fighter_effect_rate_factor(Fighter *fighter)	Sum of effect rate contributions capped at 1.25; exactly 1.0 in majors 5 and 6.
+0x00307320	function	fighter_knockback_scalar	float fighter_knockback_scalar(Fighter *fighter)	Source knockback scalar; when not 1.0 it scales planar fully and vertical at half strength.
+0x003073A0	function	special_block_check		Nonzero rejects special admission.
+0x00307A50	function	receiver_vector_predicate		Always returns zero; the source's callback vector is used.
+0x00307C50	function	fighter_motion_table		Character motion table; +0x70 bounds airborne vertical speed.
+0x00307EB0	function	jutsu_selector_character	int jutsu_selector_character(int selector)	Source character ID of a jutsu selector (selector >> 1).
+0x003083A0	function	downed_override_allowed		True when the target pointer and a global context word are both nonzero.
+0x00372AE0	function	jutsu_display_name		Display name from the name table 0x005AEC40 for a configured ID.
+0x00407550	data	guard_response_table	GuardResponseRow[10]	Guarded-response rows 0..4 grounded, 5..9 airborne.
+0x00407670	data	response_motion_table	ResponseMotionRow[54]	Ordinary-response motion rows for substates 0x27..0x5C.
+0x00407B90	data	null_action_record	ActionRecord	Copied into records 0..3 for jutsu selector 1.
+0x00407C00	label	atk_dummy_record		PL_ATK_DUMMY record used for self-sourced recovery provenance.
+0x004D9D50	data	naruto_actions	ActionRecord[49]	ID 57 shipped action array.
+0x004E4C60	data	gaara_kazekage_actions	ActionRecord[48]	ID 59 shipped action array.
+0x00500B30	data	deidara_actions	ActionRecord[46]	ID 64 shipped action array.
+0x005A2900	label	character_definition_table		94 rows; 78 distinct definitions.
+0x005AEC40	label	jutsu_name_table		Display names of the retained jutsu slot by configured ID.
+0x005B5490	data	direction_to_angle_table	float[16]	Native direction nibble to angle; 4.0 marks invalid nibbles.
+0x005B54D0	label	angle_to_direction_table		Eight angle sectors to native direction nibbles.
+0x005C06A0	data	resident_default_bindings	short[8]	Identical to the overlay's default_battle_bindings.
+0x005C2B50	label	action_entry_jump_table_a		Jump table of action_entry_allowed.
+0x005C2B70	label	action_entry_jump_table_b		Jump table of action_entry_allowed.
+0x005DA0A0	label	effect_7d_vtable		Callback at +0x10 is effect_7d_update.
+0x005DDD10	label	cc_command_ctrl_vtable		ccCommandCtrl vtable; RTTI 0x008C3030.
+0x005DDD30	label	cc_command_vtable		ccCommand vtable: destructor, slot +0x0C bindings_refresh, slot +0x10 input_object_update; RTTI 0x008C3048.
+0x006031F0	label	empty_string		
