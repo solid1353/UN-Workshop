@@ -340,7 +340,7 @@ new file mode 100644
 index 0000000..c54ccb7
 --- /dev/null
 +++ b/src/main/java/ghidrassistmcp/annotations/AnnotationApplier.java
-@@ -0,0 +1,199 @@
+@@ -0,0 +1,234 @@
 +/*
 + * Applies UN Workshop annotations: C type declarations and symbol rows.
 + * The apply_annotations MCP tool uses it.
@@ -351,6 +351,8 @@ index 0000000..c54ccb7
 +import java.nio.charset.StandardCharsets;
 +import java.util.ArrayList;
 +import java.util.List;
++import java.util.regex.Matcher;
++import java.util.regex.Pattern;
 +
 +import ghidra.app.cmd.disassemble.DisassembleCommand;
 +import ghidra.app.cmd.function.ApplyFunctionSignatureCmd;
@@ -430,6 +432,39 @@ index 0000000..c54ccb7
 +        DataTypeManager manager = program.getDataTypeManager();
 +        CParser parser = new CParser(manager, true, null);
 +        try {
++            // Register tags and typedef aliases before definitions. Annotation edits can
++            // add a referenced type later in types.h; a fresh project must not depend
++            // on types left behind by previous in-memory applications.
++            String code = types.replaceAll("(?s)/\\*.*?\\*/|//[^\\r\\n]*", " ");
++            Matcher tags = Pattern.compile(
++                "typedef\\s+(struct|union)\\s+(\\w+)\\s*\\{").matcher(code);
++            while (tags.find()) {
++                parser.parse("typedef " + tags.group(1) + " " + tags.group(2)
++                    + " " + tags.group(2) + ";");
++            }
++            List<String> aliases = new ArrayList<>();
++            Matcher typedefs = Pattern.compile(
++                "typedef\\s+[^;{}]+;").matcher(code);
++            while (typedefs.find()) {
++                aliases.add(typedefs.group());
++            }
++            while (!aliases.isEmpty()) {
++                int count = aliases.size();
++                for (var iterator = aliases.iterator(); iterator.hasNext();) {
++                    String declaration = iterator.next();
++                    try {
++                        parser.parse(declaration);
++                        iterator.remove();
++                    }
++                    catch (ghidra.app.util.cparser.C.ParseException exception) {
++                        // A typedef can itself refer to another typedef farther down.
++                    }
++                }
++                if (aliases.size() == count) {
++                    throw new IllegalArgumentException(
++                        "Unresolved annotation typedefs: " + String.join(" ", aliases));
++                }
++            }
 +            parser.parse(new ByteArrayInputStream(types.getBytes(StandardCharsets.UTF_8)));
 +        }
 +        catch (ghidra.app.util.cparser.C.ParseException exception) {
@@ -769,3 +804,66 @@ index 0000000..272a726
 +        return McpSchema.CallToolResult.builder().addTextContent(message).isError(true).build();
 +    }
 +}
+diff --git a/src/main/java/ghidrassistmcp/tools/ClassTool.java b/src/main/java/ghidrassistmcp/tools/ClassTool.java
+--- a/src/main/java/ghidrassistmcp/tools/ClassTool.java
++++ b/src/main/java/ghidrassistmcp/tools/ClassTool.java
+@@ -278,2 +278,7 @@
++        String layout = getTypeLayout(className, currentProgram);
++        if (layout != null) {
++            return McpSchema.CallToolResult.builder().addTextContent(layout).build();
++        }
++
+         Map<String, List<ClassMemberInfo>> members = getClassMembers(className, currentProgram);
+         String result = formatClassMembers(className, members);
+@@ -286,1 +291,51 @@
++    private String getTypeLayout(String name, Program program) {
++        var types = program.getDataTypeManager().getAllDataTypes();
++        while (types.hasNext()) {
++            DataType type = types.next();
++            if (!type.getName().equals(name)) {
++                continue;
++            }
++            while (type instanceof ghidra.program.model.data.TypeDef alias) {
++                type = alias.getBaseDataType();
++            }
++            if (type instanceof ghidra.program.model.data.Composite composite) {
++                StringBuilder result = new StringBuilder();
++                result.append("TYPE\t").append(name).append("\t")
++                    .append(composite.getLength()).append("\t")
++                    .append(composite.getAlignment()).append("\n");
++                appendTypeFields(result, composite, name, 0, new HashSet<>());
++                return result.toString();
++            }
++        }
++        return null;
++    }
++
++    private void appendTypeFields(StringBuilder result,
++            ghidra.program.model.data.Composite composite, String path, int base,
++            Set<DataType> active) {
++        if (!active.add(composite)) {
++            return;
++        }
++        for (var field : composite.getDefinedComponents()) {
++            String name = field.getFieldName();
++            String key = path + "." + (name == null ? "<anonymous>" : name);
++            int offset = base + field.getOffset();
++            DataType type = field.getDataType();
++            result.append("FIELD\t").append(key).append("\t").append(offset)
++                .append("\t").append(field.getLength()).append("\t")
++                .append(type.getName()).append("\n");
++            while (type instanceof ghidra.program.model.data.TypeDef alias) {
++                type = alias.getBaseDataType();
++            }
++            if (type instanceof Array array) {
++                type = array.getDataType();
++                key += "[0]";
++            }
++            if (type instanceof ghidra.program.model.data.Composite nested) {
++                appendTypeFields(result, nested, key, offset, active);
++            }
++        }
++        active.remove(composite);
++    }
++
+     // ========== SHARED HELPER METHODS ==========
