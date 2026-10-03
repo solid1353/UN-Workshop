@@ -1,0 +1,2 @@
+address	kind	name	type	comment
+0x003AC890	function	sprite_draw_uniform	void sprite_draw_uniform(float scale, float opacity, float rotation, int sprite, float *position)	Draw selected sprite with equal horizontal/vertical scale,forward supplied opacity,rotation and position through resident sprite backend;item badge uses press scale and0.2/1 opacity.

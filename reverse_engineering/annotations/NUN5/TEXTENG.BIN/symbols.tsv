@@ -1,0 +1,114 @@
+address	kind	name	type	comment
+0x008F3D40	label	english_localization_payload_start		First imported payload address after live0x008F3D00 header; official199936-byte (0x30D00) MWO3 file has magicMWo3,kind4,linked_base0x008F3D00,text_size0xC0,data_size0x30C00,bss_size0,constructor_begin=constructor_end=0x00924A00,product_label TextEng.bin; header is omitted from MCP program memory and was read from original hash-identified file. Import reports zero functions/instructions; prior aligned scan found3697 in-range words,3617 exactly at2990 distinct printable null-terminated string starts,80 unclassified; whole strings and interior fragments use absolute in-image pointers.
+0x008F3E00	label	english_localization_naruto_classic_name		First null-terminated string in the payload data is N. Uzumaki (Classic); literal bytes verified at live0x008F3E00.
+0x008F4208	label	granny_chiyo_unpadded_title		Granny Chiyo primary unpadded string. | Primary unpadded Granny Chiyo string; English character-name row62 primary_title points here. | Complete TEXTENG file offset0x508.
+0x008F4218	label	collection_granny_chiyo_title		Granny Chiyo with terminal space; Collection plaque. | Collection secondary Granny Chiyo string includes terminal ASCII space; English character-name row62 collection_title points here. | Complete TEXTENG file offset0x518.
+0x008F46D0	data	screen_position_english_label_table	char *[8]	English language table selected by localized_screen_position_label; records4/5 pointto resident screen_position_x_label0x00613CE0 and screen_position_y_label0x00613CE4; overlay live addresses verified directly,not shifted.
+0x008F4720	label	quit_return_template		Are you sure you want to quit %1 and return to %2?
+0x008F4760	label	quit_character_select_destination		Character Select.
+0x008F4780	label	quit_game_mode_select_destination		Game Mode Select.
+0x008F4CB8	label	practice_charge_chakra_title		Charge Chakra.
+0x008F5080	label	controls_item_select_restriction		English controls_help_messages[5]: Item Select can only be assigned using <iconL1><iconR1> or <iconL2><iconR2>.; NUL at0x008F50CC; same-index NA2 counterpart0x005B23E0; static table correspondence does not establish a visible screen trace.
+0x008F50D0	label	controls_player1_edit_notice		English controls_help_messages[6]: Cannot end. 1P is still making changes.; NUL at0x008F50F7; same-index NA2 counterpart0x005B2480; options_controls_confirm side1 selects this when either player remains outside interaction modes0/1.
+0x008F5100	label	controls_player2_edit_notice		English controls_help_messages[7]: Cannot end. 2P is still making changes.; NUL at0x008F5127; same-index NA2 counterpart0x005B24D0; options_controls_confirm side0 selects this when either player remains outside interaction modes0/1.
+0x008F5130	data	controls_help_messages	char *[8]	Eight English Controls help pointers0x008F4F40/0x008F4FD0/0x008F5000/0x008F5030/0x008F5030/0x008F5080/0x008F50D0/0x008F5100; locale0 selection through controls_help_language_tables and localized_controls_help_text; entries5/6/7 own item restriction and player1/player2 edit notices.
+0x008F5790	label	mode_select_free_battle_help		<color00FFFF>Free Battle<WHITE> allows you to use any character to fight how you like.; recorded queue node00BF2600/strip00BF83F0 has extent788,viewport512,speed2,distanceabout460.8,delay/elapsed30/30; setter width612,rendered advance602,effective gap186.
+0x008F5990	label	mode_select_return_prompt		Return to Title Screen?.
+0x008F59B0	label	controller_port2_restriction		English restriction string from its full markup-bearing start: <color080860>The analog controller (DUALSHOCK byteAE 2) inserted into controller port 2 cannot be used in this mode<BLACK>.; NUL at0x008F5A24; apparent NA2 wording counterpart0x005B1D30; MCP found no direct reference in TEXTENG.BIN, leaving visibility, reachability and exact screen ownership unresolved; generated string at0x008F59DE is an interior suffix.
+0x008F5AF0	label	character_select_return_prompt		Return to Game Mode Screen?.
+0x008F6C80	label	collection_music_a_great_evil_appears		A Great Evil Appears; selected whole string, not interior substring+2.
+0x008F6F30	label	jutsu_8_trigrams_sky_palm_title		Official 8 Trigrams Sky Palm.
+0x008F7010	label	collection_figure_ninja_tool_user		Ninja Tool User.
+0x008F7428	label	collection_figure_coercion		Coercion.
+0x008F7608	label	collection_figure_a_sharp_kick		A Sharp Kick.
+0x008F7680	label	collection_figure_giant_sword_samehada		Giant Sword: Samehada.
+0x008F7790	label	collection_figure_my_favorite		My Favorite.
+0x008F7890	label	collection_figure_heaven_kick_of_pain		Heaven Kick of Pain.
+0x008F7C00	label	jutsu_great_ball_rasengan_title		Official Great Ball Rasengan.
+0x008F7CF0	label	quoted_white_picture		@White Picture@; paired byte 0x40 rendered quotation marks.
+0x008F7D30	label	quoted_dragon		@Dragon@; paired byte 0x40 rendered quotation marks.
+0x008F7DF0	label	collection_ultimate_8_trigrams_64_palms		8 Trigrams 64 Palms.
+0x008F8730	label	collection_ultimate_8_trigrams_361_style		8 Trigrams 361 Style.
+0x008F8750	label	collection_ultimate_last_resort_eight_gates_assault		Last Resort: Eight Gates Assault.
+0x008F8A30	label	konohamaru_collection_title		Plain Collection Charge! Konohamaru Ninja Squad!.
+0x008F8C30	label	temari_collection_title		Plain Collection Cyclone Scythe Jutsu.
+0x008F8E40	label	jutsu_water_style_water_dragon_jutsu_title		Official Water Style: Water Dragon Jutsu.
+0x008FA1B0	label	jutsu_super_healing_medicine_title		Official Super Healing Medicine.
+0x008FA400	label	jutsu_sacred_dance_shuriken_title		Official Sacred Dance Shuriken.
+0x008FA800	label	jutsu_ninja_wolfsbane_title		Official Ninja Wolfsbane.
+0x008FAA30	label	jutsu_tunneling_fang_title		Official Tunneling Fang  (terminal space).
+0x008FB660	label	jutsu_temple_of_nirvana_technique_title		Official Temple of Nirvana Technique.
+0x008FB6C0	label	jutsu_earth_style_sphere_of_graves_title		Official Earth Style: Sphere of Graves.
+0x008FB8A0	label	jutsu_giant_spider_drop_title		Official Giant Spider Drop.
+0x008FBD90	label	jutsu_explosive_destruction_formation_title		Official Explosive Destruction Formation.
+0x008FC8E0	label	jutsu_water_style_water_wall_title		Official Water Style: Water Wall.
+0x008FCAF0	label	jutsu_marauding_snakes_title		Official Marauding Snakes.
+0x008FD8A0	label	jutsu_earth_style_gushing_rock_mountain_cannonball_title		Official Earth Style: Gushing Rock Mountain Cannonball.
+0x008FE3B0	label	jutsu_naruto_uzumaki_combo_attack_title		Official Naruto Uzumaki Combo Attack.
+0x008FE618	label	jutsu_killer_spring_title		Official Killer Spring.
+0x008FEEE0	label	jutsu_1000_autumn_shower_title		Official 1000 Autumn Shower.
+0x008FF6A0	label	air_strike_palm_title		Air Strike Palm followed by LF  0x0A, NUL; one-line consumer ignores terminal LF.
+0x008FF820	label	jutsu_concealed_kunai_blast_title		Official Concealed Kunai Blast.
+0x008FFD70	label	jutsu_explosive_style_shadow_conceal_improvement_title		Official Explosive Style Shadow Conceal: Improvement.
+0x008FFF38	label	jutsu_night_phoenix_title		Official Night Phoenix.
+0x009001C0	label	jutsu_lightning_blade_title		Official Lightning Blade.
+0x00900390	label	jutsu_fire_style_fire_ball_jutsu_title		Official Fire Style: Fire Ball Jutsu.
+0x00900590	label	jutsu_water_style_water_shark_shotgun_jutsu_title		Official Water Style: Water Shark Shotgun Jutsu.
+0x00901850	label	jutsu_beautiful_seasons_title		Official Beautiful Seasons.
+0x00901C20	label	jutsu_heaven_defending_kick_title		Official Heaven Defending Kick.
+0x00901E60	label	jutsu_ninja_art_poison_fog_title		Official Ninja Art: Poison Fog.
+0x009029D0	label	quoted_wild_dog		@Wild Dog@; paired byte 0x40 rendered quotation marks.
+0x00902C10	label	quoted_petal_shower		@Petal Shower@; paired byte 0x40 rendered quotation marks.
+0x00902C60	label	quoted_divinity		@Divinity@; paired byte 0x40 rendered quotation marks.
+0x00902D90	label	english_text_group_roots		English (group, index) selector root.
+0x00902F60	label	battle_settings_defaults_message		Battle Settings returned to defaults.
+0x00904238	label	ninja_song_timer_counts_unit		timer counts; unit_index 2+4.
+0x00904250	data	ninja_song_arithmetic_text_table	char *[8]	English arithmetic selectors0 multiply614180,1 equals614184,2 N/A614188,3 objective separator61418C,4+ localized units;resident locale pointer table005BA9F0 selects this table;readback established first8 pointers only,full table extent unestablished.
+0x00904F80	label	temari_moveset_title		<BLACK>Cyclone Scythe <color0808C0>Jutsu; terminal red span.
+0x00904FD0	label	konohamaru_moveset_title		<BLACK>Charge! Konohamaru <color0808C0>Ninja Squad<BLACK>! | Verified null-terminated58-byte moveset title payload followed by terminator; distinct from plain Collection title at008F8A30; markup colors the Ninja Squad span with RGB0808C0.
+0x009052B0	label	field_item_scroll_of_teleportation_title		Official NUN5 English title "Scroll of Teleportation"; position 0 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x09); this does not establish a NUN5 numeric item-code mapping. The run occupies live 0x009052B0..0x00905494, complete-file 0x115B0..0x11794; physical file base is 0x008F3D00, verified in current MCP; whole-bank searches for Chakra, Seal and Curse yielded no Chakra Seal Tag name, and exact Chakra Seal byte search yielded no match; no recovered title for absent NA2 selector 0x29.
+0x009052C8	label	field_item_item_pouch_title		Official NUN5 English title "Item Pouch"; position 1 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x0E); this does not establish a NUN5 numeric item-code mapping.
+0x009052E0	label	field_item_demon_wind_shuriken_title		Official NUN5 English title "Demon Wind Shuriken"; position 2 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x23); this does not establish a NUN5 numeric item-code mapping.
+0x00905300	label	field_item_weight_of_determination_title		Official NUN5 English title "Weight of Determination"; position 3 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x24); this does not establish a NUN5 numeric item-code mapping.
+0x00905320	label	field_item_exploding_kunai_title		Official NUN5 English title "Exploding Kunai"; position 4 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x25); this does not establish a NUN5 numeric item-code mapping.
+0x00905330	label	field_item_poison_smoke_bomb_title		Official NUN5 English title "Poison Smoke Bomb"; position 5 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x26); this does not establish a NUN5 numeric item-code mapping.
+0x00905350	label	field_item_makibishi_spikes_title		Official NUN5 English title "Makibishi Spikes"; position 6 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x27); this does not establish a NUN5 numeric item-code mapping.
+0x00905368	label	field_item_paper_bomb_title		Official NUN5 English title "Paper Bomb"; position 7 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x28); this does not establish a NUN5 numeric item-code mapping.
+0x00905380	label	field_item_curse_tag_armor_break_title		Official NUN5 English title "Curse Tag: Armor Break"; position 8 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x2A); this does not establish a NUN5 numeric item-code mapping.
+0x009053A0	label	field_item_thousand_shadow_shuriken_title		Official NUN5 English title "1000-Shadow Shuriken"; position 9 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x2B); this does not establish a NUN5 numeric item-code mapping.
+0x009053B8	label	field_item_burst_kunai_title		Official NUN5 English title "Burst Kunai"; position 10 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x2C); this does not establish a NUN5 numeric item-code mapping.
+0x009053C8	label	field_item_exploding_seal_title		Official NUN5 English title "Exploding Seal"; position 11 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x2E); this does not establish a NUN5 numeric item-code mapping.
+0x009053D8	label	field_item_toad_oil_title		Official NUN5 English title "Toad Oil"; position 12 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x2F); this does not establish a NUN5 numeric item-code mapping.
+0x009053E8	label	field_item_random_ball_title		Official NUN5 English title "Random Ball"; position 13 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x30); this does not establish a NUN5 numeric item-code mapping.
+0x009053F8	label	field_item_stun_ball_title		Official NUN5 English title "Stun Ball"; position 14 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x31); this does not establish a NUN5 numeric item-code mapping.
+0x00905408	label	field_item_shoes_of_jonin_title		Official NUN5 English title "Shoes of Jonin"; position 15 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x06); this does not establish a NUN5 numeric item-code mapping.
+0x00905418	label	field_item_food_pills_title		Official NUN5 English title "Food Pills"; position 16 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x07); this does not establish a NUN5 numeric item-code mapping.
+0x00905430	label	field_item_scroll_of_hidden_cloud_title		Official NUN5 English title "Scroll of Hidden Cloud"; position 17 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x08); this does not establish a NUN5 numeric item-code mapping.
+0x00905448	label	field_item_scarecrow_title		Official NUN5 English title "Scarecrow"; position 18 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x0A); this does not establish a NUN5 numeric item-code mapping.
+0x00905460	label	field_item_tortoiseshell_pills_title		Official NUN5 English title "Tortoiseshell Pills"; position 19 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x0B); this does not establish a NUN5 numeric item-code mapping.
+0x00905478	label	field_item_energy_pills_title		Official NUN5 English title "Energy Pills"; position 20 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x0C); this does not establish a NUN5 numeric item-code mapping.
+0x00905488	label	field_item_medical_pack_title		Official NUN5 English title "Medical Pack"; position 21 of the 22-string run matching NA2 profile_small_ids row order (NA2 code 0x0D); this does not establish a NUN5 numeric item-code mapping.
+0x0091AD70	label	ultimate_battle_series_help		English message naming Ultimate Battle Series and rewards for beating enemy series.
+0x0091ADE0	label	ultimate_battle_survival_help		English message naming Epic Survival against indefinitely appearing random enemies.
+0x0091AE60	label	ultimate_battle_customized_help		English message naming Customized Battle and user-selected battle conditions.
+0x0091AF30	data	ultimate_battle_help_messages	char *[5]	English menu help table; Ultimate Battle Series/Epic Survival/Customized Battle messages identify family; null sentinel follows five pointers.
+0x0091B2D0	label	ultimate_battle_rank_help_messages		English rank/level table; entries5..7 consumed by Ultimate Battle level/rank queue wrapper; full table bound not established here.
+0x0091CD60	label	card_absent_or_unsupported_message		No memory card (PS2) is inserted in <br>MEMORY CARD slot 1.<br>Please insert a memory card (PS2) in<br>MEMORY CARD slot 1.; English statuses 5/6/7 share it.
+0x0091CF30	label	card_slot_selection		Please select MEMORY CARD slot to save to.
+0x0091D020	label	card_load_failed		Load failed!
+0x0091D100	label	card_save_failed		Save failed! ; terminal space.
+0x0091D228	label	card_format_failure		Format failed!
+0x0091D370	label	card_creation_failure		Creation of save data has failed.
+0x0091D3A0	label	card_create_data_prompt		Complete English status0C absent-data statement/create-data question with explicit br markup; supplied confirmation wrapped copy retains both and screenshot shows four body lines above Yes/No; evidence bounded to that state. | Original TEXTENG.BIN complete-file offset296A0.
+0x0091D500	label	card_corrupt_notice		Corrupt notice English counterpart.
+0x0091D5B0	label	card_load_failure_notice		Load failed! ; corrupt-family English notice.
+0x0091D5C0	label	card_repair_confirmation		Packed English repair statement with game title, data on memory card (PS2)  in, MEMORY CARD slot 1 is corrupt!, Recover the data?.
+0x0091D640	label	card_recovery_progress		English recovery progress.
+0x0091D6E0	label	card_recovery_failed		Recover failed!
+0x0091D6F0	label	card_recovery_completed		Recover completed.
+0x0091D7F0	label	card_insufficient_space_startup		English insufficient-space/start-anyway block; 102 KB also absent-card startup.
+0x0091DAF0	data	collection_granny_chiyo_localized_name	LocalizedCharacterNameRecord	English row62 at locale table base0091D900+62*8; primary pointer008F4208 and Collection pointer008F4218; isolated Characters plaque uses secondary terminal-space variant.
+0x0091DD48	data	collection_voice_records	CollectionVoiceRecord[154]	154 twelve-byte Voice records; all (voice_id, type) pairs match NA2 same order; includes resident ELF pointers.
+0x0091F8BC	data	collection_ultimate_records	CollectionUltimateRecord[168]	168 records; indices 0..166 metadata/order match NA2; terminal 167 Crystal Ice Mirrors metadata (0xA8, 0, 0).
+0x009209D0	label	temari_moveset_record		Metadata 2F 00 03 00 03 02 2B 00 FF FF FF FF 2D 00 00 00; selects red terminal moveset span.
+0x00920C50	label	konohamaru_moveset_record		Metadata 43 00 01 00 03 01 48 00 FF FF FF FF 23 00 00 00; selects markup moveset title.
