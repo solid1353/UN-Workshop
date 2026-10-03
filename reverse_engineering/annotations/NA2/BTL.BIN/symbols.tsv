@@ -1,0 +1,68 @@
+address	kind	name	type	comment
+0x006D6780	function	command_ctrl_slot_14_child_noop		No-op child slot +0x14 entry.
+0x006D6790	function	command_ctrl_slot_18_child_noop		No-op child slot +0x18 entry.
+0x006D67A0	function	command_ctrl_phase_slot_10		ccCommandCtrl slot +0x10 wrapper; routes to list slot +0x14.
+0x006D67C0	function	command_ctrl_phase_slot_14		ccCommandCtrl slot +0x14 wrapper; routes to list slot +0x18.
+0x006D67E0	function	command_ctrl_phase_slot_0c		ccCommandCtrl slot +0x0C wrapper; routes to list slot +0x10.
+0x006EF390	function	input_record_init	void input_record_init(InputRecord *record)	Clear a history record; the last two bytes are padding.
+0x006EF3C0	function	input_normalize_record	void input_normalize_record(InputRecord *record, InputRecord *previous)	Normalize a record, synthesize direction, and recompute edges.
+0x006EF4E0	function	input_object_construct	BattleInput * input_object_construct(BattleInput *input, int side)	Outer input-object constructor; installs defaults and constructs the history.
+0x006EF560	function	input_object_destruct	BattleInput * input_object_destruct(BattleInput *input, short flags)	Input-object destructor.
+0x006EF600	function	input_history_construct	void input_history_construct(BattleInput *input, int side)	Construct the battle input history.
+0x006EF780	function	bindings_init_defaults	void bindings_init_defaults(BattleInput *input)	Initialize default bindings.
+0x006EF7B0	function	bindings_copy	void bindings_copy(BattleInput *input, short *bindings)	Copy eight binding halfwords.
+0x006EF7F0	function	bindings_get_by_index	short bindings_get_by_index(BattleInput *input, int index)	Get a binding by index.
+0x006EF810	function	input_direction_in_sector	int input_direction_in_sector(BattleInput *input, int selector, float angle, float magnitude, float tolerance)	Direction-sector predicate.
+0x006EFAC0	function	input_history_match	int input_history_match(BattleInput *input, unsigned int mask, int word, int distance, int skip, int exact, unsigned int filter)	Generic circular-history matcher.
+0x006EFC40	function	input_history_match_binding	int input_history_match_binding(BattleInput *input, int binding, int word, int distance, int skip, int exact, unsigned int filter)	Binding-selecting matcher wrapper.
+0x006EFC70	function	input_history_count	int input_history_count(BattleInput *input, unsigned int mask, int word, int distance, int skip, int exact, unsigned int filter)	Count matches across a history window.
+0x006EFD90	function	input_history_count_binding	int input_history_count_binding(BattleInput *input, int binding, int word, int distance, int skip, int exact, unsigned int filter)	Binding-selecting count wrapper.
+0x006EFDC0	function	input_build_logical_mask	void input_build_logical_mask(BattleInput *input, int suppress)	Build the logical mask and analog outputs.
+0x006F0650	function	command_tables_evaluate	int command_tables_evaluate(BattleInput *input)	Evaluate the two ccCommand tables.
+0x006F09D0	function	input_set_angle_thresholds	void input_set_angle_thresholds(BattleInput *input, float threshold_23, float threshold_45)	Set the two angular thresholds.
+0x006F09E0	function	input_reset_angle_thresholds	void input_reset_angle_thresholds(BattleInput *input)	Restore the default angular thresholds.
+0x006F0A00	function	input_history_advance	void input_history_advance(BattleInput *input)	Advance the history and calculate relative angles.
+0x006F0DF0	function	bindings_refresh	void bindings_refresh(BattleInput *input)	Refresh configured bindings.
+0x006F0EA0	function	input_object_update	int input_object_update(BattleInput *input)	Complete input-object update.
+0x006F0F90	function	command_ctrl_construct	void * command_ctrl_construct(void *ctrl)	Construct the ccCommandCtrl list owner.
+0x007090B0	function	stage_placement_section		Recovery placement from the stage's DMY_pp1_010/DMY_pp2_010 node; returns the section.
+0x007090D0	function	stage_project_position		Projects a placement position.
+0x00709240	function	battle_owner_construct	void * battle_owner_construct(void *owner)	Construct the four-part battle owner; allocates ccCommandCtrl into +0x04.
+0x00709480	function	battle_create_sides	void battle_create_sides(void *owner)	Create and cross-link both battle sides.
+0x007095E0	function	battle_owner_refresh_lists	void battle_owner_refresh_lists(void *owner)	Refresh all four battle-owner lists.
+0x00709780	function	input_object_allocate	BattleInput * input_object_allocate(void *owner, int side)	Allocate and register a 0xC0-byte input object.
+0x00709800	function	input_object_get_by_side		Retrieve an input object by side (+0x60).
+0x00709AA0	function	list_child_construct		Base constructor of a list child; initializes fields through +0x5C.
+0x00709BF0	function	list_phase_slot_0c	void list_phase_slot_0c(void *list)	Generic list slot +0x0C phase.
+0x00709C70	function	list_phase_slot_10	void list_phase_slot_10(void *list)	Generic list slot +0x10 phase; removes a child when the call returns nonzero.
+0x00709D60	function	list_phase_slot_14		Generic list slot +0x14 phase.
+0x00709DE0	function	list_phase_slot_18		Generic list slot +0x18 phase.
+0x0071F160	function	phase_event_completion	int phase_event_completion(Fighter *fighter)	Produce the common phase and event completion signal.
+0x0071F640	function	phase_select_animation	void phase_select_animation(Fighter *fighter)	Select the current phase's animation.
+0x0072E5D0	function	hit_mode1_apply		Router mode-1 source call, after the source's vtable +0x58 callback.
+0x0072EDE0	function	hit_mode1_check		Router mode-1 source admission.
+0x00739170	function	object_apply_effect1		Applies effect 1 to the fighter selected by object byte +0x8A.
+0x0078AE40	function	downed_override_a		Enters timed downed recovery with thresholds from arguments 3/4; a negative argument becomes 45.
+0x007C2D10	function	downed_override_b		Enters timed downed recovery with both thresholds 45.
+0x007C46F0	function	downed_override_c		Enters timed downed recovery with both thresholds 45.
+0x007CD9D0	function	downed_override_d		Requires owner word +0x2C8 == 1; enters timed downed recovery with both thresholds 45.
+0x007D4E90	function	downed_override_e		Enters timed downed recovery with both thresholds 45.
+0x00877FB0	function	command_list_build	void command_list_build(CommandList *list)	Build the 18 Command List rows from the command table and store the row count.
+0x00878860	function	command_list_draw	void command_list_draw(CommandList *list)	Draw the visible Command List rows from the scroll position.
+0x008793A0	function	move_chart_convert_bindings	void move_chart_convert_bindings(void *chart)	Convert the first four bindings to move-chart icon tokens.
+0x0087A740	function	move_chart_draw	void move_chart_draw(void *chart)	Draw the character move chart.
+0x00898150	data	default_battle_bindings	short[8]	Triangle, Circle, Cross, Square, L1, R1, L2, R2.
+0x00898160	label	controller1_name		
+0x00898170	label	controller2_name		
+0x00898180	data	command_group0_steps	CommandStep[2]	Two Down presses.
+0x008981A0	data	command_group1_steps	CommandStep[2]	Two Up presses.
+0x008981C0	data	command_groups	CommandGroup[2]	
+0x008981D0	label	cc_command_ctrl_name		Name literal ccCommandCtrl.
+0x008981E0	label	cc_command_name		Name literal ccCommand.
+0x0089AEB0	data	action_descriptor_table	ActionDescriptor[102]	Action descriptors indexed by substate below 0x66.
+0x008BD510	data	command_list_texts	char *[13]	Text tokens 13..25.
+0x008C2FC0	label	direction_selector_jump_table_b		Secondary selector table of input_direction_in_sector.
+0x008C2FE0	label	direction_selector_jump_table_a		Primary selector table of input_direction_in_sector.
+0x008C3030	label	cc_command_ctrl_rtti		
+0x008C3048	label	cc_command_rtti		
+0x008D1550	data	command_list_table	CommandListEntry[18]	Command List rows: name and up to five tokens.
