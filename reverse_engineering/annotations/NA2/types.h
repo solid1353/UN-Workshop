@@ -5218,7 +5218,7 @@ typedef struct AudioControl { signed char program; unsigned char stream; unsigne
 
 typedef struct AudioPendingStream { int bank; int member; int slot; int alternate_bank; unsigned char pending; unsigned char _unknown_11[3]; } AudioPendingStream;
 
-typedef struct AudioRequestContext { unsigned char _unknown_00[0xA]; short fighter_ids[2]; unsigned char _unknown_0e[2]; int equal_id_selector; AudioPendingStream pending[4]; unsigned char _unknown_64[8]; int request_selector; unsigned char _unknown_70[8]; } AudioRequestContext;
+typedef struct AudioRequestContext { int battle_music_override; unsigned char _unknown_04[6]; short fighter_ids[2]; unsigned char _unknown_0e[2]; int equal_id_selector; AudioPendingStream pending[4]; unsigned char _unknown_64[8]; int request_selector; unsigned char _unknown_70[8]; } AudioRequestContext;
 
 typedef struct AudioBankDescriptor { int file_offset; int allocation_size; int sample_extent; } AudioBankDescriptor;
 
@@ -7308,3 +7308,17 @@ typedef struct CollectionPlaqueView { int title_enabled; unsigned char _unknown_
 typedef struct BattlePromptRectangle { unsigned short u; unsigned short v; unsigned short width; unsigned short height; } BattlePromptRectangle;
 
 typedef struct ModalYesNoDrawView { unsigned char _unknown_0000[0x1c]; void *render_context; } ModalYesNoDrawView;
+
+typedef struct StageLineChangeTransition {
+    short section;
+    short source_line;
+    short destination_line;
+} StageLineChangeTransition;
+
+typedef struct StageLineChangeRule {
+    short load_slot;
+    unsigned short _pad_0002;
+    StageLineChangeTransition *transitions;
+    short transition_count;
+    unsigned short _pad_000A;
+} StageLineChangeRule;

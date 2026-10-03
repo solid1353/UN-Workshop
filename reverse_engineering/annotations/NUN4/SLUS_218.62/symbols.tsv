@@ -1,2 +1,79 @@
 address	kind	name	type	comment
+0x001536E0	function	audio_start_streamed_music	void audio_start_streamed_music(void *manager, int channel, int archive, int track, int start_parameter, int mode, short family)	Use stereo handle manager+8+channel*12; apply track/volume gain for family0, set CRI mode then start archive/member; retain track at manager+0x9A4+channel*4.
+0x00153D10	function	audio_schedule_music_fade		kind0/channel0..2 requires nonnull stream/selected-track. Flag8 immediately stops invalid/already-low stream and clears selection; otherwise stores target/step/flag fields for a fade to-300,with signed step derived over parameter*30 update units. No seconds asserted.
+0x001D3E70	function	audio_request_context_initialize	void * audio_request_context_initialize(void *context)	Initialize0x78 request context: word0 battle-music override=-1; four pending rows+14,stride14hex,word fields-1/pendingbyte0; three participant halfwords+A/-1,word+10=1. Return context.
+0x001D3F30	function	sound_task		SOUND task allocates0x190 command context and0x78 request context,initializes/publishes request pointer gp-589C through audio_request_context_initialize; this establishes default battle override-1 before shared battle preset use. Other task sequencing outside current audio selection scope.
+0x001D5070	function	audio_dispatch_battle_event	void audio_dispatch_battle_event(int event)	When manager+50=1 and mode+54=1..4,event0 requests preset5 and toggles audio control bytes18C/23/18B. This start path has no stage-specific music decision; preset5 owns the raw-slot selection.
+0x001D5230	function	audio_dispatch_music_preset	void audio_dispatch_music_preset(unsigned int preset, int argument)	Dispatch eleven music presets through0x005913C0; preset5 branch0x001D5378 selects configured override or raw-stage music.
+0x001D5378	function	audio_music_preset_battle		Preset5 branch, not independent ABI: require manager; nonnegative request-context word0 overrides member on channel0; negative indexes stage_music_tracks directly by signed raw+FC without upper bound. Raw0/S01=>member4,channel0. Raw>=18 switches channel1,first requests channel0 fade/stop. No logicalID,character,random or UI setting read.
+0x001D54B0	function	audio_music_fade_stop_bridge	void audio_music_fade_stop_bridge(int channel)	Forward channel and parameter2 to audio_request_music_fade_stop; preset5 passes channel0 before selecting summon channel1.
+0x001D9E50	function	audio_request_battle_event	void audio_request_battle_event(int event)	Forward event to audio_dispatch_battle_event; shared battle_update_audio_transition calls event0 at00320D54 when pause object done,session+8 zero,result4F8=0.
+0x001DA020	function	audio_select_music_track	int audio_select_music_track(int bank, int track, int channel)	Reject negative bank/track/channel or channel>2; same-track idle suppresses start. Bank descriptors0x00435E10; bank0 archive0/start_parameter2. With stream gate clear call audio_start_streamed_music and retain selected track.
+0x001DA4A0	function	audio_request_music_preset	void audio_request_music_preset(unsigned int preset, int argument)	Forward preset/argument to audio_dispatch_music_preset. Shared battle event0 requests preset5.
+0x001DA8B0	function	audio_request_music_fade_stop	void audio_request_music_fade_stop(int channel, int parameter)	Forward stream-manager,channel,0,parameter,flag8,kind0 to audio_schedule_music_fade; requests fade/stop,not instantaneous unconditional suspension.
+0x001DEBD0	function	string_nul_token	char * string_nul_token(char *text,int index)	Select index from consecutive NUL strings;ASCII advances1,nonprintable/nonASCII advances2;bg_scene_parse_records turns commas into NUL before callers.
+0x001FC390	function	rash_parallel_animation_construct		Native fighter initialization creates parallel animation child using fixed n_rash path pointer006070B8, with ANM resources from that required container; no per-stage grouping.
+0x002D1500	function	camera_main_construct		Default record 5749F0; with manager bind raw byte +FC; stage pointer +194, previous +198.
+0x002D16D0	function	camera_bind_stage_record	void camera_bind_stage_record(void *camera, int slot)	Save camera+194 to +198 then assign stage_camera_records_by_slot[slot]; no bound or ID conversion.
+0x002D1790	function	camera_set_tracking_counters		Set main-camera counters+16C/+16E: request-1 clears both,1 sets first to9,2 clears second.
+0x002D17F0	function	camera_stage_track		Record +4C differing-section elevation, +50 same-nonzero-section elevation, +28/+2C distances; no S01-specific branch.
+0x002D2350	function	camera_select_target		Mode 0 midpoint, modes 1/2 fighter; submode 0 clamps target c0 to record +30/+34.
+0x002D2760	function	camera_compute_fit		Shared fit; record +54 ==1 disables spread contribution. No stage-specific branch.
+0x002D31B0	function	camera_place_eye		Record +38/+3C edges, +28/+2C distances, +48 lateral scale, +40 height cap; shared fighter-section branch.
+0x002D3970	function	camera_main_track		Eye smoothing reads record 0/4/8/C; transfer branches multiply first by 1.5 or halve medium.
+0x002D3CA0	function	camera_main_finish_track		Target smoothing reads record +14/+1C/+20/+24; record +10/+18 are not read here.
+0x002D4D80	label	stage_logical_id_call_002d4d80		IDs 18/12/2 select one surface effect; ID1 takes default.
+0x002D4E08	label	stage_logical_id_call_002d4e08		IDs 7/13 select special surface variants; ID1 default.
+0x002E0DBC	label	stage_logical_id_call_002e0dbc		ID10 special; ID1 default.
+0x002E14B0	label	stage_logical_id_call_002e14b0		Logical IDs 5/10/9 have special handling; ID1 takes default.
+0x002E1538	label	stage_logical_id_call_002e1538		Logical IDs 5/10/9 have special handling; ID1 takes default.
+0x002E1D30	label	stage_logical_id_call_002e1d30		Logical IDs 5/10/9 have special handling; ID1 takes default.
+0x002E1E20	label	stage_logical_id_call_002e1e20		Logical IDs 5/10/9 have special handling; ID1 takes default.
+0x002E2050	label	stage_logical_id_call_002e2050		Logical IDs 5/10/9 have special handling; ID1 takes default.
+0x00304F3C	label	stage_logical_id_call_00304f3c		Logical IDs 5/10/9 have special handling; ID1 takes default.
+0x003052C8	label	stage_logical_id_call_003052c8		IDs5/10/9 select coordinate exceptions; later ID2 selects a surface branch. ID1 takes defaults.
+0x00305410	label	stage_logical_id_call_00305410		Logical IDs 5/10/9 have special handling; ID1 takes default.
+0x003076D0	label	stage_logical_id_call_003076d0		Logical IDs 5/10/9 have special handling; ID1 takes default.
+0x00307D7C	label	stage_logical_id_call_00307d7c		Logical IDs 5/10/9 have special handling; ID1 takes default.
+0x00308554	label	stage_logical_id_call_00308554		Logical IDs 5/10/9 have special handling; ID1 takes default.
+0x0030C2D8	label	stage_logical_id_call_0030c2d8		Logical IDs 5/10/9 have special handling; ID1 takes default.
+0x00312D00	function	stage_slot_logical_id	int stage_slot_logical_id(unsigned int slot)	Raw slots 0..17 return slot+1 through 18-case jump table 005C3C80; case 312D28+10h*n loads n+1. Unsigned values >=18 return 0. S01 raw 0, logical 1.
+0x00317130	function	battle_load_ccs		Check/load fixed n_rash.ccs at 005C5980 in synchronous or queued preload before stage; no group selector.
+0x00320AC0	function	battle_update_audio_transition	void battle_update_audio_transition(void *session, unsigned char *transition_flag)	Shared battle-state audio transitions. Tail00320CF8 runs even when manager+14 is nonzero: pause-controller+10 clear/session halfword+8 zero sets+8=-1 and clears controller bit1; result+4F8=0 then requests battle event0 at00320D54, selecting preset5. No rawslot/logicalID/character music selection here.
+0x00323630	function	battle_stage_is_unlocked	int battle_stage_is_unlocked(void *manager, int slot)	Forward manager child+4 then child+8 and unchanged a1 raw slot to profile_stage_is_unlocked;return its Boolean v0 unchanged.
+0x00387D30	function	camera_controller_update		Presentation dispatcher selects camera_controller_clash for controller selector+8==0x54 (NA2 mode18 homolog), then common update0038A3A0.
+0x003885D0	function	camera_clash_correct_angle		Clash camera angle/section/segment correction called by camera_controller_clash; handler subsequently overwrites eye offset+1B0.
+0x00388BB0	function	camera_controller_clash		Request -4 handler homolog of NA2 camera_controller_mode18: select presentation slot1, records57E6B0 or57E760 by745A30 query; after timed threshold call3885D0, then overwrite eye offset+1B0 with authored endpoint and add80 c2 only logicalID5. S01 logicalID1 gets no bias.
+0x00388E90	label	stage_logical_id_call_00388e90		Clash camera adds80 c2 only ID5; ID1 retains authored endpoint.
+0x0039CFF0	function	profile_stage_is_unlocked	int profile_stage_is_unlocked(void *profile, int slot)	Return bit for raw slot from profile+82C dword array:word=slot/32,mask=1<<(slot%32).Stage Select passes0..17 without logical-ID remapping.
 0x003AC890	function	sprite_draw_uniform	void sprite_draw_uniform(float scale, float opacity, float rotation, int sprite, float *position)	Draw selected sprite with equal horizontal/vertical scale,forward supplied opacity,rotation and position through resident sprite backend;item badge uses press scale and0.2/1 opacity.
+0x003B6C50	function	bg_scene_parse_records		BIN_bgdata homolog of NA2 003ADE40: count+0xC4,records+0xC0; signed-short triples expand to0x10 entries; pipe strings copied individually and comma bytes replaced with NUL.
+0x003B7040	function	bg_scene_dispatch_records		Walk scene record count+0xC4 and records+0xC0 at stride0x10; factory index+4 selects bg_record_factories0x00583860.
+0x003B82C0	function	bg_draw_object_parse		Tokens0 object,1 dummy or literal0,2 float opacity,3 float uniform scale.
+0x003B86F0	function	bg_draw_object_create		Factory0. Tokens0 object,1 dummy or literal0,2 float opacity,3 float uniform scale. ccBgDrawObject vtable0x5ee020 ->RTTI0x5d7588 ->name0x5d7568.
+0x003B8CA0	function	bg_draw_animation_parse		Tokens0 animation,1 dummy or literal0,2 float opacity,3 float scale,4 float rate multiplier,5 initial integer frame(-1 random).
+0x003B9080	function	bg_draw_animation_create		Factory2. Tokens0 animation,1 dummy or literal0,2 float opacity,3 float scale,4 float rate multiplier,5 initial integer frame(-1 random). ccBgDrawAnm vtable0x5edfc0 ->RTTI0x5d74c8 ->name0x5d74a8.
+0x003B9EA0	function	bg_cloth_flag_parse		Tokens0 texture,1 dummy,2 integer selector,3/4 float dimensions multiplied4,5/6 float scalars,7 integer converted to float,8/9 float scalars,10/11 integer grid dimensions; same NUN4/NA2 token format.
+0x003BA2E0	function	bg_cloth_flag_create		Factory6. Tokens0 texture,1 dummy,2 integer selector,3/4 float dimensions multiplied4,5/6 float scalars,7 integer converted to float,8/9 float scalars,10/11 integer grid dimensions; same NUN4/NA2 token format. ccBgClothFlag vtable0x5edf00 ->RTTI0x5d77e0 ->name0x5d77c0.
+0x003BB240	function	bg_fog_create		Factory10. Factory10 consumes RGB integers0..2,float3,integer4,integers5/6 for fog. Configuration-only handler; no constructed class/vtable.
+0x003BB3F0	function	bg_glare_parse		Tokens0..3 packed integers,float4,RGB integers5..7,integer8,float9.
+0x003BB6A0	function	bg_glare_create		Factory11. Tokens0..3 packed integers,float4,RGB integers5..7,integer8,float9. ccBgGlareFilter vtable0x5ede70 ->RTTI0x5d6a98 ->name0x5d6a60.
+0x003BBB00	function	bg_render_coefficients_create		Factory17. Factory17 consumes two floats for render coefficients. Configuration-only handler; no constructed class/vtable.
+0x003BBB90	function	bg_light_distant_parse		Tokens0 animation,1..3 RGB integers,4 light name.
+0x003BBE80	function	bg_light_distant_create		Factory18. Tokens0 animation,1..3 RGB integers,4 light name. ccBgLightDistant vtable0x5ede10 ->RTTI0x5d7768 ->name0x5d7740.
+0x003BBF60	function	bg_projection_scalar_create		Factory22. Factory22 consumes token0 float into scene+0x30. Configuration-only handler; no constructed class/vtable.
+0x003BC1D0	function	bg_curtain_parse		Tokens0 object,1 dummy or literal0,floats2..6.
+0x003BC550	function	bg_curtain_create		Factory23. Tokens0 object,1 dummy or literal0,floats2..6. ccBgCurtain vtable0x5edde0 ->RTTI0x5d7730 ->name0x5d7710.
+0x003BF680	function	bg_list_selector_create		Factory31 resolves token0 into archive resource and stores selector owner+8 indexed by record scene-list selector+8;not object-constructing.
+0x003C3F10	function	bg_lantern_parse		Tokens0 object,1 dummy,2 float angular step,3 float amplitude; same NUN4/NA2 token format.
+0x003C46B0	function	bg_lantern_create		Factory45. Tokens0 object,1 dummy,2 float angular step,3 float amplitude; same NUN4/NA2 token format. ccBgLantern vtable0x5edb20 ->RTTI0x5d73a0 ->name0x5d7380.
+0x003F51D0	function	ui_language_index		Return current UI-language index from gp-0x6C90; Stage Select chooses its locale rectangle bank directly.
+0x00434E00	data	stage_music_tracks	int[25]	Raw-stage SOUND bank0 members: slots0..17 =4,7,14,15,5,6,12,16,17,13,18,9,18,19,20,21,10,11; summon slots18..24=24. S01 raw0 member4. Direct reader audio_music_preset_battle0x001D53FC.
+0x005749F0	data	camera_stage_tracking_gains	Nun4StageCameraRecord[18]	18 battle records, 96-byte stride; first S01 record is byte-identical to NA2 S01 at 00891510.
+0x005750B0	data	stage_camera_records_by_slot	Nun4StageCameraRecord *[25]	Raw slots 0..17 point to 18 battle records 5749F0, stride 60h; 18..24 point to seven summon records.
+0x0057E6B0	data	camera_clash_record	unsigned char[176]	176-byte normal clash presentation record; anchor selectors +10/+14, delays +18/+1C, durations +24/+28, eye endpoint +90; alternative0057E760 selected by745A30 query.
+0x0057E760	data	camera_clash_alternative_record	unsigned char[176]	Alternative 176-byte clash presentation record selected by745A30 query; same header offsets as camera_clash_record.
+0x00583860	data	bg_record_factories	void *[129]	129 factory pointers indexed by BIN_bgdata field1; dispatch0x003B7040; all22 S01 indices match NA2 class or configuration role.
+0x005913C0	data	audio_music_preset_table	void *[11]	Eleven music preset branch entries; preset5 points001D5378 to raw-stage/default music selector.
+0x005C3C80	data	stage_slot_logical_id_cases	void *[18]	18 jump targets 312D28..312E38, 16-byte spacing; each loads logical slot+1.
+0x005C5980	data	battle_rash_archive_path	char[11]	Fixed n_rash.ccs path used by battle preload/adoption/release and replacement.
