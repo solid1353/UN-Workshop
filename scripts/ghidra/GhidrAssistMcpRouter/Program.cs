@@ -280,8 +280,7 @@ internal static class Program
                         $"No Ghidra projects were found below {_options.DisassemblyRoot}.");
                 }
 
-                await Task.WhenAll(_backends.Values.Select(backend =>
-                    backend.EnsureStartedAsync(_stopping.Token)));
+                // Backends start when a call first needs them.
                 await WriteStateAsync();
                 File.WriteAllText(_readyFile, string.Empty);
                 Log($"Ready with targets: {string.Join(", ", _backends.Keys.Order())}");
@@ -767,6 +766,14 @@ internal static class Program
             var text = new StringBuilder();
             foreach (var backend in selected)
             {
+                // A listing of every target does not start the backends that are not running.
+                if (string.IsNullOrWhiteSpace(requestedTarget) && !backend.IsRunning)
+                {
+                    text.Append("Target: ").AppendLine(backend.Target.Name);
+                    text.Append("Not started; programs: ")
+                        .AppendLine(string.Join(", ", backend.Target.Programs));
+                    continue;
+                }
                 var response = await backend.SendAsync(new JsonObject
                 {
                     ["jsonrpc"] = "2.0",
@@ -908,6 +915,8 @@ internal static class Program
             }
 
             internal Target Target { get; }
+
+            internal bool IsRunning => _process is { HasExited: false } && _client is not null;
 
             internal async Task EnsureStartedAsync(CancellationToken cancellationToken)
             {

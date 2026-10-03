@@ -67,5 +67,5 @@ tools, which update these files and apply the change to the running `<game>`
 target at once. When the files change any other way, such as a pull, checkout,
 hand edit, or removed row, restart the MCP host to apply them. A row that names
 an address outside program memory, a function that cannot be created, or a
-type that does not parse makes the `<game>` target report the error until the
-files are fixed and the host is restarted.
+type that does not parse makes the `<game>` target report the error from its
+first use until the files are fixed and the host is restarted.

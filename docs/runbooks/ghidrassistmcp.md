@@ -134,9 +134,14 @@ making the target available again. Program names come from the tree's
 games following the same layout need no configuration change.
 
 Each target runs in a separate hidden Ghidra backend on an OS-assigned temporary
-loopback port. Each backend opens every program in its transient project, so
-`program_name` selects the requested binary on each call instead of relying on
-a persistent current-program selection. Ports are private runtime state and are
+loopback port. A backend starts when a call first needs it and runs until the
+host stops, so the first call to each target waits while it starts. Agent
+sessions list tools when they connect, which starts the first target. A
+`list_binaries` call without a target reports the programs of targets that are
+not running instead of starting them. Each backend opens every program in its
+transient project, so `program_name` selects the requested binary on each call
+instead of relying on a persistent current-program selection. Ports are private
+runtime state and are
 never part of agent configuration. The supervisor copies each maintained analysis into
 `@ghidra_mcp_work/<target>/project`, opens the transient copy with
 `-readOnly -noanalysis`, and removes it whenever the backend stops. Bounded
