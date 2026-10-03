@@ -83,6 +83,12 @@ Record findings with the router's annotation tools on a `<game>` target:
 - `annotate_type` records C struct, union, enum, or typedef declarations for
   every program of the game, replacing declarations of the same name.
 
+Type loading registers named struct/union tags and typedef aliases before
+parsing definitions, so references do not depend on earlier in-memory edits.
+Use `classes` with `action=get_info` and the type's name to inspect a struct
+or union's applied size, alignment, and field offsets. Embedded aggregates
+include their field paths; arrays of aggregates include the first element.
+
 Each call writes `@annotations` first and then applies the change to the open
 program; a change the program rejects is removed from the files again. After
 the [annotation files](../disassembly.md#annotations) change any other way,
@@ -121,8 +127,9 @@ supervisor failure.
 The supervisor discovers every `@disassembly/<game>` tree with a `ghidra/*.gpr`
 project and serves it as `<game>` and `<game>-clean`. Once the `<game>` backend
 has opened its programs, the supervisor applies `@annotations/<game>` to them;
-if that fails, the target answers every call with the error until the files are
-fixed and the host is restarted. Program names come from the tree's
+if that fails, read calls return the error. `annotate_type` remains available
+to repair declarations and reapplies the game's complete annotations before
+making the target available again. Program names come from the tree's
 `manifest.tsv`, or from the Ghidra project index when no manifest exists. Future
 games following the same layout need no configuration change.
 

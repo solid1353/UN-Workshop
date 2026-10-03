@@ -657,7 +657,7 @@ internal static class Program
             }
 
             await backend.EnsureStartedAsync(cancellationToken);
-            if (backend.AnnotationError is not null)
+            if (backend.AnnotationError is not null && tool != Annotations.TypeTool)
             {
                 return ToolError(id, backend.AnnotationError);
             }
@@ -688,9 +688,11 @@ internal static class Program
                 {
                     var declaration = arguments["declaration"]?.GetValue<string>() ?? string.Empty;
                     restore = annotations.RecordType(declaration, out var types);
-                    applications = backend.Target.Programs
-                        .Select(program => (program, new JsonObject { ["types"] = types }))
-                        .ToList();
+                    applications = backend.AnnotationError is null
+                        ? backend.Target.Programs
+                            .Select(program => (program, new JsonObject { ["types"] = types }))
+                            .ToList()
+                        : annotations.StartupApplications(backend.Target.Programs).ToList();
                 }
 
                 foreach (var (program, applyArguments) in applications)
@@ -720,6 +722,7 @@ internal static class Program
                         return ToolError(id, $"Not recorded; {program} rejected it: {failure}");
                     }
                 }
+                backend.ClearAnnotationError();
                 return JsonRpc.Success(id, new JsonObject
                 {
                     ["content"] = new JsonArray
@@ -1009,6 +1012,8 @@ internal static class Program
             // Set when @annotations/<game> failed to apply at startup.
             internal string? AnnotationError { get; private set; }
 
+            internal void ClearAnnotationError() => AnnotationError = null;
+
             // Applies @annotations/<game> to the freshly opened programs.
             private async Task ApplyAnnotationsAsync(CancellationToken cancellationToken)
             {
@@ -1050,7 +1055,7 @@ internal static class Program
                 {
                     AnnotationError =
                         $"@annotations/{Target.Game} did not apply, so target {Target.Name} is unavailable " +
-                        $"until the files are fixed and the MCP host is restarted: {exception.Message}";
+                        $"until annotate_type repairs the declarations or the corrected files are reloaded: {exception.Message}";
                     _owner.Log(AnnotationError);
                 }
             }
