@@ -1,9 +1,10 @@
-# Read-only GhidrAssistMCP
+# GhidrAssistMCP
 
 Workshop owns the maintained GhidrAssistMCP installation and launch path. The
-integration exposes existing Ghidra analysis to a local MCP client without
-allowing that client to change a program, project, analysis configuration, or
-host file.
+integration exposes the [disassembly trees](../disassembly.md) to a local MCP
+client. A client cannot change a program, project, analysis configuration, or
+host file; it can only record annotations, which the router writes to
+`@annotations` before applying them.
 
 ## Pinned source
 
@@ -18,11 +19,12 @@ databases, a Lucene lock, and stale duplicate library versions that are absent
 from the pinned source. The installer removes those files, compiles every Java
 source file from the pinned commit against the installed Ghidra 12.1.2, and
 applies
-[`ghidrassistmcp-2.11.0-read-only.patch`](../../scripts/ghidra/ghidrassistmcp-2.11.0-read-only.patch).
+[`ghidrassistmcp-2.11.0-hardening.patch`](../../scripts/ghidra/ghidrassistmcp-2.11.0-hardening.patch).
 
 The hardening patch forces `127.0.0.1` at the server connector, disables async
 task execution, accepts both headless `key=value` and split `key value`
-arguments, and makes this allow-list non-overridable:
+arguments, keeps a tool's error flag on its result, and makes this allow-list
+non-overridable:
 
 - `get_binary_info`
 - `list_binaries`
@@ -49,18 +51,42 @@ arguments, and makes this allow-list non-overridable:
 - `get_function_stack_layout`
 - `search_strings`
 - `get_entry_points`
+- `apply_annotations`
 
 Every other upstream tool remains disabled even if a caller names it directly
-or a Ghidra setting tries to enable it. This excludes renaming, typing,
-comments, bookmarks, patching, assembly, disassembly creation, auto-analysis,
-scripts, file import, program export, task control, and program or project
-lifecycle operations.
+or a Ghidra setting tries to enable it. This excludes upstream renaming,
+typing, comments, bookmarks, patching, assembly, disassembly creation,
+auto-analysis, scripts, file import, program export, task control, and program
+or project lifecycle operations.
+
+`apply_annotations` is added by the patch and applies annotation types and
+symbol rows. The router never lists it or forwards a client call to it; it
+calls it only to apply `@annotations` when a backend starts and for its own
+`annotate_symbol` and `annotate_type` tools.
 
 ## Use
 
 Use MCP before preserved exports for substantive disassembly or decompilation.
 Confirm the required target with `list_binaries`. Use exports or raw bytes only
 when MCP cannot expose the required evidence, and record why.
+
+Target `<game>` serves the game's tree with `@annotations/<game>` applied, and
+`<game>-clean` serves it without them. Use `<game>`; query `<game>-clean` only
+to check an annotation.
+
+Record findings with the router's annotation tools on a `<game>` target:
+
+- `annotate_symbol` records `function`, `label`, or `data` rows with a name and
+  an optional prototype or data type and comment at live addresses of one
+  program, replacing any row at those addresses. Pass one row's fields, or
+  `rows` for several; all rows apply or none do.
+- `annotate_type` records C struct, union, enum, or typedef declarations for
+  every program of the game, replacing declarations of the same name.
+
+Each call writes `@annotations` first and then applies the change to the open
+program; a change the program rejects is removed from the files again. After
+the [annotation files](../disassembly.md#annotations) change any other way,
+restart the host.
 
 ## Install
 
@@ -92,10 +118,13 @@ The task executes a Windows-subsystem application, and every descendant process
 is launched without a console window. It starts at logon and restarts after a
 supervisor failure.
 
-The supervisor discovers every immediate `@disassembly/<target>/ghidra/*.gpr` project.
-Program names come from the target's `manifest.tsv`, or from the Ghidra project index
-when no manifest exists. This currently exposes `NA2`, `NUN3`, `NUN4`, `NUN5`, and
-`shared`; future projects following the same layout need no configuration change.
+The supervisor discovers every `@disassembly/<game>` tree with a `ghidra/*.gpr`
+project and serves it as `<game>` and `<game>-clean`. Once the `<game>` backend
+has opened its programs, the supervisor applies `@annotations/<game>` to them;
+if that fails, the target answers every call with the error until the files are
+fixed and the host is restarted. Program names come from the tree's
+`manifest.tsv`, or from the Ghidra project index when no manifest exists. Future
+games following the same layout need no configuration change.
 
 Each target runs in a separate hidden Ghidra backend on an OS-assigned temporary
 loopback port. Each backend opens every program in its transient project, so
@@ -105,8 +134,9 @@ never part of agent configuration. The supervisor copies each maintained analysi
 `@ghidra_mcp_work/<target>/project`, opens the transient copy with
 `-readOnly -noanalysis`, and removes it whenever the backend stops. Bounded
 current and previous logs remain under `@ghidra_mcp_work/<target>/logs`; global
-supervisor state and logs remain directly below `@ghidra_mcp_work`. The canonical
-`@disassembly/<target>` archive is never opened directly or modified.
+supervisor state and logs remain directly below `@ghidra_mcp_work`. The
+`@disassembly` trees are never opened directly or modified; annotations exist
+only in `@annotations` and in the transient copies.
 
 Manage the host through the same entrypoint:
 
@@ -120,7 +150,7 @@ Manage the host through the same entrypoint:
 
 Do not import a source binary or create another persistent Ghidra project for
 this integration. Do not remove the launcher safeguards, retain its disposable
-project copy, or point Ghidra at the maintained archive directly.
+project copy, or point Ghidra at the disassembly trees directly.
 
 ## Agent clients
 

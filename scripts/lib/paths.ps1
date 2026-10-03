@@ -238,6 +238,7 @@ function Get-UnWorkshopPaths {
         Project = $project
         Source = $effectiveRoots.source
         Disassembly = $effectiveRoots.disassembly
+        Annotations = $effectiveRoots.annotations
         Tools = $effectiveRoots.tools
         Work = if ($effectiveRoots.Contains('work')) {
             $effectiveRoots.work

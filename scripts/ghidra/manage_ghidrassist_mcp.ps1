@@ -193,6 +193,7 @@ switch ($Action) {
         $arguments = @(
             '--supervisor',
             '--disassembly', $paths.Disassembly,
+            '--annotations', $paths.Annotations,
             '--runtime', $runtimeRoot,
             '--host-script', $hostScript,
             '--pwsh', $powerShell

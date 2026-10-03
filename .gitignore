@@ -1,6 +1,7 @@
 # Common
 /source/
-/reverse_engineering/
+/reverse_engineering/*
+!/reverse_engineering/annotations/
 /tools/
 /logs/
 

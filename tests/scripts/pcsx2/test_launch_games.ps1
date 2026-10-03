@@ -103,6 +103,7 @@ try {
     "source": "source",
     "build": "build",
     "disassembly": "@work/disassembly",
+    "annotations": "@work/annotations",
     "tools": "tools",
     "work": "work",
     "scripts": "scripts",

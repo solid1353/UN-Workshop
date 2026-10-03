@@ -1,5 +1,5 @@
 diff --git a/src/main/java/ghidrassistmcp/GhidrAssistMCPBackend.java b/src/main/java/ghidrassistmcp/GhidrAssistMCPBackend.java
-index 66ca182..71e8335 100644
+index 66ca182..2d8c725 100644
 --- a/src/main/java/ghidrassistmcp/GhidrAssistMCPBackend.java
 +++ b/src/main/java/ghidrassistmcp/GhidrAssistMCPBackend.java
 @@ -7,6 +7,7 @@ import java.util.ArrayList;
@@ -10,7 +10,15 @@ index 66ca182..71e8335 100644
  import java.util.concurrent.ConcurrentHashMap;
  import java.util.concurrent.CopyOnWriteArrayList;
  import java.util.function.Function;
-@@ -90,11 +91,39 @@ import io.modelcontextprotocol.spec.McpSchema;
+@@ -34,6 +35,7 @@ import ghidrassistmcp.tasks.McpProgramContext;
+ import ghidrassistmcp.tasks.McpTask;
+ import ghidrassistmcp.tasks.McpTaskManager;
+ import ghidrassistmcp.tools.AnalysisControlTool;
++import ghidrassistmcp.tools.ApplyAnnotationsTool;
+ import ghidrassistmcp.tools.AnalysisOptionsTool;
+ import ghidrassistmcp.tools.AnalyzeProgramTool;
+ import ghidrassistmcp.tools.AssembleCodeTool;
+@@ -90,11 +92,40 @@ import io.modelcontextprotocol.spec.McpSchema;
   */
  public class GhidrAssistMCPBackend implements McpBackend {
  
@@ -39,7 +47,8 @@ index 66ca182..71e8335 100644
 +        "get_function_statistics",
 +        "get_function_stack_layout",
 +        "search_strings",
-+        "get_entry_points"
++        "get_entry_points",
++        "apply_annotations"
 +    );
 +
      private final Map<String, McpTool> tools = new ConcurrentHashMap<>();
@@ -51,7 +60,15 @@ index 66ca182..71e8335 100644
      private final McpTaskManager taskManager;
      private final McpResourceRegistry resourceRegistry;
      private final McpPromptRegistry promptRegistry;
-@@ -197,8 +226,7 @@ public class GhidrAssistMCPBackend implements McpBackend {
+@@ -165,6 +196,7 @@ public class GhidrAssistMCPBackend implements McpBackend {
+         registerTool(new CreateFunctionTool());       // create_function
+         registerTool(new DisassembleAtTool());         // disassemble_at
+         registerTool(new GetEntryPointsTool());
++        registerTool(new ApplyAnnotationsTool());     // apply_annotations: UN Workshop annotations
+ 
+         // Register project-level tools
+         registerTool(new OpenProgramTool());          // open_program: open/list project files in CodeBrowser
+@@ -197,8 +229,7 @@ public class GhidrAssistMCPBackend implements McpBackend {
      @Override
      public void registerTool(McpTool tool) {
          tools.put(tool.getName(), tool);
@@ -61,7 +78,7 @@ index 66ca182..71e8335 100644
          Msg.info(this, "Registered MCP tool: " + tool.getName());
      }
      
-@@ -216,7 +244,7 @@ public class GhidrAssistMCPBackend implements McpBackend {
+@@ -216,7 +247,7 @@ public class GhidrAssistMCPBackend implements McpBackend {
          List<McpSchema.Tool> toolList = new ArrayList<>();
          for (McpTool tool : tools.values()) {
              // Only include enabled tools in the available tools list
@@ -70,7 +87,7 @@ index 66ca182..71e8335 100644
                  // Augment the schema with program_name parameter for multi-program support
                  McpSchema.JsonSchema augmentedSchema = augmentSchemaWithProgramName(tool.getInputSchema());
  
-@@ -298,7 +326,7 @@ public class GhidrAssistMCPBackend implements McpBackend {
+@@ -298,7 +329,7 @@ public class GhidrAssistMCPBackend implements McpBackend {
          }
  
          // Check if tool is enabled
@@ -79,7 +96,15 @@ index 66ca182..71e8335 100644
              Msg.warn(this, "Tool is disabled: " + toolName);
              return McpSchema.CallToolResult.builder()
                  .addTextContent("Tool is disabled: " + toolName)
-@@ -561,7 +589,25 @@ public class GhidrAssistMCPBackend implements McpBackend {
+@@ -357,6 +388,7 @@ public class GhidrAssistMCPBackend implements McpBackend {
+             Msg.error(this, "Error executing tool " + toolName, e);
+             McpSchema.CallToolResult errorResult = McpSchema.CallToolResult.builder()
+                 .addTextContent("Error executing tool " + toolName + ": " + e.getMessage())
++                .isError(true)
+                 .build();
+ 
+             // Notify listeners of the error response
+@@ -561,7 +593,25 @@ public class GhidrAssistMCPBackend implements McpBackend {
       */
      private Program resolveTargetProgram(Map<String, Object> arguments) {
          if (manager == null) {
@@ -106,7 +131,17 @@ index 66ca182..71e8335 100644
              return getCurrentProgram();
          }
  
-@@ -806,8 +852,8 @@ public class GhidrAssistMCPBackend implements McpBackend {
+@@ -786,7 +836,8 @@ public class GhidrAssistMCPBackend implements McpBackend {
+ 
+             // Build new result with enhanced content
+             McpSchema.CallToolResult.Builder builder = McpSchema.CallToolResult.builder()
+-                .addTextContent(enhancedText);
++                .addTextContent(enhancedText)
++                .isError(Boolean.TRUE.equals(result.isError()));
+ 
+             // Add remaining content items if any
+             for (int i = 1; i < result.content().size(); i++) {
+@@ -806,8 +857,8 @@ public class GhidrAssistMCPBackend implements McpBackend {
       * Set whether async execution is enabled for long-running tools.
       */
      public void setAsyncExecutionEnabled(boolean enabled) {
@@ -117,7 +152,7 @@ index 66ca182..71e8335 100644
      }
  
      /**
-@@ -822,8 +868,9 @@ public class GhidrAssistMCPBackend implements McpBackend {
+@@ -822,8 +873,9 @@ public class GhidrAssistMCPBackend implements McpBackend {
       */
      public void setToolEnabled(String toolName, boolean enabled) {
          if (tools.containsKey(toolName)) {
@@ -129,7 +164,7 @@ index 66ca182..71e8335 100644
          }
      }
      
-@@ -831,7 +878,8 @@ public class GhidrAssistMCPBackend implements McpBackend {
+@@ -831,7 +883,8 @@ public class GhidrAssistMCPBackend implements McpBackend {
       * Get the enabled state of a tool.
       */
      public boolean isToolEnabled(String toolName) {
@@ -139,7 +174,7 @@ index 66ca182..71e8335 100644
      }
      
      /**
-@@ -848,7 +896,8 @@ public class GhidrAssistMCPBackend implements McpBackend {
+@@ -848,7 +901,8 @@ public class GhidrAssistMCPBackend implements McpBackend {
          for (Map.Entry<String, Boolean> entry : newStates.entrySet()) {
              String toolName = entry.getKey();
              if (tools.containsKey(toolName)) {
@@ -300,6 +335,211 @@ index 3171f2f..d7651f3 100644
          this.port = port;
          this.backend = backend;
          this.provider = provider;
+diff --git a/src/main/java/ghidrassistmcp/annotations/AnnotationApplier.java b/src/main/java/ghidrassistmcp/annotations/AnnotationApplier.java
+new file mode 100644
+index 0000000..c54ccb7
+--- /dev/null
++++ b/src/main/java/ghidrassistmcp/annotations/AnnotationApplier.java
+@@ -0,0 +1,199 @@
++/*
++ * Applies UN Workshop annotations: C type declarations and symbol rows.
++ * The apply_annotations MCP tool uses it.
++ */
++package ghidrassistmcp.annotations;
++
++import java.io.ByteArrayInputStream;
++import java.nio.charset.StandardCharsets;
++import java.util.ArrayList;
++import java.util.List;
++
++import ghidra.app.cmd.disassemble.DisassembleCommand;
++import ghidra.app.cmd.function.ApplyFunctionSignatureCmd;
++import ghidra.app.cmd.function.CreateFunctionCmd;
++import ghidra.app.util.cparser.C.CParser;
++import ghidra.app.util.parser.FunctionSignatureParser;
++import ghidra.program.model.address.Address;
++import ghidra.program.model.data.DataType;
++import ghidra.program.model.data.DataTypeManager;
++import ghidra.program.model.data.FunctionDefinitionDataType;
++import ghidra.program.model.listing.CommentType;
++import ghidra.program.model.listing.Data;
++import ghidra.program.model.listing.Function;
++import ghidra.program.model.listing.Program;
++import ghidra.program.model.symbol.SourceType;
++import ghidra.program.model.symbol.Symbol;
++import ghidra.program.model.symbol.SymbolTable;
++import ghidra.program.model.data.DataUtilities;
++import ghidra.util.data.DataTypeParser;
++
++public final class AnnotationApplier {
++
++    /** One row of symbols.tsv. */
++    public record SymbolRow(String address, String kind, String name, String type, String comment) {
++    }
++
++    private AnnotationApplier() {
++    }
++
++    /** Parse symbols.tsv text: a header row, then address, kind, name, type, comment. */
++    public static List<SymbolRow> parseSymbols(String text) {
++        List<SymbolRow> rows = new ArrayList<>();
++        String[] lines = text.replace("\r", "").split("\n");
++        if (lines.length == 0 || !lines[0].equals("address\tkind\tname\ttype\tcomment")) {
++            throw new IllegalArgumentException(
++                "symbols.tsv must start with the header: address, kind, name, type, comment");
++        }
++        for (int index = 1; index < lines.length; index++) {
++            if (lines[index].isEmpty()) {
++                continue;
++            }
++            String[] fields = lines[index].split("\t", -1);
++            if (fields.length != 5) {
++                throw new IllegalArgumentException(
++                    "symbols.tsv line " + (index + 1) + " must have five columns");
++            }
++            rows.add(new SymbolRow(fields[0], fields[1], fields[2], fields[3], fields[4]));
++        }
++        return rows;
++    }
++
++    /** Apply type declarations, then symbol rows, in one transaction; nothing is kept on failure. */
++    public static void apply(Program program, String types, List<SymbolRow> symbols) throws Exception {
++        int transaction = program.startTransaction("Apply annotations");
++        boolean committed = false;
++        try {
++            if (types != null && !types.isBlank()) {
++                applyTypes(program, types);
++            }
++            for (SymbolRow row : symbols) {
++                try {
++                    applySymbol(program, row);
++                }
++                catch (Exception exception) {
++                    throw new IllegalArgumentException(
++                        row.address() + " " + row.name() + ": " + exception.getMessage(), exception);
++                }
++            }
++            committed = true;
++        }
++        finally {
++            program.endTransaction(transaction, committed);
++        }
++    }
++
++    private static void applyTypes(Program program, String types) throws Exception {
++        DataTypeManager manager = program.getDataTypeManager();
++        CParser parser = new CParser(manager, true, null);
++        try {
++            parser.parse(new ByteArrayInputStream(types.getBytes(StandardCharsets.UTF_8)));
++        }
++        catch (ghidra.app.util.cparser.C.ParseException exception) {
++            throw new IllegalArgumentException("types.h does not parse: " + exception.getMessage());
++        }
++    }
++
++    private static void applySymbol(Program program, SymbolRow row) throws Exception {
++        Address address = program.getAddressFactory().getDefaultAddressSpace()
++            .getAddress(row.address());
++        if (!program.getMemory().contains(address)) {
++            throw new IllegalArgumentException("address is outside program memory");
++        }
++        if (row.name().isEmpty()) {
++            throw new IllegalArgumentException("name is required");
++        }
++        switch (row.kind()) {
++            case "function" -> applyFunction(program, address, row);
++            case "label" -> applyLabel(program, address, row);
++            case "data" -> applyData(program, address, row);
++            default -> throw new IllegalArgumentException(
++                "kind must be function, label, or data: " + row.kind());
++        }
++    }
++
++    private static void applyFunction(Program program, Address address, SymbolRow row) throws Exception {
++        Function function = program.getFunctionManager().getFunctionAt(address);
++        if (function == null) {
++            if (program.getListing().getInstructionAt(address) == null) {
++                new DisassembleCommand(address, null, true).applyTo(program);
++            }
++            if (!new CreateFunctionCmd(address).applyTo(program)) {
++                throw new IllegalArgumentException("no function can be created here");
++            }
++            function = program.getFunctionManager().getFunctionAt(address);
++        }
++        String generated = function.getSymbol().getSource() == SourceType.DEFAULT
++            ? function.getName() : null;
++        function.setName(row.name(), SourceType.USER_DEFINED);
++        keepGeneratedName(program, address, generated);
++        if (!row.type().isEmpty()) {
++            FunctionSignatureParser parser = new FunctionSignatureParser(
++                program.getDataTypeManager(), null);
++            FunctionDefinitionDataType signature = parser.parse(function.getSignature(), row.type());
++            signature.setCallingConvention(
++                program.getCompilerSpec().getDefaultCallingConvention().getName());
++            if (!new ApplyFunctionSignatureCmd(address, signature, SourceType.USER_DEFINED)
++                    .applyTo(program)) {
++                throw new IllegalArgumentException("prototype cannot be applied: " + row.type());
++            }
++            function.setName(row.name(), SourceType.USER_DEFINED);
++        }
++        if (!row.comment().isEmpty()) {
++            program.getListing().setComment(address, CommentType.PLATE, row.comment());
++        }
++    }
++
++    private static void applyLabel(Program program, Address address, SymbolRow row) throws Exception {
++        String generated = generatedName(program, address);
++        SymbolTable symbols = program.getSymbolTable();
++        Symbol label = symbols.createLabel(address, row.name(), SourceType.USER_DEFINED);
++        label.setPrimary();
++        keepGeneratedName(program, address, generated);
++        setEolComment(program, address, row.comment());
++    }
++
++    private static void applyData(Program program, Address address, SymbolRow row) throws Exception {
++        String generated = generatedName(program, address);
++        if (!row.type().isEmpty()) {
++            DataType type = new DataTypeParser(program.getDataTypeManager(), null, null,
++                DataTypeParser.AllowedDataTypes.FIXED_LENGTH).parse(row.type());
++            Data data = DataUtilities.createData(program, address, type, -1,
++                DataUtilities.ClearDataMode.CLEAR_ALL_CONFLICT_DATA);
++            if (data == null) {
++                throw new IllegalArgumentException("data type cannot be applied: " + row.type());
++            }
++        }
++        Symbol label = program.getSymbolTable().createLabel(address, row.name(), SourceType.USER_DEFINED);
++        label.setPrimary();
++        keepGeneratedName(program, address, generated);
++        setEolComment(program, address, row.comment());
++    }
++
++    private static String generatedName(Program program, Address address) {
++        Symbol primary = program.getSymbolTable().getPrimarySymbol(address);
++        return primary != null && primary.getSource() == SourceType.DEFAULT ? primary.getName() : null;
++    }
++
++    /** Keep the name Ghidra generated as a secondary label next to the annotation. */
++    private static void keepGeneratedName(Program program, Address address, String generated)
++            throws Exception {
++        if (generated == null) {
++            return;
++        }
++        SymbolTable symbols = program.getSymbolTable();
++        if (symbols.getSymbol(generated, address, null) == null) {
++            symbols.createLabel(address, generated, SourceType.USER_DEFINED);
++        }
++        Symbol primary = symbols.getPrimarySymbol(address);
++        if (primary != null && primary.getName().equals(generated)) {
++            throw new IllegalStateException("annotation did not become the primary name");
++        }
++    }
++
++    private static void setEolComment(Program program, Address address, String comment) {
++        if (!comment.isEmpty()) {
++            program.getListing().setComment(address, CommentType.EOL, comment);
++        }
++    }
++}
 diff --git a/src/main/java/ghidrassistmcp/scripts/GAMCPStartServerScript.java b/src/main/java/ghidrassistmcp/scripts/GAMCPStartServerScript.java
 index 5ee8cbb..1babfe1 100644
 --- a/src/main/java/ghidrassistmcp/scripts/GAMCPStartServerScript.java
@@ -319,7 +559,7 @@ index 5ee8cbb..1babfe1 100644
  import ghidra.util.Msg;
  import ghidrassistmcp.GhidrAssistMCPHeadlessServer;
  
-@@ -25,30 +31,46 @@ public class GAMCPStartServerScript extends GhidraScript {
+@@ -25,50 +31,109 @@ public class GAMCPStartServerScript extends GhidraScript {
              return;
          }
  
@@ -381,7 +621,6 @@ index 5ee8cbb..1babfe1 100644
                  }
              }
          }
-@@ -55,21 +77,64 @@ public class GAMCPStartServerScript extends GhidraScript {
  
          GhidrAssistMCPHeadlessServer mcpServer = GhidrAssistMCPHeadlessServer.getInstance();
 +        Object projectConsumer = new Object();
@@ -401,12 +640,12 @@ index 5ee8cbb..1babfe1 100644
 +                Msg.info(this, "Starting headless MCP server for " + programs.size() + " programs");
 +                mcpServer.start(programs, host, port, toolProfile);
 +                Msg.info(this, "Headless MCP server ready on " + host + ":" + port);
-             }
--            return;
++            }
 +        } finally {
 +            for (Program program : acquiredPrograms) {
 +                program.release(projectConsumer);
-+            }
+             }
+-            return;
          }
  
 -        Msg.info(this, "Starting headless MCP server for: " + currentProgram.getName());
@@ -415,9 +654,9 @@ index 5ee8cbb..1babfe1 100644
          if (waitForClients) {
 -                waitUntilCancelled(mcpServer, completionFile);
 +            waitUntilCancelled(mcpServer, completionFile);
-         }
-     }
- 
++        }
++    }
++
 +    private List<Program> openProjectPrograms(Object consumer, List<Program> acquiredPrograms)
 +            throws Exception {
 +        List<Program> programs = new ArrayList<>();
@@ -452,7 +691,81 @@ index 5ee8cbb..1babfe1 100644
 +        }
 +        for (DomainFolder child : folder.getFolders()) {
 +            collectPrograms(child, consumer, programs, acquiredPrograms);
+         }
+     }
+ 
+diff --git a/src/main/java/ghidrassistmcp/tools/ApplyAnnotationsTool.java b/src/main/java/ghidrassistmcp/tools/ApplyAnnotationsTool.java
+new file mode 100644
+index 0000000..272a726
+--- /dev/null
++++ b/src/main/java/ghidrassistmcp/tools/ApplyAnnotationsTool.java
+@@ -0,0 +1,69 @@
++/*
++ * MCP tool that applies UN Workshop annotations recorded by the router.
++ */
++package ghidrassistmcp.tools;
++
++import java.util.List;
++import java.util.Map;
++
++import ghidra.program.model.listing.Program;
++import ghidrassistmcp.McpTool;
++import ghidrassistmcp.annotations.AnnotationApplier;
++import io.modelcontextprotocol.spec.McpSchema;
++
++/**
++ * Applies type declarations and symbols.tsv rows. The router calls it only after it
++ * has recorded the same annotations in the annotation files.
++ */
++public class ApplyAnnotationsTool implements McpTool {
++
++    @Override
++    public boolean isReadOnly() {
++        return false;
++    }
++
++    @Override
++    public boolean isIdempotent() {
++        return true;
++    }
++
++    @Override
++    public String getName() {
++        return "apply_annotations";
++    }
++
++    @Override
++    public String getDescription() {
++        return "Apply annotation type declarations and symbols.tsv rows";
++    }
++
++    @Override
++    public McpSchema.JsonSchema getInputSchema() {
++        return new McpSchema.JsonSchema("object",
++            Map.of(
++                "types", Map.of("type", "string", "description", "C type declarations"),
++                "symbols", Map.of("type", "string", "description", "symbols.tsv text with its header")
++            ),
++            List.of(), null, null, null);
++    }
++
++    @Override
++    public McpSchema.CallToolResult execute(Map<String, Object> arguments, Program currentProgram) {
++        if (currentProgram == null) {
++            return error("No program currently loaded");
++        }
++        try {
++            Object symbols = arguments.get("symbols");
++            AnnotationApplier.apply(currentProgram, (String) arguments.get("types"),
++                symbols == null ? List.of() : AnnotationApplier.parseSymbols((String) symbols));
++            return McpSchema.CallToolResult.builder().addTextContent("Applied").build();
++        }
++        catch (Exception exception) {
++            return error(exception.getMessage());
 +        }
 +    }
 +
-     private void waitUntilCancelled(GhidrAssistMCPHeadlessServer mcpServer, String completionFile) {
++    private static McpSchema.CallToolResult error(String message) {
++        return McpSchema.CallToolResult.builder().addTextContent(message).isError(true).build();
++    }
++}
