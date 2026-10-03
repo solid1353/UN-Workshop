@@ -114,17 +114,20 @@ try {
                 $base = [BitConverter]::ToUInt32($header, 8)
                 $textLength = [BitConverter]::ToUInt32($header, 12)
                 $loadBase = '0x{0:X8}' -f $base
+                # The game loads the whole file, header included, at the base address;
+                # mapping the payload after the header keeps Ghidra addresses live.
+                $payloadBase = '0x{0:X8}' -f ($base + 0x40)
                 $entry = '-'
                 if ($item.entry_file_offset) {
                     $entryOffset = [Convert]::ToInt64($item.entry_file_offset.Substring(2), 16)
-                    $entry = '0x{0:X8}' -f ($base + $entryOffset - 0x40)
+                    $entry = '0x{0:X8}' -f ($base + $entryOffset)
                 }
                 $arguments += @(
                     '-processor', 'r5900:LE:32:default', '-cspec', 'default',
-                    '-loader', 'BinaryLoader', '-loader-baseAddr', $loadBase,
+                    '-loader', 'BinaryLoader', '-loader-baseAddr', $payloadBase,
                     '-loader-fileOffset', '0x40', '-loader-length', [string]((Get-Item $inputPath).Length - 0x40),
                     '-loader-blockName', 'image', '-scriptPath', $sharedScriptPath,
-                    '-preScript', 'PrepareMwo3.java', $loadBase, ('0x{0:X8}' -f $textLength), $entry
+                    '-preScript', 'PrepareMwo3.java', $payloadBase, ('0x{0:X8}' -f $textLength), $entry
                 )
             }
             default { throw "Unsupported target format: $($item.format)" }
