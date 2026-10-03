@@ -244,6 +244,9 @@ try {
     $env:JAVA_HOME = $resolvedJavaHome
     $env:PATH = (Join-Path $resolvedJavaHome 'bin') + ';' + $env:PATH
     $env:GHIDRA_HEADLESS_MAXMEM = '4G'
+    # A backend settles near 0.4 GB; the default 1 GB initial heap per backend made
+    # simultaneous starts fail when the system commit limit was nearly reached.
+    $env:JAVA_TOOL_OPTIONS = '-Xms256m'
 
     $arguments = @(
         $runtimeProjectLocation,
