@@ -16,7 +16,7 @@ $releaseUrl = (
     'ghidra_12.1_PUBLIC_20260802_GhidrAssistMCP.zip'
 )
 $releaseSha256 = 'BABA204A9FE839921A1487BE9DFB15526FAEA787E5E4312C8404281D82B3A1A7'
-$patchPath = Join-Path $PSScriptRoot 'ghidrassistmcp-2.11.0-read-only.patch'
+$patchPath = Join-Path $PSScriptRoot 'ghidrassistmcp-2.11.0-hardening.patch'
 $routerProject = Join-Path $PSScriptRoot 'GhidrAssistMcpRouter\GhidrAssistMcpRouter.csproj'
 $managerScript = Join-Path $PSScriptRoot 'manage_ghidrassist_mcp.ps1'
 
@@ -186,11 +186,11 @@ try {
     }
     & git -C $sourceRoot apply --check $patchPath
     if ($LASTEXITCODE -ne 0) {
-        throw 'The read-only hardening patch does not apply to the pinned source.'
+        throw 'The hardening patch does not apply to the pinned source.'
     }
     & git -C $sourceRoot apply --whitespace=nowarn $patchPath
     if ($LASTEXITCODE -ne 0) {
-        throw 'Failed to apply the read-only hardening patch.'
+        throw 'Failed to apply the hardening patch.'
     }
     & git -C $sourceRoot diff --check
     if ($LASTEXITCODE -ne 0) {

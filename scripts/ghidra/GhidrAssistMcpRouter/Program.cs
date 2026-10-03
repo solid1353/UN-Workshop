@@ -192,6 +192,7 @@ internal static class Program
 
     private sealed record SupervisorOptions(
         string DisassemblyRoot,
+        string AnnotationsRoot,
         string RuntimeRoot,
         string HostScript,
         string PowerShell)
@@ -212,6 +213,7 @@ internal static class Program
 
             return new SupervisorOptions(
                 Required("--disassembly"),
+                Required("--annotations"),
                 Required("--runtime"),
                 Required("--host-script"),
                 Required("--pwsh"));
@@ -224,6 +226,7 @@ internal static class Program
         private readonly ConcurrentDictionary<string, Backend> _backends =
             new(StringComparer.OrdinalIgnoreCase);
         private readonly SemaphoreSlim _stateLock = new(1, 1);
+        private readonly SemaphoreSlim _annotationLock = new(1, 1);
         private readonly CancellationTokenSource _stopping = new();
         private readonly string _controlRoot;
         private readonly string _logsRoot;
@@ -315,6 +318,8 @@ internal static class Program
             }
         }
 
+        // Each @disassembly/<game> holds one Ghidra project. Target <game> applies
+        // @annotations/<game> when its backend starts; <game>-clean serves it unchanged.
         private IReadOnlyList<Target> DiscoverTargets()
         {
             if (!Directory.Exists(_options.DisassemblyRoot))
@@ -324,11 +329,11 @@ internal static class Program
             }
 
             var targets = new List<Target>();
-            foreach (var targetRoot in Directory.GetDirectories(_options.DisassemblyRoot)
+            foreach (var gameRoot in Directory.GetDirectories(_options.DisassemblyRoot)
                          .Order(StringComparer.OrdinalIgnoreCase))
             {
-                var name = Path.GetFileName(targetRoot);
-                var projectLocation = Path.Combine(targetRoot, "ghidra");
+                var game = Path.GetFileName(gameRoot);
+                var projectLocation = Path.Combine(gameRoot, "ghidra");
                 if (!Directory.Exists(projectLocation))
                 {
                     continue;
@@ -341,17 +346,18 @@ internal static class Program
                 if (projects.Length != 1)
                 {
                     throw new InvalidDataException(
-                        $"Target '{name}' must contain exactly one Ghidra project.");
+                        $"Game '{game}' must contain exactly one Ghidra project.");
                 }
 
                 var projectName = Path.GetFileNameWithoutExtension(projects[0]);
-                var programs = ReadPrograms(targetRoot, projectLocation, projectName);
+                var programs = ReadPrograms(gameRoot, projectLocation, projectName);
                 if (programs.Count == 0)
                 {
                     throw new InvalidDataException(
-                        $"Ghidra project '{name}' does not contain a discoverable program.");
+                        $"Ghidra project '{game}' does not contain a discoverable program.");
                 }
-                targets.Add(new Target(name, projectName, programs));
+                targets.Add(new Target(game, game, true, projectName, programs));
+                targets.Add(new Target($"{game}-clean", game, false, projectName, programs));
             }
             return targets;
         }
@@ -523,6 +529,10 @@ internal static class Program
             {
                 var tool = sourceToolNode!.DeepClone().AsObject();
                 var name = tool["name"]!.GetValue<string>();
+                if (name == Annotations.ApplyTool)
+                {
+                    continue;
+                }
                 if (name == "list_binaries")
                 {
                     tool["description"] =
@@ -561,6 +571,17 @@ internal static class Program
                 tools.Add(tool);
             }
 
+            var annotatedTargets = new JsonArray(_backends.Values
+                .Where(backend => backend.Target.Annotated)
+                .Select(backend => backend.Target.Name)
+                .Order(StringComparer.OrdinalIgnoreCase)
+                .Select(name => (JsonNode?)name)
+                .ToArray());
+            foreach (var tool in Annotations.Tools(annotatedTargets))
+            {
+                tools.Add(tool);
+            }
+
             return JsonRpc.Success(id, new JsonObject { ["tools"] = tools });
         }
 
@@ -576,6 +597,14 @@ internal static class Program
             if (name == "list_binaries")
             {
                 return await ListBinariesAsync(request["id"], arguments, cancellationToken);
+            }
+            if (name == Annotations.ApplyTool)
+            {
+                return ToolError(request["id"], $"Tool is not available: {name}");
+            }
+            if (name is Annotations.SymbolTool or Annotations.TypeTool)
+            {
+                return await AnnotateAsync(request["id"], name, arguments, cancellationToken);
             }
 
             var targetName = arguments["target"]?.GetValue<string>();
@@ -598,9 +627,116 @@ internal static class Program
                     $"Available programs: {string.Join(", ", backend.Target.Programs)}");
             }
 
+            await backend.EnsureStartedAsync(cancellationToken);
+            if (backend.AnnotationError is not null)
+            {
+                return ToolError(request["id"], backend.AnnotationError);
+            }
+
             var forwarded = request.DeepClone().AsObject();
             forwarded["params"]!["arguments"]!.AsObject().Remove("target");
             return await backend.SendAsync(forwarded, cancellationToken);
+        }
+
+        // Record the annotation in @annotations first, then apply it to the running <game>
+        // backend; a rejected annotation is removed from the files again.
+        private async Task<JsonObject> AnnotateAsync(
+            JsonNode? id,
+            string tool,
+            JsonObject arguments,
+            CancellationToken cancellationToken)
+        {
+            var targetName = arguments["target"]?.GetValue<string>();
+            if (string.IsNullOrWhiteSpace(targetName) ||
+                !_backends.TryGetValue(targetName, out var backend) ||
+                !backend.Target.Annotated)
+            {
+                return ToolError(id, "Annotations apply only to these targets: " +
+                    string.Join(", ", _backends.Values.Where(item => item.Target.Annotated)
+                        .Select(item => item.Target.Name).Order()));
+            }
+
+            await backend.EnsureStartedAsync(cancellationToken);
+            if (backend.AnnotationError is not null)
+            {
+                return ToolError(id, backend.AnnotationError);
+            }
+
+            await _annotationLock.WaitAsync(cancellationToken);
+            try
+            {
+                var annotations = new Annotations(_options.AnnotationsRoot, backend.Target.Game);
+                List<(string Program, JsonObject Arguments)> applications;
+                Action restore;
+                if (tool == Annotations.SymbolTool)
+                {
+                    var program = backend.Target.ResolveProgram(
+                        arguments["program_name"]?.GetValue<string>() ?? string.Empty);
+                    if (program is null)
+                    {
+                        return ToolError(id, "program_name must be one of: " +
+                            string.Join(", ", backend.Target.Programs));
+                    }
+                    var rows = Annotations.SymbolRow.Rows(arguments);
+                    restore = annotations.RecordSymbols(program, rows);
+                    applications = new()
+                    {
+                        (program, new JsonObject { ["symbols"] = Annotations.SymbolText(rows) }),
+                    };
+                }
+                else
+                {
+                    var declaration = arguments["declaration"]?.GetValue<string>() ?? string.Empty;
+                    restore = annotations.RecordType(declaration, out var types);
+                    applications = backend.Target.Programs
+                        .Select(program => (program, new JsonObject { ["types"] = types }))
+                        .ToList();
+                }
+
+                foreach (var (program, applyArguments) in applications)
+                {
+                    applyArguments["program_name"] = program;
+                    var response = await backend.SendAsync(new JsonObject
+                    {
+                        ["jsonrpc"] = "2.0",
+                        ["id"] = 1,
+                        ["method"] = "tools/call",
+                        ["params"] = new JsonObject
+                        {
+                            ["name"] = Annotations.ApplyTool,
+                            ["arguments"] = applyArguments,
+                        },
+                    }, cancellationToken);
+                    var failure = response["error"]?.ToJsonString();
+                    if (failure is null && response["result"]?["isError"]?.GetValue<bool>() == true)
+                    {
+                        failure = string.Join(" ", (response["result"]!["content"]?.AsArray()
+                                ?? new JsonArray())
+                            .Select(content => content?["text"]?.GetValue<string>()));
+                    }
+                    if (failure is not null)
+                    {
+                        restore();
+                        return ToolError(id, $"Not recorded; {program} rejected it: {failure}");
+                    }
+                }
+                return JsonRpc.Success(id, new JsonObject
+                {
+                    ["content"] = new JsonArray
+                    {
+                        new JsonObject { ["type"] = "text", ["text"] = "Recorded and applied." },
+                    },
+                    ["isError"] = false,
+                });
+            }
+            catch (ArgumentException exception)
+            {
+                return ToolError(id, exception.Message);
+            }
+            finally
+            {
+                _annotationLock.Release();
+            }
         }
 
         private async Task<JsonObject> ListBinariesAsync(
@@ -738,13 +874,17 @@ internal static class Program
 
         private sealed record Target(
             string Name,
+            string Game,
+            bool Annotated,
             string ProjectName,
             IReadOnlyList<string> Programs)
         {
-            internal bool MatchesProgram(string candidate)
+            internal bool MatchesProgram(string candidate) => ResolveProgram(candidate) is not null;
+
+            internal string? ResolveProgram(string candidate)
             {
                 var normalized = candidate.Replace('\\', '/').Trim('/');
-                return Programs.Any(program =>
+                return Programs.FirstOrDefault(program =>
                     normalized.Equals(program, StringComparison.OrdinalIgnoreCase) ||
                     normalized.EndsWith('/' + program, StringComparison.OrdinalIgnoreCase));
             }
@@ -840,6 +980,10 @@ internal static class Program
                         {
                             _client = new BackendClient(_port);
                             await _client.InitializeAsync(cancellationToken);
+                            if (Target.Annotated)
+                            {
+                                await ApplyAnnotationsAsync(cancellationToken);
+                            }
                             await _owner.WriteStateAsync();
                             return;
                         }
@@ -860,6 +1004,55 @@ internal static class Program
             {
                 await EnsureStartedAsync(cancellationToken);
                 return await _client!.SendAsync(request, cancellationToken);
+            }
+
+            // Set when @annotations/<game> failed to apply at startup.
+            internal string? AnnotationError { get; private set; }
+
+            // Applies @annotations/<game> to the freshly opened programs.
+            private async Task ApplyAnnotationsAsync(CancellationToken cancellationToken)
+            {
+                var started = Stopwatch.StartNew();
+                AnnotationError = null;
+                try
+                {
+                    var annotations = new Annotations(_owner._options.AnnotationsRoot, Target.Game);
+                    foreach (var (program, arguments) in annotations.StartupApplications(Target.Programs))
+                    {
+                        arguments["program_name"] = program;
+                        var response = await _client!.SendAsync(new JsonObject
+                        {
+                            ["jsonrpc"] = "2.0",
+                            ["id"] = 1,
+                            ["method"] = "tools/call",
+                            ["params"] = new JsonObject
+                            {
+                                ["name"] = Annotations.ApplyTool,
+                                ["arguments"] = arguments,
+                            },
+                        }, cancellationToken);
+                        var failure = response["error"]?.ToJsonString();
+                        if (failure is null && response["result"]?["isError"]?.GetValue<bool>() == true)
+                        {
+                            failure = string.Join(" ", (response["result"]!["content"]?.AsArray()
+                                    ?? new JsonArray())
+                                .Select(content => content?["text"]?.GetValue<string>()));
+                        }
+                        if (failure is not null)
+                        {
+                            throw new InvalidDataException($"{program}: {failure}");
+                        }
+                    }
+                    _owner.Log(
+                        $"Applied @annotations/{Target.Game} to {Target.Name} in {started.ElapsedMilliseconds} ms.");
+                }
+                catch (Exception exception) when (exception is not OperationCanceledException)
+                {
+                    AnnotationError =
+                        $"@annotations/{Target.Game} did not apply, so target {Target.Name} is unavailable " +
+                        $"until the files are fixed and the MCP host is restarted: {exception.Message}";
+                    _owner.Log(AnnotationError);
+                }
             }
 
             internal JsonObject GetState() => new()
