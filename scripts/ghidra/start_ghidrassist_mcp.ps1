@@ -181,11 +181,15 @@ try {
         Remove-Item -LiteralPath $completionFile -Force
     }
 
-    $targetRoot = Join-Path $paths.Disassembly $Target
+    # Targets <game> and <game>-clean both serve @disassembly/<game>; the router applies
+    # @annotations/<game> to <game> after this backend starts.
+    $game = $Target -replace '-clean$', ''
+    $targetRoot = Join-Path $paths.Disassembly $game
+    $treeLabel = "@disassembly/$game"
     $projectLocation = Join-Path $targetRoot 'ghidra'
     $projectFiles = @(Get-ChildItem -LiteralPath $projectLocation -Filter '*.gpr' -File)
     if ($projectFiles.Count -ne 1) {
-        throw "@disassembly/$Target must contain exactly one Ghidra project."
+        throw "$treeLabel must contain exactly one Ghidra project."
     }
     $projectName = $projectFiles[0].BaseName
     $programs = @(Get-ProjectPrograms `
@@ -193,14 +197,14 @@ try {
         -ProjectLocation $projectLocation `
         -ProjectName $projectName)
     if ($programs.Count -eq 0) {
-        throw "No programs were discovered in @disassembly/$Target."
+        throw "No programs were discovered in $treeLabel."
     }
     if ([string]::IsNullOrWhiteSpace($Program)) {
         $Program = [string]$programs[0]
     }
     if ($Program -cnotin $programs) {
         throw (
-            "Program '$Program' is not in @disassembly/$Target. " +
+            "Program '$Program' is not in $treeLabel. " +
             "Available programs: $($programs -join ', ')"
         )
     }
@@ -265,7 +269,7 @@ try {
         ConvertTo-ProcessArgument -Value ([string]$_)
     })
 
-    Write-BackendHostLog "GhidrAssistMCP target: @disassembly/$Target ($Program)"
+    Write-BackendHostLog "GhidrAssistMCP target: $treeLabel ($Program)"
     Write-BackendHostLog "Transient project: @ghidra_mcp_work/$Target/project"
     $headlessProcess = Start-Process `
         -FilePath $headless `

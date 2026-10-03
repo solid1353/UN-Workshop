@@ -10,6 +10,7 @@
     "ghidra_mcp_work": "reverse_engineering/ghidraMCP",
     "media_scripts": "@scripts/media",
     "disassembly": "reverse_engineering/disassembly",
+    "annotations": "reverse_engineering/annotations",
     "logs": "logs",
     "pcsx2_dev": "pcsx2",
     "pcsx2_fork": "../../PCSX2/bin",
