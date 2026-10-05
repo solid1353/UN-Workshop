@@ -45,6 +45,8 @@ param(
 
     [UInt64]$UnlimitedForFrames = 0,
 
+    [switch]$ClosePcsx2,
+
     [string]$ProjectRoot,
 
     [string]$InputRecordingsRoot,
@@ -59,6 +61,9 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'launch_arguments.ps1')
 if ($DiscardMemoryCardWrites -and $VolatileMemoryCard) {
     throw 'Use only one of -dmc or -vmc.'
+}
+if ($Snapshots -and $ClosePcsx2) {
+    throw '-k cannot be combined with -s.'
 }
 if ($AgentReplay) {
     if ([string]::IsNullOrWhiteSpace($Play) -or $Snapshots) {
@@ -149,6 +154,31 @@ function Get-UnWorkshopUserPcsx2Processes {
             $processPath.StartsWith($_, [StringComparison]::OrdinalIgnoreCase)
         }).Count -gt 0) {
             $process
+        }
+    }
+}
+
+# Ask each development PCSX2 instance to close; force-stop it after five seconds.
+function Close-UnWorkshopUserPcsx2Processes {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [Parameter(Mandatory)]
+        [string[]]$Roots
+    )
+
+    foreach ($process in @(Get-UnWorkshopUserPcsx2Processes -Roots $Roots)) {
+        if (-not $PSCmdlet.ShouldProcess(
+            "PCSX2 process $($process.Id) ($($process.Path))",
+            'close before launch'
+        )) {
+            continue
+        }
+        if (-not $process.HasExited) {
+            [void]$process.CloseMainWindow()
+            if (-not $process.WaitForExit(5000)) {
+                Stop-Process -Id $process.Id -Force
+                Wait-Process -Id $process.Id -ErrorAction SilentlyContinue
+            }
         }
     }
 }
@@ -383,27 +413,6 @@ if ($Snapshots) {
         return
     }
 
-    if ($selectedGames.Count -eq 2) {
-        $userProcesses = @(
-            Get-UnWorkshopUserPcsx2Processes -Roots @($paths.Pcsx2Dev)
-        )
-        foreach ($process in $userProcesses) {
-            $targetDescription = "PCSX2 process $($process.Id) ($($process.Path))"
-            if ($PSCmdlet.ShouldProcess(
-                $targetDescription,
-                'close before the two-game snapshot replay'
-            )) {
-                if (-not $process.HasExited) {
-                    [void]$process.CloseMainWindow()
-                    if (-not $process.WaitForExit(5000)) {
-                        Stop-Process -Id $process.Id -Force
-                        Wait-Process -Id $process.Id -ErrorAction SilentlyContinue
-                    }
-                }
-            }
-        }
-    }
-
     $snapshotPinePorts = @()
     if ($selectedGames.Count -eq 2) {
         $nextPinePort = Get-UnWorkshopConfiguredPinePort -Pcsx2Root $pcsx2Root
@@ -544,25 +553,8 @@ if (-not $PSCmdlet.ShouldProcess($pcsx2Root, $action)) {
     return
 }
 
-if ($selectedGames.Count -eq 2 -and -not $AgentReplay) {
-    $userProcesses = @(
-        Get-UnWorkshopUserPcsx2Processes -Roots @($paths.Pcsx2Dev)
-    )
-    foreach ($process in $userProcesses) {
-        $targetDescription = "PCSX2 process $($process.Id) ($($process.Path))"
-        if ($PSCmdlet.ShouldProcess(
-            $targetDescription,
-            'close before the two-game launch'
-        )) {
-            if (-not $process.HasExited) {
-                [void]$process.CloseMainWindow()
-                if (-not $process.WaitForExit(5000)) {
-                    Stop-Process -Id $process.Id -Force
-                    Wait-Process -Id $process.Id -ErrorAction SilentlyContinue
-                }
-            }
-        }
-    }
+if (($selectedGames.Count -eq 2 -and -not $AgentReplay) -or $ClosePcsx2) {
+    Close-UnWorkshopUserPcsx2Processes -Roots @($paths.Pcsx2Dev)
 }
 
 $usedPinePorts = [Collections.Generic.HashSet[int]]::new()
