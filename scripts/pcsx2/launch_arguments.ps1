@@ -5,7 +5,7 @@ function Test-UnWorkshopLaunchOption {
     param([Parameter(Mandatory)][string]$Token)
 
     return $Token.ToLowerInvariant() -in @(
-        '-p', '-r', '-s', '-o', '-mc', '-pnach', '-dmc', '-vmc', '-t', '-u', '-agent-replay', '-logfile'
+        '-p', '-r', '-s', '-o', '-mc', '-pnach', '-dmc', '-vmc', '-t', '-u', '-k', '-agent-replay', '-logfile'
     )
 }
 
@@ -30,6 +30,7 @@ function ConvertFrom-UnWorkshopLaunchArguments {
     $volatileMemoryCard = $false
     $turbo = $false
     $unlimited = $false
+    $closePcsx2 = $false
     $agentReplay = $false
     $valueOptions = @{
         '-p' = 'Play'
@@ -86,6 +87,10 @@ function ConvertFrom-UnWorkshopLaunchArguments {
                 if ($unlimited) { throw '-u may be specified only once.' }
                 $unlimited = $true
             }
+            '-k' {
+                if ($closePcsx2) { throw '-k may be specified only once.' }
+                $closePcsx2 = $true
+            }
             default {
                 if ($token.StartsWith('-') -or $OptionsOnly) {
                     throw "Unknown Workshop launch option: $token"
@@ -124,6 +129,7 @@ function ConvertFrom-UnWorkshopLaunchArguments {
     if ($volatileMemoryCard) { $launchParameters.VolatileMemoryCard = $true }
     if ($turbo) { $launchParameters.Turbo = $true }
     if ($unlimited) { $launchParameters.Unlimited = $true }
+    if ($closePcsx2) { $launchParameters.ClosePcsx2 = $true }
     if ($agentReplay) { $launchParameters.AgentReplay = $true }
 
     [pscustomobject]@{
@@ -139,6 +145,7 @@ function ConvertFrom-UnWorkshopLaunchArguments {
         VolatileMemoryCard = $volatileMemoryCard
         Turbo = $turbo
         Unlimited = $unlimited
+        ClosePcsx2 = $closePcsx2
         AgentReplay = $agentReplay
         LaunchParameters = $launchParameters
     }

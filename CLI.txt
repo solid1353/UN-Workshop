@@ -21,6 +21,7 @@ UN Workshop
     -pnach <file>    Additional PNACH; repeatable
     -t               Turbo
     -u               Unlimited
+    -k               Close running development PCSX2 first
 
   sources: {{SOURCES}}
   properties: {{PROPERTIES}}

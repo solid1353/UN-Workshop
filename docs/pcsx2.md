@@ -24,6 +24,10 @@ Paired launches remain tiled in argument order and mute both PCSX2 instances. `-
 options are mutually exclusive. Each result reports the ordered game, process,
 PINE port, and window position.
 
+`-k` closes every running development PCSX2 before launching. Paired launches do
+this automatically, except agent replays. Snapshot replays never close PCSX2 and
+reject `-k`. Each PCSX2 gets five seconds to close before it is force-stopped.
+
 `workshop pcsx2` launches development PCSX2 without a game in Turbo.
 
 Configured launches pass the catalog-derived memory-card path directly to PCSX2

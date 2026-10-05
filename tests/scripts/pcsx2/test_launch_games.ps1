@@ -41,6 +41,7 @@ foreach ($expectedOption in @(
     '-vmc',
     '-t',
     '-u',
+    '-k',
     '-agent-replay',
     '-logfile <path>'
 )) {
@@ -165,13 +166,14 @@ param(
     [hashtable]$PnachLinesByGame,
     [switch]$Turbo,
     [switch]$Unlimited,
+    [switch]$ClosePcsx2,
     [switch]$AgentReplay,
     [UInt64]$UnlimitedForFrames,
     [string]$ProjectRoot
 )
 $pnachCount = if ($null -eq $PnachByGame) { 0 } else { $PnachByGame.Count }
 $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.Count }
-"[fake] games=$($Games -join ',') play=$Play record=$Record snapshots=$Snapshots capture=$CaptureDirectory memory=$MemoryCard discard=$DiscardMemoryCardWrites volatile=$VolatileMemoryCard readOnly=$ReadOnlySettings pnaches=$pnachCount additionalPnaches=$($AdditionalPnach -join '|') lineSets=$lineSetCount turbo=$Turbo unlimited=$Unlimited frames=$UnlimitedForFrames project=$ProjectRoot log=$LogFile agentReplay=$AgentReplay"
+"[fake] games=$($Games -join ',') play=$Play record=$Record snapshots=$Snapshots capture=$CaptureDirectory memory=$MemoryCard discard=$DiscardMemoryCardWrites volatile=$VolatileMemoryCard readOnly=$ReadOnlySettings pnaches=$pnachCount additionalPnaches=$($AdditionalPnach -join '|') lineSets=$lineSetCount turbo=$Turbo unlimited=$Unlimited close=$ClosePcsx2 frames=$UnlimitedForFrames project=$ProjectRoot log=$LogFile agentReplay=$AgentReplay"
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\pcsx2\launch_games.ps1')
 
     Push-Location $repository
@@ -261,6 +263,11 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
         Assert-WorkshopLaunchTest `
             -Condition ($unlimitedLaunch -match 'games=NUN5 .*turbo=False unlimited=True') `
             -Message 'Unlimited launch was not forwarded to the shared launcher.'
+
+        $closeLaunch = (& .\workshop.ps1 NUN5 -k) -join "`n"
+        Assert-WorkshopLaunchTest `
+            -Condition ($closeLaunch -match 'games=NUN5 .*close=True') `
+            -Message 'Closing PCSX2 before launch was not forwarded to the shared launcher.'
 
         $record = (& .\workshop.ps1 NUN5 $isoTarget -r font/collection/generic) -join "`n"
         Assert-WorkshopLaunchTest `
