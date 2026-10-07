@@ -82,9 +82,7 @@ if (-not [IO.Path]::Equals($isoItem.Directory.FullName, $paths.source)) {
     throw "Source ISO must be a direct child of @source; refusing nested or __old input: $IsoPath"
 }
 if ([string]::IsNullOrWhiteSpace($CvmPassword)) {
-    $CvmPassword = switch ($isoItem.Name) {
-        default { 'cc2fuku' }
-    }
+    $CvmPassword = 'cc2fuku'
 }
 
 $finalRoot = Join-Path $isoItem.DirectoryName ($isoItem.Name + '.files')
