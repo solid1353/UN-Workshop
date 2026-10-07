@@ -41,7 +41,8 @@ Run every command with `NA228_TASK_WORK_ROOT` set to the task's work directory:
 ```
 
 `import_targets.ps1` verifies each source hash and imports and analyzes the
-programs; `-Program <name> -ReanalyzeExisting` reanalyzes one existing program.
+programs; `-Program <name> -ReanalyzeExisting` reanalyzes one existing program,
+and `-Program <name> -Reimport` replaces it with a fresh import.
 `export_project.ps1` exports the tree and writes its manifest. Annotation
 changes never require either.
 
