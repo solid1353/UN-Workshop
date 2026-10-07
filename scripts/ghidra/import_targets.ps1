@@ -3,6 +3,7 @@ param(
     [string]$Target = 'all',
     [string]$Program,
     [switch]$ReanalyzeExisting,
+    [switch]$Reimport,
     [switch]$VerifyOnly
 )
 
@@ -56,6 +57,8 @@ if ($Target -ne 'all') { $targets = @($targets | Where-Object target -eq $Target
 if ($Program) { $targets = @($targets | Where-Object program -eq $Program) }
 if ($targets.Count -eq 0) { throw 'No matching Ghidra targets.' }
 if ($ReanalyzeExisting -and -not $Program) { throw '-ReanalyzeExisting requires -Program.' }
+if ($Reimport -and -not $Program) { throw '-Reimport requires -Program.' }
+if ($Reimport -and $ReanalyzeExisting) { throw '-Reimport cannot be combined with -ReanalyzeExisting.' }
 if ($ReanalyzeExisting -and $VerifyOnly) { throw '-ReanalyzeExisting cannot be combined with -VerifyOnly.' }
 
 foreach ($item in $targets) {
@@ -129,13 +132,14 @@ try {
             if ($LASTEXITCODE -ne 0) { throw "Ghidra reanalysis failed: $($item.target)/$($item.program)" }
             continue
         }
-        if (Test-Path -LiteralPath $summaryPath) {
+        if (-not $Reimport -and (Test-Path -LiteralPath $summaryPath)) {
             Write-Host "Skip existing:" "$($item.target)/$($item.program)"
             continue
         }
         New-Item -ItemType Directory -Force -Path $projectRoot, (Split-Path $summaryPath -Parent) | Out-Null
         $inputPath = Resolve-SourceAlias $item.source
         $arguments = @($projectRoot, $item.target, '-import', $inputPath)
+        if ($Reimport) { $arguments += '-overwrite' }
         $loadBase = '-'
         switch ($item.format) {
             'ee_elf' { $arguments += @('-processor', 'r5900:LE:32:default', '-cspec', 'default', '-loader', 'ElfLoader') }
@@ -162,7 +166,7 @@ try {
                 $arguments += @(
                     '-processor', 'r5900:LE:32:default', '-cspec', 'default',
                     '-loader', 'BinaryLoader', '-loader-baseAddr', $payloadBase,
-                    '-loader-fileOffset', '0x40', '-loader-length', [string]((Get-Item $inputPath).Length - 0x40),
+                    '-loader-fileOffset', '0x40', '-loader-length', ('0x{0:X}' -f ((Get-Item $inputPath).Length - 0x40)),
                     '-loader-blockName', 'image', '-scriptPath', $sharedScriptPath,
                     '-preScript', 'PrepareMwo3.java', $payloadBase, ('0x{0:X8}' -f $textLength), $entry
                 )
