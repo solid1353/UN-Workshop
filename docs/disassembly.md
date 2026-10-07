@@ -72,3 +72,21 @@ hand edit, or removed row, restart the MCP host to apply them. A row that names
 an address outside program memory, a function that cannot be created, or a
 type that does not parse makes the `<game>` target report the error from its
 first use until the files are fixed and the host is restarted.
+
+[`check_annotations.ps1`](../scripts/ghidra/check_annotations.ps1) `[-Target <game>]`
+applies the files to fresh copies of the projects and lists every failing type
+or row, without touching the MCP. Run it after changing the files outside the
+tools, before restarting the host.
+
+### Other games
+
+[`match_annotations.ps1`](../scripts/ghidra/match_annotations.ps1)
+`-From <game> -To <game> [-Apply]` copies the annotations of exactly matching
+functions from one game to another: the same instructions apart from jump,
+call, and address operands, with exactly one candidate on each side and at
+least six instructions. It copies names and comments, starting each comment
+with the source function it was inferred from, and prototypes whose types the
+target game already declares; it never copies types or replaces existing rows.
+Without `-Apply` it only reports the counts; with `-Apply` it records the rows
+through `annotate_symbol`. Everything else is carried over by hand when an
+investigation reaches it.
