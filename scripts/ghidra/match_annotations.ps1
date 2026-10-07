@@ -23,8 +23,6 @@ $paths = $taskContext.Paths
 . $paths.files.ghidra_runtime
 
 if ($From -eq $To) { throw 'From and To must be different games.' }
-# Master Mode is out of scope.
-$excludedPrograms = @('ADV.BIN')
 $minimumInstructions = 6
 
 function Format-Address([string]$Address) {
@@ -39,8 +37,7 @@ function Read-Symbols([string]$Game, [string]$Program) {
 
 function Get-Programs([string]$Game) {
     $manifest = Join-Path $paths.disassembly "$Game\manifest.tsv"
-    return @(Import-Csv -LiteralPath $manifest -Delimiter "`t" |
-        ForEach-Object program | Where-Object { $_ -notin $excludedPrograms })
+    return @(Import-Csv -LiteralPath $manifest -Delimiter "`t" | ForEach-Object program)
 }
 
 function Get-DeclaredTypes([string]$Game) {
