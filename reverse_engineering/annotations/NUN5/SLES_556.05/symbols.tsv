@@ -1627,3 +1627,6 @@ address	kind	name	type	comment
 0x00614180	data	ninja_song_multiply_ascii	char[4]	Independent English arithmetic separator space/asterisk/space/NUL;selector0 through ninja_song_arithmetic_text_table.
 0x0061480C	data	card_absent_message_pointer	char *	Initialization source for statuses 5/6; value 0x0091CD60.
 0x00614810	data	card_unsupported_message_pointer	char *	Initialization source for status 7; value 0x0091CD60.
+0x00617B70	data	global_font_draw_state	RunningHelpFontView *	Shared resident font renderer pointer; help_text_queue loads it for font_select_resource at 0x0038E7C0, and scrolling_strip_draw loads it for text context, render flags, origin and queued font_draw_markup calls at 0x0038EAEC..0x0038EC20.
+0x00617C58	data	audio_stream_manager_ptr	AfsManager *	Resident pointer to the 0x718-byte archive/stream manager allocated by afs_manager_allocate; afs_startup_load_partitions reads its archive metadata buffers and group counts for eager loading.
+0x006C6890	data	memory_card_messages	char *[48]	English 48-entry memory-card status message pointer bank; memory_card_message_get selects a four-byte status pointer with 0xC0-byte language stride from this base.
