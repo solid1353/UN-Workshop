@@ -18,6 +18,39 @@ function Resolve-SourceAlias([string]$Alias) {
     return Resolve-UnWorkshopSourceAlias -Alias $Alias -Paths $paths
 }
 
+# Zero-filled regions the loaders do not map, as start:length arguments for MapZeroFill.java:
+# the tail of each EE ELF load segment beyond its file bytes and an MWo3 overlay's bss_size.
+function Get-ZeroFillRanges([psobject]$Item, [string]$InputPath) {
+    $bytes = [IO.File]::ReadAllBytes($InputPath)
+    $ranges = @()
+    switch ($Item.format) {
+        'ee_elf' {
+            $headerOffset = [BitConverter]::ToUInt32($bytes, 0x1C)
+            $headerSize = [BitConverter]::ToUInt16($bytes, 0x2A)
+            $headerCount = [BitConverter]::ToUInt16($bytes, 0x2C)
+            for ($index = 0; $index -lt $headerCount; $index++) {
+                $entry = $headerOffset + $index * $headerSize
+                if ([BitConverter]::ToUInt32($bytes, $entry) -ne 1) { continue }
+                $address = [BitConverter]::ToUInt32($bytes, $entry + 8)
+                $fileSize = [BitConverter]::ToUInt32($bytes, $entry + 16)
+                $memorySize = [BitConverter]::ToUInt32($bytes, $entry + 20)
+                # Segments without file bytes reserve overlay windows, which belong to the overlays.
+                if ($fileSize -gt 0 -and $memorySize -gt $fileSize) {
+                    $ranges += '0x{0:X8}:0x{1:X}' -f ($address + $fileSize), ($memorySize - $fileSize)
+                }
+            }
+        }
+        'mwo3' {
+            $base = [BitConverter]::ToUInt32($bytes, 8)
+            $bssSize = [BitConverter]::ToUInt32($bytes, 0x14)
+            if ($bssSize -gt 0) {
+                $ranges += '0x{0:X8}:0x{1:X}' -f ($base + $bytes.Length), $bssSize
+            }
+        }
+    }
+    return $ranges
+}
+
 $targets = Import-Csv -LiteralPath (Join-Path $PSScriptRoot 'targets.tsv') -Delimiter "`t"
 if ($Target -ne 'all') { $targets = @($targets | Where-Object target -eq $Target) }
 if ($Program) { $targets = @($targets | Where-Object program -eq $Program) }
@@ -84,7 +117,11 @@ try {
             }
             $arguments = @(
                 $projectRoot, $item.target, '-process', $item.program,
-                '-scriptPath', $sharedScriptPath,
+                '-scriptPath', $sharedScriptPath
+            )
+            $zeroFill = @(Get-ZeroFillRanges -Item $item -InputPath $inputPath)
+            if ($zeroFill.Count -gt 0) { $arguments += @('-preScript', 'MapZeroFill.java') + $zeroFill }
+            $arguments += @(
                 '-postScript', 'WriteAnalysisSummary.java', $summaryPath, $item.source,
                 $item.expected_sha256, $item.format, $loadBase
             )
@@ -132,6 +169,8 @@ try {
             }
             default { throw "Unsupported target format: $($item.format)" }
         }
+        $zeroFill = @(Get-ZeroFillRanges -Item $item -InputPath $inputPath)
+        if ($zeroFill.Count -gt 0) { $arguments += @('-scriptPath', $sharedScriptPath, '-preScript', 'MapZeroFill.java') + $zeroFill }
         $arguments += @(
             '-scriptPath', $sharedScriptPath,
             '-postScript', 'WriteAnalysisSummary.java', $summaryPath, $item.source,

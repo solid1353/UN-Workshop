@@ -25,8 +25,10 @@ source and expected SHA-256.
 
 Ghidra addresses are live runtime addresses. An MWO3 overlay loads whole, its
 `0x40`-byte header at the header's base address, so the import maps the payload
-after the header at that base plus `0x40`. Annotations and documentation cite
-live addresses only.
+after the header at that base plus `0x40`. The import also maps zero-filled
+memory without file bytes, such as an ELF's BSS, as uninitialized blocks, so
+globals there can be annotated. Annotations and documentation cite live
+addresses only.
 
 ## Rebuilding
 
@@ -39,8 +41,9 @@ Run every command with `NA228_TASK_WORK_ROOT` set to the task's work directory:
 ```
 
 `import_targets.ps1` verifies each source hash and imports and analyzes the
-programs. `export_project.ps1` exports the tree and writes its manifest.
-Annotation changes never require either.
+programs; `-Program <name> -ReanalyzeExisting` reanalyzes one existing program.
+`export_project.ps1` exports the tree and writes its manifest. Annotation
+changes never require either.
 
 ## Annotations
 
