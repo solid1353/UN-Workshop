@@ -469,7 +469,7 @@ typedef struct Fighter {
     void **animations; // animation objects indexed by phase-record slot
     unsigned int animation_result; // nonzero once the animation ends
     short animation_slot; // current animation slot
-    unsigned char _pad_0B8E[0x2];
+    short previous_animation_slot; // +0xB8E last applied slot; mismatch triggers playback rebind
     unsigned short secondary_rate; // secondary timeline and animation rate, /256
     unsigned short animation_previous_frame; // +0xB92 unsigned saved whole frame
     short animation_start_frame;

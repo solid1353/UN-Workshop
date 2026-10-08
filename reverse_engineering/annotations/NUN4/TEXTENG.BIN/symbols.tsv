@@ -1,0 +1,3 @@
+address	kind	name	type	comment
+0x00870940	data	audio_settings_help_rows_english	unsigned int[4]	Four adjacent pointers00891710,00891740,008917A0,00891800; third points English/Japanese voice-mode help. Table layout matches four sound-setting/help rows; direct connection to resident language table00608280 not established by this read.
+0x008917A0	label	audio_voice_mode_help_english		Retail English literal instructs selecting English or Japanese with left/right. This help does not establish order alone; sound menu TEX_option regions index0 JAPANESE/index1 ENGLISH plus inverse writer establish compact set0 English/set1 Japanese.
