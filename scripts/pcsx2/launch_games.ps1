@@ -610,6 +610,10 @@ try {
         if ($selectedGames.Count -eq 1 -and -not $AgentReplay) {
             $launchParameters.CenteredWindow = $true
         }
+        elseif (-not $AgentReplay) {
+            # Keep the tiled position: game starts would otherwise recenter it.
+            $launchParameters.NoRecenter = $true
+        }
         if ($game.MemoryCardMode.DiscardMemoryCardWrites) {
             $launchParameters.DiscardMemoryCardWrites = $true
         }

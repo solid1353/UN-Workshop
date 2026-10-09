@@ -34,6 +34,8 @@ param(
 
     [switch]$CenteredWindow,
 
+    [switch]$NoRecenter,
+
     [switch]$DiscardMemoryCardWrites,
 
     [switch]$VolatileMemoryCard,
@@ -251,6 +253,9 @@ else {
 }
 if ($CenteredWindow) {
     $launchArguments += '-centered-window'
+}
+if ($NoRecenter) {
+    $launchArguments += '-no-recenter'
 }
 if ($IsoPath) {
     $launchArguments += @('-batch', "`"$resolvedIso`"")

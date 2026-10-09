@@ -363,6 +363,7 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
                 (Join-Path $repository 'pcsx2_files\games\NUN5\NUN5.ps2'), `
                 (Join-Path $repository 'pcsx2_files\input_recordings\practice-menu.p2m2') | Out-Null
         $global:UnWorkshopFakeCenteredWindows = @()
+        $global:UnWorkshopFakeNoRecenter = @()
         @'
 param(
     [string]$IsoPath,
@@ -372,6 +373,7 @@ param(
     [string]$InputRecordingCaptureDirectory,
     [switch]$Surfaceless,
     [switch]$CenteredWindow,
+    [switch]$NoRecenter,
     [switch]$DiscardMemoryCardWrites,
     [switch]$ReadOnlySettings,
     [string[]]$Pnach,
@@ -387,6 +389,7 @@ $message = "[fake] iso=$IsoPath input=$InputRecording capture=$InputRecordingCap
 if ($Surfaceless) { $message }
 if ($PassThru) {
     $global:UnWorkshopFakeCenteredWindows += $CenteredWindow.IsPresent
+    $global:UnWorkshopFakeNoRecenter += $NoRecenter.IsPresent
     Start-Process `
         -FilePath ([Diagnostics.Process]::GetCurrentProcess().MainModule.FileName) `
         -ArgumentList @('-NoProfile', '-Command', 'Start-Sleep -Milliseconds 50') `
@@ -624,6 +627,9 @@ if ($PassThru) {
                 $global:UnWorkshopFakeCenteredWindows[-1] -eq $false
             ) `
             -Message 'Paired launch selected single-game centered-window placement.'
+        Assert-WorkshopLaunchTest `
+            -Condition ($global:UnWorkshopFakeNoRecenter[-1] -eq $true) `
+            -Message 'Paired launch let game starts recenter its tiled windows.'
 
         $missingIsoRejected = $false
         try {
@@ -724,7 +730,7 @@ if ($PassThru) {
 }
 finally {
     Remove-Variable `
-        -Name UnWorkshopFakeCenteredWindows `
+        -Name UnWorkshopFakeCenteredWindows, UnWorkshopFakeNoRecenter `
         -Scope Global `
         -ErrorAction SilentlyContinue
     if (Test-Path -LiteralPath $testRoot) {

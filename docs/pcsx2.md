@@ -20,7 +20,9 @@ settings.
 Supplying one or two games or ISO paths launches them at normal speed. A single
 launch opens a centered window through PCSX2's `-centered-window`
 [launch option](../../../PCSX2/docs/launch_options.md#process-overrides).
-Paired launches remain tiled in argument order and mute both PCSX2 instances. `-t` selects Turbo, while `-u` selects Unlimited; these speed
+Paired launches remain tiled in argument order through PCSX2's `-no-recenter`,
+which stops game starts from recentering the windows, and mute both PCSX2
+instances. `-t` selects Turbo, while `-u` selects Unlimited; these speed
 options are mutually exclusive. Each result reports the ordered game, process,
 PINE port, and window position.
 
