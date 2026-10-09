@@ -2,7 +2,8 @@ param(
     [Parameter(Mandatory = $true)]
     [ValidateSet('NA2', 'NUN3', 'NUN4', 'NUN5', 'shared')]
     [string]$Target,
-    [string]$Program
+    [string[]]$Program,
+    [switch]$RestartMcp
 )
 
 Set-StrictMode -Version Latest
@@ -30,6 +31,9 @@ foreach ($name in @(
 }
 
 try {
+    Get-ChildItem -LiteralPath $projectRoot -Force -Recurse -File | ForEach-Object {
+        $_.Attributes = $_.Attributes -band (-bnot [IO.FileAttributes]::ReadOnly)
+    }
     $ghidra = Initialize-GhidraRuntime `
         -RuntimeRoot $runtimeRoot `
         -ToolsRoot $paths.Tools
@@ -38,18 +42,29 @@ try {
 
     $exportRoot = Join-Path $analysisRoot 'exports'
     New-Item -ItemType Directory -Force -Path $exportRoot | Out-Null
-    $arguments = @($projectRoot, $Target, '-process')
-    if ($Program) { $arguments += $Program }
-    $arguments += @(
-        '-readOnly', '-noanalysis',
-        '-scriptPath', $sharedScriptPath,
-        '-postScript', 'ExportAnalysis.java', $exportRoot
-    )
-    & $headless @arguments
-    if ($LASTEXITCODE -ne 0) { throw "Ghidra export failed with exit code $LASTEXITCODE" }
+    $programs = if ($Program) { $Program } else { @('*') }
+    foreach ($name in $programs) {
+        $arguments = @($projectRoot, $Target, '-process', $name)
+        $arguments += @(
+            '-readOnly', '-noanalysis',
+            '-scriptPath', $sharedScriptPath,
+            '-postScript', 'ExportAnalysis.java', $exportRoot
+        )
+        & $headless @arguments
+        if ($LASTEXITCODE -ne 0) { throw "Ghidra export failed with exit code $LASTEXITCODE" }
+    }
     & (Join-Path $PSScriptRoot 'build_manifest.ps1') -Target $Target
+    Get-ChildItem -LiteralPath $analysisRoot -Force -Recurse | ForEach-Object {
+        $_.Attributes = $_.Attributes -bor [IO.FileAttributes]::ReadOnly
+    }
+    if ($RestartMcp) {
+        & (Join-Path $PSScriptRoot 'manage_ghidrassist_mcp.ps1') -Action Restart
+    }
 }
 finally {
+    Get-ChildItem -LiteralPath $analysisRoot -Force -Recurse | ForEach-Object {
+        $_.Attributes = $_.Attributes -bor [IO.FileAttributes]::ReadOnly
+    }
     foreach ($name in $runtimeEnvironment.Keys) {
         [Environment]::SetEnvironmentVariable(
             $name, $runtimeEnvironment[$name], 'Process'

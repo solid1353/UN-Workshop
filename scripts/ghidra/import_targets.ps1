@@ -12,6 +12,7 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
 . (Join-Path $PSScriptRoot '..\lib\source_paths.ps1')
 . (Join-Path $PSScriptRoot 'task_context.ps1')
+. (Join-Path $PSScriptRoot 'target_inputs.ps1')
 $paths = Get-UnWorkshopPaths -NoProject
 . $paths.files.ghidra_runtime
 
@@ -21,11 +22,10 @@ function Resolve-SourceAlias([string]$Alias) {
 
 # Zero-filled regions the loaders do not map, as start:length arguments for MapZeroFill.java:
 # the tail of each EE ELF load segment beyond its file bytes and an MWo3 overlay's bss_size.
-function Get-ZeroFillRanges([psobject]$Item, [string]$InputPath) {
-    $bytes = [IO.File]::ReadAllBytes($InputPath)
+function Get-ZeroFillRanges([psobject]$Item, [byte[]]$bytes) {
     $ranges = @()
     switch ($Item.format) {
-        'ee_elf' {
+        { $_ -in 'ee_elf', 'iop_elf' } {
             $headerOffset = [BitConverter]::ToUInt32($bytes, 0x1C)
             $headerSize = [BitConverter]::ToUInt16($bytes, 0x2A)
             $headerCount = [BitConverter]::ToUInt16($bytes, 0x2C)
@@ -66,10 +66,7 @@ foreach ($item in $targets) {
     if (-not (Test-Path -LiteralPath $inputPath -PathType Leaf)) {
         throw "Source input missing: $($item.source)"
     }
-    $actualHash = (Get-FileHash -LiteralPath $inputPath -Algorithm SHA256).Hash
-    if ($actualHash -ne $item.expected_sha256) {
-        throw "Source hash mismatch: $($item.source)"
-    }
+    [void](Get-GhidraTargetImage -Item $item -InputPath $inputPath)
 }
 if ($VerifyOnly) {
     Write-Host "Verified target inputs:" $targets.Count
@@ -83,6 +80,7 @@ $runtimeRoot = Join-Path $tempRoot (
     'ghidra_import-' + [Guid]::NewGuid().ToString('N')
 )
 $runtimeEnvironment = @{}
+$changedProjects = @{}
 foreach ($name in @(
     'USERPROFILE', 'APPDATA', 'LOCALAPPDATA', 'JAVA_HOME', 'PATH',
     'GHIDRA_HEADLESS_MAXMEM'
@@ -102,11 +100,16 @@ try {
         $analysisRoot = Join-Path $paths.disassembly $item.target
         $projectRoot = Join-Path $analysisRoot 'ghidra'
         $summaryPath = Join-Path $analysisRoot "summaries\$($item.program).tsv"
+        $inputPath = Resolve-SourceAlias $item.source
+        $image = Get-GhidraTargetImage -Item $item -InputPath $inputPath
+        if ($item.source_offset) {
+            $inputPath = Join-Path $runtimeRoot $item.program
+            [IO.File]::WriteAllBytes($inputPath, $image)
+        }
         if ($ReanalyzeExisting) {
             if (-not (Test-Path -LiteralPath $projectRoot -PathType Container)) {
                 throw "Ghidra project is missing: $($item.target)"
             }
-            $inputPath = Resolve-SourceAlias $item.source
             $loadBase = '-'
             if ($item.format -eq 'mwo3') {
                 $stream = [IO.File]::OpenRead($inputPath)
@@ -122,7 +125,7 @@ try {
                 $projectRoot, $item.target, '-process', $item.program,
                 '-scriptPath', $sharedScriptPath
             )
-            $zeroFill = @(Get-ZeroFillRanges -Item $item -InputPath $inputPath)
+            $zeroFill = @(Get-ZeroFillRanges -Item $item -bytes $image)
             if ($zeroFill.Count -gt 0) { $arguments += @('-preScript', 'MapZeroFill.java') + $zeroFill }
             $arguments += @(
                 '-postScript', 'WriteAnalysisSummary.java', $summaryPath, $item.source,
@@ -137,7 +140,12 @@ try {
             continue
         }
         New-Item -ItemType Directory -Force -Path $projectRoot, (Split-Path $summaryPath -Parent) | Out-Null
-        $inputPath = Resolve-SourceAlias $item.source
+        if (-not $changedProjects.ContainsKey($analysisRoot)) {
+            $changedProjects[$analysisRoot] = $true
+            Get-ChildItem -LiteralPath $projectRoot -Force -Recurse -File | ForEach-Object {
+                $_.Attributes = $_.Attributes -band (-bnot [IO.FileAttributes]::ReadOnly)
+            }
+        }
         $arguments = @($projectRoot, $item.target, '-import', $inputPath)
         if ($Reimport) { $arguments += '-overwrite' }
         $loadBase = '-'
@@ -173,7 +181,7 @@ try {
             }
             default { throw "Unsupported target format: $($item.format)" }
         }
-        $zeroFill = @(Get-ZeroFillRanges -Item $item -InputPath $inputPath)
+        $zeroFill = @(Get-ZeroFillRanges -Item $item -bytes $image)
         if ($zeroFill.Count -gt 0) { $arguments += @('-scriptPath', $sharedScriptPath, '-preScript', 'MapZeroFill.java') + $zeroFill }
         $arguments += @(
             '-scriptPath', $sharedScriptPath,
@@ -185,6 +193,11 @@ try {
     }
 }
 finally {
+    foreach ($analysisRoot in $changedProjects.Keys) {
+        Get-ChildItem -LiteralPath $analysisRoot -Force -Recurse | ForEach-Object {
+            $_.Attributes = $_.Attributes -bor [IO.FileAttributes]::ReadOnly
+        }
+    }
     foreach ($name in $runtimeEnvironment.Keys) {
         [Environment]::SetEnvironmentVariable(
             $name, $runtimeEnvironment[$name], 'Process'

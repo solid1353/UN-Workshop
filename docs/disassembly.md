@@ -23,12 +23,14 @@ source and expected SHA-256.
 
 ## Addresses
 
-Ghidra addresses are live runtime addresses. An MWO3 overlay loads whole, its
+EE Ghidra addresses are live runtime addresses. An MWO3 overlay loads whole, its
 `0x40`-byte header at the header's base address, so the import maps the payload
 after the header at that base plus `0x40`. The import also maps zero-filled
 memory without file bytes, such as an ELF's BSS, as uninitialized blocks, so
 globals there can be annotated. Annotations and documentation cite live
-addresses only.
+addresses only. Relocatable IOP ELFs are imported at module-relative base zero;
+that base does not establish their live IOP placement. Cite their qualified
+program/symbol names until a live relocation base is established.
 
 ## Rebuilding
 
@@ -45,6 +47,36 @@ programs; `-Program <name> -ReanalyzeExisting` reanalyzes one existing program,
 and `-Program <name> -Reimport` replaces it with a fresh import.
 `export_project.ps1` exports the tree and writes its manifest. Annotation
 changes never require either.
+
+### Embedded IOP modules
+
+An `iop_elf` row can select an embedded image using `source_offset`,
+`source_size` and `container_sha256` in `targets.tsv`. `expected_sha256`
+then covers the selected image. The maintained input reader verifies both
+hashes, the exact range, the little-endian MIPS IOP ELF header and its single
+zero-based load segment before importing anything. The importer writes the
+verified member only inside its disposable task runtime, imports it through
+Ghidra's ELF loader and includes its uninitialized memory tail. It removes
+the runtime afterward. The source archive remains unchanged.
+
+The shared programs `MODMIDI.IRX` and `MODHSYN.IRX` select the NA2
+`MODULES.BIN` members at file offsets `0x30000` and `0x35800`, respectively.
+Their exact image sizes and hashes are in `targets.tsv`; they are separate
+from the existing first-member `MODULES.BIN` program. Export both before
+publishing the manifest:
+
+```powershell
+& .\scripts\ghidra\import_targets.ps1 -Target shared -Program MODMIDI.IRX
+& .\scripts\ghidra\import_targets.ps1 -Target shared -Program MODHSYN.IRX
+& .\scripts\ghidra\export_project.ps1 -Target shared `
+    -Program MODMIDI.IRX,MODHSYN.IRX -RestartMcp
+```
+
+Import/export temporarily permits Ghidra access to project files and restores
+read-only attributes. The manifest records each image's bytes, source offset
+and container hash. `-RestartMcp` restarts the shared host after a successful
+export/manifest publication so its startup program inventory includes the
+new programs; explain the interruption to concurrent researchers beforehand.
 
 ## Annotations
 

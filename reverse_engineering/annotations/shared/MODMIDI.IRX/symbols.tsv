@@ -1,0 +1,3 @@
+address	kind	name	type	comment
+0x000006B0	function	midi_main	int midi_main(void *module)	modmidi export ordinal5. Walk odd descriptor entries; state+0x0C bit2 invokes sequencer step, bit0x100 output/drain helper. Separate MIDI sequencer module; the SNDBASE compact fighter packet worker invokes modhsyn hsyn_main directly. Module-relative ELF coordinates; fixed live IOP base unknown.
+0x000036A0	data	midi_export_table		Verified modmidi export table of embedded Midi_Sequencer_Module image; ordinal5 midi_main. Does not supply the modhsyn compact program/Sset/Smpl/Vagi lookup.

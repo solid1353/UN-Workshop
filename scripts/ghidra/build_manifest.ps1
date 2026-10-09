@@ -8,6 +8,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
 . (Join-Path $PSScriptRoot '..\lib\source_paths.ps1')
+. (Join-Path $PSScriptRoot 'target_inputs.ps1')
 $paths = Get-UnWorkshopPaths -NoProject
 
 function Resolve-SourceAlias([string]$Alias) {
@@ -18,9 +19,12 @@ function Get-SharingGames([object]$Item) {
     $child = [regex]::Match($Item.source, '^@source[/\\][^/\\]+\.iso\.files[/\\](?<child>.+)$').Groups['child'].Value
     @(foreach ($root in Get-UnWorkshopSourceRoots -Paths $paths) {
         $candidate = Join-Path $root.Path $child
-        if ((Test-Path -LiteralPath $candidate -PathType Leaf) -and
-            (Get-FileHash -LiteralPath $candidate -Algorithm SHA256).Hash -eq $Item.expected_sha256) {
-            $root.Game
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+            try {
+                [void](Get-GhidraTargetImage -Item $Item -InputPath $candidate)
+                $root.Game
+            }
+            catch { continue }
         }
     }) -join ' '
 }
@@ -51,8 +55,7 @@ $rows = foreach ($item in $targets) {
         throw "Summary identity mismatch: $Target/$($item.program)"
     }
     $sourcePath = Resolve-SourceAlias $item.source
-    $sourceHash = (Get-FileHash -LiteralPath $sourcePath -Algorithm SHA256).Hash
-    if ($sourceHash -ne $item.expected_sha256) { throw "Source hash mismatch: $($item.source)" }
+    $image = Get-GhidraTargetImage -Item $item -InputPath $sourcePath
 
     $cFile = Get-Item -LiteralPath $cPath
     $asciiFile = Get-Item -LiteralPath $asciiPath
@@ -68,7 +71,9 @@ $rows = foreach ($item in $targets) {
         program = $item.program
         source = $item.source
         source_sha256 = $item.expected_sha256
-        source_bytes = (Get-Item -LiteralPath $sourcePath).Length
+        source_bytes = $image.Length
+        source_offset = $item.source_offset
+        container_sha256 = $item.container_sha256
         format = $item.format
         language = $summary.language
         load_base = $summary.load_base
@@ -85,6 +90,20 @@ $rows = foreach ($item in $targets) {
 }
 
 $manifestPath = Join-Path $analysisRoot 'manifest.tsv'
-$rows | Export-Csv -LiteralPath $manifestPath -Delimiter "`t" -NoTypeInformation -Encoding utf8
+$manifestReadOnly = (Test-Path -LiteralPath $manifestPath) -and
+    (((Get-Item -LiteralPath $manifestPath).Attributes -band [IO.FileAttributes]::ReadOnly) -ne 0)
+try {
+    if ($manifestReadOnly) {
+        $file = Get-Item -LiteralPath $manifestPath
+        $file.Attributes = $file.Attributes -band (-bnot [IO.FileAttributes]::ReadOnly)
+    }
+    $rows | Export-Csv -LiteralPath $manifestPath -Delimiter "`t" -NoTypeInformation -Encoding utf8
+}
+finally {
+    if ($manifestReadOnly) {
+        $file = Get-Item -LiteralPath $manifestPath
+        $file.Attributes = $file.Attributes -bor [IO.FileAttributes]::ReadOnly
+    }
+}
 Write-Host "Verified analysis manifest: $(ConvertTo-UnWorkshopConfiguredPath -Path $manifestPath -Paths $paths)"
 Write-Host "Programs: $($rows.Count)"

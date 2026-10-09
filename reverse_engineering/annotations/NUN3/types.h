@@ -18,7 +18,7 @@ typedef struct CcsPacketRing {
     unsigned int unavailable_slots;
 } CcsPacketRing;
 
-typedef struct Nun3CharacterAnimationRow { short animation_slot; short duration; short start_frame; unsigned char _unknown_0006[0x22]; char *skeleton_object_name; unsigned char _unknown_002c[0x20]; } Nun3CharacterAnimationRow;
+typedef struct Nun3CharacterAnimationRow { short animation_slot; short duration; short start_frame; unsigned short rate; unsigned short motion_flags; short motion_event; float planar_speed; float vertical_speed; float motion_decay; float motion_multiplier; unsigned int bank1_flags; short bank1_start; short bank1_end; float bank1_radius; char *skeleton_object_name; float bank1_offset_x; float bank1_offset_z; unsigned int bank2_flags; short bank2_start; short bank2_end; float bank2_radius; char *bank2_skeleton_object_name; float bank2_offset_x; float bank2_offset_z; } Nun3CharacterAnimationRow;
 
 typedef struct Nun3CharacterRecord { int character_id; char *display_name; char *body_filename; void *palette_names /* contiguous name records, 30 chars per record */; void *texture_names /* contiguous name records, 30 chars per record */; void *model_names /* contiguous name records, 30 chars per record */; char *effect_anchor_name; void *callbacks; unsigned char _unknown_0020[8]; int action_count; Nun3ActionRecord *default_actions; Nun3ActionRecord *alternate_actions; unsigned char _unknown_0034[4]; int row_count; Nun3CharacterAnimationRow *default_rows; Nun3CharacterAnimationRow *working_rows; int animation_count; char **animation_names; void **animation_working_array; unsigned char _unknown_0050[0x8c]; } Nun3CharacterRecord;
 
@@ -119,3 +119,9 @@ typedef struct Nun3StageCameraRecord { float eye_decreasing; float eye_increasin
 typedef struct Nun3StageAnchorRecord { float *side0; float *side1; unsigned char counts[2]; unsigned char unknown_0a[6]; } Nun3StageAnchorRecord;
 
 typedef struct Nun3StageRouteRecord { signed char source_line; signed char destination_line; unsigned char unknown_02[2]; float point_fraction; unsigned char action_type; unsigned char unknown_09[3]; } Nun3StageRouteRecord;
+
+typedef struct Nun3GuyHairState { int mode; void *head_node; void *body_node; void *hair_models[2]; } Nun3GuyHairState;
+
+typedef struct Nun3UltimateJutsuRecord { char *display_name; short authored_id; short ability_count; short ability_ids[3]; unsigned char _unknown_000e[4]; short intro_voice; unsigned short effect; short damage_percent; short stat_adjustments[6]; } Nun3UltimateJutsuRecord;
+
+typedef struct Nun3SkillRequestRow { char *display_name; char *main_path; unsigned char extra_count; unsigned char stream_count; unsigned char _unknown_000a[2]; char **extra_paths; void *stream_pairs; } Nun3SkillRequestRow;
