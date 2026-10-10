@@ -3,7 +3,8 @@
 ## Research coverage
 
 Established: display-count pacing, its writers/readers, output mode and flips,
-the direct engine-counter consumers, whole-frame streamed rates, and soundtrack coupling.
+the direct engine-counter consumers, battle draw callbacks that change state,
+whole-frame streamed rates, and soundtrack coupling.
 Evidence is static across the resident ELF, BTL and ETC; ADV is excluded.
 Open: wide/computed counter reads, RCNT0 snapshot readers, enabled viewer requests,
 CRI stream-mode semantics and measured hardware cadence; register meanings are inferences.
@@ -128,6 +129,26 @@ including [Kiba's response-count exit](../gameplay/characters/character_action_c
 Raw accesses agree with the saved `Fighter.update_rate` offset; some applied
 decompiler field expressions disagree, so they are not used to infer layout.
 
+## State advanced by draw callbacks
+
+Battle phase-two callbacks, `pause_controller_post_update` and front-end draw
+callbacks run once per engine update. Most only submit, but these change stored
+state per call:
+
+| Draw routine | Per-call change |
+| --- | --- |
+| `render_transient_jitter` (battle notice) | Counts shake counter `+0x20` down from 10, sound 0x57 at 4 and 0 |
+| `pause_tone_effect_update` (character 0x49) | Adds 0.01 to accumulators `+0x698`/`+0x69C`, wrapped to 0..1 |
+| `fukidasi_present` | Display position becomes the average of the previous one and the projected target |
+| `fukidasi_numeric_digits_draw` | Digit scale falls 0.2 toward 1.2 |
+| `field_item_state3_draw` | Opacity falls 0.03 until a counter reset |
+| `ink_trail_points_age` (InkSnake, InkBird) | Ages, narrows and expires trail points |
+| `bg_time_of_day_draw_blend`, `bg_time_of_day_draw_blend_late`, `bg_time_of_day_draw_restore` | Approach light, fog and color targets by `0.05 / (+8 / 20)` |
+| `endpoint_counter_player_draw`, `item_auxiliary_draw`, `results_summary_draw`, `panel_completion_prompt_draw`, `ranking_highlight_draw_b` | Counters and phases advance per draw |
+
+`projectile_service_end` and `render_transient_jitter` also take random
+offsets from the shared generator on every draw, applied to local copies only.
+
 ## Clock domains
 
 Each row is an independent unit of time. Conversion requires the owner's
@@ -143,6 +164,7 @@ delay and media decoders.
 | Vibration | 60 Hz ticks, aged by the divisor per update | [Controller input](controller_input.md#vibration-and-actuator-scheduling) |
 | Fractional timer block | Caller-supplied float delta per call | [Timer primitives](timer_primitives.md#fractional-integer-cursor-block) |
 | Fixed-point countdown | `0x00044444` (2^24/60) per eligible call | [Timer primitives](timer_primitives.md#fixed-point-remainingelapsed-block) |
+| Profile play time | One tick per manager pass through `profile_play_time_tick` (sole call `0x001E99D4`) while manager flags bit 0 is set, saturating at `0x066FF2E2`; displayed at 30 ticks per second | [Save data](../game/save_data.md) |
 | Scene playback | 8.8 increment per advance, 256 = one authored frame | [Animation runtime](animation_runtime.md#advance-and-end-behavior) |
 | Streamed CCS playback | Signed 8.8 `CcsContainer.rate` per worker cycle | [CCS runtime](../game/files/ccs_runtime.md#the-play-task), [Scene playback owners](scene_playback_owners.md#streamed-worker-scheduling) |
 | Effect generator | Whole list passes per requested iteration | [Effect generator commands](effect_generator_commands.md#scheduling-and-owner-gates) |

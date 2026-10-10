@@ -3,7 +3,8 @@
 ## Research coverage
 
 Established: retail NA2 object and streamed playback ownership, worker ordering,
-resident and ETC seek policies, and the inspected local rate, pause and cleanup gates.
+resident and ETC seek policies, the inspected local rate, pause and cleanup gates,
+and the step sources of resident fighter-side players.
 Names and field layouts come from `@annotations/NA2`; annotation comments hold local code detail.
 Open: the full advance-owner matrix, unresolved BTL seek owners, indirect scheduling,
 ETC screen identities, compact-wrapper scheduling and the complete scene-factor producers.
@@ -103,9 +104,10 @@ frame, then calls `projectile_compound_submit` (`0x001BB790`) without advancing.
 
 The record owns a whole-frame logical cursor while its player has a fractional
 cursor. Restoration serves both update and submission; it need not be a timeline
-command or restart. Neither wrapper supplies a pause predicate. Their constructors,
-possible player sharing and scheduled use remain unresolved. The bounded caller
-searches in their annotations do not prove absence of indirect dispatch.
+command or restart. Because the update restores a whole frame before each advance,
+a step below `0x100` never accumulates. Neither wrapper supplies a pause predicate.
+The exact-`jal` census finds the update called only from `ETC.BIN` live `0x006CF018`
+and `0x006CF660`. Constructors and possible player sharing remain unresolved.
 
 ## Fighter animation ownership
 
@@ -124,6 +126,19 @@ branch, `auxiliary_playback` independently advances later when
 `afterimage_marker` is nonzero and its `FighterAuxiliaryPlayback.complete` is
 zero. That auxiliary pass is outside the main pause gate. Holding the main
 animation therefore does not establish a hold of every attached animation.
+
+Other resident fighter-side players take their step from one of three sources:
+
+| Step source | Owners |
+| --- | --- |
+| Copy of `owned_animation_player.step` before each advance | `fighter_secondary_animation_synchronize`, the Kankuro, Chiyo and Sasori puppet synchronizers, the first block of `fighter_effect_children_action_update`, `character_auxiliary_update_2615b0`, `character_trail_players_update_29c400` |
+| Own stored step on every call | `character_trail_update_29c940`, `paired_players_advance_2a5000`, `character_player_update_2b3af0`, `character_player_update_2bd380`, `paired_players_advance_2c2600`, `character_action_player_update_2f1b50`, `sasori_update_second_playback`, `itachi_update_tsukuyomi_player` |
+| One evaluation advance at setup | `paired_sequence_update`, `puppet_animation_switch_2a2c70`, `gaara_kazekage_initialize_variant`, `deidara_initialize_variant`, `fighter_id_071_construct`, `fighter_id_073_construct` |
+
+Copied steps follow the fighter's `update_rate`; own stored steps do not.
+`jiraiya_update_frog_animation`, `FUN_002CEC30`, `FUN_002CFCA0`,
+`fighter_auxiliary_timeline_6168_update`, `FUN_002E3030` and `FUN_002F4450`
+also read the owned player, but their copy into the advanced player is not traced.
 
 Phase-animation setup binds a descriptor with blend duration zero and optionally
 seeks to `animation_start_frame << 8`. `animation_start_callback_enabled`

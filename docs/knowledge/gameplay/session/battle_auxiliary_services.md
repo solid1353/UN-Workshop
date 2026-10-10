@@ -2,7 +2,7 @@
 
 ## Research coverage
 
-Static evidence establishes effect pools, individual registrations, skill record banks, phase gates, handles, and deletion order.
+Static evidence establishes effect pools, individual registrations, skill record banks, phase gates, rate-following skill gates, handles, and deletion order.
 Selected callbacks cover `ccEffDrawObj`, the skill bases, BlowWatch, Wall, and the cut-in controller; the producer and derived-class sets remain bounded.
 All 166 primary interfaces in the audited resident interval have traced retirement-slot targets; the conditional common-action exit omits the auxiliary sweep.
 Offset-gauge callbacks, cut-in child identities and producers, and remaining pooled delay, ownership, and completion writers remain open.
@@ -158,6 +158,52 @@ The pending-contact cleanup clears only the low byte of
 `accepted_contact_flags`; the shared annotation retains the established
 word-sized field. The service wrapper and the class-specific node callback
 are distinct dispatch levels.
+
+### Rate-following steps
+
+Skill primaries and auxiliaries follow their fighter's `update_rate` by
+skipping work rather than scaling it:
+
+- `skill_primary_action_dispatch` adds the associated fighter's rate to
+  `+0x1E4` when `+0x389` is set and the fighter is valid. Below 1 it calls
+  only virtual `+0x140`, sets `+0x1E0` bit 0 and returns. Otherwise it clears
+  the bit, subtracts 1 and runs its virtual chain and two halfword countdowns.
+  `skill_primary_late_callback` skips its counted late work while the bit is
+  set. `skill_primary_construct` sets `+0x389` to 1, and no other writer was
+  found. Without a valid fighter the gate is skipped and the work runs on
+  every call.
+- Before that gate, the `+0xF06` bit 0 block advances the player at `+0x320`
+  by its stored step on every call. `skill_owner_rate_probe` writes such
+  steps as `256 * update_rate` of the owner, or 256 without one.
+- `skill_auxiliary_phase1` adds `entity.update_rate` to `fractional_step`
+  and sets `update_control` bit 0 below 1. An auxiliary with a nonnull
+  `alternate_entity` bypasses the accumulator.
+
+At a rate below 1, skill logic therefore runs on a subset of calls, while
+rate-derived animation advances on every call by a smaller step.
+
+The primary interface slots split by cadence. On every call
+`skill_primary_action_dispatch` (slot `0x130`) runs slot `0x140`, and its
+`+0xF06` bit-0 block steps the clip list at `+0xF2E`, advances the `+0x320`
+player and calls slots `0x14` and `0x1E0`. Past the gate it runs slots `0x78`,
+`0x84`, `0x180`, `0x174`, `0xD8`, `0xF0`, `0x114`, `0xF8` and `0x1D4`.
+`skill_primary_late_callback` (slot `0x134`) calls `0x10C` and, with
+`+0xF06` bit 0, slot `0x1E8` and the `+0xF08` count on every call; its counted
+work follows the gate mark. `skill_primary_deactivate_queries` sets `+0xF06`
+bit 0 after packet reconciliation, and `skill_kbw001_clash_outcome` clears it.
+
+The shared slot-`0x140` routine `skill_primary_update_participant_motion`
+writes the owner's and target's planar and vertical speeds (`+0x994`,
+`+0x998`) from per-skill speeds and increments, scales the owner's increments
+by `update_rate` only in mode 0, and calls `fighter_movement_pass`. Classes
+write the `+0x320` step either as `256 * update_rate` (`skill_owner_rate_probe`,
+`FUN_00791F30`, `FUN_007DADE0`) or as constant `0x100`. On the auxiliary side,
+`skill_auxiliary_phase1` runs slots `0x1C` and `0x10` past its gate, and
+`skill_auxiliary_update_banks` runs slot `0x18` only when the gate stepped.
+An auxiliary with `alternate_update_flags` bit 0 instead runs slot `0x6C`
+every call; two classes override it with a stored-step player advance.
+The draw slots (`skill_primary_draw_callback` and auxiliary `0x68`/`0x70`)
+call no advance or random draw directly.
 
 `skill_blow_watch_late` checks `SkillBlowWatchView.retained_actor`, `mode`,
 and the selected readiness flag before its actor calls and retirement
