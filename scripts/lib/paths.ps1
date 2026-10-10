@@ -266,6 +266,27 @@ function Get-UnWorkshopPaths {
     }
 }
 
+function Get-UnWorkshopTaskContext {
+    # The acting task's folder, an immediate child of a project's work root, and
+    # that project's paths.
+    if ([string]::IsNullOrWhiteSpace($env:UN_TASK_WORK_ROOT)) {
+        throw 'UN_TASK_WORK_ROOT must name the current chat work directory.'
+    }
+    $taskRoot = [IO.Path]::GetFullPath($env:UN_TASK_WORK_ROOT)
+    $workRoot = [IO.Path]::GetDirectoryName($taskRoot)
+    $projectRoot = [IO.Path]::GetDirectoryName($workRoot)
+    $paths = Get-UnWorkshopPaths -ProjectRoot $projectRoot
+    if ($null -eq $paths.Work -or
+        -not [IO.Path]::Equals($workRoot, [IO.Path]::GetFullPath($paths.Work)) -or
+        [string]::IsNullOrWhiteSpace([IO.Path]::GetFileName($taskRoot))) {
+        throw 'UN_TASK_WORK_ROOT must name an immediate child of work/.'
+    }
+    [pscustomobject]@{
+        Root = $taskRoot
+        Paths = $paths
+    }
+}
+
 function Get-UnWorkshopCatalog {
     [CmdletBinding()]
     param()

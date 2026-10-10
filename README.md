@@ -16,7 +16,6 @@ workflows, marker editing, memory cards, PNACH overlays, and input profiles.
 
 - `paths.json`: authoritative Workshop roots and named reusable files.
 - `games.json`: stable source-game selectors, aliases, serials, and CRCs.
-- `@icons/`: reusable source-game `simple` and `detailed` icons.
 - `@pcsx2_files/`: NUN3 and NUN4
   [registered bundles](../../PCSX2/docs/content_folders.md#content-aliases)
   under `games/`, shared input-profile sources, and ignored default and test cards.

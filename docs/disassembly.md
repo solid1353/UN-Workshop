@@ -34,7 +34,7 @@ program/symbol names until a live relocation base is established.
 
 ## Rebuilding
 
-Run every command with `NA228_TASK_WORK_ROOT` set to the task's work directory:
+Run every command with `UN_TASK_WORK_ROOT` set to the task's work directory:
 
 ```powershell
 & .\scripts\ghidra\import_targets.ps1 -Target <game>
