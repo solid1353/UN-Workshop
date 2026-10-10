@@ -1,0 +1,30 @@
+module	na2_function	nun5_function	na2_file_offsets	nun5_file_offsets	na2_masks	nun5_masks	notes	role
+ELF	FUN_001e3f20	FUN_001e9d20	0x000E461C;0x000E470C;0x000E4A7C;0x000E4C50;0x000E4CD0;0x000E4F5C	0x000EA3F4;0x000EA490;0x000EA7CC;0x000EAE9C;0x000EAF04;0x000EB12C	circle*6	cross*6		Save/load parent controller.
+ELF	FUN_001e5dc0	FUN_001ebc30	0x000E5FF4	0x000EBEDC	circle	cross		Save/load confirm-only helper used repeatedly by the parent controller.
+ELF	FUN_001e69b0	FUN_001ec780	0x000E6C20;0x000E6CC0	0x000ECA10;0x000ECA1C	circle;cross	cross;triangle		Save/load modal/list child.
+ELF	FUN_001e6fb0	FUN_001ecc90	0x000E7118	0x000ECE78	circle	cross		Save/load acknowledgment child.
+ELF	FUN_001e72e0	FUN_001ed140	0x000E7540	0x000ED3F8	circle	cross		Blocking memory-card/save-load prompt loop.
+ELF	FUN_001f37e0	FUN_001fa050	0x000F3974	0x000FA264	circle	cross		Confirm-gated front-end transition.
+ELF	FUN_001f8710	FUN_001ff1c0	0x000F894C	0x000FF47C	circle	cross		Player-indexed confirm transition.
+ELF	FUN_001f9f20	FUN_00200af0	0x000FA15C;0x000FA1F0	0x00100DA4;0x00100E38	circle*2	cross*2		Timed prompt/result transition.
+ELF	FUN_001fac20	FUN_002017e0	0x000FAD98	0x001019C0	circle	cross	Runtime screen not mapped.	Confirm-to-close overlay rendered inside another front-end object.
+ELF	FUN_001fc020	FUN_00202ce0	0x000FC2EC	0x0010302C	circle	cross		Player-indexed list/prompt transition.
+ELF	FUN_00383340	FUN_003920d0	0x00283440;0x00283488	0x00292250;0x00292274	circle;cross	cross;triangle	Runtime-observed across major front-end menus.	Shared selectable-list/modal decoder.
+ELF	FUN_00384cd0	FUN_00396340	0x00284DD4;0x00284DF0;0x00284E0C	0x002964C4;0x002964D4;0x002964E4	circle*2;cross	cross*2;triangle	Caller: FUN_003849c0.	Two-player/multi-action front-end input decoder returning distinct navigation, accept, cancel, and Start actions.
+ELF	FUN_003854f0	FUN_00396b90	0x002858E8;0x00285918	0x00296F08;0x00296F14	circle;cross	cross;triangle		Parent front-end state machine wrapping child selectable objects.
+ELF	FUN_00387e10	FUN_00399610	0x00287F44;0x00287FC8	0x002997C4;0x002997D0	circle;cross	cross;triangle		Controller assignment handler.
+ELF	FUN_003881f0	FUN_00399a00	0x00288330;0x00288360	0x00299BC0;0x00299BCC	circle;cross	cross;triangle	Called for both players from controller-settings states.	Second controller-assignment subhandler.
+ELF	FUN_00389550	FUN_0039ae40	0x00289680;0x0028974C	0x0029AFF4;0x0029B000	circle;cross	cross;triangle		Sound Settings handler with accept, rollback/cancel, reset, and directional edits.
+ELF	FUN_0038a8b0	FUN_0039c210	0x0028A9F8;0x0028AA44	0x0029C3D8;0x0029C3E4	circle;cross	cross;triangle		Screen-position adjustment handler.
+ELF	FUN_0038b710	FUN_0039d0f0	0x0028B824;0x0028B8F0	0x0029D284;0x0029D290	circle;cross	cross;triangle		Settings/options state handler.
+ELF	FUN_0038bac0	FUN_0039d4b0	0x0028BC00;0x0028BC24	0x0029D670;0x0029D67C	circle;cross	cross;triangle		Settings numeric/list selector.
+ELF	FUN_00390920	FUN_003a25e0	0x00290AE8	0x002A2828	circle	cross	Runtime screen not mapped.	Timed confirm-to-advance state after a short delay.
+ELF	FUN_003b79a0	FUN_003ca4d0	0x002B7ABC;0x002B7B34	0x002CA66C;0x002CA678	circle;cross	cross;triangle		Two-item front-end/setup submenu with cyclic navigation, accept, and cancel.
+ELF	FUN_003bbbb0	FUN_003ce810	0x002BBF6C;0x002BC2D8	0x002CEC04;0x002CECFC	cross*2	triangle*2		Two-player join/selection cancel paths.
+ELF	FUN_003bc320	FUN_003cef70	0x002BC478;0x002BC4B4	0x002CF148;0x002CF154	circle;cross	cross;triangle		Five-item front-end selector.
+ELF	FUN_001e6ce0	FUN_001ecad0	0x000E6ED0;0x000E6F24	0x000ECCF0;0x000ECD2C	circle;cross	cross;triangle	Four callers align with paired prompt observations.	Shared two-choice Yes/No modal used by save/load, overwrite, and return-to-title states.
+ELF	FUN_001df690	FUN_001e5300	0x000DF910;0x000DFB0C	0x000E55D4;0x000E5758	start|circle;start|circle|cross	start|cross;start|cross|triangle	Identity anchored by title.ccs and ANM_title_menu01 references.	Title-screen state controller.
+ELF	FUN_003b5df0	FUN_003c8880	0x002B5F64;0x002B5F84;0x002B5FF0;0x002B60FC;0x002B611C;0x002B6150	0x002C8A68;0x002C8A74;0x002C8A8C;0x002C8AE8;0x002C8AF4;0x002C8B00	circle;cross;triangle;circle;cross;triangle	cross;triangle;circle;cross;triangle;circle	Controller-index routing and Square operation 2 are unchanged.	Per-player character and linked-character selection handler with two internal states.
+ELF	FUN_001df140	FUN_001e4d90	0x000DF29C	0x000E4F44	start|circle	start|cross		Title New Game/Continue selector.
+ELF	FUN_003b6910	FUN_003c9400	0x002B6A54;0x002B6C70;0x002B6CDC;0x002B6DE8;0x002B7000;0x002B7034	0x002C95BC;0x002C95C8;0x002C95D4;0x002C9630;0x002C963C;0x002C9648	circle;cross;triangle;circle;cross;triangle	cross;triangle;circle;cross;triangle;circle	Controller-index routing and Square operation 2 are unchanged.	Per-player support-selection handler with two internal states.
+BTL	FUN_0087c370	FUN_008d8be0	0x001C8560;0x001C86AC;0x001C86D4	0x001D1FB8;0x001D21A0;0x001D1FC4	circle;circle;cross	cross;cross;triangle	Runtime-observed in both command views.	Shared Practice and Free Battle command-list and command-chart controller (ccStartMenuPrivateCmd).
