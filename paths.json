@@ -1,7 +1,6 @@
 {
   "roots": {
     "source": "source",
-    "icons": "assets/icons",
     "tools": "tools",
     "ps2_msys": "@tools/msys",
     "scripts": "scripts",

@@ -1,8 +1,8 @@
 # Source extraction runbook
 
 Workshop's media scripts extract and protect original game archives under
-`@source/`. Run them from the root of a consuming project that configures a
-work root.
+`@source/`. Run them with `UN_TASK_WORK_ROOT` set to the task's folder, an
+immediate child of a project's work root.
 
 ## Layout
 
@@ -28,16 +28,13 @@ paths, never the source tree.
 ```powershell
 . '<UN Workshop>/scripts/lib/paths.ps1'
 $paths = Get-UnWorkshopPaths -ProjectRoot (Get-Location).Path
-& (Join-Path $paths.media_scripts 'extract_source_iso.ps1') `
-  -IsoPath <path> `
-  -TaskTitle <task title>
+& (Join-Path $paths.media_scripts 'extract_source_iso.ps1') -IsoPath <path>
 ```
 
-`-TaskTitle` names the task folder below the project's work root. The command
-stages under `temp/source_extraction/` in that folder, recursively expands CVM,
-inner ISO, AFS, and nested AFS containers, verifies file sets/bytes, normalizes
-timestamps, and promotes one complete `<ISO filename>.files` tree. It refuses
-to merge into an existing extraction.
+The command stages under `temp/source_extraction/` in the task folder,
+recursively expands CVM, inner ISO, AFS, and nested AFS containers, verifies
+file sets/bytes, normalizes timestamps, and promotes one complete
+`<ISO filename>.files` tree. It refuses to merge into an existing extraction.
 
 Recheck an existing tree by running `@media_scripts/verify_source_extraction.py`
 with the project's Python runner:

@@ -2,9 +2,6 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$IsoPath,
 
-    [Parameter(Mandatory = $true)]
-    [string]$TaskTitle,
-
     [string]$CvmPassword = "",
 
     [switch]$KeepFailedWork
@@ -14,10 +11,8 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
 . (Join-Path $PSScriptRoot '..\lib\source_paths.ps1')
-$paths = Get-UnWorkshopPaths -ProjectRoot (Get-Location).Path
-if ($null -eq $paths.Work) {
-    throw 'Run from a configured project with a work root.'
-}
+$taskContext = Get-UnWorkshopTaskContext
+$paths = $taskContext.Paths
 
 $extractIsoScript = Join-Path $paths.Roots.media_scripts 'extract_iso.ps1'
 $extractAfsScript = Join-Path $paths.Roots.media_scripts 'extract_afs.ps1'
@@ -69,13 +64,6 @@ if (-not (Test-Path -LiteralPath $IsoPath -PathType Leaf)) {
     throw "ISO not found: $IsoPath"
 }
 
-if ([string]::IsNullOrWhiteSpace($TaskTitle) -or
-    $TaskTitle -ne $TaskTitle.Trim() -or
-    $TaskTitle -in @('.', '..') -or
-    $TaskTitle.IndexOfAny([IO.Path]::GetInvalidFileNameChars()) -ge 0) {
-    throw "TaskTitle must be one exact task-title directory name, without path separators: $TaskTitle"
-}
-
 $IsoPath = (Resolve-Path -LiteralPath $IsoPath).Path
 $isoItem = Get-Item -LiteralPath $IsoPath
 if (-not [IO.Path]::Equals($isoItem.Directory.FullName, $paths.source)) {
@@ -92,7 +80,7 @@ if (Test-Path -LiteralPath $finalRoot) {
 
 $runId = Get-Date -Format "yyyyMMdd_HHmmss_fff"
 $runId = $runId + "_pid" + $PID + "_" + $isoItem.BaseName
-$taskWorkRoot = Join-Path $paths.Work $TaskTitle
+$taskWorkRoot = $taskContext.Root
 $tempRoot = Join-Path $taskWorkRoot 'temp'
 $stageParent = Join-Path $tempRoot 'source_extraction'
 $stageRun = Join-Path $stageParent $runId

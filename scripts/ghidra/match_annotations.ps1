@@ -17,8 +17,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
-. (Join-Path $PSScriptRoot 'task_context.ps1')
-$taskContext = Get-UnWorkshopGhidraTaskContext
+$taskContext = Get-UnWorkshopTaskContext
 $paths = $taskContext.Paths
 . $paths.files.ghidra_runtime
 

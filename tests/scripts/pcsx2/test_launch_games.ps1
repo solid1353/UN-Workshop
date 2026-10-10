@@ -127,7 +127,7 @@ try {
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'paths.json')
     '{"sources":{"NUN5":{"serial":"SLES-55605","crc":"C071D4C1"}}}' |
         Set-Content -NoNewline -LiteralPath (Join-Path $repository 'games.json')
-    '{"title":"NA v2.28","serial":"SLOP-NA228"}' |
+    '{"title":"Test Project","serial":"SLOP-TEST1"}' |
         Set-Content -NoNewline -LiteralPath (Join-Path $repository 'game.json')
     New-Item -ItemType Directory -Force -Path (
         Join-Path $repository 'pcsx2_files\games\NUN5'
