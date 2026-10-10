@@ -668,7 +668,7 @@ typedef struct BgObject {
 typedef struct BgScene {
     unsigned int flags; // bits1/2/4/8 suppress object loops and auxiliary controllers
     unsigned char _pad_0004[0x4];
-    float update_factor; // initialized 1.0; complete writer set unresolved
+    float update_factor; // bg_scene_init writes 1.0; float-store census at +0x08 in resident and BTL finds no other writer
     unsigned char _pad_000C[0x24];
     float direction_offset; // +0x30
     float projection_scalar; // +0x34

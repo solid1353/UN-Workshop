@@ -8,7 +8,8 @@ interruption.
 
 Established: common entry/cleanup and its conditional owner boundary, dispatch
 ordering, separate action/phase/playback restarts, authored rows,
-continuation/interruption gates and attack publication.
+continuation/interruption gates, attack publication and the objects that
+inherit the fighter rate.
 All 78 distinct definitions' counted action/phase arrays were checked.
 Open: held-phase and loop lifetimes, indirect registrations, payload meanings,
 rebased delta reads, untraced owners/consumers and player-facing durations.
@@ -227,6 +228,18 @@ delta-selection behavior is established; its character ownership remains open.
 `hit_handle_bit2` tests delta above 1; `fighter_apply_movement` also has a
 zero-delta branch.
 
+Other objects inherit a fighter's rate:
+
+| Inheritor | Route |
+| --- | --- |
+| Skill primaries and auxiliaries | Accumulate the rate and skip logic below 1 ([rate-following steps](../session/battle_auxiliary_services.md#rate-following-steps)) |
+| Effect objects from `fighter_effect_children_action_update` | All 22 spawns pass `update_rate` to `effect_rated_child_spawn`, which stores it in individually registered effect-manager objects |
+| Support player in nested state 3 | `buddy_player_update` copies the primary fighter's `player.step` and derives its own rate from it |
+| Character auxiliary and puppet players | Copy `Fighter.owned_animation_player.step` before advancing ([fighter animation ownership](../../runtime/scene_playback_owners.md#fighter-animation-ownership)) |
+
+`fighter_init_neutral_rates` stores 1.0 before the first composition;
+`fighters_update` composes the rate in its first pass on every update.
+
 Several skill objects use literal 1.0 when no owner is available. The
 reciprocal path is `skill_reciprocal_rate_update`
 (`BTL.BIN 0x0081BBB0`); `anb_update` (`BTL.BIN 0x00808F20`)
@@ -236,8 +249,7 @@ owns the counter comparison.
 literal 1.0 to both fighters or to the entering fighter; that write lasts
 until the next composition. `associated_descriptor14_select`
 (`BTL.BIN 0x007B96B0`) instead saves the associated owner's rate, writes
-1.0 around its virtual call and restores it. The initialization writer's
-timing classification remains open.
+1.0 around its virtual call and restores it.
 
 Other counters, override approaches and decays on these paths are unscaled:
 paired-state invocation counts, action-motion counts, exchange-phase counts,

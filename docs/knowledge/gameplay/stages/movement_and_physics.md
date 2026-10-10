@@ -36,7 +36,7 @@ fields to placement or hit responses.
 | `primary_timeline`, `secondary_timeline` | Action cursor and phase cursor; integer thresholds use `current`. |
 | `update_rate` | Multiplies speed-derived displacement and most approach factors. |
 | `physics_mode` | Persistent shared-pass selector; 0 is ordinary gravity. |
-| `bridge_output_age` | Signed held-direction duration used by ordinary movement. |
+| `bridge_output_age` | Signed held-direction duration used by ordinary movement. `fighter_pre_phase_step` adds 1 per call while logical bit 1 or 2 is held and clears it otherwise. `running_transition`, `surface_enter_from_running`, `surface_enter_from_air` and `landing_transition` require at least 4; other readers test only for a positive value. |
 | `movement_facing`, `placement_facing`, `response_facing` | Movement angle-table index, desired direction, and facing index. |
 | `response_planar_speed`, `response_vertical_speed` | Actual directional and vertical speeds. |
 | `smoothed_input_speed` | Input-derived target, separate from actual speed. |

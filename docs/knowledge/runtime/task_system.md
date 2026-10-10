@@ -375,7 +375,11 @@ Positive counts describe completed sleep/wake handshakes, normally serviced
 by the manager but also satisfiable by force wake or another kernel wake.
 The recovered callers use small positive constants; their exact census is
 in the wait annotations. No frame, millisecond, refresh or VBlank unit is
-established.
+established. Waits above one wake belong to loader, sound, card and overlay
+sequencing (`rofs_data_load_task`, `rofs_preload_directories`,
+`btl_prepared_state_wrap`, `resident_flow_dispatch`). Presentation timing is
+counted in count-1 loops instead: `fade_end_task` waits five wakes before
+clearing its transition slot, and `zg_break_screen_task` counts its own waits.
 
 The manager wakes only for exact `wake_gate == 0`, narrower than the
 waiter's signed `<= 0` return condition. Only constructor zeroing and

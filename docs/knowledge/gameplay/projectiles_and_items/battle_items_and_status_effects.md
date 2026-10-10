@@ -867,9 +867,16 @@ return one on their own completion.
 
 `effect_secondary_update` runs separately in battle phase 2, after the
 generic fighter-node secondary pass. It dispatches secondary callbacks
-rather than ticking lifetime. Effect-4A's secondary work recomputes private
-response state, checks the linked member, selects variants and advances
-private phases/RNG under its own gates. Phase 2 is therefore not pure drawing.
+rather than ticking lifetime. `effect_container_secondary_update` calls
+gameplay-node slot `0x14`, then auxiliary-list slots `0x10` and `0x14`. Every
+gameplay class keeps the empty `effect_generic_secondary_callback` at `0x14`
+except effect 4A. For `EffectAuxVisual`, slot `0x10` is
+`effect_aux_visual_update` (player advances and the private lifetime) and
+slot `0x14` is `effect_aux_visual_submit`. Effect-4A's secondary work
+recomputes private response state, checks the linked member, selects variants
+and, once its distance, context and restore gates admit the call, advances
+phases `+0xD0`/`+0xD4` by `rng_signed_scaled` steps. Phase 2 is therefore not
+pure drawing.
 [Battle lifecycle](../session/battle_lifecycle.md#what-phase-2-guarantees)
 owns complete ordering.
 
