@@ -1,16 +1,20 @@
 # UN Workshop
 
-Shared public tooling and configuration for Ultimate Ninja modding workspaces.
-The repository intentionally excludes original game media, extracted game data,
+Shared public tooling, configuration, and retail-game research for Ultimate
+Ninja modding workspaces. The repository intentionally excludes original game media, extracted game data,
 private analysis databases, local toolchains, emulator binaries, BIOS files,
 memory cards, savestates, logs, and task artifacts.
 
 ## User command
 
-`workshop.ps1` is the single user-facing entrypoint.
+`workshop.ps1` is the single user-facing entrypoint; `CLI.txt` holds its help
+text.
 
 See [PCSX2 tooling](docs/pcsx2.md) for command behavior, launch and recording
 workflows, marker editing, memory cards, PNACH overlays, and input profiles.
+
+Commands that stage temporary files read `UN_TASK_WORK_ROOT`, the acting
+task's folder as an immediate child of a consuming project's work root.
 
 ## Tracked layout
 
@@ -31,6 +35,10 @@ workflows, marker editing, memory cards, PNACH overlays, and input profiles.
 - `@media_scripts/`: ISO, AFS, and encrypted-CVM extractors, recursive source
   extraction and verification, and source read-only tooling; see the
   [source extraction runbook](docs/runbooks/source-extraction.md).
+- `scripts/lib/`: Workshop and project path loading, source-game resolution,
+  the task work-folder context, and console help.
+- `@annotations/`: names, types, and comments for the disassembly trees,
+  recorded through the GhidrAssistMCP annotation tools.
 - `docs/knowledge/`: research on the unmodified retail games.
 - `tests/scripts/`: focused tests mirroring Workshop-owned script components,
   including PCSX2 and media utilities.
