@@ -10,7 +10,7 @@ live listing. Names come from `@annotations/NA2` and `@annotations/NUN5`.
 All addresses below are live; per-routine details belong to those annotations.
 
 Related owners: [Renderer metrics](../renderer_metrics.md),
-[Command Chart and Practice title layouts](command_and_practice_titles.md), and
+[1P/2P Commands and Practice title layouts](command_and_practice_titles.md), and
 [Battle and Practice settings presentation](../../ui/battle/settings_presentation.md).
 
 ## Practice explanation mixed-text wrapping

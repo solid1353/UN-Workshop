@@ -11,7 +11,7 @@ Names come from `@annotations/NA2` and `@annotations/NUN5`; addresses are live.
 Controls lifecycle, help ordering, nine-row geometry and frontend prompts
 belong to [Shared frontend prompt layout](options.md#native-controls-lifecycle).
 Queue movement and extent belong to [Running help](running_help.md), and
-Command Chart relationship geometry to [Controls Font layouts](../font/screen_layouts/controls.md).
+1P/2P Commands relationship geometry to [Controls Font layouts](../font/screen_layouts/controls.md).
 Established source and donor relationships belong to
 [NA2 and NUN5 text correspondence](../translation_importer.md).
 

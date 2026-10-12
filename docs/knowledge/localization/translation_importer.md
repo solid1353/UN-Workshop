@@ -7,7 +7,7 @@ packed messages.
 ## Research coverage
 
 Established: the documented menu, Practice, Ninja Song, Collection, Jutsu,
-Command Chart, confirmation and memory-card text relationships and storage.
+1P/2P Commands, confirmation and memory-card text relationships and storage.
 Open: untraced selecting paths and records without an exact homolog or owner;
 memory-card screenshots cover only format/creation failures and create-data confirmation.
 Names come from `@annotations/NA2` and `@annotations/NUN5`; addresses are live.
@@ -86,9 +86,9 @@ NUN5's `ninja_song_draw_objective_values` resolves the localized unit with
 text is `timer counts`. Objective 9's descriptor index 4 has no visible
 NUN5 unit.
 
-## Command Chart and Jutsu records
+## 1P/2P Commands and Jutsu records
 
-Command Chart names belong to 74 matching character record arrays.
+1P/2P Commands names belong to 74 matching character record arrays.
 `ActionRecord` is `0x54` bytes and its `display_name` selects the
 displayed text. Corresponding NA2/NUN5 array indices identify homologous
 records.
@@ -103,7 +103,7 @@ distinct from the record table.
 
 ### Jutsu selector titles
 
-The Jutsus selector uses Command Chart records despite its screen name.
+The Jutsus selector uses 1P/2P Commands records despite its screen name.
 In both games, `jutsu_select_draw` passes the selector through
 `support_linked_jutsu` and then `jutsu_selector_title`, which reads the
 first pointer of a `jutsu_animation_provider_table` row. NA2 reads
@@ -169,7 +169,7 @@ Likewise, `temari_moveset_record` selects
 `temari_moveset_title`; `temari_collection_title` selects the plain copy.
 The terminal red span belongs to the moveset record.
 
-### Command Chart relationship strings
+### 1P/2P Commands relationship strings
 
 `command_chart_relationship_strings` selects `Charge-weak` and
 `Charge-strong` at indices 16 and 17. `command_chart_charge_qualifier`
@@ -287,7 +287,7 @@ NUN5 uses paired byte-`0x40` delimiters as quotation markup. The
 `quoted_white_picture`, `quoted_dragon`, `quoted_wild_dog`,
 `quoted_petal_shower` and `quoted_divinity` strings contain
 `@White Picture@`, `@Dragon@`, `@Wild Dog@`, `@Petal Shower@`
-and `@Divinity@`, respectively. Collection and Command Chart render
+and `@Divinity@`, respectively. Collection and the 1P/2P Commands render
 those spans as quotation marks.
 
 ## Packed message structure

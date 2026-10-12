@@ -1,6 +1,6 @@
 # Controls Font layouts
 
-Retail NA2 (`SLPS-25837`) and NUN5 Command Chart relationship layout.
+Retail NA2 (`SLPS-25837`) and NUN5 1P/2P Commands relationship layout.
 
 ## Research coverage
 
@@ -10,10 +10,10 @@ Special Controls layouts. Names come from `@annotations/NA2` and
 `@annotations/NUN5`; their comments hold code-level detail. Addresses are live.
 
 Secondary-font metrics belong to [Renderer metrics](../renderer_metrics.md);
-Command List and move-chart tokens belong to
-[Battle Command List and move chart](../../ui/battle/command_list_and_move_chart.md).
+Command Chart and 1P/2P Commands tokens belong to
+[Battle Command Chart and 1P/2P Commands](../../ui/battle/command_chart_and_commands.md).
 
-## Command Chart relationship rows
+## 1P/2P Commands relationship rows
 
 NUN5 `move_chart_draw` (`0x00896EB0`) is the structural counterpart of NA2
 `move_chart_draw` (`0x0087A740`). A nonzero `MoveChartRow.condition_index`

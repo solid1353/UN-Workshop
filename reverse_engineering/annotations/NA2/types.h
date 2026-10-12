@@ -611,7 +611,9 @@ typedef struct CommandList {
     short scroll;
     short visible_rows;
     unsigned char _pad_0032[0x6];
-    CommandListRow rows[18];
+    CommandListRow rows[20]; // command_list_build fills 18; the text panel follows the twentieth
+    void *text_panel; // +0x448 created by command_list_build; command_list_draw draws row text through it
+    void *scrollbar; // +0x44C created by command_list_build; command_list_draw sets its rectangle and position
 } CommandList;
 
 typedef struct StageLine {

@@ -1,18 +1,18 @@
-# Battle Command List and move chart
+# Battle Command Chart and 1P/2P Commands
 
 ## Research coverage
 
-Established: retail NA2 binding icons, Command List rows, move-chart filtering,
+Established: retail NA2 binding icons, Command Chart rows, 1P/2P Commands filtering,
 command-token derivation, texture selection and the native labels below.
 Open: complete chart sequences for every named action and the rear-direction
 label's relation to every object-relative selector; no visible result was captured.
 Evidence is static code and data; displayed rows do not establish executability.
 Names come from `@annotations/NA2`; addresses are live.
 
-This document owns battle Command List and character move-chart presentation.
+This document owns the battle Command Chart and the 1P/2P Commands presentation.
 [Action commands](../../../gameplay/combat/action_commands.md) owns bindings,
 logical input, action records and selection.
-[Battle UI selectors and prompts](selectors_and_prompts.md#command-menu-and-command-chart-scroll-indicators)
+[Battle UI selectors and prompts](selectors_and_prompts.md#command-chart-scroll-indicators)
 owns the shared scroll indicators. Address conventions follow
 [Retail game file identities](../../../game/files/file_identities.md#address-conventions).
 
@@ -28,10 +28,10 @@ Presentation readers use narrower mappings:
 | resident `options_controls_initialize` (`0x00387950`) | Options Controls row reconstruction using the eight masks in `control_editor_masks` (`0x005D5230`) |
 | BTL `object_binding1_prompt_draw` (`0x00796950`), `attachment_binding1_prompt_draw` (`0x007FDD00`), `for_submit` (`0x00804D40`) | binding 1's glyph through `hud_glyph_get` (`0x006B4110`) |
 | BTL `hud_support_draw` (`0x0071CAF0`) | binding 5's glyph through `hud_glyph_get` |
-| BTL `command_list_build` (`0x00877FB0`) | face and shoulder icons; see [Command List rows](#command-list-rows) |
+| BTL `command_list_build` (`0x00877FB0`) | face and shoulder icons; see [Command Chart rows](#command-chart-rows) |
 | BTL `move_chart_convert_bindings` (`0x008793A0`) | face-button icons; see [Binding icons](#binding-icons-and-direction-tokens) |
 
-## Command List rows
+## Command Chart rows
 
 `command_list_build` converts the side's eight configured bindings:
 
@@ -48,7 +48,10 @@ Presentation readers use narrower mappings:
 
 Any other mask, including zero, leaves its converted token unassigned.
 The builder fills 18 `CommandListRow`s from `command_list_table`
-(`0x008D1550`) and sets `CommandList.row_count` to 18. Each
+(`0x008D1550`) and sets `CommandList.row_count` to 18. `CommandList` has 20
+row slots: the builder stores the text panel at `+0x448` and the scroll bar at
+`+0x44C`, directly after the twentieth, and neither the builder nor
+`command_list_draw` uses the last two slots. Each
 `CommandListEntry` supplies a name and up to five tokens, terminated by `-1`.
 Tokens 0..25 copy directly; binding placeholders resolve as follows:
 
@@ -96,9 +99,9 @@ Row 8's `command_list_substitution_name` (`0x008BD620`),
 The input-condition wording does not establish that the rear-direction label
 matches every object-relative direction selector in the input interpreter.
 
-## Character move chart
+## 1P/2P Commands
 
-The move chart derives rows from the fighter's current action arrays rather
+The 1P/2P Commands derive rows from the fighter's current action arrays rather
 than the two static `ccCommand` sequences.
 
 ### Row construction
@@ -170,4 +173,4 @@ labels. Relevant native labels, with ruby omitted:
 | 12 | `command_chart_air_charge` (`0x008BD000`) | 空中溜め技 | airborne charge technique |
 
 The related `command_list_draw` uses the input-condition wording listed under
-[Command List rows](#command-list-rows).
+[Command Chart rows](#command-chart-rows).
