@@ -89,8 +89,9 @@ traced in this outcome scope.
 
 [Practice Mode](../modes/practice_mode.md) establishes this as the COM bit.
 Manual uses mode `0`; other statuses make the side opposite the human COM.
-Outer startup `practice_driver_reset_settings` applies mode `1` for
-`active_side == 0`, otherwise `2`, and clears the session tally.
+`battle_state_reset_settings`, which runs once each time Free Battle or
+Practice is entered, applies mode `1` for `active_side == 0`, otherwise `2`,
+and clears the session tally.
 `manager_initialize` also applies mode `1`. Other control-assignment
 callers' triggering screens remain outside this trace.
 
