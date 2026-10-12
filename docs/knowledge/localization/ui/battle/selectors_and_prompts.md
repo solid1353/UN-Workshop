@@ -12,8 +12,8 @@ Addresses are live; annotation comments hold the per-routine details.
 
 Binary identities and address conventions are defined in the
 [Standard game file identities](../../../game/files/file_identities.md).
-Command List and move-chart rows belong to
-[Battle Command List and move chart](command_list_and_move_chart.md),
+Command Chart and 1P/2P Commands rows belong to
+[Battle Command Chart and 1P/2P Commands](command_chart_and_commands.md),
 awakening behavior to [Awakening](../../../gameplay/characters/awakening.md),
 and Jutsu-selector row text to
 [Numeric and settings text rendering](../../font/numeric_rendering.md#jutsu-selector-row).
@@ -152,7 +152,7 @@ identity is unestablished. NUN5's first two
 The shared sprite's queued geometry changes between submissions, so equal
 base anchors do not establish equal raster placement in the two games.
 
-## Command Menu and Command Chart scroll indicators
+## Command Chart scroll indicators
 
 ### Shared renderer and record
 
@@ -161,9 +161,10 @@ base anchors do not establish equal raster placement in the two games.
 | NA2 | `command_list_draw`, `0x00878860` | `command_scroll_arrow_rectangle`, `0x008D1548` |
 | NUN5 | `command_list_draw`, `0x00894FA0` | `command_scroll_arrow_rectangle`, `0x008E81D8` |
 
-Both callbacks belong to the shared Practice/Free Battle command presentation
-associated with `ccStartMenuPrivateCmd`. Their draw dispatch is indirect.
-The controller's constructor entry remains unestablished.
+NA2's callback is the draw slot of `start_menu_basic_command_vtable`
+(`0x005FBA60`), the `ccStartMenuBasicCmd` Command Chart child, whose init slot
+is `command_list_build`; its draw dispatch is indirect. The NUN5 child table
+was not checked.
 
 Both games obtain layer 3 through `command_menu_sprite_get`, set its
 rotation to pi and draw the top arrow at X 256, Y `32 + pulse_offset`.

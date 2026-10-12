@@ -574,8 +574,8 @@ only the existing sprite's environment.
 | Condition information window; `btl_window_rows_draw` (`0x006E2D70`) | Parent text renderer `+0x74` supplies viewport `(x,y,w,h)`: rectangle `(max(x,x+w-17),y+2,min(w-x,16),h-4)`. Start is the current row; total is linked-list count minus 4; visible is 1. Five rows are displayed. | `btl_terms_info_construct` (`0x006E2280`) binds the parent panel's backing environment `+0x6C`. |
 | Condition template window; `btl_terms_template_draw` (`0x006E3DB0`) | Same viewport-derived rectangle; start is the current row, total 3, visible 1. Five visible rows come from seven template records. | `btl_terms_template_construct` (`0x006E35F0`) binds the panel backing environment `+0x6C`. |
 | Survival win opponents; `survival_win_opponent_list_draw` (`0x006EB230`) | Panel origin plus `(238,60)`, extent `(14,246)`; present when wins exceed 7. Start is scroll, total is wins minus 6, visible is 1. | `survival_win_opponent_list_construct` (`0x006EABE0`) binds the result panel's backing environment, separately from its row-text crop. |
-| Command List; `command_list_draw` (`0x00878860`) | Fixed `(460,50,14,304)`; start is scroll, total is row count, visible is 1. | Constructor copies command-menu layer 2's host context. |
-| Command Chart; `move_chart_draw` (`0x0087A740`) | Fixed `(413,50,14,304)`, present when row count exceeds 3; start is scroll, total is row count, visible is 1. | Initializer copies command-menu layer 2's host context. |
+| Command Chart; `command_list_draw` (`0x00878860`) | Fixed `(460,50,14,304)`; start is scroll, total is row count, visible is 1. | Constructor copies command-menu layer 2's host context. |
+| 1P/2P Commands; `move_chart_draw` (`0x0087A740`) | Fixed `(413,50,14,304)`, present when row count exceeds 3; start is scroll, total is row count, visible is 1. | Initializer copies command-menu layer 2's host context. |
 
 The condition windows' resident descriptors, `btl_terms_info_callbacks`
 (`0x005DDCF0`) and `btl_terms_template_callbacks` (`0x005DDCD0`), install the

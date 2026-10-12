@@ -442,8 +442,8 @@ follows:
 | ID | Child identity | Established visible role |
 | ---: | --- | --- |
 | `0` | `ccStartMenuKeyconfig` | Controls |
-| `1` | `ccStartMenuBasicCmd` | Command Chart |
-| `2`, `3` | `ccStartMenuPrivateCmd` | 1P / 2P Commands (character move list) |
+| `1` | `ccStartMenuBasicCmd`, `start_menu_basic_command_vtable` | Command Chart |
+| `2`, `3` | `ccStartMenuPrivateCmd`, `start_menu_private_command_vtable` | 1P / 2P Commands (character move list) |
 | `5` | `ccStartMenuPractice` | Practice settings wrapper |
 | `6` | `ccStartMenuSimpleDisp` | Simple Display |
 | `7` | `ccStartMenuItemStock` | Label unresolved |

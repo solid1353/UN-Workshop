@@ -24,7 +24,7 @@ production), [Combat action execution](combat_action_execution.md) (execution,
 pending dispatch, interruption),
 [Character action callbacks](../characters/character_action_callbacks.md),
 [Extra Hit](extra_hit.md), [Battle AI](../session/battle_ai.md), and
-[Battle Command List and move chart](../../localization/ui/battle/command_list_and_move_chart.md).
+[Battle Command Chart and 1P/2P Commands](../../localization/ui/battle/command_chart_and_commands.md).
 
 ## Native masks and bindings
 
@@ -47,7 +47,7 @@ and R2 (`default_battle_bindings`). The input object copies them, then
 `bindings_refresh` replaces them with the configured side array from
 `bindings_get`, so interpretation follows the player's configuration.
 Bindings are full 16-bit masks: a binding to Select, L3 or R3 is tested like
-any other bit. Presentation readers are owned by the Command List document.
+any other bit. Presentation readers are owned by the Command Chart document.
 
 The battle history does not use the pad's repeat or raw-history words. It
 copies held, pressed and released words, both stick angles and magnitudes,
@@ -472,7 +472,7 @@ Gaara and Deidara alternatives are switched by their variant routines
 ([Awakening](../characters/awakening.md#deidara-and-gaara-character-variants)).
 Character records are owned by
 [Character assets](../../game/character_assets.md#character-records). The
-Command List and move chart read the working arrays but take no part in
+The Command Chart and 1P/2P Commands read the working arrays but take no part in
 selection.
 
 ## Representative paths

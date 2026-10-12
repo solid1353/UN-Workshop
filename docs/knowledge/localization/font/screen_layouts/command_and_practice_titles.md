@@ -1,4 +1,4 @@
-# Command Chart and Practice title layouts
+# 1P/2P Commands and Practice title layouts
 
 ## Research coverage
 
@@ -12,10 +12,10 @@ Related owners: [Renderer metrics](../renderer_metrics.md) for boxed
 measurement and glyph metrics, and [Practice Font layouts](practice.md) for
 explanation wrapping.
 
-## Command Chart and Practice title boxes
+## 1P/2P Commands and Practice title boxes
 
 `command_list_draw` draws Practice titles (NA2 BTL `0x00878860`; NUN5 BTL
-`0x00894FA0`); `move_chart_draw` draws Command Chart titles (NA2 BTL
+`0x00894FA0`); `move_chart_draw` draws 1P/2P Commands titles (NA2 BTL
 `0x0087A740`; NUN5 BTL `0x00896EB0`). Each title precedes its row's explanation
 or relationship content.
 
@@ -26,7 +26,7 @@ comparison records establish:
 
 | Content | X | Y | Width | Height |
 | --- | ---: | --- | ---: | ---: |
-| Command Chart title | `28` | `17/117/217` | `288` | `20` |
+| 1P/2P Commands title | `28` | `17/117/217` | `288` | `20` |
 | Practice title | `32` | `14/114/214` | `352` | `20` |
 | Practice explanation | `40` | `42/142/242` | `364` | `48` |
 
