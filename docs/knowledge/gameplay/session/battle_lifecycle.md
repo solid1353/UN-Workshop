@@ -62,7 +62,7 @@ Its handoff and return contract belongs to
 | State | Handler | Established work |
 | ---: | --- | --- |
 | 1 | `battle_state_prepare_entry` | Entry type 2 queues absent `prac.ccs` and starts a loader fence. |
-| 2 | `practice_driver_reset_settings` | Waits for the fence and initializes manager battle fields and timer work. |
+| 2 | `battle_state_reset_settings` | Waits for the fence and initializes manager battle fields and timer work. |
 | 3 | `practice_driver_reset_snapshots` | Resets the timer with limit 99 and clears both inventory caches. |
 | 4, 5 | `battle_state_queue_selection_archives`, `battle_state_adopt_selection_archives` | Queue, then adopt, `charsel1.ccs`, `mapsel1.ccs` and `setting.ccs`. |
 | 6..9 | [Mode flow](../../game/mode_flow.md), [Stages](../stages/stages.md#archive-preload-adoption-and-switching) | Character Select then stage selection; state 9 publishes the raw active stage slot. |
