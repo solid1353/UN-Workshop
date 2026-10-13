@@ -246,6 +246,9 @@ the current choice count rather than a separate fixed Random bound.
 `directional_players_release` (`0x00713B20`) releases the sprites, draw
 lists, animation objects, both clumps, all 24 TV objects, arrow players and
 settings parent before the resident caller frees the owner.
+`battle_state_select_stage` frees the owner before it enters state 10, so the
+settings parent and its children are gone before `battle_state_preload` queues
+the battle's archives.
 
 ## Fixed stage-count limits
 
