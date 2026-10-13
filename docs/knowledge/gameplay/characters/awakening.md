@@ -404,7 +404,10 @@ normally selects the first association, with these retail exceptions:
 
 The tail applies the effect with lifetime -1, sets the marker, credits event 6
 and statistic 17, then optionally performs descriptor and positional
-presentation outside the alternate state.
+presentation outside the alternate state. That presentation changes no action
+state: `fighter_request_descriptor_event` requests a voice, and
+`fighter_awakening_presentation` inserts a presentation node and emits
+position event `0x30` after the tail's `0x3A`.
 
 No insertion status is checked. Missing container ownership, a protected
 duplicate or null allocation/factory can reject insertion while the marker
@@ -795,6 +798,13 @@ It is a reserved/incomplete Chiyo pairing, not a native reachable awakening.
 `awakening_clear_marker` removes flags only, returning 0 when already clear
 and 1 otherwise. Deidara/Gaara also restore the paired special state and command
 sectors. The effects remain.
+
+Two characters switch movesets with their awakening. Gaara `0x3B`'s
+`gaara_kazekage_channel2` enters `gaara_kazekage_variant_categories` mode 1
+at his progress event `0x2F`, and returns to mode 0 when he is marked without
+effect `0x3B` or unmarked. Taunt toggles Taijutsu Chiyo `0x4D`'s
+`chiyo_taijutsu_variant_categories`, and `chiyo_taijutsu_channel` returns
+mode 1 to mode 0 while she is unmarked.
 
 Reconciliation returns immediately for recognized transformed identities.
 Taijutsu Chiyo's progress trigger removes its associated `0x4E`, emits event

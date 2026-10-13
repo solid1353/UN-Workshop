@@ -3,7 +3,8 @@
 ## Research coverage
 
 Established: retail NA2 binding icons, Command Chart rows, 1P/2P Commands filtering,
-command-token derivation, texture selection and the native labels below.
+side, input and header, command-token derivation, texture selection and the
+native labels below.
 Open: complete chart sequences for every named action and the rear-direction
 label's relation to every object-relative selector; no visible result was captured.
 Evidence is static code and data; displayed rows do not establish executability.
@@ -103,6 +104,28 @@ matches every object-relative direction selector in the input interpreter.
 
 The 1P/2P Commands derive rows from the fighter's current action arrays rather
 than the two static `ccCommand` sequences.
+
+### Side, input and header
+
+`start_menu_create_module` sets `MoveChartView.side` to the command ID minus
+2, `input_source` to the start menu's, and `pad` to the controller that chose
+the command. `move_chart_initialize` (`0x00879210`) binds the side's fighter,
+stores the side's battle-slot character ID minus one in `character_index`, and
+builds the rows.
+
+`move_chart_update` (`0x0087A400`) reads input only while the panel is ready
+and no scroll is running. Cross closes the screen, from both controllers when
+`input_source` is 2 and from `pad` otherwise. With more than three rows,
+Up/Down scroll from `pad`, or from the other controller when `input_source` is
+2. Square is not read.
+
+`move_chart_draw` draws the side badge at `move_chart_side_badge_draw_call`
+(`0x0087AF20`) from layer 6, `TEX_xmenu`, at X 80, Y 26:
+`move_chart_side_badge_rectangles` (`0x008D1538`) holds 1P `(129,1,34,26)` and
+2P `(165,1,34,26)`, the cells of the battle player markers
+([Player markers](selectors_and_prompts.md#player-markers)), whose COM cell
+`(201,1,46,26)` the screen never uses. The name plate follows from layer 4,
+`TEX_xgauge5`, selected by `character_index`.
 
 ### Row construction
 

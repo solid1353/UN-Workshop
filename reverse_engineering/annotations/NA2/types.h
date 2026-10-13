@@ -7270,12 +7270,14 @@ typedef struct MoveChartRow {
 } MoveChartRow;
 
 typedef struct MoveChartView {
-    unsigned char _unknown_00[0xC];
+    int input_source; // start menu input_source: 2 reads both controllers
+    int pad; // controller that chose the screen; its pressed input closes and scrolls
+    void *vtable;
     int side;
     unsigned char _unknown_10[0xC];
     Fighter *fighter;
     int binding_tokens[4];
-    unsigned char _unknown_30[4];
+    int character_index; // battle slot character ID - 1; selects the name plate
     short row_count;
     short scroll;
     short visible_rows;
