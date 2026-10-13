@@ -8,7 +8,8 @@ bounded atlas/text, authored CCS owners, interaction regions, selected cursor
 and computed-callback paths, extended/directional sprite and scrollbar
 attachments, framebuffer coordinate ownership, 71 scoped
 transition-pool setups, BTL cover/window identities, native help backing,
-splash source artwork and selected authored menu backing models.
+splash source artwork, selected authored menu backing models, and sprite
+texture re-upload and V origin.
 Open: unsampled authored frames, indirect/inline
 draw paths, the optional Circle panel's parent, exact SPBATTLE labels and
 higher resource ownership of local flashes.
@@ -80,7 +81,10 @@ destination size, caller position and centered local origin.
 centering independently on X/Y while preserving source size. Both retain the
 sprite's texture, RGB and opacity and submit through `scene_output_finalize`.
 `sprite_reset` (`0x001CC070`) attaches accumulated packets to the selected
-list and clears the batch count and packet pointer.
+list and clears the batch count and packet pointer. It first calls
+`sprite_submit_texture` (`0x001CD740`), which submits the bound texture's
+level transfers and its CLUT transfer to the same list, so each flushed batch
+re-uploads its texels from memory unless a transfer's suppression bit is set.
 
 The shared consumer `text_draw_projected_rectangle` (`0x001CC3A0`) traverses
 a byte sequence; `scene_output_finalize` supplies the one-byte sequence used by
@@ -90,7 +94,7 @@ these sprites. Its geometry branches use `ProjectedTextGeometryView`:
 | --- | --- |
 | `geometry_flags & 2 == 0` | Transform `x/y + local_x/local_y`; size uses the 2D matrix diagonals. Reject by extent overlap outside device X `0x7000..0x9000`, Y `0x7200..0x8E00`. |
 | `geometry_flags & 2 != 0` | Negate `rotation`, rotate the local offset and two extent vectors, add caller position, and transform all four corners. Reject when all four corners fail the same device bounds. |
-| Textured `geometry_flags & 1` | Construct source UVs from atlas size/origin; bits `0x20/0x40` exchange X/Y UV corners independently of geometry rotation. |
+| Textured `geometry_flags & 1` | Construct source UVs from atlas size/origin; V counts up from the texture's last row, using the `TEX0.TH` height, because textures store their bottom row first. Bits `0x20/0x40` exchange X/Y UV corners independently of geometry rotation. |
 
 The rejection region is 512 by 448 device pixels, at 16 units per pixel and
 centered on `0x8000`. It is broader vertically than the logical 384-line
