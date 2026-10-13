@@ -500,6 +500,12 @@ for the closing transition before entering 6; state 3 handles input; state 4
 advances the opening/closing animation. `start_menu_update_draw` calls this
 dispatcher, then draw/update, and preserves the result for the resident owner.
 
+`start_menu_initialize` sizes the list window through `start_menu_size_window`
+from the command count: 38 units per command plus 68, centred on Y 192 of the
+384-unit screen. `start_menu_draw` places row `i` at Y `32 + 38i`, 20 units
+lower from the first Yes/No command (IDs `0xA..0xE`) on. The list's limit of
+seven commands makes a window of at most 334 units.
+
 ### Simple Display selection
 
 `start_menu_simple_display_initialize` (`0x00877870`) initializes its window
