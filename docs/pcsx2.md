@@ -132,9 +132,11 @@ options.
 ## Input profiles
 
 `workshop input` regenerates every complete PCSX2 input profile from the tracked
-base and partial overrides without changing GameSettings assignments.
-`workshop input <profile>` also assigns the selected profile variants in every
-configured GameSettings file.
+base and partial overrides and removes generated profiles whose override no
+longer exists, without changing GameSettings assignments.
+`workshop input <profile>` also assigns the selected profile variants in the
+GameSettings file of every game folder in the project's and Workshop's
+`pcsx2_files/games/`.
 
 Every generated profile at the root of `@pcsx2_input_profiles/` is tracked by
 Git. Base outputs use `<profile>_Base.ini`; game-specific outputs use
