@@ -298,22 +298,6 @@ function Get-UnWorkshopCatalog {
     }
 }
 
-function Get-UnWorkshopAvailableGameNames {
-    [CmdletBinding()]
-    param([string]$ProjectRoot)
-
-    $paths = Get-UnWorkshopPaths -ProjectRoot $ProjectRoot
-    $arguments = @('-B', $paths.ResolveGame, '--available-sources')
-    if ($paths.Project) {
-        $arguments += @('--project-root', $paths.Project)
-    }
-    $output = & python @arguments
-    if ($LASTEXITCODE -ne 0) {
-        throw 'Game resolver failed to list available sources.'
-    }
-    @(($output -join "`n") | ConvertFrom-Json)
-}
-
 function Get-UnWorkshopResolvedPropertyNames {
     [CmdletBinding()]
     param([string]$ProjectRoot)

@@ -116,16 +116,30 @@ if ($usingConfiguredPaths) {
 
     $plans = [ordered]@{}
     $settingsProfiles = [ordered]@{}
-    $entries = if ($null -eq $selectedName) {
-        @(
-            foreach ($property in $catalog.Sources.PSObject.Properties) {
-                [string]$property.Name
+    # Every game folder with GameSettings in the project's and Workshop's
+    # content roots, registered source game or not.
+    $gameSettings = [ordered]@{}
+    $contentRoots = @(
+        $paths.Pcsx2Files
+        (Get-UnWorkshopPaths -NoProject).Pcsx2Files
+    ) | ForEach-Object { [IO.Path]::GetFullPath([string]$_) } | Select-Object -Unique
+    foreach ($contentRoot in $contentRoots) {
+        $gamesRoot = Join-Path $contentRoot 'games'
+        if (-not (Test-Path -LiteralPath $gamesRoot -PathType Container)) {
+            continue
+        }
+        foreach ($gameFolder in Get-ChildItem -LiteralPath $gamesRoot -Directory) {
+            $settingsPath = Join-Path $gameFolder.FullName "$($gameFolder.Name).ini"
+            if (Test-Path -LiteralPath $settingsPath -PathType Leaf) {
+                $gameSettings[$gameFolder.Name] = $settingsPath
             }
-        )
+        }
     }
-    else {
-        @(Get-UnWorkshopAvailableGameNames -ProjectRoot $paths.Project)
-    }
+    $entries = @(
+        @(foreach ($property in $catalog.Sources.PSObject.Properties) {
+            [string]$property.Name
+        }) + @($gameSettings.Keys) | Select-Object -Unique
+    )
     $resolvedEntries = @(
         foreach ($entryName in $entries) {
             $gameOverridePath = Join-Path `
@@ -134,15 +148,9 @@ if ($usingConfiguredPaths) {
             $hasGameOverride = Test-Path `
                 -LiteralPath $gameOverridePath `
                 -PathType Leaf
-            $resolved = if ($null -ne $selectedName) {
-                Resolve-UnWorkshopGame `
-                    -Game $entryName `
-                    -ProjectRoot $paths.Project
-            }
-            else { $null }
             [pscustomobject]@{
                 Name = $entryName
-                Resolved = $resolved
+                GameSettings = $gameSettings[$entryName]
                 HasGameOverride = $hasGameOverride
                 GameOverride = if ($hasGameOverride) {
                     $gameOverridePath
@@ -173,10 +181,10 @@ if ($usingConfiguredPaths) {
 
             if (
                 $null -ne $selectedName -and
-                $profileDefinition.Name -ceq $selectedName
+                $profileDefinition.Name -ceq $selectedName -and
+                $null -ne $entry.GameSettings
             ) {
-                $settingsPath = [string]$entry.Resolved.game_settings
-                $settingsProfiles[$settingsPath] = $profileName
+                $settingsProfiles[[string]$entry.GameSettings] = $profileName
             }
         }
     }
