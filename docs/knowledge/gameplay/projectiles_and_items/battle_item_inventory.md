@@ -4,7 +4,8 @@
 
 Established: retail NA2's three-slot inventory, starting items, selection and
 use gates, delayed consumption, drops and aliases, random field-item identity
-and amount, pickup lifecycle, HUD wheel, CPU use, and cache restoration.
+and amount, pickup lifecycle, HUD wheel, CPU use, cache restoration and the
+Item Stock screen.
 The side lookup chain, exact slot offsets, first-code-match behavior, and
 selected-indicator refresh during menu suspension are also established.
 The known writer callers and inspected surviving presentation paths are
@@ -126,6 +127,14 @@ or zero keys do not seed it. All 19 distinct seed codes have metadata kind 6.
 | `21` | `5A` |
 | `22` | `4B` |
 
+The seeded slot-zero item is the fighter's unlimited throwing weapon, not a
+character item. Its `battle_sprite_records` icon shows shuriken for `0F` and
+kunai for `10`; the other seed codes are character variants. Both Tenten IDs
+`0D` and `42` receive `13`, whose icon combines shuriken and kunai. Kind-6
+`14` has no seed row, so no character receives it; its icon record repeats
+`13`'s atlas cell.
+
+Character items are the separate personal codes below.
 `item_has_personal` admits IDs at least `39`.
 `item_personal_code` returns zero for a null fighter; IDs below `39`
 draw inclusively from the five-code pool `24,25,26,27,28`.
@@ -860,8 +869,10 @@ selected-item object, updates support pulses, then clears event markers.
 Badge scale decreases by 0.1 on an advance signal, increases by 0.1 otherwise,
 and clamps to 0.8..1.0.
 `item_panel_draw_item` forwards scale and opacity to sprite drawing;
-`item_auxiliary_draw` renders `51..73` through a model with position and
-scale but no opacity argument.
+`item_auxiliary_draw` adds one shared effect over codes `51..73`, the
+`battlegauge` animation `ANM_ef_gau02a`, with position and scale but no
+opacity argument. The codes' own icons are their `battle_sprite_records`
+cells, drawn like every other item.
 
 ### Cached selected indicator and menu suspension
 
@@ -1034,6 +1045,47 @@ entire menu transaction. Field, support, fighter, interaction-child and cut-in
 virtual descendants have not all been enumerated, and a raw-store census of
 every slot alias was not performed. The remaining pointer block has the
 separate bounded coverage above; it supplies no established additional caller.
+
+## Item Stock screen
+
+Start-menu command 7, `ccStartMenuItemStock`, takes saved stock into the
+fight; its menu label is `アイテムストック` (Item Stock). Its
+`start_menu_item_stock_vtable` (`0x005FBAE0`) dispatches
+`battle_item_selection_construct`, `battle_item_selection_update`,
+`btl_item_menu_draw` and `battle_item_selection_destroy`. The module edits
+one side, the host's `secondary_state1`, and reads the host's
+`input_source` pad, both ports for values of 2 or more.
+
+Construction zeroes the cursor, scroll and 22 selected-unit bytes and stores
+the side's occupied count. Rows are the 22 field items in
+[name-table](../../localization/field_item_names.md#resident-field-item-name-table)
+order. The columns show saved stock (所持数), units taken (used) and the
+footer shows `3` minus the occupied count (空きストック数).
+
+| Input | Effect |
+| --- | --- |
+| Up / down | Cursor `0..21`, seven visible rows |
+| Right | When `battle_item_selection_can_add` admits it: one more unit, one less saved stock; a unit that needs a new slot raises the occupied count |
+| Left | One unit back to saved stock, lowering the occupied count when it frees a slot |
+| OK | Each taken unit goes through `field_item_pickup_resolve`; result 1 |
+| Back | Every taken unit returns to saved stock; result 1 |
+
+`battle_item_selection_can_add` needs saved stock and a unit count below
+`item_side_remaining_capacity`. That capacity is one for codes without
+flag `80`, so each immediate pickup row admits one unit, whose effect OK
+applies through the pickup resolver. With three occupied
+slots, only an item already held or already taken can grow. For fighters
+`39` and above, `battle_item_selection_personal_gate` links the Item Pouch
+row with the row of the character's alias code: taking one blocks the other.
+Fighter `54` counts its personal item in threes.
+
+OK resolves each unit separately, so for fighters below `39` every Item
+Pouch unit becomes its own random code from the
+[personal pool](#starting-item-generation). `field_item_pickup_resolve`
+ignores `item_inventory_add`'s result: a resolved item with no free slot,
+or whose stack is already at 9, is dropped. The three-slot limit is a
+literal `3` in the footer, the add check and the personal gate; it does not
+follow a different slot total.
 
 ## NA2 CPU item use
 

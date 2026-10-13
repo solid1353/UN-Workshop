@@ -415,7 +415,8 @@ Free Battle includes its second 4 when `control_mode` is 0 or 3. Entry type 3
 includes 7 when `ai_profile_modifier_bypass_get` returns zero. Its three
 proved process-entry producers are annotated; their joins belong to
 [Mode flow](../../game/mode_flow.md#btl-handoff-and-return). Each append is
-limited to seven commands.
+limited to seven commands: `StartMenuHost.commands` holds seven IDs and the
+module pointer follows it.
 
 ID 4 is a placeholder. Replacement changes the first 4 to 2 unless the final
 secondary value is 5 or 2, then always changes the first remaining 4 to 3.
@@ -446,7 +447,7 @@ follows:
 | `2`, `3` | `ccStartMenuPrivateCmd`, `start_menu_private_command_vtable` | 1P / 2P Commands (character move list) |
 | `5` | `ccStartMenuPractice` | Practice settings wrapper |
 | `6` | `ccStartMenuSimpleDisp` | Simple Display |
-| `7` | `ccStartMenuItemStock` | Label unresolved |
+| `7` | `ccStartMenuItemStock` | Item Stock (`アイテムストック`); see [Item Stock screen](../projectiles_and_items/battle_item_inventory.md#item-stock-screen) |
 | `8`, `9` | `ccStartMenuMission` | Labels unresolved |
 | `0xA..0xE` | `ccStartMenuYesNo` | Confirmation children |
 
