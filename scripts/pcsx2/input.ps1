@@ -190,6 +190,18 @@ if ($usingConfiguredPaths) {
                 -PassThru
         }
     )
+    # Profiles whose override is gone are no longer generated; remove them.
+    $plannedOutputs = @(
+        foreach ($plan in $plans.Values) { [IO.Path]::GetFullPath($plan.Output) }
+    )
+    $removed = @(
+        Get-ChildItem -LiteralPath $profileRoot -Filter '*.ini' -File |
+            Where-Object { $plannedOutputs -notcontains $_.FullName } |
+            ForEach-Object {
+                Remove-Item -LiteralPath $_.FullName
+                $_.Name
+            }
+    )
     $updatedSettings = [Collections.Generic.List[string]]::new()
     foreach ($settingsPath in $settingsProfiles.Keys) {
         if (-not (Test-Path -LiteralPath $settingsPath -PathType Leaf)) {
@@ -214,9 +226,11 @@ if ($usingConfiguredPaths) {
     $configuredResult = [pscustomobject]@{
         Profile = $selectedName
         GeneratedProfiles = $generated
+        RemovedProfiles = $removed
         UpdatedGameSettings = @($updatedSettings)
         Changed = (
             @($generated | Where-Object Changed).Count -gt 0 -or
+            $removed.Count -gt 0 -or
             $updatedSettings.Count -gt 0
         )
     }
@@ -227,12 +241,14 @@ if ($usingConfiguredPaths) {
         if ($null -eq $selectedName) {
             Write-Host (
                 "Input profiles: generated $($generated.Count); " +
+                "removed $($removed.Count); " +
                 'GameSettings unchanged.'
             )
         }
         else {
             Write-Host (
                 "Input profiles: generated $($generated.Count); " +
+                "removed $($removed.Count); " +
                 "assigned '$selectedName', " +
                 "updated GameSettings $($updatedSettings.Count)."
             )
@@ -286,10 +302,6 @@ foreach ($overrideFullPath in $overrideFullPaths) {
         [IO.File]::ReadAllBytes($overrideFullPath)
     )
     $overrideSections = @([regex]::Matches($overrideText, $sectionPattern))
-    if ($overrideSections.Count -eq 0) {
-        throw "Input-profile override contains no sections: $overrideFullPath"
-    }
-
     foreach ($overrideSection in $overrideSections) {
         $sectionName = $overrideSection.Groups['name'].Value
         $overrideLines = @(
