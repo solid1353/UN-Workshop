@@ -77,6 +77,7 @@ address	kind	name	type	comment
 0x006B9C00	function	battle_gameplay_icons_destroy	long battle_gameplay_icons_destroy(long param_1,short param_2)	Destroy/free all nonnull26-child bank8 entries/clear slots;positive flag frees element; shared icons borrowed,no nested shared-sprite destructor. Presentation role established by root resource bindings in battle_hud.md.
 0x006B9CC0	function	hud_gameplay_icons_update	void hud_gameplay_icons_update(BattleGameplayIcons *display)	First callback runs native gameplay-node display enumeration then child presentation updates.
 0x006B9D30	function	hud_gameplay_icons_enumerate	void hud_gameplay_icons_enumerate(BattleGameplayIcons *display)	Obtain side fighter;scan IDs0..89 through fighter_has_effect;present IDs not displayed assigned glyph slots,consumer excludes79/7A;list membership not another gameplay update.
+0x006B9E20	function	hud_gameplay_icons_assign		Effect classes 1..3 (IDs 0x0E..0x73) take glyph slot 0, bound at the emblem cell center at scale 1.2; classes 0 and 4 take a free row slot 1..25 (scale 0.8, Y 90, X 24 + 16 per slot, mirrored for side 1).
 0x006BA120	function	hud_gameplay_icons_draw	void hud_gameplay_icons_draw(BattleGameplayIcons *display)	Second callback visits26 glyph children in reverse order and shared-icon rendering path.
 0x006BA180	function	top_display_children_invalidate		For 26 child pointers at receiver+8+index*4, store -1 at each child+8. item_panel_notify_parent reaches the corresponding side parent's child cache; no inventory slot/selection store.
 0x006BA3A0	function	hud_world_marker_bind	void hud_world_marker_bind(void *display, int side)	Bind paired root world-marker presentation to side,borrow shared icon textures.
@@ -920,6 +921,8 @@ address	kind	name	type	comment
 0x0071A380	function	result_accept_pressed	int result_accept_pressed(BtlRecordOwner *result)	Tests newly pressed native Circle0x20 at input context84+selected_side*78; selected side signed halfword object2.
 0x0071A43C	label	widescreen_hook_setup_0071a43c		Verified128-byte source setup: mtc1 zero,f12;512.0;mov.s f13,f12;first JAL 0x00183F10; setup/callee shape establishes neither screen attribution nor patch applicability.
 0x0071A7A0	function	btl_static_cleanup_delete	long btl_static_cleanup_delete(long param_1,short param_2)	Deleting cleanup callback registered with BSS node0x008D6A70 and object0x008D6A80; signed16 deletion flag. Registered callback for result_metric_bank008D6A80 through node008D6A70; separate from item cache.
+0x0071A7F0	function	hud_vector2_add	void hud_vector2_add(float *out, float *a, float *b)	out = a + b for X and Y.
+0x0071A820	function	hud_vector2_scale	void hud_vector2_scale(float *out, float *in, float scale)	out = in * scale for X and Y.
 0x0071A840	function	battle_top_panel_construct	BattleTopPanel * battle_top_panel_construct(BattleTopPanel *parent, int side, int character_id)	Construct68-byte per-side HUD panel,sides1/2 at session24/28. Construct68-byte top parent with side1/2 and character ID supplied by session; delegates initializer and returns parent.
 0x0071A870	function	hud_top_destroy	void * hud_top_destroy(void *parent, short delete_flag)	Nonnull parent cleanup then free only signed16 delete_flag>0; return original pointer.
 0x0071A8D0	function	hud_top_initialize	void hud_top_initialize(BattleTopPanel *parent, int side, int character_id)	Side1/2 becomes byte0/1; bind manager fightersDE4/DE8,scale1,base(6,10)/(506,10); allocate contexts40 IDs80 borrowed renderer60919C and83 owned renderer; allocate/bind frame1C,nameC,HP28,chakra6C in that order; four children borrow primary,chakra additionally secondary; reset parent. | Patch-dependent anchor loads live0x0071A99C=6/0x0071A9AC=506; child anchor recomputes base+presentation offset.
@@ -957,6 +960,7 @@ address	kind	name	type	comment
 0x0071BCB0	function	hud_name_bind_context	void hud_name_bind_context(BattleHudName *child, void *context)	Bind borrowed primary render context to name sprite.
 0x0071BCC0	function	hud_name_update	void hud_name_update(BattleHudName *child)	Only parent character25 with nonnull fighter substitutes5E while major_state0/substate3;otherwise restore25;select corresponding resident name rectangle;not general character substitution.
 0x0071BE20	function	hud_name_draw	void hud_name_draw(BattleHudName *child)	Draw name using parent effective anchor,scale,side and selected character rectangle;localized positioning owned by character-name renderer. | Parent draw_x/draw_y/scale/side at0/4/8/C; sprite source_width/source_height signed32 at60/64 become scaled float width/height at58/5C; local_x=90*scale,local_y=44*scale; side0 x=draw_x+local_x,nonzero x=draw_x-local_x-width;y=draw_y+local_y; no width cap; entry complete BTL offset67F20; X load71BE54 lui/lwc1 bytes8C00023CD84240C4 reads8C42D8 (complete offset2103D8); Y load71BE60 bytes8C00023CDC4240C4 reads8C42DC;71BE68 multiply-Y/load-side bytes820001460C00A290; sprite destination loaded to v1 at71BE38 before both coordinate loads and remains live through X/Y stores71BE90/71BE94,also confirmed by one prior native-renderer capture;finish sprite calls1CC350(sprite,0,1) then1CC070(sprite).
+0x0071BEE0	function	hud_frame_cell_offset_get	void hud_frame_cell_offset_get(float *x, float *y)	Return hud_frame_cell_offset (34,49): the emblem cell center relative to the top parent.
 0x0071BF00	function	hud_hp_construct	void hud_hp_construct(BattleHudHp *child)	Clear parent/sprite slots and initialize display maximum1.
 0x0071BF10	function	hud_hp_release	void hud_hp_release(BattleHudHp *child)	Delete/clear own sprite,clear borrowed parent;no fighter/context/resource free.
 0x0071BF60	function	hud_hp_initialize	void hud_hp_initialize(BattleHudHp *child, BattleTopPanel *parent)	Bind parent,allocate owned gauge sprite,initialize trailing from bound fighter.hp,delay0;display maximum1.
@@ -3921,6 +3925,7 @@ address	kind	name	type	comment
 0x008C3F30	data	results_label_rectangles	BattleHudRectangle[6]	Six summary result-label rectangles consumed by results_summary_reveal_rows.
 0x008C3FB0	data	results_rank_stamp_rectangles	BattleHudRectangle[5]	Visible stamp five rank rectangles: (352,200,64,56),(416,168,64,56),(416,112,64,56),(416,56,64,56),(416,0,64,56); index3 subtraction baseline.
 0x008C3FD8	data	results_title_cloud_rectangles	BattleHudRectangle[6]	Title/cloud/row/footer source rectangles; title index0,Display details atindex4,decorative iconindex5.
+0x008C4108	data	hud_frame_cell_offset	float[2]	Character-keyed cell center (34,49) from the top parent's draw position, X mirrored for side 1, times parent scale.
 0x008C4110	data	hud_frame_cell_rectangles	BattleHudRectangle[9]	Eight30x30 cells at grid1/33/65,default(17,17,30,30).
 0x008C4160	data	hud_frame_character_cells	BattleHudCellKey[94]	Keys1..93 then0,cells0..7,unmatched key selects cell8.
 0x008C42D8	data	hud_name_local_x	float	Battle HUD character-name local X anchor90.0 before parent scale;bytes0000B442; hud_name_draw mirrors this anchor around parent draw_x;complete BTL offset2103D8.
@@ -3934,6 +3939,8 @@ address	kind	name	type	comment
 0x008C4380	data	hud_chakra_threshold_x	float	Three threshold X outputs use offsets0/8/10hex;intervening words not assigned semantic meaning.
 0x008C4388	data	hud_chakra_threshold_x_second	float	Second derived threshold X output.
 0x008C4390	data	hud_chakra_threshold_x_third	float	Third derived threshold X output.
+0x008C4398	data	hud_chakra_icon_rectangle	short[4]	Rotating chakra icon source rectangle (233,1,21,21).
+0x008C43A0	data	hud_chakra_icon_offset	float[2]	Chakra icon center (66,38) from the top parent's draw position, X mirrored for side 1, times parent scale.
 0x008C43B0	data	hud_chakra_threshold_final	float	Final authored chakra threshold15.0 copied to maximum at load.
 0x008C43B8	data	hud_chakra_maximum	float	Automatic load-time output maximum15.0,zero before initializer.
 0x008C44E0	data	guide_voice_selectors	signed char[94]	Complete94 selectors range0..14;constructor fallback11 for signed fighter>=94.

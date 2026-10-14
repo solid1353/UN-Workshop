@@ -118,6 +118,13 @@ step 0.4; otherwise target 1.0 and step 0.1. All three phases advance and wrap.
 Draw submits the three discs first, mirrors X displacement and rotation for
 side 1, then draws the frame/panel pieces and chosen cell.
 
+The cell sprite uses `TEX_xicon03`; `sprite_set_centered_rectangle` gives it
+the cell's size and centering offsets. Each draw centers it at the parent draw
+position plus `hud_frame_cell_offset` (34,49), X mirrored for side 1, and
+multiplies its stored size and offsets by the parent scale in place. The
+submission (`text_draw_projected_rectangle`) then advances the sprite's stored
+X by the drawn width, so the position left after the draw is not the cell's.
+
 ### HP and name bindings
 
 `BattleHudHp` borrows its parent and owns one sprite. Display maximum
@@ -208,8 +215,13 @@ establish whether an action will execute; the array contract belongs to
 
 Draw orders fill/thresholds, optional feedback when `feedback_enabled`,
 then the rotating icon. Feedback draws only active players in the secondary
-context and restores the previous context. The icon clears rotation afterward;
+context, all three centered on the icon at `hud_chakra_icon_offset`, and
+restores the previous context. The icon clears rotation afterward;
 the wrapper resets all three sprites.
+`hud_chakra_icon_draw` centers the icon, `hud_chakra_icon_rectangle`
+(233,1,21,21), at the parent draw position plus `hud_chakra_icon_offset`
+(66,38), X mirrored for side 1, at the parent scale, rotated by `2π` times the
+icon phase wrapped to `±π`, with the neutral tint and X flip cleared.
 
 ## Support gauge
 
@@ -415,6 +427,11 @@ The command strip reads at most five sequence bytes, stopping at sentinel
 The icon parent checks gameplay-node IDs 0..`0x89` through
 `fighter_has_effect`, assigns present/not-yet-displayed IDs to glyph slots,
 and excludes `0x79/0x7A`. Draw traverses children in reverse order.
+`hud_gameplay_icons_assign` puts an effect of class 1..3 (IDs `0x0E..0x73`)
+in slot 0, which `hud_gameplay_icons_bind` places at scale 1.2 on the top
+parent's emblem cell center (`hud_frame_cell_offset_get`), so it covers the
+emblem. Class 0 and 4 effects take a free slot 1..25 at scale 0.8 in a row at
+Y 90, from X 24 in steps of 16, mirrored for side 1.
 This membership display does not establish another gameplay update; node
 effects belong to
 [Battle items and status effects](../projectiles_and_items/battle_items_and_status_effects.md#per-fighter-storage).
