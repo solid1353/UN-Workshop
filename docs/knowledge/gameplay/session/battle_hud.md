@@ -222,6 +222,10 @@ the wrapper resets all three sprites.
 (233,1,21,21), at the parent draw position plus `hud_chakra_icon_offset`
 (66,38), X mirrored for side 1, at the parent scale, rotated by `2π` times the
 icon phase wrapped to `±π`, with the neutral tint and X flip cleared.
+The icon's opaque disc is centered in its rectangle, but the frame's socket in
+`TEX_xgauge` (texels 56..76 by 29..49 of the piece drawn from texel (1,1)) is
+centered at (65.5,38.5). The icon and the feedback therefore sit half a texel
+right of and above the socket, which is visible at high render resolutions.
 
 ## Support gauge
 
