@@ -1,5 +1,7 @@
 Set-StrictMode -Version Latest
 
+. (Join-Path $PSScriptRoot 'python_environment.ps1')
+
 function Find-UnWorkshopProjectRoot {
     [CmdletBinding()]
     param([string]$ProjectRoot)
@@ -307,7 +309,7 @@ function Get-UnWorkshopResolvedPropertyNames {
     if ($paths.Project) {
         $arguments += @('--project-root', $paths.Project)
     }
-    $output = & python @arguments
+    $output = & (Get-UnPython) @arguments
     if ($LASTEXITCODE -ne 0) {
         throw 'Game resolver failed to list its properties.'
     }
@@ -363,7 +365,7 @@ function Resolve-UnWorkshopGame {
     if ($paths.Project) {
         $arguments += @('--project-root', $paths.Project)
     }
-    $output = & python @arguments
+    $output = & (Get-UnPython) @arguments
     if ($LASTEXITCODE -ne 0) {
         throw "Game resolver failed for '$Game'."
     }

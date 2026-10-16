@@ -4,6 +4,7 @@
 !/reverse_engineering/annotations/
 /tools/
 /logs/
+/.cache/
 
 # Python
 __pycache__/

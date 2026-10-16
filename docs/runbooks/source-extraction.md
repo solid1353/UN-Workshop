@@ -37,7 +37,7 @@ file sets/bytes, normalizes timestamps, and promotes one complete
 `<ISO filename>.files` tree. It refuses to merge into an existing extraction.
 
 Recheck an existing tree by running `@media_scripts/verify_source_extraction.py`
-with the project's Python runner:
+with `@scripts/lib/run_python.ps1`:
 
 ```text
 verify_source_extraction.py --iso <original-iso> --out-dir <extraction-tree>

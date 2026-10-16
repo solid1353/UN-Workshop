@@ -1,0 +1,7 @@
+{
+  "python": {
+    "version": "3.14.6",
+    "package": "https://www.nuget.org/api/v2/package/python/3.14.6",
+    "sha256": "77271B5958F88608884998C27DF6F8DD2FA59FAF72614BC1E2FFD1D72A3336C3"
+  }
+}
