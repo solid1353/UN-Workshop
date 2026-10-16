@@ -101,7 +101,7 @@ try {
     # The copy runs on this checkout's pinned Python.
     "function Get-UnPython { '$($python -replace "'", "''")' }" |
         Set-Content -NoNewline -LiteralPath (
-            Join-Path $repository 'scripts\lib\python_environment.ps1'
+            Join-Path $repository 'scripts\lib\pinned_packages.ps1'
         )
 
     @'

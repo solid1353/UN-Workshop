@@ -19,12 +19,19 @@ task's folder as an immediate child of a consuming project's work root.
 ## Tracked layout
 
 - `paths.json`: authoritative Workshop roots and named reusable files.
-- `packages.json`: the pinned Python, the official CPython package by URL and
-  SHA-256. `scripts/lib/python_environment.ps1` downloads, verifies and unpacks
-  it into `@cache/` on first use; every Workshop script runs it through
-  `scripts/lib/run_python.ps1`. A repository passed to that runner whose own
-  `packages.json` pins packages gets a virtual environment of them, built from
-  this interpreter in its own cache root.
+- `packages.json`: the pinned packages, each by URL and SHA-256.
+  `scripts/lib/pinned_packages.ps1` downloads, verifies and unpacks each into
+  `@cache/` on first use.
+  - `python`: the official CPython package. Every Workshop script runs it
+    through `scripts/lib/run_python.ps1`. A repository passed to that runner
+    whose own `packages.json` pins packages gets a virtual environment of them,
+    built from this interpreter in its own cache root.
+  - `ee_toolchain`: the EE compiler, at `@ee_toolchain/`. It is ps2dev's GCC
+    built by [solid1353/ps2toolchain-ee](https://github.com/solid1353/ps2toolchain-ee)
+    from [solid1353/gcc](https://github.com/solid1353/gcc), whose one change
+    keeps the R5900 EABI stack 16-byte aligned. Code from the PS2's native
+    compilers saves 128-bit registers to the stack with `sq`, so code that
+    calls into a retail game needs that alignment.
 - `games.json`: stable source-game selectors, aliases, serials, and CRCs.
 - `@pcsx2_files/`: NUN3 and NUN4
   [registered bundles](../../PCSX2/docs/content_folders.md#content-aliases)

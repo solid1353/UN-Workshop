@@ -1,6 +1,6 @@
 Set-StrictMode -Version Latest
 
-. (Join-Path $PSScriptRoot 'python_environment.ps1')
+. (Join-Path $PSScriptRoot 'pinned_packages.ps1')
 
 function Find-UnWorkshopProjectRoot {
     [CmdletBinding()]

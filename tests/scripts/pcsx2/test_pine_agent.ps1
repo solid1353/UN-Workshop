@@ -5,7 +5,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $repository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
-. (Join-Path $repository 'scripts\lib\python_environment.ps1')
+. (Join-Path $repository 'scripts\lib\pinned_packages.ps1')
 Push-Location $repository
 try {
     & (Get-UnPython) -B -m unittest tests.scripts.pcsx2.test_pine_agent
