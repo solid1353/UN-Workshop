@@ -57,6 +57,7 @@ $repository = Join-Path $testRoot 'repo'
 
 try {
     . (Join-Path $sourceRepository 'scripts\lib\paths.ps1')
+    $python = Get-UnPython
     $recordingRoot = Join-Path $testRoot 'recordings'
     $nestedRecording = Resolve-UnWorkshopRecordingName `
         -Name 'font/collection/generic' `
@@ -97,6 +98,11 @@ try {
     Copy-Item `
         -LiteralPath (Join-Path $sourceRepository 'scripts\pcsx2\launch_arguments.ps1') `
         -Destination (Join-Path $repository 'scripts\pcsx2')
+    # The copy runs on this checkout's pinned Python.
+    "function Get-UnPython { '$($python -replace "'", "''")' }" |
+        Set-Content -NoNewline -LiteralPath (
+            Join-Path $repository 'scripts\lib\python_environment.ps1'
+        )
 
     @'
 {
@@ -407,7 +413,7 @@ if ($PassThru) {
 
         $resolver = Join-Path $repository 'scripts\lib\resolve_game.py'
         $resolvedSource = (
-            & python -B $resolver NUN5 --project-root $repository
+            & $python -B $resolver NUN5 --project-root $repository
         ) | ConvertFrom-Json
         Assert-WorkshopLaunchTest `
             -Condition (

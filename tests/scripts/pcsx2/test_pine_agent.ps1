@@ -5,9 +5,10 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $repository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
+. (Join-Path $repository 'scripts\lib\python_environment.ps1')
 Push-Location $repository
 try {
-    & python -B -m unittest tests.scripts.pcsx2.test_pine_agent
+    & (Get-UnPython) -B -m unittest tests.scripts.pcsx2.test_pine_agent
     if ($LASTEXITCODE -ne 0) {
         throw "PINE agent-input tests failed with exit code $LASTEXITCODE."
     }

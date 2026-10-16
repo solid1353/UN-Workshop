@@ -19,6 +19,12 @@ task's folder as an immediate child of a consuming project's work root.
 ## Tracked layout
 
 - `paths.json`: authoritative Workshop roots and named reusable files.
+- `packages.json`: the pinned Python, the official CPython package by URL and
+  SHA-256. `scripts/lib/python_environment.ps1` downloads, verifies and unpacks
+  it into `@cache/` on first use; every Workshop script runs it through
+  `scripts/lib/run_python.ps1`. A repository passed to that runner whose own
+  `packages.json` pins packages gets a virtual environment of them, built from
+  this interpreter in its own cache root.
 - `games.json`: stable source-game selectors, aliases, serials, and CRCs.
 - `@pcsx2_files/`: NUN3 and NUN4
   [registered bundles](../../PCSX2/docs/content_folders.md#content-aliases)
@@ -35,8 +41,8 @@ task's folder as an immediate child of a consuming project's work root.
 - `@media_scripts/`: ISO, AFS, and encrypted-CVM extractors, recursive source
   extraction and verification, and source read-only tooling; see the
   [source extraction runbook](docs/runbooks/source-extraction.md).
-- `scripts/lib/`: Workshop and project path loading, source-game resolution,
-  the task work-folder context, and console help.
+- `scripts/lib/`: Workshop and project path loading, the pinned Python,
+  source-game resolution, the task work-folder context, and console help.
 - `@annotations/`: names, types, and comments for the disassembly trees,
   recorded through the GhidrAssistMCP annotation tools.
 - `docs/knowledge/`: research on the unmodified retail games.

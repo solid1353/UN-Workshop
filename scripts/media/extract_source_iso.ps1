@@ -201,7 +201,7 @@ try {
         throw "Supported archives remain unexpanded: $($unsupported.FullName -join ', ')"
     }
 
-    & python -B $verifyExtractionScript --iso $IsoPath --out-dir $stageRoot --normalize-timestamps
+    & (Get-UnPython) -B $verifyExtractionScript --iso $IsoPath --out-dir $stageRoot --normalize-timestamps
     if ($LASTEXITCODE -ne 0) {
         throw "Recursive extraction verification failed with exit code $LASTEXITCODE."
     }
