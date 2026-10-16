@@ -21,7 +21,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-. (Join-Path $PSScriptRoot 'python_environment.ps1')
+. (Join-Path $PSScriptRoot 'pinned_packages.ps1')
 $runtime = Get-UnPython -Repository $Repository
 
 $pythonArguments = [Collections.Generic.List[string]]::new()

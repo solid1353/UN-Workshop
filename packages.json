@@ -3,5 +3,10 @@
     "version": "3.14.6",
     "package": "https://www.nuget.org/api/v2/package/python/3.14.6",
     "sha256": "77271B5958F88608884998C27DF6F8DD2FA59FAF72614BC1E2FFD1D72A3336C3"
+  },
+  "ee_toolchain": {
+    "version": "15.2.0-eabi16",
+    "package": "https://github.com/solid1353/ps2toolchain-ee/releases/download/ee-v15.2.0-eabi16/ps2dev-windows-latest.tar.gz",
+    "sha256": "5FBE35F4F9100187C14B39D72A80F4D98E627CF19EFF840929A46165FC0264C4"
   }
 }
