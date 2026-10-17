@@ -12,8 +12,8 @@ from typing import Mapping
 
 MANIFEST_NAME = "paths.json"
 LAUNCH_SETTING_NAMES = ("startup_fast_forward_frames", "speed_after_startup")
-# A launch profile's per-source-game overrides of its startup frames.
-LAUNCH_GAME_OVERRIDES = "games"
+# The startup-frame entry for every game a profile's map does not name.
+LAUNCH_FRAMES_FALLBACK = "*"
 WORKSHOP_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -160,28 +160,23 @@ def _validate_launch_settings(settings: Mapping[str, object]) -> None:
         label = f"Project launch_settings.{name}"
         if not isinstance(definition, dict):
             raise ValueError(f"{label} must be an object")
-        if set(definition) - {*LAUNCH_SETTING_NAMES, LAUNCH_GAME_OVERRIDES}:
+        if set(definition) - set(LAUNCH_SETTING_NAMES):
             raise ValueError(
-                f"{label} may define only startup_fast_forward_frames, "
-                f"speed_after_startup and {LAUNCH_GAME_OVERRIDES}"
+                f"{label} may define only startup_fast_forward_frames and "
+                "speed_after_startup"
             )
-        overrides = definition.get(LAUNCH_GAME_OVERRIDES, {})
-        if not isinstance(overrides, dict) or not all(
-            isinstance(game, str) and game
-            and isinstance(override, dict)
-            and set(override) == {"startup_fast_forward_frames"}
-            for game, override in overrides.items()
-        ):
+        frames = definition.get(
+            "startup_fast_forward_frames", {LAUNCH_FRAMES_FALLBACK: 0}
+        )
+        if not isinstance(frames, dict) or LAUNCH_FRAMES_FALLBACK not in frames:
             raise ValueError(
-                f"{label}.{LAUNCH_GAME_OVERRIDES} must map source games to "
-                "startup_fast_forward_frames"
+                f"{label}.startup_fast_forward_frames must map games to frames, "
+                f"with {LAUNCH_FRAMES_FALLBACK!r} for the rest"
             )
-        for game, override in {"": definition, **overrides}.items():
-            frames = override.get("startup_fast_forward_frames", 0)
-            if isinstance(frames, bool) or not isinstance(frames, int) or frames < 0:
-                where = f"{LAUNCH_GAME_OVERRIDES}.{game}." if game else ""
+        for game, count in frames.items():
+            if isinstance(count, bool) or not isinstance(count, int) or count < 0:
                 raise ValueError(
-                    f"{label}.{where}startup_fast_forward_frames must be a "
+                    f"{label}.startup_fast_forward_frames.{game} must be a "
                     "non-negative integer"
                 )
         if definition.get("speed_after_startup", "normal") not in {"normal", "turbo"}:
