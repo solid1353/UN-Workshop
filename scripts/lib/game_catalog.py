@@ -44,7 +44,7 @@ def load_catalog(
         raise ValueError("Workshop game catalog has no source games")
 
     project_paths = (
-        _PATHS.load_project_paths(project_root.resolve(), workshop_paths)
+        _PATHS.load_project_paths(project_root.resolve(), include_games=False)
         if project_root is not None
         else workshop_paths
     )
@@ -172,7 +172,7 @@ def resolve_game(
     catalog = load_catalog(workshop_root, project_root)
     workshop_paths = _PATHS.load_workshop_paths(workshop_root)
     project_paths = (
-        _PATHS.load_project_paths(project_root, workshop_paths)
+        _PATHS.load_project_paths(project_root, include_games=False)
         if project_root is not None
         else workshop_paths
     )
@@ -223,7 +223,7 @@ def resolve_game_property_names(
     catalog = load_catalog(workshop_root, project_root)
     workshop_paths = _PATHS.load_workshop_paths(workshop_root)
     project_paths = (
-        _PATHS.load_project_paths(project_root, workshop_paths)
+        _PATHS.load_project_paths(project_root, include_games=False)
         if project_root is not None
         else workshop_paths
     )

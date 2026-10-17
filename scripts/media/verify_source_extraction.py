@@ -40,7 +40,7 @@ def configured_path(path: Path) -> Path:
         return resolved
     for parent in resolved.parents:
         if (parent / "paths.json").is_file():
-            project = load_project_paths(parent, PATHS)
+            project = load_project_paths(parent, include_games=False)
             roots.extend(root.resolve() for root in project.roots.values())
             break
     if not any(resolved == root or root in resolved.parents for root in roots):
