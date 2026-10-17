@@ -3,9 +3,9 @@
 ## Research coverage
 
 Established: the attack-clash rush HUD's `TEX_xrush` rectangle tables in NA2
-and NUN5, including the rock-paper-scissors gear labels, their record roles,
-NUN5's per-locale accessor and the shared placement formulas; the five
-accessor callers are all listed below. Open: nothing about the rectangles. Names come from `@annotations/NA2` and `@annotations/NUN5`;
+and UN5, including the rock-paper-scissors gear labels, their record roles,
+UN5's per-locale accessor and the shared placement formulas; the five
+accessor callers are all listed below. Open: nothing about the rectangles. Names come from `@annotations/NA2` and `@annotations/UN5`;
 addresses follow the
 [live address conventions](../../../game/files/file_identities.md#address-conventions).
 
@@ -14,12 +14,12 @@ stage-selected `N_RASH*.CCS` archive
 ([Asset dependencies](../../../game/files/asset_dependencies.md#stage-selected-edges)).
 Its labels are cut from the archive's `TEX_xrush` atlas by rectangles held in
 code, not in the archive, so every archive a stage can select must carry the
-atlas layout those rectangles expect. NUN5's `N_RASH3` and `N_RASH5` decode to
+atlas layout those rectangles expect. UN5's `N_RASH3` and `N_RASH5` decode to
 the same `TEX_xrush` pixels as its `N_RASH`.
 
 ## Tables and drawers
 
-| Role | NA2 | NUN5 |
+| Role | NA2 | UN5 |
 | --- | --- | --- |
 | Instruction line and PRESS! | `battle_auxiliary_draw_setup`, `0x002074B8` reader | `battle_rush_draw_instructions`, `0x0020E2A0` |
 | Gauge dots | reader at `0x002077C4` | `battle_rush_draw_gauge_dots`, `0x0020E610` |
@@ -29,7 +29,7 @@ the same `TEX_xrush` pixels as its `N_RASH`.
 | 1P, 2P or COM above a gear | `battle_rush_draw_gear_side_label`, `0x002062B0` | `battle_rush_draw_gear_side_label`, `0x0020D080` |
 | Rectangles | `battle_rush_rectangles`, `0x004072E0`; gears in `battle_rush_gear_label_rectangle` (`0x00603180`), `battle_rush_gear_center_rectangles` (`0x004071B0`) and `battle_rush_gear_side_rectangles` (`0x004071E0`) | `localized_battle_rush_rectangle`, `0x003D4EE0`, over `battle_rush_locale_tables`; dots in `battle_rush_dot_rectangles`, `0x0041A710`; hand signs in `battle_rush_gear_sign_rectangles`, `0x0041A5F0` |
 
-NA2 indexes fixed tables directly. NUN5 keeps only the two dot records
+NA2 indexes fixed tables directly. UN5 keeps only the two dot records
 in its fixed table and asks the accessor for every label, which returns the
 current locale's record from five per-locale tables; the English table is
 `battle_rush_english_rectangles` at `0x005DE500`. Both games centre each label
@@ -38,7 +38,7 @@ source region and the drawn extent.
 
 Records are `(u, v, width, height)` in `TEX_xrush` pixels:
 
-| NA2 record | Label | NA2 Japanese | NUN5 English (accessor id) |
+| NA2 record | Label | NA2 Japanese | UN5 English (accessor id) |
 | ---: | --- | --- | --- |
 | 0 | Instruction line | `(19,166,236,28)` | `(0,192,256,28)` (0) |
 | 1 | PRESS! | `(1,196,70,28)` | `(140,164,116,28)` (1) |
@@ -52,13 +52,13 @@ Records are `(u, v, width, height)` in `TEX_xrush` pixels:
 
 The rock-paper-scissors gears use these:
 
-| NA2 record | Label | NA2 Japanese | NUN5 English (accessor id) |
+| NA2 record | Label | NA2 Japanese | UN5 English (accessor id) |
 | --- | --- | --- | --- |
 | `battle_rush_gear_label_rectangle` | Gear label | `(128,200,26,25)` | `(0,238,72,18)` (3) |
 | `battle_rush_gear_center_rectangles` 0 | Empty-count label | `(101,200,25,25)` | `(0,220,72,18)` (2) |
 | `battle_rush_gear_center_rectangles` 1..3 | Hand signs | `(95,77,40,40)`, `(55,62,40,54)`, `(1,62,52,54)` | the same, in `battle_rush_gear_sign_rectangles` |
 | `battle_rush_gear_side_rectangles` 0..2 | 1P, 2P, COM | the same as records 4..6 | ids 6, 7, 8 through `battle_rush_gear_side_label_ids` |
 
-**Runtime observation:** a NUN5 savestate during a rush result draws the win
-label from `(72,220,104,36)`, and an NA2-code savestate with NUN5's archive
+**Runtime observation:** a UN5 savestate during a rush result draws the win
+label from `(72,220,104,36)`, and an NA2-code savestate with UN5's archive
 draws it from `(190,228,66,27)`, cutting fragments of neighbouring labels.

@@ -7,8 +7,8 @@ texture/CLUT transfer groups, projection/composite controller behavior, the
 packet-ring producer contract and their resident BSS globals. Open: legacy file
 tags `0x1000..0x1200`, `0x1F00` semantics, the projection algorithm/units, and ring activation,
 read-side consumer and packet language. Names and per-routine facts come from
-`@annotations/NA2`, with comparisons in `@annotations/NUN3` and
-`@annotations/NUN5`; addresses are live.
+`@annotations/NA2`, with comparisons in `@annotations/UN3` and
+`@annotations/UN5`; addresses are live.
 
 This document maps CCS numeric tags to resident resource identities. Container
 loading, publication, hashing, residency and generic lookup belong to
@@ -45,7 +45,7 @@ constructors/destructors, finalizers and consumers, rather than the whole
 program. Corpus conclusions cover the non-excluded clean inputs, including
 texture walks using per-level counts.
 NA2 resident code and bounded literal/direct-call searches of `BTL.BIN` and
-`ETC.BIN`, plus NUN3/NUN5 comparisons, bound the
+`ETC.BIN`, plus UN3/UN5 comparisons, bound the
 negative conclusions. Overlay resource trees were not inspected.
 
 ## Confirmed identities
@@ -166,13 +166,13 @@ words to be consumed/discarded. No activation writer, read-side consumer,
 packet decoder or PCM/sample interpretation is established; the reference
 audit does not prove that activation never occurs.
 
-NUN3 and NUN5 corroborate the same count/index/semaphore layout, target gate,
+UN3 and UN5 corroborate the same count/index/semaphore layout, target gate,
 capacity, stride and commit behavior:
 
 | Retail program | Producer | Slot / commit | Constructor |
 | --- | --- | --- | --- |
-| NUN3 `SLUS_217.27` | `ccs_frame_tag_2201` (`0x0016AB30`) | `ccs_packet_ring_request_slot` (`0x00108D10`) / `ccs_packet_ring_commit` (`0x00108C90`) | `ccs_packet_ring_construct` (`0x00108F40`) |
-| NUN5 `SLES_556.05` | `ccs_parse_packet_batch` (`0x001B87A0`) | `ccs_packet_ring_request_slot` (`0x00109230`) / `ccs_packet_ring_commit` (`0x00109170`) | `ccs_packet_ring_construct` (`0x00109530`) |
+| UN3 `SLUS_217.27` | `ccs_frame_tag_2201` (`0x0016AB30`) | `ccs_packet_ring_request_slot` (`0x00108D10`) / `ccs_packet_ring_commit` (`0x00108C90`) | `ccs_packet_ring_construct` (`0x00108F40`) |
+| UN5 `SLES_556.05` | `ccs_parse_packet_batch` (`0x001B87A0`) | `ccs_packet_ring_request_slot` (`0x00109230`) / `ccs_packet_ring_commit` (`0x00109170`) | `ccs_packet_ring_construct` (`0x00109530`) |
 
 Their inspected static initializers likewise return after destructor
 registration without publishing the buffer/target. The generic GS
@@ -310,7 +310,7 @@ immediately follow and the next region is four-byte aligned.
 These ownership and packing relationships are established; the semantics
 of the pairs, opaque fields, arrays and remaining flags are open.
 The bounded direct-literal audit supplied no related-game semantic consumer.
-NUN3 has the same two-pass parser; literal searches cannot exclude
+UN3 has the same two-pass parser; literal searches cannot exclude
 table-driven or synthesized-tag consumption.
 
 ### Runtime tag `0x1000` from texture and CLUT construction: image-transfer group
@@ -389,7 +389,7 @@ only recognizes the `0xCCCC` high halfword; other accepted high halfwords
 remain outside that check. It supplied no additional valid blocks for these
 routes. These findings do not establish unreachability in other inputs.
 
-The bounded legacy-tag search supplied no consumer, and NUN3's corresponding
+The bounded legacy-tag search supplied no consumer, and UN3's corresponding
 stubs preserve no fuller payload. No proved runtime relationship joins
 `0x1F00` to `0x1900`; the nested-table shape does not justify calling
 it morph data. The annotation comments retain the literal-use census.

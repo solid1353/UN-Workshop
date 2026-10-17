@@ -31,7 +31,7 @@ and [Practice](../modes/practice_mode.md) for reconstruction,
 [Battle AI](../session/battle_ai.md), [Battle HUD](../session/battle_hud.md),
 [item-status presentation](../../localization/ui/battle/item_status.md),
 [Projectiles](projectiles.md), [Resident randomness](../../runtime/randomness.md),
-and [NUN3/NUN4 inventories](item_wheels_nun3_nun4.md).
+and [UN3/UN4 inventories](item_wheels_un3_un4.md).
 
 ## NA2 ownership
 
@@ -305,10 +305,10 @@ The byte is the finishing-pattern index at actor `+0x18F3`, written by
 `tsunade_legacy_jutsu1_select_pattern` (`BTL 0x00802240`) during
 `tsunade_legacy_jutsu1_initialize` (`0x008009A0`): weighted indices
 0..3 or computed index 4. This is NA2's retained resource-52 TND actor,
-corresponding to NUN4 ID-25 Tsunade's Gambling Shot, rather than playable
+corresponding to UN4 ID-25 Tsunade's Gambling Shot, rather than playable
 NA2 ID-84 Tsunade's resource-173 TNW actor. The countdown is not armed
 merely by entering phase 4 or calling the separate helper. The actor comparison
-is owned by [Character assets](../characters/nun4/tsunade.md#retained-tnd-ordinary-jutsu-executable-comparison).
+is owned by [Character assets](../characters/un4/tsunade.md#retained-tnd-ordinary-jutsu-executable-comparison).
 
 The root bulk case of `projectile_action_response` calls
 `projectile_begin_retirement_countdown` first, then bulk-drops only if the manager

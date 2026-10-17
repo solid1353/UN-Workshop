@@ -8,7 +8,7 @@ initialization in retail NA2 (`SLPS-25837`).
 The resident bootstrap, initial task handoff, card check, splash, readiness
 barrier, Continue controller, loading presentation, and eager audio loading
 have direct static coverage and existing sampled observations.
-Names come from `@annotations/NA2` and `@annotations/NUN5`.
+Names come from `@annotations/NA2` and `@annotations/UN5`.
 SDK handler semantics, most sound commands, task timing, initializer-failure
 reachability, physical card failures, and indirect voice consumers remain open.
 
@@ -435,7 +435,7 @@ caller census and battle-bank request are recorded in the annotation.
 its 93 descriptors by character ID minus one; see
 [Voice descriptors and filename-number lists](character_assets.md#voice-descriptors-and-filename-number-lists).
 
-NUN5 retains the same `AfsManager` layout and eager-loading sequence.
+UN5 retains the same `AfsManager` layout and eager-loading sequence.
 Its `afs_manager_startup` calls `afs_startup_load_partitions`, which opens the
 four archives through `afs_startup_load_archive` and performs each blocking
 index load through `afs_startup_load_nested`. `rpgvoice_index_table` and
@@ -443,4 +443,4 @@ index load through `afs_startup_load_nested`. `rpgvoice_index_table` and
 `plvoice_archive_handle` hold their handles. The shared clip routine is
 `audio_request_archive_member`; `audio_consume_pending_streams` requests
 category 3 and `audio_request_rpg_voice` supplies category 2. The manager owner
-is `audio_stream_manager_ptr` in NUN5's resident ELF.
+is `audio_stream_manager_ptr` in UN5's resident ELF.

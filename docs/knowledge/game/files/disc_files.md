@@ -32,7 +32,7 @@ inventories and their provenance.
 The shallow inspection recorded here used the read-only `@source_na2/`
 extraction. It inspected headers and readable strings, parsed AFS,
 AHX/ADX, and MPEG/PSS metadata, searched the boot ELF and overlays for file
-references, compared same-named NA2/NUN5 files, and reused the existing
+references, compared same-named NA2/UN5 files, and reused the existing
 static-analysis evidence.
 
 The codec classifications follow the local headers and are cross-checked
@@ -68,22 +68,22 @@ Those directories are extraction views, not additional disc files.
 | `SYSTEM.CNF` | PS2 boot configuration | **Confirmed.** Plain text selects `SLPS_258.37`, version `1.00`, and NTSC video mode. |
 | `SLPS_258.37` | Resident Emotion Engine executable | **Confirmed.** 32-bit little-endian MIPS ELF, `entry` at `0x00100008`; owns startup and shared game systems and loads the on-demand overlays/resources. Its resident analysis and the on-demand overlay analyses are separate programs. |
 | `FLIST.DIR` | Startup file-location cache list | **Confirmed.** Lists the four AFS archives, `DATA.CVM`, and the three PRG overlays. The resident table has 40 slots and 32-character normalized-name capacity; the clean eight-line file leaves 32 slots, while longer names can overrun a slot. The boot ELF caches disc locations, and ordinary explicit-device lookup still handles files not listed here. |
-| `OUT1M.BIN` | One-MiB zero-filled placeholder | **Confirmed content; unknown purpose.** Every byte is zero and the file is identical in NUN5. It is probably reserved/padding media space, but no loader or allocation role has been proven. |
+| `OUT1M.BIN` | One-MiB zero-filled placeholder | **Confirmed content; unknown purpose.** Every byte is zero and the file is identical in UN5. It is probably reserved/padding media space, but no loader or allocation role has been proven. |
 
 ## `DATA/`: fonts, graphics, sound, and archives
 
 | Path | Role | Evidence and limits |
 | --- | --- | --- |
-| `DATA/GF4.BIN` | GF4 selectable font raster | **Confirmed.** The resident type-1 parser loads its two raster descriptors, and renderer mode 1 selects it together with `GF4C.BIN`. NA2 is much larger than NUN5 because their GF4 layouts differ. |
+| `DATA/GF4.BIN` | GF4 selectable font raster | **Confirmed.** The resident type-1 parser loads its two raster descriptors, and renderer mode 1 selects it together with `GF4C.BIN`. NA2 is much larger than UN5 because their GF4 layouts differ. |
 | `DATA/GF4C.BIN` | GF4 16-entry RGBA CLUT | **Confirmed.** The resident type-2 parser reads its 32-byte name followed by 64 bytes of palette entries, constructs the render-side CLUT object, and installs it whenever GF4 is selected. |
-| `DATA/GRF4.BIN` | 8×8 ruby/annotation glyph atlas | **Confirmed.** Its type-1 descriptor contains 167 4-bpp glyph rasters and a 334-record two-byte-code map. The resident string renderer uses it only for the annotation arm of pipe-delimited inline markup, centering the small glyphs over or beside the base span. It is byte-identical to NUN5. |
-| `DATA/SF1.BIN` | SF1 selectable font raster | **Confirmed.** The same resident type-1 parser loads its two raster descriptors, and renderer mode 0 selects it together with `SF1C.BIN`. It is byte-identical to NUN5. |
-| `DATA/SF1C.BIN` | SF1 16-entry RGBA CLUT | **Confirmed.** It has the same type-2 name-plus-64-byte-palette layout and render-object construction as GF4C, and is selected with SF1. It is byte-identical to NUN5. |
-| `DATA/SNDDATA.BIN` | Sony-style sound bank/program data | **Confirmed at shallow format level.** It contains `IECS`-marked version, header, VAG, sample, set, and program sections. `SNDBASE.IRX` and the boot ELF reference it. It is data, not executable code, and is byte-identical to NUN5. |
-| `DATA/PLVOICE.AFS` | Short player/battle voice clips | **Supported by contents.** Its nested archives yield 2,232 mono 24-kHz AHX type-`0x11` clips; median duration is 0.922 s and the longest is 6.309 s. The short vocal population supports the player/battle-call role implied by the filename. It is byte-identical to NUN5. |
-| `DATA/RPGVOICE.AFS` | Adventure/RPG dialogue | **Supported by contents.** Its nested archives yield 5,597 mono AHX clips (914 type `0x10`, 4,683 type `0x11`); all but one are 24 kHz. Median duration is 3.104 s and the longest is 14.351 s. The much longer voice population supports dialogue rather than battle barks. It is byte-identical to NUN5. |
-| `DATA/SOUND.AFS` | General sound effects and longer audio cues | **Supported by contents.** Its nested archives yield 1,239 mono AHX clips and 73 stereo ADX type-`0x03` clips, all 24 kHz, ranging from 0.289 s to 160.910 s. The mixture fits effects plus longer music/cue material; the exact bank-to-system mapping is not catalogued. It is byte-identical to NUN5. |
-| `DATA/STREAM.AFS` | Streamed stereo audio cues | **Supported by contents.** It yields 173 stereo 24-kHz ADX type-`0x03` files, 6.367–40.233 s long with a 13.333 s median. The uniform stereo, longer-form population distinguishes it from voices and ordinary effects. It is byte-identical to NUN5. |
+| `DATA/GRF4.BIN` | 8×8 ruby/annotation glyph atlas | **Confirmed.** Its type-1 descriptor contains 167 4-bpp glyph rasters and a 334-record two-byte-code map. The resident string renderer uses it only for the annotation arm of pipe-delimited inline markup, centering the small glyphs over or beside the base span. It is byte-identical to UN5. |
+| `DATA/SF1.BIN` | SF1 selectable font raster | **Confirmed.** The same resident type-1 parser loads its two raster descriptors, and renderer mode 0 selects it together with `SF1C.BIN`. It is byte-identical to UN5. |
+| `DATA/SF1C.BIN` | SF1 16-entry RGBA CLUT | **Confirmed.** It has the same type-2 name-plus-64-byte-palette layout and render-object construction as GF4C, and is selected with SF1. It is byte-identical to UN5. |
+| `DATA/SNDDATA.BIN` | Sony-style sound bank/program data | **Confirmed at shallow format level.** It contains `IECS`-marked version, header, VAG, sample, set, and program sections. `SNDBASE.IRX` and the boot ELF reference it. It is data, not executable code, and is byte-identical to UN5. |
+| `DATA/PLVOICE.AFS` | Short player/battle voice clips | **Supported by contents.** Its nested archives yield 2,232 mono 24-kHz AHX type-`0x11` clips; median duration is 0.922 s and the longest is 6.309 s. The short vocal population supports the player/battle-call role implied by the filename. It is byte-identical to UN5. |
+| `DATA/RPGVOICE.AFS` | Adventure/RPG dialogue | **Supported by contents.** Its nested archives yield 5,597 mono AHX clips (914 type `0x10`, 4,683 type `0x11`); all but one are 24 kHz. Median duration is 3.104 s and the longest is 14.351 s. The much longer voice population supports dialogue rather than battle barks. It is byte-identical to UN5. |
+| `DATA/SOUND.AFS` | General sound effects and longer audio cues | **Supported by contents.** Its nested archives yield 1,239 mono AHX clips and 73 stereo ADX type-`0x03` clips, all 24 kHz, ranging from 0.289 s to 160.910 s. The mixture fits effects plus longer music/cue material; the exact bank-to-system mapping is not catalogued. It is byte-identical to UN5. |
+| `DATA/STREAM.AFS` | Streamed stereo audio cues | **Supported by contents.** It yields 173 stereo 24-kHz ADX type-`0x03` files, 6.367–40.233 s long with a 13.333 s median. The uniform stereo, longer-form population distinguishes it from voices and ordinary effects. It is byte-identical to UN5. |
 | `DATA/DATA.CVM` | Encrypted resource filesystem | **Confirmed.** `CVMH`/ROFS container built with ROFSBLD 1.52; password `cc2fuku`. Startup mounts it as `VOL`, synchronously loads the root directory, then asynchronously preloads all child-directory metadata before clearing the startup barrier. Splitting it yields a fixed-capacity ISO containing 2,310 CCS resources, `GZLIST.TXT`, and `ICON.BIN`. |
 
 The AFS counts above describe successfully parsed non-empty AHX/ADX files across
@@ -101,7 +101,7 @@ for exact container, index, offset, and size records.
 | `MODULES/SNDBASE.IRX` | Game sound-control layer | **Confirmed at subsystem level.** IOP IRX referencing MIDI, hybrid synthesis, CD/DVD access, sound effects, seeking, and `BGM2` playback. Exact command protocol and ownership boundaries require targeted disassembly. |
 | `MODULES/MODULES.BIN` | IOP peripheral/support executable | **Confirmed format; supported subsystem role.** Despite its `.BIN` suffix it is an IOP ELF/IRX. Embedded names identify or reference SIO2, controller (`padman`), memory-card (`mcman`/`mcserv`), CD/DVD, and sound-related modules. Whether those components are bundled code or dependencies, and its precise loading mechanism, need targeted analysis. |
 
-All four files are byte-identical between NA2 and NUN5.
+All four files are byte-identical between NA2 and UN5.
 
 ## `PRG/`: on-demand Emotion Engine overlays
 
@@ -115,7 +115,7 @@ so an overlay address is occupied by a given overlay only while it is loaded.
 | `PRG/BTL.BIN` | Battle and practice overlay | **Confirmed at subsystem level.** Internal name `BTL_product.bin`; existing runtime/static work locates battle input, practice settings, combat UI, and battle logic here. |
 | `PRG/ETC.BIN` | Frontend/extras overlay | **Confirmed at subsystem level.** Internal name `ETC_product.bin`; existing work locates Home, Collection, save/load menu, and related UI behavior here. Readable resource names include `home.ccs` and Home animation/texture identifiers. |
 
-The NA2 overlays differ structurally from their NUN5 equivalents; same-named
+The NA2 overlays differ structurally from their UN5 equivalents; same-named
 functions and data do not occupy matching addresses or layouts.
 
 ## `PSS/`: full-motion video
@@ -165,8 +165,8 @@ runtime suffix. These are dormant executable-table entries, not missing members
 of the file inventory. Their suffix meaning and retention reason remain
 unresolved; see the [selector trace](audio_video_replacement.md#resident-selector-and-dormant-descriptor-rows).
 
-Several PSS files have the same byte size as their NUN5 counterpart but
-different contents; others differ in size, and NUN5 lacks `NOTICE.PSS`. The
+Several PSS files have the same byte size as their UN5 counterpart but
+different contents; others differ in size, and UN5 lacks `NOTICE.PSS`. The
 names alone are therefore not sufficient to assume cross-game video parity.
 
 ## Inside `DATA.CVM`
@@ -193,7 +193,7 @@ inferences until a resource is opened or referenced by code.
 | Directory | Shallow role |
 | --- | --- |
 | `3BSC/` | **Unknown character-coded family.** Nine `3*3BSC.CCS` resources; exact acronym and use unresolved. |
-| `3EYE/` | **Confirmed in part:** character-specific battle and Victory resources. NA2 and NUN5 contain the same 78 `3???3PCT.CCS` family members; 74 contain one `TEX_name` Victory visual, while four contain no name visual in either game. A 61-member subset also supplies all 72 ordinary awakening-name textures. `ENDDEMO.CCS` supplies the shared Victory background atlas and `WINNER` emblem. Files also occur in paired `3EYE` names whose exact object use remains unresolved. |
+| `3EYE/` | **Confirmed in part:** character-specific battle and Victory resources. NA2 and UN5 contain the same 78 `3???3PCT.CCS` family members; 74 contain one `TEX_name` Victory visual, while four contain no name visual in either game. A 61-member subset also supplies all 72 ordinary awakening-name textures. `ENDDEMO.CCS` supplies the shared Victory background atlas and `WINNER` emblem. Files also occur in paired `3EYE` names whose exact object use remains unresolved. |
 | `ADV/` | **Supported:** adventure-mode resources. Subfolders separate `CHAR`, `EVENT`, `PLAYER`, `SKILL`, and `STAGE`. |
 | `BUDDY/` | **Filename inference:** support/buddy character resources. |
 | `CMN/` | **Supported:** shared/common battle resources including body data, effects, gauge, particles, and shading. |

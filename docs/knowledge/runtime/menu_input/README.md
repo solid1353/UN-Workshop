@@ -1,6 +1,6 @@
 # Menu input runtime behavior
 
-Native NA2 and NUN5 menu-input handler relationships and Save/Load control
+Native NA2 and UN5 menu-input handler relationships and Save/Load control
 flow.
 
 ## Research coverage
@@ -12,7 +12,7 @@ and Save/Load observations. Open: each regional Save/Load handler's independent
 necessity; combined-path observations do not isolate the participating handlers.
 
 Routine, field and data names come from `@annotations/NA2` and
-`@annotations/NUN5`; annotation comments hold per-routine details. Addresses
+`@annotations/UN5`; annotation comments hold per-routine details. Addresses
 below are live NA2 resident addresses.
 
 ## Save/Load controller
@@ -36,7 +36,7 @@ save prompt. Status `0x2C` is a separate repair confirmation. Both status
 `0x0B` uses `save_ui_acknowledge_choice` (`0x001E6FB0`), while `0x0C` tests
 the mask in the parent controller.
 
-[`function_map.tsv`](function_map.tsv) is the reusable NA2/NUN5 handler
+[`function_map.tsv`](function_map.tsv) is the reusable NA2/UN5 handler
 inventory and regional button-mask comparison. Its row notes bound the
 handler-specific findings and recorded observations; it complements this
 overview's Save/Load ownership relationships.

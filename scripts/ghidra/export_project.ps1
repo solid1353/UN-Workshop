@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('NA2', 'NUN3', 'NUN4', 'NUN5', 'shared')]
+    [ValidateSet('NA2', 'UN3', 'UN4', 'UN5', 'shared')]
     [string]$Target,
     [string[]]$Program,
     [switch]$RestartMcp

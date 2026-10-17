@@ -6,13 +6,13 @@ Established: geometry routes and ownership, hierarchy and bone matrices,
 animation binding, CPU skinning, and inspected morph gates/arithmetic/mutation.
 Open: authored morph pairs/counts, later property owners and borrowed lifetimes,
 wider mutations, full attributes, and palette/influence limits.
-Names and per-routine detail come from `@annotations/NA2` and `@annotations/NUN3`.
+Names and per-routine detail come from `@annotations/NA2` and `@annotations/UN3`.
 
 ## Evidence conventions
 
 All cited code is resident ELF code at live EE addresses; see
 [address conventions](../../game/files/file_identities.md#address-conventions).
-Static evidence concerns retail NA2 `SLPS_258.37` and official NUN3 `SLUS_217.27`.
+Static evidence concerns retail NA2 `SLPS_258.37` and official UN3 `SLUS_217.27`.
 Bounded reader agreement does not establish whole-file model equivalence or
 complete asset interpretation; unexamined branches remain unknown.
 `CcsRecord`, source descriptors, geometry resources, runtime model instances
@@ -446,18 +446,18 @@ as separate entries, providing no independent source-list reference count.
 Animation switching and evaluator/target lifetime belong to
 [Restart, hold and removal boundaries](../animation_runtime.md#restart-hold-and-removal-boundaries).
 
-## Bounded official NUN3 comparison
+## Bounded official UN3 comparison
 
-Official NUN3's resident `ccs_parse_model` (`0x001660A0`) agrees with
+Official UN3's resident `ccs_parse_model` (`0x001660A0`) agrees with
 the inspected NA2 allocation, accepted geometry selectors and part prefixes.
 Its internal auxiliary branch is likewise not assigned by the outer selector.
 The comparison concerns bounded readers, not every asset.
 
-| Contract | NA2 | Official NUN3 |
+| Contract | NA2 | Official UN3 |
 | --- | --- | --- |
 | Packed rigid payload | Matrix selector, signed XYZ, attribute words, masked/shifted UVs; batches at most `0x36`. | `ccs_convert_packed_model_mesh` consumes the same fields in order with the same batch cap. |
 | Packed weighted payload | Eight-byte terminated lists, per-influence words, per-vertex UVs, low-nine-bit weight shifted four and palette index `0x50+4*(control>>10)`. | Same widths, grouping and generated weight/index encoding. |
-| Packed multiplier | Descriptor `position_scale /4096`. | `Nun3CcsModelDescriptor.position_scale /256`. |
+| Packed multiplier | Descriptor `position_scale /4096`. | `un3CcsModelDescriptor.position_scale /256`. |
 | Packed extrema | Temporary extrema do not reach the outer buffer. | Both branches update the outer six-extrema argument. |
 | Strip normalization | Additional header modes can reorder/duplicate ordinary and packed strips. | Outer loader does not decode those NA2 modes; packed converter has no corresponding normalization call. |
 | Retained color/header word | Low 24 color bits plus separately assigned selector bits for version `>=0x123`. | Entire `header_color_word`; no matching extra-byte assignment. |
@@ -465,7 +465,7 @@ The comparison concerns bounded readers, not every asset.
 | Topology input | Counts, signed XYZ, alignment and integer(index_count/3) triples. | `model_prepare_projection_geometry` agrees on reads and cyclic triangle calls; complete generated packet equality is unestablished. |
 
 **High-confidence inference:** identical packed coordinates and header scalar
-produce positions 16 times larger in the inspected NUN3 converter.
+produce positions 16 times larger in the inspected UN3 converter.
 Consumption agreement does not imply equal interpretation. Whether a particular
 asset compensates through its scalar, hierarchy or coordinates is unresolved;
 whole-file loading, VU behavior and animation/model pairing require separate evidence.

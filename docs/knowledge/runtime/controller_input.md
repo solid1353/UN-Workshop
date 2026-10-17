@@ -876,9 +876,9 @@ with the IOP VBlank counter only when at least one open slot contributed.
 to the callback. No game installation was found; port initialization registers
 the SIF handler.
 
-NUN5 `SLES_556.05` has the same tag and instruction-identical library
+UN5 `SLES_556.05` has the same tag and instruction-identical library
 sequence, shifted by `0xDC0`. Its annotated `pad_library_init`
-(`0x00174E58`) corroborates NA2 library identity without proving NUN5's
+(`0x00174E58`) corroborates NA2 library identity without proving UN5's
 higher-level wrapper behavior.
 
 ### Matching IOP PADMAN function map

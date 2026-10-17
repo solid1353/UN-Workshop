@@ -4,22 +4,22 @@
 
 Established: IDs 57/58/73 in four Practice captures, current versus selected
 identity, selector gates, all 13 forward and 12 inverse form pairs, all 94 NA2
-definition rows and their static NUN3 lineage. Open: remaining character
+definition rows and their static UN3 lineage. Open: remaining character
 identities, ID 74's identity/use, auxiliary rows 29..31 and wider helper roles.
-Names come from `@annotations/NA2` and `@annotations/NUN3`; routine comments
+Names come from `@annotations/NA2` and `@annotations/UN3`; routine comments
 hold code detail. Static relationships do not establish ordinary reachability.
 
 ## Evidence identity and address conventions
 
 Static findings use the maintained resident analysis of NA2 `SLPS_258.37`
-and NUN3 `SLUS_217.27`; all cited addresses are live resident addresses.
+and UN3 `SLUS_217.27`; all cited addresses are live resident addresses.
 File identities and mappings follow
 [Retail game file identities](../../game/files/file_identities.md).
 Captured identities are bounded to Naruto, Sakura, direct selection of
 Nine-Tailed Fourth Awakened State, and an in-match Naruto transformation.
 Screenshots establish matchups; extracted EE memory establishes the
 selector, manager, pointer, ID and resource values. Heap pointers are
-capture-specific. The NUN3 comparison is static and establishes no NUN3
+capture-specific. The UN3 comparison is static and establishes no UN3
 battle observation.
 
 ## Confirmed IDs
@@ -160,18 +160,18 @@ selectors `0x34` and `0x35`; see
 [Content availability](../../game/content_availability.md#auxiliary-jutsu-selectors-0x34-and-0x35).
 How rows 29..31 are used is unresolved.
 
-### NUN3 ID lineage
+### UN3 ID lineage
 
-NUN3 `character_definition_table` (`0x00476730`) uses the same eight-byte
-`{factory, record}` format, named in `Nun3CharacterDefinition`. Rows `1..56`
-are populated and row 57 is zero. Its `Nun3CharacterRecord.display_name`
+UN3 `character_definition_table` (`0x00476730`) uses the same eight-byte
+`{factory, record}` format, named in `un3CharacterDefinition`. Rows `1..56`
+are populated and row 57 is zero. Its `un3CharacterRecord.display_name`
 is Shift-JIS and `body_filename` holds the body code, as NA2's do.
 
 **Observation:** Every ID that has a dedicated fighter in both games names the
 same character: IDs 1..7, 10..19, 22, and 34..56 have the same body-file code
-in both tables. NUN3's rows at NA2's excluded IDs are:
+in both tables. UN3's rows at NA2's excluded IDs are:
 
-| ID | NUN3 name | NUN3 code | NA2 row |
+| ID | UN3 name | UN3 code | NA2 row |
 | ---: | --- | --- | --- |
 | 8 | カカシ | `kks` | Filler |
 | 9 | 大蛇丸 | `orc` | Filler |
@@ -183,20 +183,20 @@ in both tables. NUN3's rows at NA2's excluded IDs are:
 | 26 | *(none; 4 action records)* | *(none)* | Jutsu-bearing record |
 | 27 | シズネ | `szn` | Filler |
 | 28 | カブト | `kbt` | Filler |
-| 29, 31, 33 | *(filler copy of ID 1 in NUN3 too)* | — | 29 and 31 jutsu-bearing; 33 filler |
+| 29, 31, 33 | *(filler copy of ID 1 in UN3 too)* | — | 29 and 31 jutsu-bearing; 33 filler |
 | 30 | 暗部 | `anb` | Jutsu-bearing record |
 | 32 | ナルトＺ | `nrz` | Filler |
 | 44 | アスマ | `asm` | Filler |
 | 45 | 紅 | `krn` | Filler |
 
-NA2 adds IDs 57..93 after the NUN3 range. Its later versions of several NUN3
+NA2 adds IDs 57..93 after the UN3 range. Its later versions of several UN3
 characters use new IDs and new codes, for example Kakashi `70`/`kkw`, Might
-Guy `69`/`guw`, and Orochimaru `89`/`orw`, rather than reusing the NUN3 slot.
+Guy `69`/`guw`, and Orochimaru `89`/`orw`, rather than reusing the UN3 slot.
 
-**Inference (high confidence):** NA2's ID space is an extension of NUN3's.
-The vacated NUN3 fighter slots were kept as filler rows and excluded by the
-selector rather than renumbered, so shared characters keep their NUN3 IDs and
-NUN3-only characters have no dedicated NA2 row, filename entry, or selector
+**Inference (high confidence):** NA2's ID space is an extension of UN3's.
+The vacated UN3 fighter slots were kept as filler rows and excluded by the
+selector rather than renumbered, so shared characters keep their UN3 IDs and
+UN3-only characters have no dedicated NA2 row, filename entry, or selector
 eligibility.
 
 ## Active-battle identity

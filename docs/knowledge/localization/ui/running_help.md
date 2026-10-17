@@ -2,12 +2,12 @@
 
 ## Research coverage
 
-Established: shared queue movement, holds, placement, repeat spacing, NA2 render contexts and per-frame draw scope in retail NA2 (SLPS-25837) and NUN5; native NA2 backing texture slices, caller viewports and priorities.
-NA2 reserves character-count distance; NUN5 reserves measured width with a short-string minimum.
+Established: shared queue movement, holds, placement, repeat spacing, NA2 render contexts and per-frame draw scope in retail NA2 (SLPS-25837) and UN5; native NA2 backing texture slices, caller viewports and priorities.
+NA2 reserves character-count distance; UN5 reserves measured width with a short-string minimum.
 Open: numeric icon extents across callers, elapsed repeat timing and visual coverage of all callers.
 The buffered SPBATTLE help belongs to linked Terms windows; its exact player-facing screen name remains unresolved.
-Names come from `@annotations/NA2` and `@annotations/NUN5`; addresses are live.
-Static caller coverage and one saved NUN5 frame bound the findings below.
+Names come from `@annotations/NA2` and `@annotations/UN5`; addresses are live.
+Static caller coverage and one saved UN5 frame bound the findings below.
 
 General glyph metrics and secondary-font spacing belong to
 [Renderer metrics](../font/renderer_metrics.md); the Controls help-banner
@@ -49,17 +49,17 @@ If the caller supplies unit `u` and gap count `g`, its reservation is:
 L_NA2 = u * (character_count + g)
 ```
 
-NUN5 `help_text_queue` (`0x0038E790`) selects its measurement font through
+UN5 `help_text_queue` (`0x0038E790`) selects its measurement font through
 `font_select_resource`, then selects the width result of `font_text_extent`:
 
 ```text
-L_NUN5 = measured_width + u * g
-if L_NUN5 < 512:
-    L_NUN5 = 512 + u
+L_UN5 = measured_width + u * g
+if L_UN5 < 512:
+    L_UN5 = 512 + u
 ```
 
 The comparison is strictly below 512; a reservation already equal to 512
-stays 512. NUN5's `font_measure_markup` accounts for proportional glyph margins
+stays 512. UN5's `font_measure_markup` accounts for proportional glyph margins
 and ordinary spaces. In both games, icon advances contribute to measured
 width without contributing to the character count selected by NA2.
 A character count therefore cannot stand in for rendered extent, including
@@ -103,13 +103,13 @@ The previous copy's trailing edge can leave the left clip boundary before
 the next copy's leading edge enters the right boundary. An inter-string gap
 does not necessarily leave the whole viewport blank.
 
-With a 512-unit viewport and measurement matching rendering, NUN5's ordinary
+With a 512-unit viewport and measurement matching rendering, UN5's ordinary
 branch leaves `u * g` between copies; its short-string branch gives
 `max(0, u - R) / v` blank updates. NA2's blank interval can instead grow
 with `u * character_count - R`. These are geometric relationships, not
 measured wall-clock timings.
 
-## Saved NUN5 Free Battle example
+## Saved UN5 Free Battle example
 
 The recorded Mode Select state contains strip `0x00BF83F0`, node
 `0x00BF2600` and `mode_select_free_battle_help` at `0x008F5790`:
@@ -133,11 +133,11 @@ The renderer at `0x00B3F220`, referenced by `global_font_draw_state`,
 retains `RunningHelpFontView.start_x/start_y` of `(51,20)` and final
 `pen_x/pen_y` of `(653,20)`. Its GF4 descriptor at `0x00B592D0` and metric
 table at `0x00B60ED0`, zero tracking and eight-unit ordinary spaces reproduce
-the 602-unit advance. `global_font_draw_state` is the resident NUN5
+the 602-unit advance. `global_font_draw_state` is the resident UN5
 `RunningHelpFontView *` used by `help_text_queue` and `scrolling_strip_draw`.
 
 The measured width is `788 - 22 * 8 = 612`, ten units above the drawn advance.
-NUN5 `font_classify_token` and `font_measure_markup` leave the closing
+UN5 `font_classify_token` and `font_measure_markup` leave the closing
 `>` of `<WHITE>` to be measured; its saved margins `[2,7,2,3]` contribute
 ten units. `font_draw_markup` consumes that closing byte without drawing it.
 The resulting gap is 186 rather than 176, but the entire viewport still
@@ -157,8 +157,8 @@ before drawing help. Secondary-font spacing is owned by
 from `UiScrollConfiguration`; NA2 uses `abi_float_arguments_consume` for
 their logical rectangles. The corresponding fields are
 `RendererTransformState.viewport_left/top/width/height` in NA2 and
-`RunningHelpViewportView.viewport_left/top/width/height` in NUN5.
-The saved NUN5 text viewport at `0x00BF87A0` holds `(0,300,512,48)`,
+`RunningHelpViewportView.viewport_left/top/width/height` in UN5.
+The saved UN5 text viewport at `0x00BF87A0` holds `(0,300,512,48)`,
 with text starting at local `(51,20)`. These positions are distinct from
 glyph ink bearings and accumulated word spacing.
 
@@ -225,11 +225,11 @@ distance to `0.9 * W` and clear `elapsed_delay`. If
 `0.1 * W`, already inside the viewport: the hold retains the initial
 position. It is distinct from excess travel between repeated copies.
 
-That first-node minimum applies only to the first delayed entry. NUN5's
+That first-node minimum applies only to the first delayed entry. UN5's
 short-string minimum in `help_text_queue` applies to every submission.
 
 Both games' `scrolling_strip_configurations` contain four corresponding
-36-byte records that are byte-identical between NA2 and NUN5, all specifying
+36-byte records that are byte-identical between NA2 and UN5, all specifying
 a horizontal 512-unit viewport, height 48 and speed 2 units per update.
 This does not establish that every caller
 leaves its configuration unchanged.
@@ -255,7 +255,7 @@ Selection, value-change and reset notices use the same shared setter.
 The resident and battle-overlay routine annotations retain their individual
 submission and ordering details.
 
-NUN5 `ultimate_battle_help_text` selects localized menu help; its English
+UN5 `ultimate_battle_help_text` selects localized menu help; its English
 `ultimate_battle_help_messages` names Ultimate Battle Series, Epic Survival
 and Customized Battle, establishing this family. The level/rank family uses
 `ultimate_battle_rank_help_text` entries 5..7 and
@@ -276,6 +276,6 @@ it does not establish exclusive ownership of every possible path.
 Preserved cross-reference coverage is incomplete for some battle-overlay
 help submissions and constructors. Their byte-established use of the shared
 component remains recorded in annotations; missing cross-references do not
-establish absence of that use. The saved NUN5 frame establishes one string's
+establish absence of that use. The saved UN5 frame establishes one string's
 queue, renderer and layout values, without establishing elapsed repeat timing
 or visual coverage of every menu.

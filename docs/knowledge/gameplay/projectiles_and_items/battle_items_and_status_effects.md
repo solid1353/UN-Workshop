@@ -13,9 +13,9 @@ Open: fixed retail status names for 37 IDs, indirect reachability, the paired
 pointer lanes, the complete indirect reach of the embedded `26C` timeline,
 pickup-path overlap, selected-use fallback reachability, and the consumer of
 interleaved `65/12`. Findings are static.
-Names come from `@annotations/NA2` and, for status labels, `@annotations/NUN5`.
+Names come from `@annotations/NA2` and, for status labels, `@annotations/UN5`.
 Annotation comments carry routine detail; addresses are live. Donor power-effect
-comparisons are in [NUN3 and NUN4 characters](../characters/nun3_nun4_characters.md).
+comparisons are in [UN3 and UN4 characters](../characters/un3_un4_characters.md).
 
 This document owns gameplay status membership and lifetime in unmodified NA2
 (`SLPS-25837`). Numeric IDs remain numeric unless a gameplay consumer
@@ -1129,7 +1129,7 @@ Every successful entry has its own cache/presentation tail; the cache ends
 at the last successful entry, unaffected by a failed later one.
 
 Every matching row adds one to statistic metric 6, Special ninja tools,
-including empty-effect rows and rejected applications. NUN5's
+including empty-effect rows and rejected applications. UN5's
 `item_status_table` (`0x008B48D0`) is byte-identical and its
 `item_status_dispatch` (`0x00727020`) calls its resident `effect_apply`.
 This corroborates the layout rather than supplying NA2 execution evidence.
@@ -1237,8 +1237,8 @@ Gaara's personal item `53` and its `item_status_dispatch` row.
 Character names follow [Character identity](../characters/character_ids.md);
 all character IDs in this table are hexadecimal.
 
-The phrases are the official NUN5 English words in the corresponding retail
-portrait assets. The NA2/NUN5 texture-name correspondences are owned by the
+The phrases are the official UN5 English words in the corresponding retail
+portrait assets. The NA2/UN5 texture-name correspondences are owned by the
 linked presentation document. Source hashes and all 72 mapped
 `mode1name` textures were checked against the maintained retail inputs;
 these are cross-game label correspondences, not evidence of equal mechanics.

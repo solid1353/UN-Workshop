@@ -33,7 +33,7 @@ task's folder as an immediate child of a consuming project's work root.
     compilers saves 128-bit registers to the stack with `sq`, so code that
     calls into a retail game needs that alignment.
 - `games.json`: stable source-game selectors, aliases, serials, and CRCs.
-- `@pcsx2_files/`: NUN3 and NUN4
+- `@pcsx2_files/`: UN3 and UN4
   [registered bundles](../../PCSX2/docs/content_folders.md#content-aliases)
   under `games/`, shared input-profile sources, and ignored default and test cards.
   Consuming projects own their other game bundles and input recordings.

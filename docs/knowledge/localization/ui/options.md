@@ -2,22 +2,22 @@
 
 ## Research coverage
 
-Established: retail NA2/NUN5 prompt geometry, Options backdrop ownership,
+Established: retail NA2/UN5 prompt geometry, Options backdrop ownership,
 Controls lifecycle, nine-row layout, help ordering, and localized label sources.
 Open: uncovered animation phases and indirect callers, beige-box asset ownership,
-and the visible Select-icon source in NUN5; its case-3 request submits nothing.
-Names come from `@annotations/NA2` and `@annotations/NUN5`; addresses are live.
+and the visible Select-icon source in UN5; its case-3 request submits nothing.
+Names come from `@annotations/NA2` and `@annotations/UN5`; addresses are live.
 The resident transition-manager pointer is annotated as `global_transition_pool`.
 
 ## Binary identity and mapping
 
 The comparison uses the retail Japanese NA2 boot ELF
-`@source_na2/SLPS_258.37` and official English NUN5 boot ELF
-`@source_nun5/SLES_556.05`. English screen-position label pointers are in
-NUN5 `TEXTENG.BIN`; their strings are in its boot ELF. Shared names below
+`@source_na2/SLPS_258.37` and official English UN5 boot ELF
+`@source_un5/SLES_556.05`. English screen-position label pointers are in
+UN5 `TEXTENG.BIN`; their strings are in its boot ELF. Shared names below
 resolve separately in each game's annotations.
 
-| Routine | NA2 live entry | NUN5 live entry |
+| Routine | NA2 live entry | UN5 live entry |
 | --- | --- | --- |
 | `button_icon_submit` | `0x0037C980` | `0x0038BB10` |
 | `screen_position_present` | `0x0038ADB0` | `0x0039C730` |
@@ -38,20 +38,20 @@ Values come from `ScreenPositionView.x_offset / 3` and `-y_offset`.
 NA2 reads `screen_position_x_label_pointer` and
 `screen_position_y_label_pointer`, pointing to the eight-byte Shift-JIS slots
 `screen_position_x_label` (`Ｘ ：`) and `screen_position_y_label` (`Ｙ ：`).
-NUN5 `localized_screen_position_label` (`0x003D1580`) selects records 4 and 5
+UN5 `localized_screen_position_label` (`0x003D1580`) selects records 4 and 5
 from the current language table. The English table is
 `screen_position_english_label_table` at live `0x008F46D0` in `TEXTENG.BIN`;
 its records point to ASCII `X:` / `Y:` at resident `0x00613CE0` / `0x00613CE4`.
 
 Text objects differ: NA2 allocates `0x80` bytes and a `0x24`-byte renderer
-record, NUN5 `0x88` and `0x424` bytes, with shifted renderer and descriptor
+record, UN5 `0x88` and `0x424` bytes, with shifted renderer and descriptor
 fields. `font_select_face` initializes secondary
-`FrontendFontSpacingView.tracking` to `-1.0` in NA2 and `0.0` in NUN5;
+`FrontendFontSpacingView.tracking` to `-1.0` in NA2 and `0.0` in UN5;
 `extra_spacing` is respectively `2.0` and `0.0`. Identical anchors therefore
 do not establish identical geometry or interchangeable complete objects/draw
 routines.
 
-Ordinary leading spaces advance eight units in NUN5 and fourteen in NA2 when
+Ordinary leading spaces advance eight units in UN5 and fourteen in NA2 when
 secondary tracking is zero. Retaining the NA2 formula at that tracking moves
 zero 18 logical units right and negative one 12 units right. Font formulas
 are owned by [Renderer metrics](../font/renderer_metrics.md).
@@ -65,25 +65,25 @@ triangle, label, and tail consecutively, each vertically centered by half
 its own height.
 
 Records share the four signed-halfword rectangle layout (`BattleHudRectangle`
-in NA2, `FrontendRectangle` in NUN5).
+in NA2, `FrontendRectangle` in UN5).
 
-| Record | NA2 live address / rectangle | NUN5 English live address / rectangle |
+| Record | NA2 live address / rectangle | UN5 English live address / rectangle |
 | --- | --- | --- |
 | `cancel_triangle_rectangle` | `0x005D46C0` / `(3,25,26,22)` | `0x005DE8A0` / `(2,24,24,24)` |
 | `cancel_label_rectangle` | `0x005D46B0` / `(1,49,114,22)` | `0x005DE890` / `(1,49,56,22)` |
 | `cancel_tail_rectangle` | `0x005D46B8` / `(1,73,42,22)` | `0x005DE898` / empty |
 
 The Japanese group is 182 logical pixels wide; English is 80.
-NUN5 `localized_common_prompt_rectangle` (`0x003D50C0`) selects records
+UN5 `localized_common_prompt_rectangle` (`0x003D50C0`) selects records
 6, 4, and 5 for triangle, label, and tail.
 
 ## Options-root OK and Back anchors
 
 Both `options_present` routines pass nominal OK X=`400` and Back X=`470`
-at Y=`356`. NA2 uses them directly; NUN5 converts two shared signed regional
+at Y=`356`. NA2 uses them directly; UN5 converts two shared signed regional
 globals to floats and adds their values first.
 
-| Prompt | NA2 X | NUN5 adjustment | Effective NUN5 X |
+| Prompt | NA2 X | UN5 adjustment | Effective UN5 X |
 | --- | ---: | ---: | ---: |
 | OK | 400 | -12 | 388 |
 | Back | 470 | -8 | 462 |
@@ -225,15 +225,15 @@ Controls and Music Options use `options_controls_present` and
 prompt case `3`, then submits the adjacent legend through
 `sprite_draw_rectangle` at the same X. Footer Y is `356`.
 
-| Footer element | NA2 X | Effective NUN5 X |
+| Footer element | NA2 X | Effective UN5 X |
 | --- | ---: | ---: |
 | OK | 400 | 388 |
 | Back | 470 | 462 |
 | Case-3 request and companion legend | 230 | 200 |
 
-Both NUN5 callers add the same signed regional globals (`-12` / `-8`) to
+Both UN5 callers add the same signed regional globals (`-12` / `-8`) to
 nominal OK / Back `400` / `470`. The four case-3/legend requests use the
-regional shared X on both screens. In the verified NUN5 `button_icon_submit`
+regional shared X on both screens. In the verified UN5 `button_icon_submit`
 body, case `3` exits without submitting a rectangle; the request alone does
 not prove an emitted Select icon. Its earlier visible-icon attribution remains
 unresolved.
@@ -242,21 +242,21 @@ unresolved.
 
 Both `mode_select_present` routines submit common prompts and START at Y=`362`:
 
-| Element | NA2 X | Effective NUN5 X |
+| Element | NA2 X | Effective UN5 X |
 | --- | ---: | ---: |
 | OK | 400 | 388 |
 | Back | 470 | 462 |
 | START | 130 | 150 |
 
-NUN5 adds signed regional globals to nominal OK/Back values. START goes through
-`sprite_draw_rectangle` (`0x0037BC40` NA2, `0x0038AD00` NUN5), then prompt
-sprites through `sprite_reset` (`0x001CC070` NA2, `0x001D1180` NUN5).
+UN5 adds signed regional globals to nominal OK/Back values. START goes through
+`sprite_draw_rectangle` (`0x0037BC40` NA2, `0x0038AD00` UN5), then prompt
+sprites through `sprite_reset` (`0x001CC070` NA2, `0x001D1180` UN5).
 This order changes transient geometry and queues; it does not change the
 selected mode, input state, or controller transitions.
 
 NA2 `mode_select_construct_prompt_resources` (`0x00383F80`) binds
 `TEX_modesel02` to `ModeSelectInput.legend_sprite`. The retail indexed
-256x512 atlas is transparent from UV Y=`419` through its bottom; NUN5's
+256x512 atlas is transparent from UV Y=`419` through its bottom; UN5's
 homolog is transparent from Y=`416`. The large description and START
 rectangles stay outside the shared transparent region. NA2 START uses
 `(1,397,206,22)`, and its sprite is finalized after that draw.
@@ -267,7 +267,7 @@ Compared live bodies and data establish the geometry, owners, ordering, and
 gates above. Coverage is bounded to the inspected callers and screen states;
 it does not establish every animation phase or indirect path. Per-routine
 comments carry instruction sites, original comparison bounds, and record bytes.
-NUN5 case-3 dispatch and corrected English string pointers are verified
+UN5 case-3 dispatch and corrected English string pointers are verified
 directly; beige-box ownership remains an inference.
 
 Options and Mode Select callbacks are owned by
@@ -276,7 +276,7 @@ renderer spacing remain in their linked documents.
 
 ## Options labels and difficulty values
 
-NUN5 `OPTION.CCS` does not contain the boot-ELF rectangle tables consumed by
+UN5 `OPTION.CCS` does not contain the boot-ELF rectangle tables consumed by
 the Options renderer. NA2 `difficulty_selector_draw` uses five
-`options_menu_rectangles` and six `options_difficulty_rectangles`; NUN5's
+`options_menu_rectangles` and six `options_difficulty_rectangles`; UN5's
 homolog selects English records through language-dependent table accessors.

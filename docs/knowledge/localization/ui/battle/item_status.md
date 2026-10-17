@@ -2,10 +2,10 @@
 
 ## Research coverage
 
-Established: retail NA2 and NUN5 status classes, record selection,
+Established: retail NA2 and UN5 status classes, record selection,
 foreground geometry, bubble width, rank offsets, the doll atlas binding, and
 18 checked English status-record crops with their atlas bindings.
-Names come from `@annotations/NA2` and `@annotations/NUN5`; addresses are live.
+Names come from `@annotations/NA2` and `@annotations/UN5`; addresses are live.
 Evidence covers paired native paths, records, and recorded object states.
 Open: indirect callers and states outside those examined, including other animation phases.
 Annotations carry per-routine code detail and fixed object layouts.
@@ -20,7 +20,7 @@ names to [Field-item names](../../field_item_names.md).
 
 ## Status record words
 
-The checked English words below are decoded retail NUN5 `BATTLEGAUGE.CCS`
+The checked English words below are decoded retail UN5 `BATTLEGAUGE.CCS`
 crops at the rectangles selected by `battle_sprite_records`
 (`0x005B7ED0`). NA2's corresponding table is `0x005B0A60`.
 The paired, numeric and single maps below establish the shared logical
@@ -69,7 +69,7 @@ owns those joins and their naming limits.
 
 ### Identity and address map
 
-| Role | NA2 | NUN5 |
+| Role | NA2 | UN5 |
 | --- | --- | --- |
 | Notification factory | `fukidasi_create` (`0x0070D5F0`) | `fukidasi_create` (`0x00722640`) |
 | Pair constructor | `fukidasi_pair_construct` (`0x0070EBF0`) | `fukidasi_pair_construct` (`0x00724010`) |
@@ -103,7 +103,7 @@ identical atlas geometry.
 The factory assigns a rank offset at insertion, signing X by the
 side-to-opponent orientation. The table has three entries:
 
-| Rank | NA2 offset | NUN5 offset |
+| Rank | NA2 offset | UN5 offset |
 | ---: | --- | --- |
 | 1 | `(50,-20)` | `(20,-30)` |
 | 2 | `(-16,-62)` | `(-64,-63)` |
@@ -113,29 +113,29 @@ Shared presentation projects the followed position, adds the rank offset,
 clamps it to the screen, and smooths it against the previous display position.
 It draws the bubble at that position and admits foreground drawing only when
 `Fukidasi.bubble_scale > 0.3`. Relative to that position, the foreground
-origin is `(-33,-42)` in NA2 and `(0,-33)` in NUN5.
+origin is `(-33,-42)` in NA2 and `(0,-33)` in UN5.
 
-NUN5 updates `Fukidasi.width_scale` before clamping. The paired class uses the
+UN5 updates `Fukidasi.width_scale` before clamping. The paired class uses the
 greater live record width, divided by 64 when above 64, otherwise 1. Bubble
 drawing receives this scale separately from the animated `bubble_scale`;
-foreground records draw at scale 1. NUN5's bubble rotation is `1.57`;
+foreground records draw at scale 1. UN5's bubble rotation is `1.57`;
 NA2's is zero.
 
 Foreground offsets are relative to the class foreground origin:
 
-| Row | NA2 | NUN5 |
+| Row | NA2 | UN5 |
 | --- | --- | --- |
 | First | `(+38,+11)` | X centered by half the live record width; Y `+18` |
 | Second | `(+18,+30)` | X centered by half the live record width; Y `+20` |
 
-NUN5's first record `0x82` or `0x99` moves Y another `-14` and rotates by
+UN5's first record `0x82` or `0x99` moves Y another `-14` and rotates by
 pi/2. Its second record `0x9B` moves Y another `+14` with zero rotation;
 other second records rotate by `1.57`. Width halving rounds signed integers
 toward zero. Both games select the side's layer and use the notification's opacity.
 
 ### Shared foreground renderer difference
 
-| Role | NA2 boot ELF | NUN5 boot ELF |
+| Role | NA2 boot ELF | UN5 boot ELF |
 | --- | --- | --- |
 | Top-left record renderer | `item_sprite_draw_top_left` (`0x00377060`) | `item_sprite_draw_top_left_rotated` (`0x00384100`) |
 | Uniform sprite wrapper | `item_sprite_draw` (`0x00377720`) | `item_sprite_draw` (`0x00384800`) |
@@ -145,7 +145,7 @@ scale both dimensions uniformly, add half the source dimensions to the supplied
 position, and center the local offsets using the supplied scale:
 `local_x = -scale * source_width / 2` and
 `local_y = -scale * source_height / 2`. Opacity is independent of scale.
-NUN5 additionally accepts rotation; NA2's cited top-left renderer sets it to
+UN5 additionally accepts rotation; NA2's cited top-left renderer sets it to
 zero. The uniform sprite wrappers provide a distinct path with a directly
 supplied position and rotation.
 
@@ -159,7 +159,7 @@ and geometry. The observations do not cover every animation phase or indirect ca
 
 ### Identity and address map
 
-| Role | NA2 | NUN5 |
+| Role | NA2 | UN5 |
 | --- | --- | --- |
 | Numeric constructor | `fukidasi_construct` (`0x0070E090`) | `fukidasi_numeric_construct` (`0x007231E0`) |
 | Numeric foreground | `fukidasi_numeric_draw` (`0x0070E190`) | `fukidasi_numeric_draw` (`0x007232F0`) |
@@ -175,17 +175,17 @@ code `0x14` selects `0x95` instead.
 ### Reconstructed behavior
 
 Foreground drawing orders the top label, lower label, then digits. NA2 passes
-top offsets `(36,11)` and lower offsets `(16,37)`. NUN5 passes `(22,20)` and
+top offsets `(36,11)` and lower offsets `(16,37)`. UN5 passes `(22,20)` and
 `(37,37)`, but its lower-label method ignores the forwarded X offset.
 
-NUN5 centers the top record by half its live width before adding caller offsets.
+UN5 centers the top record by half its live width before adding caller offsets.
 Top records `0x82` and `0x99` then subtract 14 from X and Y and rotate by pi/2;
 others use zero rotation. The lower record is centered by its own width.
 Recovery uses Y `+37` and zero rotation; code `0x14` uses Y `+37-24` and
 rotation `1.57`. NA2 uses caller offsets directly without these width-centering
 or rotation adjustments.
 
-NUN5's digit X origin is `-50`. It adds `14/23/32`, `18/28`, or `24` for
+UN5's digit X origin is `-50`. It adds `14/23/32`, `18/28`, or `24` for
 three, two, or one digit, giving `-36/-27/-18`, `-32/-22`, and `-26`.
 NA2 uses the same additions without the `-50` origin. Both use Y `+25` and
 draw digits after the labels.
@@ -195,7 +195,7 @@ draw digits after the labels.
 These paths own record selection and presentation geometry. They do not own
 gameplay recovery arithmetic, effect timing, allocation, links, or atlas content.
 The object layouts and renderer interfaces differ: `Fukidasi.next` occupies
-NA2's `+0x40`, while NUN5 has `width_scale` there and `next` at `+0x44`.
+NA2's `+0x40`, while UN5 has `width_scale` there and `next` at `+0x44`.
 The numeric value and digit animation are named in `FukidasiNumeric`.
 Native paths, retail record bytes, and recorded numeric objects establish the comparison.
 
@@ -203,7 +203,7 @@ Native paths, retail record bytes, and recorded numeric objects establish the co
 
 ### Identity and address map
 
-| Role | NA2 | NUN5 |
+| Role | NA2 | UN5 |
 | --- | --- | --- |
 | Single constructor | `fukidasi_single_construct` (`0x0070E9C0`) | `fukidasi_single_construct` (`0x00723CC0`) |
 | Single foreground | `fukidasi_single_draw` (`0x0070EA90`) | `fukidasi_single_draw` (`0x00723DA0`) |
@@ -225,13 +225,13 @@ These records occupy `0x96..0x9A` in each game's `battle_sprite_records`.
 
 ### Reconstructed behavior
 
-Relative to the supplied foreground origin, NA2 adds `(33,42)` and NUN5
-adds `(0,33)`. NUN5 uses a quarter-turn for records `0x82` and `0x99`, zero
+Relative to the supplied foreground origin, NA2 adds `(33,42)` and UN5
+adds `(0,33)`. UN5 uses a quarter-turn for records `0x82` and `0x99`, zero
 for others; of the five mapped records, only `0x99` takes that branch.
 NA2 uses zero rotation. Each class draws through its game's `item_sprite_draw`
 uniform wrapper at scale 1 with the notification's opacity.
 
-NUN5 derives bubble width from the mapped live record: width at most 64
+UN5 derives bubble width from the mapped live record: width at most 64
 gives `width_scale = 1`; otherwise it gives `width / 64`. Retail object code
 `0x09` therefore uses `122/64 = 1.90625`; the other mapped codes use 1.
 NA2's corresponding object field is its next-object link.
@@ -248,7 +248,7 @@ class-vtable and object inventories.
 
 ### Identity and address map
 
-| Role | NA2 boot ELF | NUN5 boot ELF |
+| Role | NA2 boot ELF | UN5 boot ELF |
 | --- | --- | --- |
 | Record table | `battle_sprite_records` (`0x005B0A60`) | `battle_sprite_records` (`0x005B7ED0`) |
 | Doll record `0x0A` | `battle_sprite_record_substitution_doll` (`0x005B0AD8`) | `battle_sprite_record_substitution_doll` (`0x005B7F48`) |
@@ -272,11 +272,11 @@ three pixels at the observed animation phase.
 | Record `0x0A` | U | V | Width | Height |
 | --- | ---: | ---: | ---: | ---: |
 | NA2 | 161 | 193 | 30 | 30 |
-| NUN5 | 161 | 225 | 30 | 30 |
+| UN5 | 161 | 225 | 30 | 30 |
 
 The recorded NA2 sprite initially had geometry matching record `0x2E`;
 its next updater pass replaced it from retained code `0x0A`. Thus the
-same-index NUN5 record supplies the homologous doll geometry. Other semantic
+same-index UN5 record supplies the homologous doll geometry. Other semantic
 record IDs are not globally aligned. Record bytes and matched object states
 establish this correspondence; dynamic sprite addresses and initial geometry
 are retained in the record annotations.
@@ -285,25 +285,25 @@ are retained in the record annotations.
 
 ### Identity and address map
 
-| Role | NA2 | NUN5 |
+| Role | NA2 | UN5 |
 | --- | --- | --- |
 | Fixed constructor | `fukidasi_fixed_construct` (`0x0070EF20`) | `fukidasi_fixed_construct` (`0x007244D0`) |
 | Fixed foreground | `fukidasi_fixed_draw` (`0x0070EFF0`) | `fukidasi_fixed_draw` (`0x007245B0`) |
 | Fixed width update | Absent from NA2's class interface | `fukidasi_fixed_width_update` (`0x007247F0`) |
 | Fixed-class vtable | `fukidasi_fixed_vtable` (`0x005DDE80`) | `fukidasi_fixed_vtable` (`0x005EB370`) |
 
-The class always draws `0x8E` then `0x8D`. NUN5 uses the same records as
+The class always draws `0x8E` then `0x8D`. UN5 uses the same records as
 its paired and numeric classes, with no separate texture or table.
 
 ### Reconstructed behavior
 
-NA2 uses `(+38,+11)` for `0x8E` and `(+18,+25)` for `0x8D`. NUN5 obtains
+NA2 uses `(+38,+11)` for `0x8E` and `(+18,+25)` for `0x8D`. UN5 obtains
 each live width, halves it with signed integer rounding toward zero, subtracts
 it from X, then adds 20 or 37 to Y. Both foreground draws use scale 1 and zero
 rotation with the notification's opacity.
 
-NUN5's fixed bubble method writes `width_scale = 1.6`. Record `0x8E` is
+UN5's fixed bubble method writes `width_scale = 1.6`. Record `0x8E` is
 102 pixels wide, whose width divided by 64 is `1.59375`; that ratio is
 distinct from the method's fixed value. Width querying belongs to foreground
 centering; the paired class has its own dynamic width method. As in the other
-classes, NA2 has its next-object pointer where NUN5 has the width scale.
+classes, NA2 has its next-object pointer where UN5 has the width scale.

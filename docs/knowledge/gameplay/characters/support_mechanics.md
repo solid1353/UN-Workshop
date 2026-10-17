@@ -6,7 +6,7 @@ Established for retail NA2 (`SLPS-25837`): selection, Linked Mode, request/gauge
 gates, common lifecycle, contact exits, notifications, manager passes, teardown,
 ordinary attack-record construction and selected `0x0A/0x3F` script/effect
 interfaces. Orochimaru 89's indexed recommendations, exclusions, code/recharge
-overrides and linked-attack admission are established; a donor NUN4 equivalent
+overrides and linked-attack admission are established; a donor UN4 equivalent
 is not established. Open: full subclass payloads, scheduler-gate meanings,
 resource lengths/event streams, character names for
 numeric IDs, notification frequency, and retained-source lifetime safety.

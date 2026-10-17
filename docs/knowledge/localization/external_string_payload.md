@@ -1,18 +1,18 @@
 # External localization payloads
 
-The official NUN5 localization files and the native NA2 loader and memory
+The official UN5 localization files and the native NA2 loader and memory
 boundary.
 
 ## Research coverage
 
-Established: NUN5 indexed MWO3 localization images, language selection and
+Established: UN5 indexed MWO3 localization images, language selection and
 loading, NA2's table-selected PRG loader, and its structural memory boundary.
 Open: 80 unclassified in-range English payload words and malformed/missing-file
 behavior beyond the observed read/retry gates; donor precedent does not prove
 direct NA2 ABI compatibility.
-Names come from `@annotations/NA2` and `@annotations/NUN5`; addresses are live.
+Names come from `@annotations/NA2` and `@annotations/UN5`; addresses are live.
 
-## NUN5 `TEXTENG.BIN`
+## UN5 `TEXTENG.BIN`
 
 The official English payload is a `0x30D00`-byte MWO3 data image. It mixes
 zero-terminated strings with absolute in-image pointer tables that index whole
@@ -32,22 +32,22 @@ image has no identified executable routines; its pointer tables and strings
 form a structured localization payload.
 
 Individual string relationships belong to
-[NA2 and NUN5 text correspondence](translation_importer.md).
+[NA2 and UN5 text correspondence](translation_importer.md).
 
 ## Evidence
 
-The retail NA2 (`SLPS-25837`) and NUN5 inputs are identified in
+The retail NA2 (`SLPS-25837`) and UN5 inputs are identified in
 [Retail game file identities](../game/files/file_identities.md).
 
 The loader behavior and named data are resolved in the live-address MCP
 programs. Complete-file header facts come from the original retail files:
-the NUN5 `TEXTENG.BIN` import omits its header from program memory. Pointer
+the UN5 `TEXTENG.BIN` import omits its header from program memory. Pointer
 classification remains bounded to the recorded aligned scan; it does not
 classify every word or establish every string consumer.
 
-## NUN5 donor behavior
+## UN5 donor behavior
 
-NUN5 selects the following files through `locale_payload_filename_table`
+UN5 selects the following files through `locale_payload_filename_table`
 (`0x005BB280`), whose filename block starts with
 `locale_payload_filename_english` (`0x005BB228`):
 
@@ -122,7 +122,7 @@ physical file, and processes its constructor interval without header or range
 validation. A missing or misnamed file can therefore prevent the loader from
 returning; a truncated or malformed file has no established clean-failure
 contract. The native mechanism supports a table-selected MWO3 destination,
-but does not establish direct compatibility with a NUN5 payload.
+but does not establish direct compatibility with a UN5 payload.
 
 The retail ELF describes the resident image through `0x006B3F00`, mutually
 exclusive overlays ending no later than `0x008DD080`, and a final zero-size
@@ -139,6 +139,6 @@ parts of initialization:
 
 The boundary is materialized in code, initialized data and ELF metadata;
 changing only one representation would leave the other consumers unchanged.
-The boundary does not establish that the NUN5 destination is free or suitable
+The boundary does not establish that the UN5 destination is free or suitable
 in NA2. Memory ownership and capacity are covered by
 [EE address space](../runtime/ee_memory_map/address_space.md).

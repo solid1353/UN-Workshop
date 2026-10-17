@@ -5,12 +5,12 @@
 Established: both fighter rows, both sides' input and state flow, appearance,
 fixed choices, restoration, support/Linked Mode selection, display and handoff.
 All 31 roster pairs, 15 entry/update records, 62 recommendations and 96 portraits are covered.
-The bounded NUN4 ID-9/NA2 ID-89 comparison covers Orochimaru's selector
+The bounded UN4 ID-9/NA2 ID-89 comparison covers Orochimaru's selector
 atlas/name rows, filename publishers and auxiliary descriptor-array entry.
 Open: recommendation byte 7, seven spare support slots, random categories 2..5
 and the complete visual matrix of fighter, fixed-choice and cancellation states.
-Routine, field and data names come from `@annotations/NA2`, `@annotations/NUN4`
-and `@annotations/NUN5`.
+Routine, field and data names come from `@annotations/NA2`, `@annotations/UN4`
+and `@annotations/UN5`.
 
 This records retail NA2 (`SLPS-25837`) and the named retail comparisons.
 The evidence is bounded static code and data, not proof of every caller or
@@ -299,7 +299,7 @@ The 40-byte source is:
 
 Only the first 33 bytes are active; the producer fills the remaining capacity
 through 39 with sentinel 24/state 7. The purpose of those spare slots remains
-open. NUN5's same-named producer (`0x003CDE30`) and table
+open. UN5's same-named producer (`0x003CDE30`) and table
 (`0x005DD710`) have the same bound, capacity and active list.
 NA2's No Support sentinel 25 is used in Story Mode and is absent here.
 

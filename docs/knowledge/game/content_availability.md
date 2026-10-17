@@ -5,16 +5,16 @@
 Established: resident reader ownership, fighter/form and support dependencies,
 stage and mode gates, complete bounded Jutsu eligibility tables, progress gates,
 and all six Collection groups, ownership/viewing, NEW scans and Movie caches.
-The NUN4 ID-9/NA2 ID-89 comparison covers roster status readers and native
+The UN4 ID-9/NA2 ID-89 comparison covers roster status readers and native
 jutsu admission.
 Open: Movie acquisition, small-table indices 22..31, several eligibility
 producers, other difficulty-word writers and indirect access outside the audit.
-Names come from `@annotations/NA2` and `@annotations/NUN4`; static evidence
+Names come from `@annotations/NA2` and `@annotations/UN4`; static evidence
 establishes bounded paths.
 
 This document records the availability gates of retail NA2 (`SLPS-25837`)
 and the saved, resident, and temporary state consumed by frontend and battle
-selectors, plus the bounded NUN4 Orochimaru comparison below.
+selectors, plus the bounded UN4 Orochimaru comparison below.
 
 Profile serialization and layout belong to [Save-data record format and
 lifecycle](save_data.md); roster presentation to [Native Character Select

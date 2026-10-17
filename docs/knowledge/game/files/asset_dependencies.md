@@ -8,9 +8,9 @@ selection; request/adoption/release ordering; selected effect leaves; and the
 skill-1 provider, child, body, material and shadow closures. Open: every retail
 combination's typed closure, actual simultaneous residency, later substitution
 of initially empty stream targets, fighter-dependent replacement bindings, and
-Collection's permitted skill-list values. Donor provider graphs and NUN4's jutsu
+Collection's permitted skill-list values. Donor provider graphs and UN4's jutsu
 load and cache edges are in
-[NUN3 and NUN4 characters](../../gameplay/characters/nun3_nun4_characters.md).
+[UN3 and UN4 characters](../../gameplay/characters/un3_un4_characters.md).
 
 Routines, structures and data are named by the owning game's annotations;
 their comments carry per-routine detail. Addresses are live. The evidence
@@ -72,7 +72,7 @@ The named fields below describe the retained dependencies.
 | `0x0800`, `ccs_parse_model` | `CcsModelDescriptor.parts`, `part_count`, and each `CcsModelMesh.material_record` | The collector visits each part; model subtype also selects geometry consumption. Directory rows alone cannot reconstruct geometry dependencies. |
 | `0x0900`, `ccs_parse_morpher` | `CcsCompositionDescriptor.child_count`, `children` and `child_transforms` | `projectile_simple_service_configure` resolves children through `ccs_resolve_external_record_chain`, then constructs tags `0x0100`, `0x0D00` or `0x0E00`. Publication precedes materialization. |
 | `0x0A00`, `ccs_parse_external_record` | `CcsExternalRuntime.link` (parent) and `owner_link` (target) | Chain traversal follows targets back to provider records. The wrapper is distinct from an authored `#` namespace; neither requests a file. |
-| `0x0700`, `ccs_parse_animation_tracks` | Eight-byte record/key pairs and a halfword parent map | `animation_attach` unwraps each source record; an unresolved `0x0A00` target yields an empty entry. A usable unbound scene provider can materialize its model. [Animation wrapper resolution](ccs_runtime.md#animation-wrapper-resolution) owns the guard and bounded NUN3 comparison. |
+| `0x0700`, `ccs_parse_animation_tracks` | Eight-byte record/key pairs and a halfword parent map | `animation_attach` unwraps each source record; an unresolved `0x0A00` target yields an empty entry. A usable unbound scene provider can materialize its model. [Animation wrapper resolution](ccs_runtime.md#animation-wrapper-resolution) owns the guard and bounded UN3 comparison. |
 | `0x0D90`, `ccs_parse_generator` | `CcsGeneratorDescriptor.children`, low-nibble child count in `child_count_flags`, and each `CcsGeneratorChild.record` | `ccs_materialize_generator_action` registers resolved tags `0x0900`, `0x0E00` or `0x0700`. A zero-child descriptor is freed and its runtime pointer cleared. |
 | `0x0E00`, `ccs_parse_effect` | `CcsEffectDescriptor.texture_record` | Effect texture/palette traversal is independent of model traversal. |
 | `0x2300`, `ccs_finalize_dependencies` | Composition children selected by attachment records | A negative child index from `ccs_relation_record_eligible` omits that child from compact attachment arrays. This is a selected omission rule. |
@@ -312,7 +312,7 @@ loading portrait belong to
 
 This selection path does not derive extra body requests from marked CCS rows.
 For Sai, slot 1 selects `2saibod1.ccs`; the typed sword wrappers in
-[Marked character-reference consumers](../../gameplay/characters/nun3_nun4_characters.md#marked-character-reference-consumers)
+[Marked character-reference consumers](../../gameplay/characters/un3_un4_characters.md#marked-character-reference-consumers)
 need the matching Sasuke provider objects at binding, but add no
 `2sswbod1.ccs` request through this path. Provider publication by another
 selection or an older load is a separate edge, rather than an implicit

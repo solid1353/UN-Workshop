@@ -5,23 +5,23 @@
 Established: retail NA2's container/object lookup, parsing and publication,
 cross-container references, reader and caller ownership, load/queue/residency
 lifetimes, stream playback, version gates and retail version census, and the
-bounded NUN3 reader, wrapper-binding and cross-container resolver comparisons,
-plus NUN4's selected unresolved animation-wrapper/evaluator path.
+bounded UN3 reader, wrapper-binding and cross-container resolver comparisons,
+plus UN4's selected unresolved animation-wrapper/evaluator path.
 Names and layouts come from
-`@annotations/NA2`, `@annotations/NUN3` and `@annotations/NUN4`;
+`@annotations/NA2`, `@annotations/UN3` and `@annotations/UN4`;
 annotations hold the per-routine detail. All addresses are live.
 
 Open: unclassified fields and type-specific consumers, residency activity
 counter production, indirect control writers, the two queued `0x0108` values,
 selective packed material records beyond the scanned assets, complete delegated
 model conversion, downstream animation interpretation, and whole-file
-NUN3-to-NA2 loading/playback agreement. Evidence is static and bounded.
+UN3-to-NA2 loading/playback agreement. Evidence is static and bounded.
 
 ## Evidence and scope
 
 This document owns the in-memory resident CCS services of retail NA2
-(`SLPS-25837`), with sampled BTL/ETC callers and a NUN3
-`SLUS_217.27` parser comparison and a selected NUN4 `SLUS_218.62`
+(`SLPS-25837`), with sampled BTL/ETC callers and a UN3
+`SLUS_217.27` parser comparison and a selected UN4 `SLUS_218.62`
 animation-binding comparison. Inputs and address conventions are owned by
 [Retail game file identities](file_identities.md#address-conventions).
 The retail census reads headers; declared-length walks alone cannot establish
@@ -36,7 +36,7 @@ transport and gzip), [Allocator and capacity](../../runtime/ee_memory_map/alloca
 [Disc files](disc_files.md),
 [Animation runtime](../../runtime/animation_runtime.md), and
 [Texture and material runtime](../../runtime/rendering/texture_material_runtime.md).
-This document does not claim that a NUN3 CCS has been loaded by NA2 or that
+This document does not claim that a UN3 CCS has been loaded by NA2 or that
 matching reader consumption implies identical runtime results.
 
 ## Handle layers
@@ -297,19 +297,19 @@ instead create a scene child and its model when no existing composition child
 binds it. These are consumer-specific branches, not a promise that every
 unresolved CCS record can be omitted safely.
 
-The own-game NUN3 comparison establishes the same wrapper-target guard and
+The own-game UN3 comparison establishes the same wrapper-target guard and
 empty-entry branch in `ccs_resolve_external_record_chain` (`0x001123A0`)
 and `model_bind_animation` (`0x0016F640`). Its
 `ccs_parse_external_record` (`0x00167E10`) consumes wrapper/parent/target
 IDs and stores the target at runtime `+0x10`, as NA2 does.
 `ccs_parse_animation_tracks` (`0x00156410`) retains eight-byte record/key
 pairs at animation `+0x1C`, count `+0x20` and relations `+0x28`;
-NA2 uses `+0x18/+0x1C/+0x24`. NUN3 relation construction additionally
+NA2 uses `+0x18/+0x1C/+0x24`. UN3 relation construction additionally
 handles `0x0D00/0x0E00` sources; NA2 handles `0x0100/0x0A00`.
-NUN3's `ccs_parse_scene_object` (`0x00167C60`) has an extra list word,
+UN3's `ccs_parse_scene_object` (`0x00167C60`) has an extra list word,
 placing its ordinary model at `+0x10` rather than NA2's `+0x0C`.
 
-NUN4 `ccs_parse_external_object` (`0x001B5F70`) likewise stores the
+UN4 `ccs_parse_external_object` (`0x001B5F70`) likewise stores the
 target record at wrapper runtime `+0x10`. Its
 `ccs_resolve_external_record_chain` (`0x00116A50`) returns zero for
 a target runtime of zero or sentinel 4. `animation_attach`
@@ -317,12 +317,12 @@ a target runtime of zero or sentinel 4. `animation_attach`
 evaluator. `animation_evaluate_typed_tracks` (`0x001BC0B0`) skips an
 entry whose evaluator at `+0x0C` is zero. The concrete undefined guard
 tracks and the extracted-provider search are owned by
-[Shizune/Kabuto effect providers](../../gameplay/characters/nun4/shizune_kabuto.md#code-selected-ordinary-jutsu-effect-providers).
+[Shizune/Kabuto effect providers](../../gameplay/characters/un4/shizune_kabuto.md#code-selected-ordinary-jutsu-effect-providers).
 This establishes that selected absent edge's binding/evaluation branch;
 it does not extend the conclusion to every CCS consumer.
 
 The selected retail wrapper/animation/provider chains are owned by
-[Marked character-reference consumers](../../gameplay/characters/nun3_nun4_characters.md#marked-character-reference-consumers).
+[Marked character-reference consumers](../../gameplay/characters/un3_un4_characters.md#marked-character-reference-consumers).
 Binding snapshots the available provider; later directory resolution alone
 does not establish repair of an already empty player entry.
 
@@ -381,7 +381,7 @@ Resolution runs both ways between a new directory and older eligible
 containers; the new unresolved hint reflects its own remaining records, while
 older hints can remain sticky after success.
 
-Own-game NUN3 `ccs_resolve_cross_container_refs` (`0x001634A0`) and
+Own-game UN3 `ccs_resolve_cross_container_refs` (`0x001634A0`) and
 `ccs_match_cross_reference_provider` (`0x00162930`) agree in the checked
 sentinel/marker, hash/namespace/name, two-direction search and type/runtime
 copy behavior. Neither resolver requests files. This comparison does not
@@ -396,7 +396,7 @@ Retail namespace text retains source paths. `PL/1NRTBOD1.CCS` uses
 ` c\1nrt\max\1nrtbod1.max`; the jutsu stream refers to marked
 `#c\1nrt\max\1nrtbod1.max`, `#c\2nrt\max\2nrtbod1.max`
 and `#c\1cmn\max\1cmnbod1.max`.
-NUN3's body namespace strings agree, with an extra
+UN3's body namespace strings agree, with an extra
 ` x\name\nrt\name.bmp` row.
 
 Unload scans surviving marked rows and invalidates those whose runtime
@@ -405,7 +405,7 @@ sentinel 4, type becomes zero and unresolved state propagates.
 There is no type check before that prefix read; the guarantee does not extend
 to image-transfer groups.
 
-## Format versions and NUN3 comparison
+## Format versions and UN3 comparison
 
 ### Version gates in the NA2 parsers
 
@@ -445,7 +445,7 @@ typed-key routes; unknown tags trap. Tag and length are copied to packed
 output, while the high marker halfword is crossed by four-byte reader/output
 alignment. Actual handler consumption determines the next command.
 
-| Tag | Annotation routine (NA2 / NUN3 where different) | NA2 live address | NUN3 live address |
+| Tag | Annotation routine (NA2 / UN3 where different) | NA2 live address | UN3 live address |
 | --- | --- | --- | --- |
 | `0x0101` | `ccs_pack_tag_0101` | `0x001A8A10` | `0x0015E6F0` |
 | `0x0108` | `animation_payload_parse` / `ccs_pack_tag_0108` | `0x001A8C10` | `0x0015EF00` |
@@ -475,7 +475,7 @@ widths, masks, counts, alignment, ID remapping and channel order.
 
 Only packed `0x0201` receives the version: it reads ID/flags, then floats
 for clear bits `1,2`, adding clear bits `4,8,0x10,0x20` at
-`0x120`. The paired NUN3 handler has the same gate. The other packed
+`0x120`. The paired UN3 handler has the same gate. The other packed
 handlers neither receive nor read it.
 
 Curve readers have the following matching input contracts in both games.
@@ -592,19 +592,19 @@ Chunk-1 versions of every extracted retail `.CCS`:
 | Game | Files | Versions |
 | --- | ---: | --- |
 | NA2 | 2,310 | `0x123` except `STR/ATTENTION.CCS` (`0x120`) |
-| NUN3 | 2,400 | 2,348 `0x123`; 41 `0x111` (card images and `XLANGUAGE.CCS`); 10 `0x120` (`1CMNBOD1.CCS`, eight `RPGF/FRPG*.CCS`, `STR/ATTENTION.CCS`); 1 `0x122` (`RPGF/FRPGPKN.CCS`) |
-| NUN4 | 4,031 | 4,029 `0x123`, 2 `0x120` |
-| NUN5 | 3,552 | 3,551 `0x123`, 1 `0x120` |
+| UN3 | 2,400 | 2,348 `0x123`; 41 `0x111` (card images and `XLANGUAGE.CCS`); 10 `0x120` (`1CMNBOD1.CCS`, eight `RPGF/FRPG*.CCS`, `STR/ATTENTION.CCS`); 1 `0x122` (`RPGF/FRPGPKN.CCS`) |
+| UN4 | 4,031 | 4,029 `0x123`, 2 `0x120` |
+| UN5 | 3,552 | 3,551 `0x123`, 1 `0x120` |
 
 All recorded versions fall inside NA2's accepted interval.
 
-### NUN3's parser compared with NA2's
+### UN3's parser compared with NA2's
 
-NUN3's `ccs_parse_container` agrees in the three chunk frames,
+UN3's `ccs_parse_container` agrees in the three chunk frames,
 `CCSF` trap, minimum version and ignored marker/section-length fields.
 Its typed dispatcher has the same 34 object/control routes and terminator,
 unknown-tag trap and byte-length argument. Its terminator stores payload minus
-one. The larger runtime container differs; `Nun3CcsContainer.version`
+one. The larger runtime container differs; `un3CcsContainer.version`
 is at `+0x20C`.
 
 All 35 outer routes agree in direct field order, widths, internal-count loops,
@@ -622,20 +622,20 @@ Two model reader pairs were followed through direct reads:
 | `ccs_read_model_vertex_arrays` | Ordinary `(flags & 0x804)==0`: three halfwords per vertex then four-byte alignment; one dword per vertex for arrays whose suppress bits `0x40,0x200,0x400` are clear, in that order. Bit 1 discards the `0x200` array instead of storing, without suppressing reads. |
 | `ccs_read_model_mesh_aux` | Zero auxiliary count: one dword then three halfwords per vertex and alignment. Nonzero: eight bytes per auxiliary entry. Both then read one dword per selected entry and one per vertex. |
 
-NUN3's first helper has a `0x804` branch without position reads, where
+UN3's first helper has a `0x804` branch without position reads, where
 NA2 traps. Its reachability through the outer model parsers is open.
 `ccs_convert_packed_model_mesh` and special model modes remain only
 partially compared.
 
 Matching reads still produce these demonstrated runtime differences:
 
-- NUN3 `0x0100/0x0700` objects have an extra list-link word; other
-  compared NUN3 type-list insertions also have no matching NA2 insertion.
+- UN3 `0x0100/0x0700` objects have an extra list-link word; other
+  compared UN3 type-list insertions also have no matching NA2 insertion.
 - With `0x0D90` payload byte `+0x09` high nibble zero, NA2 frees the
-  constructed generator and clears its record runtime; NUN3 retains it.
+  constructed generator and clears its record runtime; UN3 retains it.
 - A new ordinary `0x0300` image in NA2 compares declared data against four
   times its computed storage count, stores or discards the declared words and
-  fills the remaining count with `0xFFFFFFFF`. NUN3 stores all declared
+  fills the remaining count with `0xFFFFFFFF`. UN3 stores all declared
   dwords directly. Both consume the declared number of dwords.
 
 **Inference, medium confidence:** agreement extends beyond framing to direct
@@ -918,7 +918,7 @@ Frame headers reuse the eight-byte framing. Marker `0xFF01` updates
 the logical frame/checkpoint; terminator 5 can be encountered when seeking
 checkpoint zero. Other supported handlers are:
 
-| Frame tag | Annotation routine in both games | NA2 live address | NUN3 live address |
+| Frame tag | Annotation routine in both games | NA2 live address | UN3 live address |
 | --- | --- | --- | --- |
 | `0x0101` | `ccs_frame_tag_0101` | `0x001B5900` | `0x0016B1F0` |
 | `0x0108` | `ccs_frame_tag_0108` | `0x001B69B0` | `0x0016C3C0` |
@@ -939,7 +939,7 @@ checkpoint zero. Other supported handlers are:
 | `0x1D01` | `ccs_frame_tag_1d01` | `0x001B7340` | `0x0016CDB0` |
 | `0x2201` | `ccs_frame_tag_2201` | `0x001B52D0` | `0x0016AB30` |
 
-NUN3's `ccs_parse_streamed_block_range` has the same dispatch set and
+UN3's `ccs_parse_streamed_block_range` has the same dispatch set and
 all eighteen data handlers agree in reads, masks, counts, alignment and version
 branches, including absent targets. Runtime effects/layouts below describe NA2;
 downstream equivalence is not established.
@@ -1083,7 +1083,7 @@ retail table bounds and demonstrated teardown order have high static
 confidence. The registry entry owns the observed use count; direct holders
 still depend on caller ownership and explicit reference invalidation.
 
-The NA2/NUN3 reader comparison supports the bounded direct paths and exposes
+The NA2/UN3 reader comparison supports the bounded direct paths and exposes
 specific result differences. Full delegated model conversion and downstream
 behavior remain open. Secondary-value names describe demonstrated access,
 without claiming one meaning for every type.

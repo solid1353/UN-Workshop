@@ -109,7 +109,7 @@ address	kind	name	type	comment
 0x006D9828	label	collection_diorama_selector_title		Selector text; visible Diorama grid/short character-grid labels use HOME.CCS artwork.
 0x006D9840	label	collection_character_table		75 master character rows,strideC hex;Collection Characters NEW scans linked Figure/Skill/Voice entries.
 0x006D9848	data	collection_master_roster	CollectionRosterRecord[75]	75 twelve-byte records:74 characters+Diorama selector; every Collection character plaque including common Figurine viewer consumes master table.
-0x006D9968	data	collection_granny_chiyo_name_pointer	char *	Master-roster plaque pointer selects collection_granny_chiyo_source; NUN5 homolog terminal-space Granny Chiyo. | Live master-roster plaque pointer006D9968 points006D90E0; shared-slot distinction belongs to Characters selected-name plaque,not all references. | Complete ETC file pointer offset0x25A68.
+0x006D9968	data	collection_granny_chiyo_name_pointer	char *	Master-roster plaque pointer selects collection_granny_chiyo_source; UN5 homolog terminal-space Granny Chiyo. | Live master-roster plaque pointer006D9968 points006D90E0; shared-slot distinction belongs to Characters selected-name plaque,not all references. | Complete ETC file pointer offset0x25A68.
 0x006DADE0	label	collection_figure_records		93 records,stride30 hex,group0 ID equals record index.
 0x006DBF50	data	collection_figure_bundles	CollectionBundleRecord[31]	31 character-bundle rows,stride14 hex;character,price,first_record,count,records.
 0x006DC0DC	data	collection_granny_chiyo_shared_pointer_a	char *	Verified pointer to collection_granny_chiyo_source in a different record family from the Characters master-roster plaque; specific family attribution remains open. | Complete ETC file pointer offset0x281DC.
@@ -117,12 +117,12 @@ address	kind	name	type	comment
 0x006DD370	label	collection_ultimate_8_trigrams_361_style		8 Trigrams 361 Style source.
 0x006DD3B0	label	collection_ultimate_last_resort_eight_gates_assault		Last Resort: Eight Gates Assault source.
 0x006DDE70	data	collection_skill_records	CollectionContentRecord[168]	168 records,stride10 hex,group3.
-0x006DDE7C	data	collection_ultimate_records	CollectionUltimateRecord[168]	168 records; indices 0..166 metadata/order match NUN5; terminal 167 Crystal Ice Mirrors NA2 tuple(0x39, 0x04, 0x006D8E98) versus NUN5 metadata(0xA8, 0, 0).
+0x006DDE7C	data	collection_ultimate_records	CollectionUltimateRecord[168]	168 records; indices 0..166 metadata/order match UN5; terminal 167 Crystal Ice Mirrors NA2 tuple(0x39, 0x04, 0x006D8E98) versus UN5 metadata(0xA8, 0, 0).
 0x006DE9DC	data	collection_granny_chiyo_shared_pointer_b	char *	Verified pointer to collection_granny_chiyo_source in a different record family from the Characters master-roster plaque; specific family attribution remains open. | Complete ETC file pointer offset0x2AADC.
 0x006DF170	data	replay_movie_map	CollectionContentRecord[7]	Seven16-byte native map rows: keys0..6, second word5000, movie IDs3..9, text pointers; selected replay node key determines movie ID. | Seven group4 records,stride10 hex;first word content_id; saved ownership separate list-local cache.
 0x006DF7B0	data	collection_music_records	CollectionContentRecord[41]	41 records,stride10 hex,group1 content_id.
 0x006E0E00	label	collection_voice_records		155 records,strideC hex,group2.
-0x006E0E08	data	collection_voice_records	CollectionVoiceRecord[154]	154 twelve-byte (localized pointer, voice ID, type) records; all metadata pairs match NUN5 same index; duplicates may select different English titles.
+0x006E0E08	data	collection_voice_records	CollectionVoiceRecord[154]	154 twelve-byte (localized pointer, voice ID, type) records; all metadata pairs match UN5 same index; duplicates may select different English titles.
 0x006E1550	data	collection_voice_bundles	CollectionBundleRecord[31]	31 character-bundle rows,stride14 hex;character,price,first_record,count,records.
 0x006E1718	data	collection_granny_chiyo_shared_pointer_c	char *	Verified pointer to collection_granny_chiyo_source in a different record family from the Characters master-roster plaque; specific family attribution remains open. | Complete ETC file pointer offset0x2D818.
 0x006E1F70	data	collection_diorama_records	DioramaContentRecord[12]	12 group5 records,stride88 hex;up to6 signed character IDs at14+n*C;any linked character owning a Figure grants state2.
@@ -154,7 +154,7 @@ address	kind	name	type	comment
 0x006E2C20	data	body_common_ccs_path	char[15]	pl/1cmnbod1.ccs at live 0x006E2C20 (raw file offset 0x0002ed20); the mixed ownership loader stores only a newly loaded container in its body_common field.
 0x006E2C30	data	stream_common_ccs_path	char[12]	strmcmn.ccs at live 0x006E2C30 (raw file offset 0x0002ed30); the mixed ownership loader stores only a newly loaded container in its stream_common field.
 0x006E2F10	data	collection_footer_positions	float[4]	Cross/Triangle nominal positions (380,360),(460,360),root state footer; ETC file0x2F010; no regional adjustment.
-0x006E2F20	data	collection_category_positions	CollectionSpritePosition[3]	Category title positions match NUN5:(305,13,0,0),(340,13,0,0),(345,23,0,0); ETC live table0x006E2F20.
+0x006E2F20	data	collection_category_positions	CollectionSpritePosition[3]	Category title positions match UN5:(305,13,0,0),(340,13,0,0),(345,23,0,0); ETC live table0x006E2F20.
 0x006E2F90	data	collection_music_type_name	char[15]	Original ccHomeIspMusic.
 0x006E2FA0	data	collection_base_type_name	char[14]	Original ccHomeIspBase.
 0x006E2FB0	data	collection_movie_type_name	char[15]	Original ccHomeIspMovie.

@@ -2,20 +2,20 @@
 
 ## Research coverage
 
-Established: retail NA2 (`SLPS-25837`) and NUN5 Collection list geometry,
+Established: retail NA2 (`SLPS-25837`) and UN5 Collection list geometry,
 fixed row cadence, selected-name string distinction, and Diorama title
 placement. Open: callers, strings, states and animation phases outside the
-bounded evidence. Names come from `@annotations/NA2` and `@annotations/NUN5`;
+bounded evidence. Names come from `@annotations/NA2` and `@annotations/UN5`;
 their comments carry code-level details, and cited addresses are live.
 
 Glyph metrics belong to [Renderer metrics](../renderer_metrics.md); graphics
 and prompts to [Collection UI draw-path analysis](../../ui/collection.md);
 string ownership to
-[NA2 and NUN5 text correspondence](../../translation_importer.md).
+[NA2 and UN5 text correspondence](../../translation_importer.md).
 
 ## Collection fixed-cadence list wrapping
 
-NUN5 `collection_list_draw` (`0x006C7CA0`) takes the active box from
+UN5 `collection_list_draw` (`0x006C7CA0`) takes the active box from
 `CollectionListLayoutView.box_width` and `box_height`:
 
 | List | Box width | Box height |
@@ -47,13 +47,13 @@ Collection uses these relevant list families:
 - global Music;
 - the Characters index where applicable.
 
-Raw NUN5 ETC records are not byte-compatible with NA2: homologous list records
+Raw UN5 ETC records are not byte-compatible with NA2: homologous list records
 assign different field meanings and positions to resources. Only their
 classification and layout semantics correspond.
 
 ## Collection Characters selected-name boxed positioning
 
-NUN5 `collection_character_name_get` (`0x006D96B0`) first remaps the selected
+UN5 `collection_character_name_get` (`0x006D96B0`) first remaps the selected
 record before resolving its localized name. `collection_granny_chiyo_remap_row`
 stores character ID `24` and localized row `62` in
 `CollectionCharacterRemapRecord`. English row `62`, named
@@ -77,16 +77,16 @@ rather than to every reference to the shared string.
 ## Collection Figures Diorama boxed titles
 
 The twelve Diorama presentations are covered by `collection_diorama_present`
-in NA2 (`0x006BDDB0`) and NUN5 (`0x006D1060`). The title follows the controls
+in NA2 (`0x006BDDB0`) and UN5 (`0x006D1060`). The title follows the controls
 and requires `CollectionDioramaDrawView.state == 2`, readiness from
 `ready_owner`, and `title_record.title_enabled`.
 
 `CollectionPlaqueView` names the title record's origin and selected string.
 NA2 passes `x` and `y` plus native half-extents to `ui_draw_centered_text`
-(`0x00379240`), which centers at that point. NUN5 instead passes `x`,
+(`0x00379240`), which centers at that point. UN5 instead passes `x`,
 `y + 4.0`, doubled half-extents, a two-line limit and `title` to
 `ui_draw_boxed_text` (`0x0038A4F0`).
 
-NUN5's `collection_diorama_title_half_width` is `95.0` and
+UN5's `collection_diorama_title_half_width` is `95.0` and
 `collection_diorama_title_half_height` is `16.0`. The wrapper receives
 the exact `190` by `32` title box after doubling them.

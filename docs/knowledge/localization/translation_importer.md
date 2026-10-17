@@ -1,6 +1,6 @@
-# NA2 and NUN5 text correspondence
+# NA2 and UN5 text correspondence
 
-Retail NA2 (`SLPS-25837`) text ownership and its official NUN5 English
+Retail NA2 (`SLPS-25837`) text ownership and its official UN5 English
 counterparts: displayed-string selection, homologous record families, and
 packed messages.
 
@@ -10,7 +10,7 @@ Established: the documented menu, Practice, Ninja Song, Collection, Jutsu,
 1P/2P Commands, confirmation and memory-card text relationships and storage.
 Open: untraced selecting paths and records without an exact homolog or owner;
 memory-card screenshots cover only format/creation failures and create-data confirmation.
-Names come from `@annotations/NA2` and `@annotations/NUN5`; addresses are live.
+Names come from `@annotations/NA2` and `@annotations/UN5`; addresses are live.
 Table membership or matching wording alone does not prove displayed selection.
 
 Memory-card message layout belongs to
@@ -23,7 +23,7 @@ in [Standard game file identities](../game/files/file_identities.md).
 
 Character Select's resident option-string block begins at
 `character_select_assignment_1p_2p`; its return confirmation is
-`character_select_return_prompt`. NUN5's homolog is
+`character_select_return_prompt`. UN5's homolog is
 `Return to Game Mode Screen?`.
 
 The generic modal selects `modal_yes` and `modal_no`. Collection selects
@@ -31,7 +31,7 @@ its separate `collection_no` and `collection_yes` records, with the same
 official English choices. The sources remain distinct even when the wording
 matches.
 
-Mode Select uses `mode_select_return_prompt`, whose NUN5 wording is
+Mode Select uses `mode_select_return_prompt`, whose UN5 wording is
 `Return to Title Screen?`. Save/Load and Character Select confirmations
 have different sources and capitalization.
 
@@ -68,7 +68,7 @@ parts are `start_menu_end_and_text` and
 `start_menu_character_select_text` and `start_menu_mode_select_text`,
 separate from pause-menu labels.
 
-NUN5's `quit_return_template` is
+UN5's `quit_return_template` is
 `Are you sure you want to quit %1 and return to %2?`. Its destination
 records select `Character Select` and `Game Mode Select`. Choices use
 the generic Yes/No records above. Paired Battle and Practice states establish
@@ -81,16 +81,16 @@ NA2's `btl_record_definitions` arithmetic descriptors use
 NA2's unit-pointer lookup reaches `ninja_song_timer_counts_unit` through
 pointer-table index 3.
 
-NUN5's `ninja_song_draw_objective_values` resolves the localized unit with
+UN5's `ninja_song_draw_objective_values` resolves the localized unit with
 `NinjaSongArithmeticDescriptorView.unit_index + 4`. The selected English
 text is `timer counts`. Objective 9's descriptor index 4 has no visible
-NUN5 unit.
+UN5 unit.
 
 ## 1P/2P Commands and Jutsu records
 
 1P/2P Commands names belong to 74 matching character record arrays.
 `ActionRecord` is `0x54` bytes and its `display_name` selects the
-displayed text. Corresponding NA2/NUN5 array indices identify homologous
+displayed text. Corresponding NA2/UN5 array indices identify homologous
 records.
 
 Ultimate and character-specific Jutsu names instead use the separate
@@ -107,22 +107,22 @@ The Jutsus selector uses 1P/2P Commands records despite its screen name.
 In both games, `jutsu_select_draw` passes the selector through
 `support_linked_jutsu` and then `jutsu_selector_title`, which reads the
 first pointer of a `jutsu_animation_provider_table` row. NA2 reads
-`ActionRecord.display_name`; NUN5 resolves `ActionNameView.display_name`
+`ActionRecord.display_name`; UN5 resolves `ActionNameView.display_name`
 through `action_record_display_name`. This distinguishes the selector
 from Collection strings and the metadata-owned `0x14` family.
 
 For each displayed row, the nonlocalized metadata through the end of the
-`0x54` record identifies the NUN5 homolog independently of its title.
+`0x54` record identifies the UN5 homolog independently of its title.
 `1000 Autumn Shower` is the sole duplicate: two NA2 records share one
-source slot and match two NUN5 records; both select the same English string.
+source slot and match two UN5 records; both select the same English string.
 
-NUN5's `english_text_group_roots` resolves the homolog's `(group,index)`
+UN5's `english_text_group_roots` resolves the homolog's `(group,index)`
 selector. The record names below exist in each game's resident ELF
 annotations. Their associated `_source` and `_title` rows name the NA2
-source and NUN5 English storage, respectively; comments retain the exact
+source and UN5 English storage, respectively; comments retain the exact
 record correspondence.
 
-| NUN5 English title | Homologous record name(s) | NUN5 selector(s) |
+| UN5 English title | Homologous record name(s) | UN5 selector(s) |
 | --- | --- | --- |
 | `Temple of Nirvana Technique` | `jutsu_temple_of_nirvana_technique_record` | `31:3` |
 | `Water Style: Water Dragon Jutsu` | `jutsu_water_style_water_dragon_jutsu_record` | `11:1` |
@@ -159,7 +159,7 @@ from her alternate ordinary-move block. An identical Collection title is a
 different record.
 
 `konohamaru_moveset_record` matches across the games by all four metadata
-words and selects `konohamaru_moveset_title`. The NUN5 text is
+words and selects `konohamaru_moveset_title`. The UN5 text is
 `<BLACK>Charge! Konohamaru <color0808C0>Ninja Squad<BLACK>!`;
 `konohamaru_collection_title` selects the plain copy. Retail NA2 also
 contains native `<BLACK>` tokens.
@@ -178,9 +178,9 @@ selects `Charge`, separately from `practice_charge_chakra_title`
 `command_help_while_jumping` likewise distinguish `While jumping` from
 `(while jumping)`.
 
-`air_strike_palm_source` has a NUN5 homolog selecting
+`air_strike_palm_source` has a UN5 homolog selecting
 `air_strike_palm_title`: the visible title is followed by LF and NUL.
-The NUN5 one-line consumer ignores the terminal LF.
+The UN5 one-line consumer ignores the terminal LF.
 
 ## Collection records
 
@@ -194,13 +194,13 @@ The visible Diorama grid label comes from `HOME.CCS` artwork instead of
 texture artwork.
 
 Several families share `collection_granny_chiyo_source`, but the plaque
-uses `collection_granny_chiyo_name_pointer` in the master roster. Its NUN5
+uses `collection_granny_chiyo_name_pointer` in the master roster. Its UN5
 homolog selects `Granny Chiyo ` with a terminal space
 (`collection_granny_chiyo_title`), separately from the primary unpadded
 `granny_chiyo_unpadded_title`.
 
 `collection_locked_movie_title` supplies the locked Movie placeholder;
-the official NUN5 counterpart is `???`.
+the official UN5 counterpart is `???`.
 
 ### Collection Figure titles
 
@@ -209,9 +209,9 @@ moveset and Jutsu names. Similar wording does not prove shared storage:
 articles, nouns and qualifiers can differ.
 
 The Figure table interleaves stable animation identifiers such as
-`if...anm#` with display strings in NA2 `ETC.BIN`. NUN5 retains that
+`if...anm#` with display strings in NA2 `ETC.BIN`. UN5 retains that
 identifier sequence and selects its English strings from `TEXTENG.BIN`.
-The identifier owning an NA2 slot therefore identifies its NUN5 Collection
+The identifier owning an NA2 slot therefore identifies its UN5 Collection
 record and selected title.
 
 | Selected Collection title | Lookalike elsewhere |
@@ -237,7 +237,7 @@ before their three metadata words. Instantiated
 The metadata and record order are retained. The paired Opponents capture
 establishes the first displayed triple:
 
-| Title | Metadata triple | NA2 captured record / display pointer | NUN5 captured record / display pointer |
+| Title | Metadata triple | NA2 captured record / display pointer | UN5 captured record / display pointer |
 | --- | --- | --- | --- |
 | `8 Trigrams 64 Palms` | `(0x6E,0x3E8,0x0F)` | `0x00CE0208 / 0x006DC5C0` | `0x00C13588 / 0x008F7DF0` |
 | `8 Trigrams 361 Style` | `(0x6F,0x7D0,0x10)` | `0x00CE0218 / 0x006DD370` | `0x00C13598 / 0x008F8730` |
@@ -249,12 +249,12 @@ Instantiated Collection ownership, metadata sequence and record order establish
 the homologs; matching wording is the result.
 
 Both immutable tables have 168 records. Indices 0..166 have identical
-metadata triples in the same order, so each NUN5 pointer supplies that
+metadata triples in the same order, so each UN5 pointer supplies that
 index's official English title. Terminal record 167 is `Crystal Ice Mirrors`:
-NA2 retains `(0x39,0x04,0x006D8E98)`, while NUN5 uses `(0xA8,0,0)`.
+NA2 retains `(0x39,0x04,0x006D8E98)`, while UN5 uses `(0xA8,0,0)`.
 Both select the same title, and the terminal position is unambiguous.
 
-Three valid NUN5 records select resident ELF strings:
+Three valid UN5 records select resident ELF strings:
 `collection_ultimate_iq_200` (`IQ 200`),
 `collection_ultimate_art` (`Art`), and
 `collection_ultimate_uwabami` (`Uwabami`).
@@ -275,15 +275,15 @@ All 154 metadata pairs match in the same order, including records selecting
 resident ELF strings.
 
 Three NA2 source strings appear in multiple Voice records. One duplicate
-selects the same NUN5 text twice; the others select `The Match Begins`
+selects the same UN5 text twice; the others select `The Match Begins`
 versus `Duel Start`, and `A Cinch` versus `No Worries`.
 Two further Voice records share Japanese storage with another namespace:
 Figure `Myself` versus Voice `Me Myself`, and Ultimate
 `Youth at Full Power!!` versus Voice `Youth at Full Power!`.
 
-## NUN5 English markup
+## UN5 English markup
 
-NUN5 uses paired byte-`0x40` delimiters as quotation markup. The
+UN5 uses paired byte-`0x40` delimiters as quotation markup. The
 `quoted_white_picture`, `quoted_dragon`, `quoted_wild_dog`,
 `quoted_petal_shower` and `quoted_divinity` strings contain
 `@White Picture@`, `@Dragon@`, `@Wild Dog@`, `@Petal Shower@`
@@ -300,7 +300,7 @@ continuations in order and then the block terminator. The retail
 found in the inspected retail ELF, BTL and ETC files.
 
 `card_repair_confirmation` has two NA2 fragments selected by
-`card_repair_confirmation_pointer`. The NUN5 English block states
+`card_repair_confirmation_pointer`. The UN5 English block states
 `The Naruto Shippuden: Ultimate Ninja 5` and
 `data on memory card (PS2)  in`, followed by
 `MEMORY CARD slot 1 is corrupt!` and `Recover the data?`.
@@ -315,7 +315,7 @@ The surrounding family uses the same tables:
 | `card_recovery_failed` | `card_recovery_failed_pointer` | — |
 | `card_recovery_completed` | `card_recovery_completed_pointer` | — |
 
-NUN5's identically named storage annotations select the official English
+UN5's identically named storage annotations select the official English
 counterparts. Fragment boundaries, region sizes and pointer values are in
 the owning annotation comments.
 
@@ -323,7 +323,7 @@ the owning annotation comments.
 
 `card_format_failure` selects
 `フォーマットに<ruby失敗|しっぱい>しました。` in a 48-byte padded NA2
-slot, through `card_format_failure_pointer`. The NUN5 homolog is
+slot, through `card_format_failure_pointer`. The UN5 homolog is
 `Format failed!`.
 
 `card_creation_failure` selects
@@ -344,7 +344,7 @@ card. `card_save_set_preflight` returns 1 when the card type is neither
 0 nor 2; `save_worker_update` converts that to status 7 and selects
 `card_wrong_type_message_pointer`.
 
-NUN5's `card_save_set_preflight` has the same card-type branch.
+UN5's `card_save_set_preflight` has the same card-type branch.
 Its `save_worker_update` selects status 7 unless
 `MemoryCardWorkerView.mode == 2`, when it selects status 6.
 `memory_card_message_get` selects the current language's status entry.
@@ -361,16 +361,16 @@ static selection, not wrong-card screen coverage. The resident ELF table
 is `memory_card_messages`. The initializer's containing routine entry remains
 unestablished.
 
-| Message | NA2 region | Official NUN5 wording |
+| Message | NA2 region | Official UN5 wording |
 | --- | ---: | --- |
 | `card_slot_selection` | 80 bytes | `Please select MEMORY CARD slot to save to.` |
 | `card_load_failed` | 64 bytes | `Load failed!` |
 | `card_save_failed` | 64 bytes | `Save failed! ` |
 
 `card_insufficient_space_startup` has six NA2 fragments followed by zero
-padding; NUN5's identically named block supplies the complete English
+padding; UN5's identically named block supplies the complete English
 counterpart. Both this message and the absent-card startup message require
-**103 KB** in NA2 and **102 KB** in NUN5. Ordinary lower notices and the
+**103 KB** in NA2 and **102 KB** in UN5. Ordinary lower notices and the
 separate startup caller are owned by
 [confirmation layouts](font/screen_layouts/confirmations.md#message-boundaries).
 The retail comparisons establish text and storage, not complete screen coverage.

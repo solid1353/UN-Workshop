@@ -1,0 +1,416 @@
+address	kind	name	type	comment
+0x007BF1B0	function	battle_command_strip_construct	unsigned long long battle_command_strip_construct(unsigned long long param_1)	Inferred from an exact code match with NA2 BTL.BIN 0x006B7580. Construct320-byte paired root element without vtable. Presentation role established by root resource bindings in battle_hud.md.
+0x007BF200	function	battle_command_strip_destroy	long battle_command_strip_destroy(long param_1,short param_2)	Inferred from an exact code match with NA2 BTL.BIN 0x006B75D0. Destroy three embeddedF8 sprites beginning8;positive flag frees element. Presentation role established by root resource bindings in battle_hud.md.
+0x007C1F60	function	stage_choose_combo_anchor	unsigned char stage_choose_combo_anchor(float *out, float *position, unsigned char side)	Nearest vector of stage_combo_anchors[scene_index].side, first on ties; returns side 0 for scenes 1/10/15/16/18, 1 for 2/4/5/12/13/14, else the input side.
+0x007C24C0	function	stage_scene_update	void stage_scene_update(un3StageControl *scene, unsigned int category_mask)	Run restriction producer then permission(control,1), which permits; scene byte74 gates all updates; fade70 approaches0/1 by0.05 according to6C; mask1/2/4/8/10/20/40 maps the seven stored lists; execution dispatches reactive props(bit10) before creature props(bit8), category5 through control vtable18.
+0x007C26C0	function	stage_scene_construct	void stage_scene_construct(un3StageControl *scene, int index)	Walk32-byte zero-terminated scene records using type category bits8..15 and15-entry dispatch929B90; publish index to optional globals61/E; category0 basename requires archive into22C, BLT_bg/BLT_obj into21C/220, index8C; category3 follow-up prepares doll nodes; category12 skipped; seven header pointers294..2AC map240/24C/258/264/270/27C/288; fixed setup after walk; all100 retail types and666 records in categories3..8 have construction branches.
+0x007C2A70	function	stage_build_doll_nodes	void stage_build_doll_nodes(int arg1,int arg2)	Token3 stem,5 count;allocate count*20 bytes1D0 and count flag bytes1D4,store u16 count6A,copy node positions;entry0 unchanged stem,later indexed %s_%d from929BD0.
+0x007C2BD0	function	stage_construct_training_dolls	void stage_construct_training_dolls(unsigned long long arg1,unsigned long long arg2)	Token5 allocates180-byte objects,one20-byte prepared node each from1D0; subtype1C,parse,determine section,append category8; one record constructs many dolls.
+0x007C3A40	function	stage_prepare_doll_nodes	void stage_prepare_doll_nodes(un3StageControl *scene, int index)	If scene1D0 null scan entire stage table for81C and invoke stage_build_doll_nodes; called after each category3 record; all20 normal doll tables place category3 before81C.
+0x007C4930	function	battle_background_particle_variant		Stage/background8C maps1->1,9->2,3->5,6/default->0;stageF null position->4 else proximity aroundX -700/+700 selects3/6. Return range0..6.
+0x007C5A40	function	item_pickup_destroy	long item_pickup_destroy(long param_1,short param_2)	Inferred from an exact code match with NA2 BTL.BIN 0x0070A0F0. ItemData virtual3C calls common cleanup;positive signed destructor mode frees object; no side clear or fighter release before free.
+0x007C67D0	function	stage_apply_render_coefficients		Copies stage_render_coefficients[scene_index] into the battle render descriptor's +0x28 and +0x24 (NA2 factory 17's tokens 0 and 1).
+0x007C6870	function	stage_parse_player_nodes	void stage_parse_player_nodes(un3StageControl *scene, un3StageRecord *record)	Player1/2 records token3 names DMY_pp1_010/DMY_pp2_010; resolve through ccs_find_named_resource.
+0x007C6910	function	stage_parse_line_nodes	void stage_parse_line_nodes(un3StageControl *scene, un3StageRecord *record)	Front/back token3 names DMY_line_010/DMY_line_020; token5 is family node count.
+0x007C7180	function	stage_parse_fog	void stage_parse_fog(un3StageControl *scene, un3StageRecord *record)	Seven tokens: RGB to1B8, near/far distance tokens3/4 to1BC/1C0, far/near percentage tokens5/6 to1C4/1C8; fog_set_distances_and_percentages receives near percentage token6 and far token5, mapping(100-p)*2.55 with linear ramp.
+0x007C7300	function	stage_parse_category2		Empty retail handler; authored0,-2750,800 tokens have no effect; caller passes scene/record but unused parameter signature remains unproved.
+0x007C7310	function	stage_parse_lighting	void stage_parse_lighting(un3StageControl *scene, un3StageRecord *record)	Record resource08 names light animation(ANM_stalig00 in every stage); format LGT_dis_%d.
+0x007C7870	function	stage_parse_cl_lines	void stage_parse_cl_lines(un3StageControl *scene, un3StageRecord *record)	Front/back records token5 is DMY_f/b_cl_N_* line count.
+0x007C7CC0	function	stage_parse_far_objects	void stage_parse_far_objects(un3StageControl *scene, un3StageRecord *record)	13 explicit subtype branches append far/sky/effect objects to240; retail8 types92 records across27 tables; constructor follows each record with doll node preparation.
+0x007C8900	function	stage_parse_base_animation	void stage_parse_base_animation(un3StageControl *scene, un3StageRecord *record)	Only subtype1, append base animation to24C; assign model to228 only when228 zero; retail1 type30 records.
+0x007C8A10	function	stage_parse_animation_props	void stage_parse_animation_props(un3StageControl *scene, un3StageRecord *record)	68 explicit branches for animations/particles/deformation/props append258; retail54 types327 records.
+0x007CC810	function	stage_parse_creature_props	void stage_parse_creature_props(un3StageControl *scene, un3StageRecord *record)	17 explicit branches append creatures/flags/props264; retail14 types49 records;79B flag initializer supplies category5.
+0x007CDCC0	function	stage_parse_reactive_props	void stage_parse_reactive_props(un3StageControl *scene, un3StageRecord *record)	21 explicit branches append breakable/moving objects270 and set restricted-update flag28=1; retail19 types116 records;81C helper may create several dolls.
+0x007CF7D0	function	stage_parse_category9		Empty retail handler and no authored category9 records; unused parameter/return type not established.
+0x007CF7E0	function	stage_parse_transparent_objects	void stage_parse_transparent_objects(un3StageControl *scene, un3StageRecord *record)	14 explicit branches append transparent/frame objects288; retail4 types52 records;601 stores subtype12.
+0x007D0500	function	stage_draw_far_objects	void stage_draw_far_objects(int arg1)	Draw list0 through object virtual slot14 when disabled byte0 is clear.
+0x007D05A0	function	stage_object_draw_model	void stage_object_draw_model(int arg1)	Submit nonnull model2C through model_submit_draw.
+0x007D05D0	function	stage_draw_base_objects	void stage_draw_base_objects(int arg1)	Draw list1 through object virtual slot14 when disabled byte0 is clear.
+0x007D0670	function	stage_draw_animation_props	void stage_draw_animation_props(int arg1)	Draw list2 through object virtual slot14 when disabled byte0 is clear.
+0x007D0710	function	stage_draw_creature_props	void stage_draw_creature_props(int arg1)	Draw list3 through object virtual slot14 when disabled byte0 is clear.
+0x007D07B0	function	stage_draw_reactive_props	void stage_draw_reactive_props(int arg1)	Draw list4 through object virtual slot14 when disabled byte0 is clear.
+0x007D0850	function	stage_draw_category9_objects	void stage_draw_category9_objects(int arg1)	Draw list5 through object virtual slot14 when disabled byte0 is clear;retail category9 handler empty.
+0x007D08F0	function	stage_draw_transparent_objects	void stage_draw_transparent_objects(int arg1)	Draw list6 through object virtual slot14 when disabled byte0 is clear.
+0x007D0990	function	stage_update_far_objects	void stage_update_far_objects(int arg1)	Update list0 through virtual slot10;disabled byte0 blocks,restriction maskC30 only requires opt-in28 when nonzero.
+0x007D0A70	function	stage_update_base_objects	void stage_update_base_objects(int arg1)	Update list1 through virtual slot10;disabled byte0 blocks,restriction maskC30 only requires opt-in28 when nonzero.
+0x007D0B40	function	stage_update_animation_props	void stage_update_animation_props(int arg1)	Update list2 through virtual slot10;disabled byte0 blocks,restriction maskC30 only requires opt-in28 when nonzero.
+0x007D0C10	function	stage_update_creature_props	void stage_update_creature_props(int arg1)	Update list3 through virtual slot10;disabled byte0 blocks,restriction maskC30 only requires opt-in28 when nonzero.
+0x007D0CE0	function	stage_update_reactive_props	void stage_update_reactive_props(int arg1)	Update list4 through virtual slot10;disabled byte0 blocks,restriction maskC30 only requires opt-in28 when nonzero.
+0x007D0DB0	function	stage_update_category9_objects	void stage_update_category9_objects(int arg1)	Update list5 through virtual slot10;disabled byte0 blocks,restriction maskC30 only requires opt-in28 when nonzero.
+0x007D0E80	function	stage_update_transparent_objects	void stage_update_transparent_objects(int arg1)	Update list6 through virtual slot10;disabled byte0 blocks,restriction maskC30 only requires opt-in28 when nonzero.
+0x007D1080	function	stage_update_permission	unsigned char stage_update_permission(un3StageControl *scene, unsigned char mode)	Return true for argument1; for argument0 consult battle contextA2C child34==1; no context permits.
+0x007D1100	function	stage_section_for_position	int stage_section_for_position(un3StageControl *scene, float *position)	Compare absolute vertical distances from input position to scene section reference heights114/124; ties choose second section.
+0x007D1600	function	stage_build_update_restrictions	void stage_build_update_restrictions(un3StageControl *scene)	Clear C30 each invocation; with battle context set bits1=scene74,2=contextA2C child34==1,4=resident restriction predicate(nonzero; retail always0),8=mode(5,0) plus owner10 or context halfwords9FE/9F8/AA6/AA0,10=predicate(contextAC0),20=owner8 child10==2,40=context960. Bit8 halfwords belong to separate global owner gp-51F8, not battle context; bits10/20/40 require nonnull mode owner gp-5A8C.
+0x007D17C0	function	pause_clear_stage_tag_refresh	void pause_clear_stage_tag_refresh(undefined8 arg1,undefined1 *arg2,undefined8 arg3)	Inferred from an exact code match with NA2 BTL.BIN 0x006C2F10. Ignore/overwrite stage-slot argument; clear pause byte +0x6B8 and refresh object +0x6BC; no stage resource or geometry operation.
+0x007D1E20	function	stage_load_archive	void stage_load_archive(int index)	Find record0 path, synchronously load(path,0) if missing, store handle in tracked slot945910; no index range check, skip null table pointer.
+0x007D1EA0	function	stage_release_archives	void stage_release_archives(void)	Free each nonnull tracked handle945910..94591C via ccs_destroy_container(handle,1), clear slots; look up/free ojmgmk/ojmgmt/ojmpkn/ojmnkm from four30-byte entries9133D0.
+0x007D1FC0	function	stage_queue_archive	void stage_queue_archive(int index)	Queue scene record0 resource08 path through archive_queue_request(path,0); no index range check, skip null table pointer.
+0x007D2010	function	stage_require_archive	void stage_require_archive(int index)	Require already loaded record0 path and store handle945910; no index bounds check, skip null table pointer.
+0x007D2310	function	stage_vector_append	void stage_vector_append(un3StageVector *vector, void **position, unsigned int count, void **value)	Append pointer into vector storage08 and update count04; vector12-byte header. Header00 is capacity; actually insert count copies at supplied position with growth/moves; stage append callers insert at end.
+0x007D4A20	function	stage_dispatch_prop_effect		(position, kind, sound, argument): kind-specific generators and effects, then sound >= 0 via audio_emit_spatial_sfx_control, or its _with_key form with argument as key for kind 1; kind 0x10 starts two falling-leaf generators (catalog rows 0x34/0x4C) with random spin.
+0x007D8A60	function	stage_object_construct	un3StageObject * stage_object_construct(un3StageObject *object)	Initialize archive04, resource/model fields, subtype halfword20,status24,restricted-update28,vtable34.
+0x007D8AB0	function	stage_object_destroy	long stage_object_destroy(long arg1,short arg2)	Release models2C/08 through model_destroy and optionally self; no proof of derived arrays/controller teardown.
+0x007D8B60	function	stage_object_initialize_model	void stage_object_initialize_model(un3StageObject *object, void *archive, char *animation, int category)	Adopt archive04,construct optional animation into2C,retain name0C,store supplied category30; stored category need not equal record category.
+0x007D8C90	function	stage_animation_parse	void stage_animation_parse(int arg1,int arg2)	301 token10 becomes Boolean byte38 and passes to model_set_child_parameter; distinct from rotating sky.
+0x007D8D90	function	stage_breakable_cleanup	void stage_breakable_cleanup(unsigned long long arg1)	Destroy shape storage130,optional debris/controller90,unregister both receivers;derived destructors subsequently destroy embedded shape/receivers and common models.
+0x007D8E40	function	stage_breakable_parse	void stage_breakable_parse(int arg1,unsigned long long arg2,unsigned long long arg3,unsigned long long arg4)	801/871 and803/813 base path: token0 integer78 copied74;3/4 position nodes,5 byte count,7 debris,8/9 integer-derived float dimensions,10 integer94; record0C/10 later animations98/9C; constructs attack/contact controllers and optional debris.
+0x007D93E0	function	stage_breakable_update_pulse	void stage_breakable_update_pulse(int arg1)	Read system/pulse context gp-5CEC counter198; pacing byte1==1 keeps count,otherwise double;mod100,reflect values>49 with100-count;write object float80 only when nonzero.
+0x007D9470	function	stage_breakable_update	void stage_breakable_update(unsigned long long arg1)	Run prepass,virtual contact callback,debris update,model advance;positive count plus nonzero halfword3A and completion re-registerC0 andA0;broken count with completion/config94 reselect later animation and seek94<<8;finalize transform,clear contact; selected pose not periodic increment;801/871 share base vtable68C6E0.
+0x007D9700	function	stage_breakable_trigger	unsigned long long stage_breakable_trigger(unsigned long long arg1)	With contact byte38 nonzero and remaining78!=-1:count<2=>-1,select later record10 animation if present,enable debris90,unregisterA0;larger count decrement,select record0C animation if present,dispatch stage effect.
+0x007D9A30	function	stage_breakable_clear_contact	void stage_breakable_clear_contact(int arg1)	Clear contact byte38 at update completion.
+0x007D9A40	function	stage_breakable_resolve_contact	void stage_breakable_resolve_contact(int arg1)	Reject fighter-like contact descriptor flags10&00F00000,10&2 or14&02000000;accept sets contact byte38 and unregisters receiverC0.
+0x007D9B40	function	stage_breakable_prepass	void stage_breakable_prepass(unsigned long long arg1)	Call triangular-scalar producer; only when global mode predicate0 and contact receiverC8 nonzero resolve contact; receiverA8 nonzero latches render byte134.
+0x007D9D90	function	stage_lantern_contact_effect	void stage_lantern_contact_effect(int arg1)	Configuration byte158 selects one of three parameter paths;effect semantics not otherwise assigned.
+0x007D9E90	function	stage_lantern_trigger	int stage_lantern_trigger(un3StageLantern *object)	Return0;contact38 with remaining78!=-1: count<2 breaks,selects broken animation,enables debris,unregistersA0 and invokes effect slot20;fighter-like contact kind0C==0 retains entity60 bit0 at object13C and increments context side halfword;shape-height64 selects effect7/8/9 at thresholds100/150;larger count decrements,selects damaged animation,dispatches effect2 and retains same side bit.
+0x007DA150	function	stage_lantern_update	void stage_lantern_update(unsigned long long arg1)	Run shared prepass and virtual trigger,optional debris work,lantern motion,model advance/finalize,then clear contact; contact amplitude/value restoration belongs to stage_lantern_motion and side retention to stage_lantern_trigger.
+0x007DA250	function	stage_lantern_motion	void stage_lantern_motion(int arg1)	Contact entity s16+8E0==1 resets phase0,==0 phase36,other values keep phase;missing entity phase0;phase148+=2,samples scale amplitude144;wrap amplitude*=0.6 floor0.05,re-register receiver only positive count;transform receives sample and0.3*sample.
+0x007DA490	function	stage_wind_bell_update	void stage_wind_bell_update(unsigned long long arg1)	Contact resets phase/restores configured amplitude and sets158=30;shared count/animation/contact sequence and wind-bell motion.
+0x007DA590	function	stage_wind_bell_motion	void stage_wind_bell_motion(int arg1)	Phase+=2 through shared oscillation table;end decay amplitude*=0.6 floor0.05,reset phase;positive count permits receiver re-registration;transform combines sample and0.3*resident scalar whose producer remains unidentified.
+0x007DA7B0	function	stage_face_rock_parse		0x711: breakable with per-hit damage animations; position and first attack sphere lowered 300
+0x007DA910	function	stage_face_rock_trigger		Each hit binds the next damage animation (effect 5); the last binds the broken one (effect 0xB) and credits the side
+0x007DAB40	function	stage_face_rock_update		
+0x007DACF0	function	stage_monkey_doll_parse	void stage_monkey_doll_parse(int arg1)	Run base parser;shape18=3*object60 and shape1C+=50 distinguishes81D.
+0x007DADD0	function	stage_monkey_doll_update	void stage_monkey_doll_update(unsigned long long arg1)	81D shared count/animation/contact sequence;no randomized training-doll respawn delay in this method.
+0x007DAFA0	function	stage_training_doll_parse	void stage_training_doll_parse(unsigned long long arg1,unsigned long long arg2,unsigned long long arg3)	81C token1 D=10*integer=>168,token10 sequence94 copied164; borrowed node170; initial contact offset-150/+100 then prepared-node offset-100/+100; hardcode a1/n1/v1 animation resources; object does not own prepared node.
+0x007DB5A0	function	stage_training_doll_reset	void stage_training_doll_reset(int arg1)	Set elapsed15C=0,delay160=D-(R%trunc(0.4*D)) with D168;restore sequence94 from164;requires nonzero divisor;example token1=10 givesD100.
+0x007DB720	function	stage_training_doll_update	void stage_training_doll_update(unsigned long long arg1)	elapsed<delay=>count-1,elapsed++ and skip contact/animation;equal=>a1,advance,restore configured count,elapsed++;later completion n1 for positive sequence,v1 for0,decrement and selected receiver disable/re-enable;negative step or broken contact/debris conditions schedule delay;scene140==3 retained broken contact calls resident side counter/value helpers;follow borrowed node170 into model,shapes,debris with contact-100/+100;elapsed counts invocations,not seconds.
+0x007DBD30	function	stage_kite_parse		0x81E: token 3 start node, its _1 center, token 1 absence x30; one hit
+0x007DC140	function	stage_kite_first_approach		Approach curve start->center through points 500 out, turned by rng(0.01) about x, y, z; speed 0.015
+0x007DC3C0	function	stage_kite_lay_waypoints		Eight waypoints: center plus (0,0),(400,100),(800,0),(400,-400),(-400,100),(-800,0),(-400,-400),(0,0)
+0x007DC4A0	function	stage_kite_next_leg		Leg 1 arms receivers and lays out waypoints; legs cycle 2..9 through stage_kite_legs, from segment 1
+0x007DC690	function	stage_kite_leg_eight		Empty
+0x007DC6A0	function	stage_kite_fly		Curve plus 10*bob in z, roll = amount*bob, yaw turns to the heading; receivers at the center depth
+0x007DC940	function	stage_kite_flee		Fades 0.02 per update along the drop curve, then returns to the start, re-arms and draws the next absence
+0x007DCCA0	function	stage_kite_update		Absence countdown; flies or flees; replays the idle at a random speed; a hit sets a 0.07 drop curve 100/250/450 down
+0x007DCFE0	function	stage_kite_arrive		Empty
+0x007E5790	function	stage_sway_animation_construct		
+0x007E58A0	function	stage_sway_animation_parse		Records 0x507/0x506: token 5 animations (first, first_%d) at token-3 node (_%d), each with a random amplitude and phase; +0x4C mode 0, 1 (lantern label), 5 (0x506).
+0x007E5C90	function	stage_sway_animation_update		Per piece: angle = amplitude (+ wind scaled in modes 5/2) * stage_sway_sine[phase++]; rotates about y (mode 1) or x with z = 0.3x around the node; mode 0 decays amplitude *0.6 each cycle and redraws below 0.1.
+0x007E65C0	function	stage_wire_parse	void stage_wire_parse(unsigned long long arg1,int arg2)	502 endpoints from record resources0C/10,texture token6; order endpoints by component0,copyE0/F0; segment count64=15,three node arrays plus segment/controller storage.
+0x007E6A40	function	stage_wire_build_segments	void stage_wire_build_segments(un3StageWire *wire, unsigned long long texture)	Build wire segment/controller storage using segment_count+0x64; computes endpoint separation from first_endpoint+0xE0 and second_endpoint+0xF0, forwards endpoint addresses to end segments.
+0x007E7D40	function	stage_gondola_parse		0x50C: token 3 node, token 1 wait x30, token 10 line,list,amplitude,doll node; curve object at +0x60
+0x007E7FA0	function	stage_gondola_place		Initial curve step and placement of model, line and doll node
+0x007E8100	function	stage_gondola_bind_line		Keeps the selected line record and its endpoints as offsets
+0x007E8150	function	stage_gondola_next_move		Rise rand%amplitude, or fall when above node+amplitude; points at halves 1/2,3/4,7/8; random speed; end hold 90
+0x007E8300	function	stage_gondola_update		Frozen in battle state 2; steps the curve, moves model, line endpoints and doll node; next move after the end hold
+0x007E8580	function	stage_landing_tree_reaction	void stage_landing_tree_reaction(int object)	Per fighter whose contact flags hold all of +9C: bounds |dx|<width +A0, |depth|<30, |dz|<height +A8 from +F0; on accepted states queue -50 sway and spawn func 0x002621C0(2.0,width,node +40 +(0,0,height-100),field_surface_variant,10) plus stage_dispatch_prop_effect(pos,1,7,0); landing (major 4) also calls stage_landing_tree_landing_extra.
+0x007E8C50	function	stage_landing_tree_landing_extra	void stage_landing_tree_landing_extra(int object)	20% of landings: at node +40 +(rand(width-50),0,height-100) dispatch prop effect 0x10 with token j +B0, call 0x003100B0 with the table at 0x009139C0, and dispatch prop effect (1,0x4E,0x4B).
+0x007E90D0	function	stage_transparent_parse	void stage_transparent_parse(int arg1,int arg2)	601 token3 resolves hit/position node80/B0; integer token8+150 toC8; construct collision controller3C/60.
+0x007E92B0	function	stage_transparent_update	void stage_transparent_update(un3StageTransparentObject *object, int contact_count)	Match contact entries against both global fighters; smaller positive contact scalar divided byC8 controls blend/model frame88.
+0x007EF250	function	stage_swing_grass_parse	void stage_swing_grass_parse(int object, un3StageRecord *record)	0x526: token7 object plus %sa%d children 1..token5, all placed at node token3.
+0x007EF5A0	function	stage_swing_grass_update	void stage_swing_grass_update(int object)	Same deformer as NA2 bg_grass_sway_step with fixed values: gust when rand(0..10)==5 for 100 updates, step 3 degrees, amplitude 20, height threshold 5.
+0x007EF970	function	stage_swing_grass_draw	void stage_swing_grass_draw(int object)	Unless 0x0030FA20 returns nonzero, submit every grass child (count token5+1). Children share the deformed resource geometry with any base-animation instance of the same object.
+0x007F1030	function	stage_wind_construct		
+0x007F10C0	function	stage_wind_parse		0x518: token 10 x -2 at +0x50; hold 10 x 60 / frame divisor updates (300 at 30 updates per second); ramp marks 90/270/180, cycle 360.
+0x007F11E0	function	stage_wind_update		After each hold, phase advances one degree per update with strength sin(phase); holds at +1 (90), 0 (180), -1 (270); at 360 rests 25 x 60 / divisor updates. Publishes stage_wind_strength and positions common sound 0x3E.
+0x007F2980	function	stage_landing_tree_parse	void stage_landing_tree_parse(int object, un3StageRecord *record)	0x50D: moves the object's base model +2C to node token3 and sets its contact word +9C to 0x2000D801; token7 object plus children 1..token5 at the same node; token9 float +110; token10 'w,h,i,j' gives receiver width/height floats +A0/+A8 and ints +B4/+B8.
+0x007F2FF0	function	stage_landing_tree_update	void stage_landing_tree_update(int object)	Sway children by wind angle (+110 token9 scale); stage_landing_tree_reaction then the queued -50 impulse curve as NA2's bg_landing_tree_update.
+0x007F53C0	function	stage_falling_leaves_parse		0x52B: token 3 node, token 7 composition, generator row token 8 (0x917810) with force row token 9 (0x917880) and spin row 0, scale token 10, playback 2, distance 100/500.
+0x007F55F0	function	stage_falling_leaves_release		Deferred stop 1 on a live generator; restores the rewritten rows.
+0x007F56D0	function	stage_falling_leaves_update		Restriction visibility; the last parsed record rewrites the shared rows from the wind, which made generators have already copied.
+0x007F6010	function	stage_rising_leaves_parse		0x52D: token 7 composition, token 0 section, tokens 1/2 x range, 3/4 height range.
+0x007F6160	function	stage_rising_leaves_spawn		Fighter on the record's section inside its x and height ranges: kind 1 -> 0x007F5D80, kind 0 -> 0x007F5EA0, at the fighter's position.
+0x007F63D0	function	stage_rising_leaves_update		Per fighter in state (1, 0x15/0x16) or (5, 0x42/0x43/0x45) starts leaf generators through stage_rising_leaves_spawn; six slots per kind, each retuned after 16 updates.
+0x007F6940	function	stage_rainbow_parse		0x52F: token 3 model at (400,700,-25), scale (7,1,7), opacity 0.2
+0x007F6A90	function	stage_rainbow_update		Opacity clamp((1600 - camera distance)/1600) while both fighters' +0x946 are 0, else 0; counts visible updates
+0x007F6D40	function	stage_rainbow_draw		
+0x007F6EF0	function	stage_fish_parse		0x746: swim node token 3 and its _1 leap point, token 1 wait; <stem>_n1/_a1; two radius-100 receivers; five effect0x splash rings
+0x007F72C0	function	stage_fish_update		States 0 swim, 1 to the leap point, 2 airborne (hittable), 3 dive back; rings
+0x007F7450	function	stage_fish_draw		Draw the fish, then its active rings in stage draw environment 2.
+0x007F7500	function	stage_fish_spawn_ring		
+0x007F7660	function	stage_fish_swim		State 0: replay n1 at its end, follow the swim curve (a new one when done), pose (rotation 0,0,-pi, scale +0x40), rings; countdown 0 -> state 1 with the leap curve.
+0x007F77D0	function	stage_fish_to_leap		State 1: follow the leap curve; at its end state 2, bind a1, new swim curve, activate receivers +0x230.
+0x007F7960	function	stage_fish_airborne		State 2: unblocked contact -> stage_fish_hit_effect, deactivate, prop effect 3 with sound 0x12 at +0x280, side counter; a1 end -> n1, state 3, dive curve; splash at a1 frames 8 and 25.
+0x007F7B30	function	stage_fish_dive		State 3: follow the dive curve; at its end state 0, new swim curve and countdown wait - rand % (wait/2).
+0x007F7CC0	function	stage_fish_hit_effect		
+0x007F7D90	function	stage_fish_swim_curve		
+0x007F7FA0	function	stage_fish_leap_curve		
+0x007F80D0	function	stage_fish_dive_curve		
+0x007F8200	function	stage_flying_leaves_construct		
+0x007F8210	function	stage_flying_leaves_release		Sets a live generator's deferred stop to 2.
+0x007F82A0	function	stage_flying_leaves_parse		0x51B: generator from 0x009180B0/0x009180F0 with token 8 lifetime; token 7 composition as its one material; distance fade 100/22000/500/20000; tokens 3, 9, 10 distance ahead, speed, upwind offset.
+0x007F84D0	function	stage_flying_leaves_update		Origin = camera eye + view direction x token 3, x offset upwind by token 10; force x = token 9 x -wind; alpha scale = |wind| when >= 0.3, else 0.
+0x00803E10	function	stage_bridge_parse	void stage_bridge_parse(int arg1,int arg2,unsigned long long arg3)	587 tokens5 segment count,7 model,8/9 floats48/4C,10 byte50;3 per-segment node stem,6 texture,1/2 endpoints; three arrays3C/40/44 hold model and rope/helpers.
+0x00805B60	function	stage_rotating_sky_parse	void stage_rotating_sky_parse(int arg1,int arg2)	38A animation from record resource08, token10 float angular speed38,initial angle48 from rng_signed_scaled(pi).
+0x00805BE0	function	stage_rotating_sky_update	void stage_rotating_sky_update(int arg1)	Add0.98*angular speed38 per invocation,wrap±pi,apply vector40 to model2C; no elapsed-seconds derivation.
+0x00806290	function	stage_falls_mist_destroy		Deferred stop 1 on each live generator
+0x00806340	function	stage_falls_mist_parse		0x58E: thirteen looping generators from stage_falls_mist_rows with the record's effect (S14 EFF_s8aefe08), drawn in primary_draw_environment
+0x00806540	function	stage_falls_mist_update		Environment: the current one while battle_restriction_check reports a restriction, else primary_draw_environment
+0x00806B00	function	stage_frame_animation_parse	void stage_frame_animation_parse(int arg1,int arg2)	Shared parser for390/590/690; nonzero token10 integer divides model u16 playback step94.
+0x00806B70	function	stage_frame_animation_update	void stage_frame_animation_update(int arg1)	Advance model using u16 step94 via model_advance_animation then model_finalize_animation; local invocations do not prove frame or seconds cadence.
+0x00806D70	function	stage_glare_parse	void stage_glare_parse(int arg1,int arg2)	392 effect38 token7=>mode81,8=>packed84,9=>float88,10=>packed8C; up to three optional record resources create separate models.
+0x00807090	function	stage_glare_draw	void stage_glare_draw(int arg1)	Submit up to three optional models and glare effect controller.
+0x0080C7C0	function	stage_memorial_sparkle_parse	void stage_memorial_sparkle_parse(int object)	0x595: bind fixed EFF_s0befe07 and initialize 30 sparkles through stage_memorial_sparkle_reset, then give each a starting size factor |rand(0.5)|.
+0x0080C8B0	function	stage_memorial_sparkle_reset	void stage_memorial_sparkle_reset(int object, int index)	Sparkle index: x rand(+-5000), depth |rand(7000)|+6200, angle pi/4, base scale depth/7000*5, size factor |rand(0.2)| growing by 0.03 per update.
+0x0080C9A0	function	stage_memorial_sparkle_update	void stage_memorial_sparkle_update(int object)	Each of 30 sparkles: size factor += step; above 0.4 set factor 0.4 and step -0.03; below 0.1 respawn through stage_memorial_sparkle_reset; drawn scale = base scale * factor.
+0x0080D110	function	stage_water_surface_parse	void stage_water_surface_parse(int object, un3StageRecord *record)	0x597: model from token3 object; three UV layers with random start and steps -1/period for periods (250,-250),(-250,-230),(0,-250).
+0x0080D370	label	stage_water_surface_update		For three layers add step +44/+48 (-1/period) to U/V +3C/+40 and wrap; not a defined function.
+0x0080D4C0	function	stage_water_surface_draw	void stage_water_surface_draw(int object)	Submit the model three times, each with its layer's UV offset.
+0x0080DD10	function	stage_foot_ripple_parse	void stage_foot_ripple_parse(int object)	0x59A: fixed OBJ_s0befe09 ripple pool of 40 at +0x50 and EFF_s0befe10 splash pool of 10 at +0xCE0.
+0x0080DE70	function	stage_foot_ripple_area	int stage_foot_ripple_area(int object, int section, float *position)	Section 0: c2<100 and c0 in (-690,-480) or (420,620); section 1: c2<100 and c0 in (430,665).
+0x0080DF90	function	stage_foot_ripple_update	void stage_foot_ripple_update(int object)	Per fighter and two foot nodes: when area check 0x0080DE70 passes and a 100-unit downward cast on flag 0x20000001 is within 20, spawn a ripple (scale 2 on first contact, then scale 1 every 15 updates) and a splash; update both pools.
+0x0080E500	function	stage_flag_parse		0x79B: token 7 texture, token 3 node, tokens 8/9 x4 size, token 10 solver selector; 4x6 cloth with stage_flag_constants, step 0.064
+0x0080E6F0	function	stage_flag_update		w=-stage_wind_strength (at least +-0.005); force 5000w along normalized (0.5w+rng 0.5, rng 0.02, rng 0.02); one cloth step
+0x0080E8B0	function	stage_flag_draw		Scales the render context clip bounds +0x200 by 0.9 and +0x210 by 1.1 around the cloth draw
+0x0080F200	function	stage_forest_effect_destroy		Live generators: +0x34 = 1 and deferred stop 1
+0x0080F2E0	function	stage_forest_effect_parse		0x59E: three looping generators from stage_forest_effect_rows with token 7's effect, scaled by row +0x44, published
+0x0080F4D0	function	stage_forest_effect_update		stage_generator_restriction_visibility on each generator
+0x00813700	function	stage_training_doll_destroy	long stage_training_doll_destroy(long arg1,short arg2)	Reset derived state,install base break vtable,base cleanup;destroy embedded shapeE0/receiversC0/A0,common model cleanup,optionally self;borrowed node/stage archive not freed.
+0x008137E0	function	stage_monkey_doll_destroy	long stage_monkey_doll_destroy(long arg1,short arg2)	Reset derived state,install base break vtable,base cleanup;destroy shapeE0/receiversC0/A0,common model cleanup,optionally self;no stage archive ownership proof.
+0x008139A0	function	stage_wind_bell_destroy	long stage_wind_bell_destroy(long arg1,short arg2)	Reset derived state,install base break vtable,base cleanup;destroy shapeE0/receiversC0/A0,common model cleanup,optionally self;no stage archive ownership proof.
+0x00813A80	function	stage_lantern_destroy	long stage_lantern_destroy(long arg1,short arg2)	Reset derived state,install base break vtable,base cleanup;destroy shapeE0/receiversC0/A0,common model cleanup,optionally self;no stage archive ownership proof.
+0x00825260	function	ai_tick		Own UN3 shared per-side AI tick selects side, refreshes actors then indexes93ADF0/93ADF4 at actual characterID*8; Green Beast virtual1C calls this routine.
+0x008257F0	function	stage_navigation_initialize	void stage_navigation_initialize(void)	Initialize line pointers/extrema; copy stage_navigation_authored_routes[scene_index] until source -1 into stage_navigation_routes and fill the rest with -1. Scene 15 widens line index 3 to -415/420; scene 5 conditionally sets work record 1 to fraction 0/type 3.
+0x008268C0	function	field_surface_variant	undefined8 field_surface_variant(int arg1)	Inferred from an exact code match with NA2 BTL.BIN 0x00708C70. Return 1 if no background control, otherwise classify stage/position surface effect variant.
+0x00826EA0	function	field_ctrl_construct	undefined8 field_ctrl_construct(undefined8 arg1)	Inferred from an exact code match with NA2 BTL.BIN 0x00709150. Construct standalone 0x10-byte ccFieldCtrl derived from ccGameObjCtrl; retained by battle owner, distinct from field's embedded controller. Construct 0x10-byte ccFieldCtrl generic registry. | Construct primary index3/bit4 ccFieldCtrl,0x10 bytes,vtable005DDD60; phase callbacks006D67E0/006D67A0/006D67C0.
+0x008294C0	function	item_panel_construct	un3ItemPanel * item_panel_construct(un3ItemPanel *panel, int side)	Forward panel and side to item_panel_init without changing side; return the supplied panel.
+0x00829560	function	item_panel_init	void item_panel_init(un3ItemPanel *panel, int side)	Initialize 0x90-byte panel: five allocated 0x20-byte slots at +2C..3C, selected_slot40=0, side44, occupied_count48=0, position50=base_position60 plus shared vector, scroll70=16; slots set byte occupied00=0,index04,item_code08=0,count0C=0,list_position10=index*32+16,animated_position14=0,word animation_state18=0 and animation_auxiliary1C=0; construct side badge objects and other HUD children.
+0x0082A740	function	item_cache_build	void item_cache_build(un3ItemPanel *panel, un3ItemCacheEntry *cache)	Use supplied cache or default runtime destination00946050+side*0x28; clear five code words and count bytes at 8-byte stride, then compact occupied nonzero item codes whose resident classifier does not return1, storing code and low count byte; cache's imported file-image bytes overlap animation strings and do not prove runtime initial contents.
+0x0082A870	function	item_cache_restore	void item_cache_restore(un3ItemPanel *panel, un3ItemCacheEntry *cache)	Use supplied cache or00946050+side*0x28; scan five slots, retain classifier1 items, reset other slot occupancy/code/count/animation and list_position=index*32+16; selected_slot=0,occupied_count=retained count,compact,then add each of five nonzero cached code entries with its byte count.
+0x0082AD10	function	item_remove_selected	void item_remove_selected(un3ItemPanel *panel)	Prime occupied slots' slide state1,auxiliary0,animated_position=list_position plus scalar0093B238; removing last selected slot resets it and selection0,otherwise compact code/count/integer-converted list_position of remaining items and reset trailing slots; decrement occupied_count,keep occupied items contiguous.
+0x0082B210	function	item_move_slot_range	void item_move_slot_range(un3ItemPanel *panel, int first, int last, int destination, int animation_state)	Move inclusive source range,one slot when first==last: save code/count/integer-converted list_position and clear source occupancy; restore at destination with occupied1, supplied animation_state,animation_auxiliary0 and animated_position=list_position plus scalar0093B238.
+0x0082B520	function	item_scroll_index	int item_scroll_index(int scroll)	Return signed integer division by32 toward zero; HUD first converts panel float scroll to integer under active FPU rounding mode.
+0x0082B560	function	item_wheel_draw	void item_wheel_draw(un3ItemPanel *panel)	Convert scroll70 to integer then item_scroll_index; clamp occupied_count48 above4 to5,dispatch counts0..5 through six-entry table0093B270; blank frame relative selectors for counts0/1 are-2,-1,1,2, count2=-2,-1,2,count3=-2,2,count4=-2,count5=none,all opacity0.6; counts1..5 call item_slot_draw once,which issues five item draws.
+0x0082B810	function	item_frame_draw	void item_frame_draw(float opacity, un3ItemPanel *panel, int relative_position)	Draw frame at panel position plus side's16-byte layout record indexed relative_position+3,with scale from00919930[-3..3]=0.6,0.8,1,1.2,1,0.8,0.6 and supplied opacity; layout side stride0x70.
+0x0082B900	function	item_slot_draw	void item_slot_draw(un3ItemPanel *panel, int slot)	Convert slot list_position to integer then float,subtract panel scroll and convert displacement to integer; call item_draw five times with selectors-2,-1,0,1,2 and same displacement.
+0x0082B9D0	function	item_step_offset	float item_step_offset(int relative_position)	Return signed horizontal offset0 for absolute step0,35.2 for1,64=28.8+35.2 for2; other magnitudes retain0;negative input negates result.
+0x0082BAB0	function	item_layout_bracket	void item_layout_bracket(float x, int *lower, int *upper, int side)	Search seven side layout x keys at00919850+side*0x70 in16-byte records;choose first key>=x and preceding index clamped0,or both6 beyond last.
+0x0082BB60	function	item_draw	void item_draw(un3ItemPanel *panel, int slot, int selector, int displacement)	Resolve slot,add item_step_offset(selector) to displacement,interpolate y between side layout keys and add panel position;d=abs(x),scale=1.2-0.6*d/96;occupied-count row00919950+count*16 gives negative outer/inner (negated) or positive inner/outer;opacity1 inside inner,0 beyond outer,linear between;unusable marker uses0.8*opacity,item sprite full opacity.
+0x0082FF30	function	stage_select_bind_resources	void stage_select_bind_resources(void *owner)	Load mapsel1 resources: ANM_mapsel_ca, ANM_mapsel01a, TEX_mapsel01, TEX_mapname, MDL_purepanel and TEX_haipure01..04 at owner+1C..+28.
+0x00830180	function	stage_select_initialize_choices	void stage_select_initialize_choices(void *owner)	Choices +39 are scene indices 0..19 in order; count +38 = 20; cursor +32 = 0.
+0x008309B0	function	stage_select_bind_preview	void stage_select_bind_preview(void *owner)	Big preview of scene s: atlas haipure(s/6+1); r=s%6 selects u 0 (r<3) or 0.5 and top-down row (r%3)*168 of a 256x168 cell.
+0x00830B20	function	stage_select_transform_thumbnail	void stage_select_transform_thumbnail(void *owner, int position, float *scale)	Format OBJ_sam0%d/OBJ_sam%d from position+1, find that MDL_purepanel part and apply the transform with scale.
+0x00835A60	function	fighter_phase_record		Negative requested phase uses fighter184 clamped0; major8 current descriptor980 row+50 stride4C,otherwise descriptor+4 stride8.
+0x00835BC0	function	phase_event_completion		Guy condition consumer: -10 anim end,-11 ground(contact63bit20),-12 descending/ground,-13 end/ground,-14 end&ground,positive secondary1D4 threshold,0 hold,other negative relative jump on end; returns resulting slot==-1.
+0x00835DD0	function	phase_select_animation		Secondary1C8 event0 and clock bit8 clear gate; phase slot>=0 selected, negative start adds donor animation+10 frame_count; row+6 published ushortAB0 rate and +4->AB4 start.
+0x00837590	function	commands_hud_stop_guide		Inferred from an exact code match with NA2 BTL.BIN 0x00728CD0. Parent wrapper invokes guide stop;key1 draw gate separate.
+0x0083BF80	function	projectile_free_nodes	void projectile_free_nodes(int param_1)	Inferred from an exact code match with NA2 BTL.BIN 0x0072FB10. Drain nodes via saved word-zero next pointer; free each separately allocated node; clear head. | Drain head+0x218 via each node's saved word-zero next pointer and heap_free, then clear the head.
+0x00840C10	function	projectile_lineage_absent	unsigned int projectile_lineage_absent(int param_1,int param_2,short param_3,int param_4)	Inferred from an exact code match with NA2 BTL.BIN 0x00735CA0. Compare signed key and word in four inverse-side lineage slots; consumed flag ignored; report whether tuple absent.
+0x00840D90	function	transient_manager_enable_update	void transient_manager_enable_update(void)	Inferred from an exact code match with NA2 BTL.BIN 0x00735E10. Clear global transient manager +0x20 first-pass suppression byte. Clear manager update_disabled=0.
+0x00840DD0	function	transient_manager_enable_second	void transient_manager_enable_second(void)	Inferred from an exact code match with NA2 BTL.BIN 0x00735E50. Clear global transient manager +0x21 second-pass suppression byte. Live 0x00735E30 sets manager +0x21; live 0x00735E50 clears it. The parallel update-pass gate +0x20 is set/cleared by live 0x00735DF0 and 0x00735E10.
+0x00866BB0	function	summon_scene_index	int summon_scene_index(int index)	Return summon row scene field08 for supplied mapping index; index is forwarded unchanged to resident row accessor.
+0x00866BE0	function	summon_scene_mapping_for_character	int summon_scene_mapping_for_character(int character)	Scan eight summon rows by character field04, return mapping index00 or-1 if absent.
+0x0086AF70	function	dialogue_voice_remap_for_fighter	int dialogue_voice_remap_for_fighter(void *fighter, int cue)	Own UN3 character-ID dispatch at fighter+0x64: ID20 predicate 0x21 suppresses cues85/81; ID3 predicate 0x10 suppresses13/11; ID2 alternate predicate adds133; IDs1/31 alternate predicate suppresses0 and preserves-1. Kakashi ID8 is unchanged; Naruto ID1 nonzero cues are not renumbered. Predicate meanings remain outside this check.
+0x0086B100	function	dialogue_voice_produce	void dialogue_voice_produce(void *root, void *owner, int cue_index)	Own UN3 producer gates a nested object's +0x10 field, reads halfword cue at dialogue_voice_row(root)+cue_index*2 and optionally remaps it through dialogue_voice_remap_for_fighter when the child predicate succeeds. Gets character through 0x0087D730 and queues the selected cue with owner+0x110 slot through resident audio_queue_player_voice.
+0x0086B4B0	function	dialogue_voice_row	void * dialogue_voice_row(void *root)	Own UN3 row lookup returns dialogue_voice_rows+root word at +0x3EC*8 without bounds checking. Each row holds four halfword cue values.
+0x0086B580	function	dialogue_voice_produce_from_fighter	void dialogue_voice_produce_from_fighter(void *root, void *owner, int cue_index)	Own UN3 producer takes fighter from owner+0x38, character from fighter+0x64 and selected halfword cue from the row returned by 0x0086B560. It optionally remaps when owner+0x3C is zero and the child predicate succeeds, then queues the selected cue with owner+0x4C slot through resident audio_queue_player_voice.
+0x0086B950	function	interaction_bind_jutsu_resource	void interaction_bind_jutsu_resource(void *owner, int resource, short variant)	Store resource/variant halfwords,pass resource index to jutsu_resource_filename then require returned CCS filename through ccs_require_container;initialize per-resource selected data.
+0x0086C0D0	function	jutsu_resource_filename	char * jutsu_resource_filename(int resource)	Return filename table0x00923DA0[index] using four-byte pointer stride without an internal bounds check.
+0x0086C0F0	function	interaction_record_from_definition		Copy44-byte resource definition into68-byte working record;definition28 attack scalar supplied separately by caller;response14->record2C,repeat2C->2E,flag blocks1C/20/24->5C/60/64.
+0x0086C5A0	function	jutsu_source_contact_masks		Source side0 gives send40/receive410900;other side800/208048;866CA0 gate adds receive100000.
+0x0086C6C0	function	battle_apply_animation_resource_command		For command8003 and encoded100..173,subtract100 then create/register resource actor through86DBF0;other encoded values route888AAD0.
+0x0086C740	function	jutsu_create_by_resource		Bounds resource<116 then jump table93FB90; resource29 branch86CE08 alloc790->899250,resource30 branch86CE30 alloc880->89B860.
+0x0086C958	label	kakashi_fanged_pursuit_factory_case		Resource10 jump entry93FBB8;MCP raw words allocate730 via113A70,conditional jal8C8650.
+0x0086C980	label	kakashi_lightning_blade_factory_case		Resource11 jump entry93FBBC;allocate930 via113A70,conditional jal8E54F0.
+0x0086CDE0	label	kisame_mad_dance_factory_case		Resource38 allocates0x6B0, constructs0x008A9B50.
+0x0086CE08	label	guy_dynamic_entry_factory_case		Resource29 jump target93FC04; allocate790 then call899250. Dispatch branch, not separate function.
+0x0086CE30	label	guy_primary_lotus_factory_case		Resource30 jump target93FC08; allocate880 then call89B860. Same constructor also used by resource67 branch86D2A8.
+0x0086D020	label	kisame_water_shark_factory_case		Resource37 allocates0x5C0; common construct0x0087B720; ADDIU sign extension gives interface0x0068E110 at+0x28; clears tail; resource halfword37; reset0x00905570.
+0x0086D180	label	itachi_clone_explosion_factory_case		Resource49 alloc970; common0087B720 plus00903330 base; final resident interface0068DBC0; private clear0090A620/setup0090A6D0.
+0x0086D258	label	itachi_haze_factory_case		Resource50 allocBC0 and calls itachi_haze_jutsu_construct008AF390.
+0x0086D280	label	green_beast_ultimate_entry_factory_case		Resource67 table entry93FC9C target;MCP cannot expose inline branch via get_code,raw MCP words show addiu a0,790,heap call113A70 and jal899250;shared Guy Dynamic Entry class.
+0x0086D2A8	label	green_beast_primary_lotus_factory_case		Resource68 table entry93FCA0 target;raw MCP words show addiu a0,880,heap call113A70,jal89B860;shared Guy Primary Lotus class.
+0x0086D358	label	anbu_young_fang_factory_case		Jump-table resource54;alloc9A0;common0087B720 then intermediate vtable0068E360;after shared initialization903330 branch installs final0068D960 (signed addiu immediate); embedded helpers5D0/730/788/7B0/800/870/8E0/930; halfword688=54 and setup90C230/90C340.
+0x0086D908	label	anbu_young_lightning_factory_case		Jump-table resource53;alloc930 then calls008E54F0; allocation call00113A70. Read instruction bytes through MCP because fragment is not an imported function.
+0x0086DBF0	function	jutsu_create_and_bind_participants		Create resource actor86C740,register in interaction manager870040 using source controller60 bit0;nonnull actor binds supplied participants/scene through884690.
+0x0086E6C0	function	jutsu_selector_resource	int jutsu_selector_resource(int selector)	Translate signed selector0..113 through114 signed resource words0x0093E800; negative or>=114 returns0,valid0/1 returns table-1; selector bound differs from116-resource capacity.
+0x00870210	function	interaction_record_for_resource		Resource cache354 indexed participant slot *1D0 + resource *4;selected definition row contributes68-byte record stride.
+0x00874018	label	battle_phase_queue_voice_stop_first		Own UN3 call in phase word232==0 and count230==0 branch queues fighter character+64, member-1, slot fighter byte60&1; pending consumer stops slot then request rejects negative member. Wider phase purpose is not established by this voice check.
+0x008740F0	label	battle_phase_queue_voice6_first		Own UN3 call in phase word232==0 and count230==5 branch queues fighter character+64, sparse PLVOICE member6, slot fighter byte60&1; second-fighter call00874110 in both-side branch. Wider phase purpose is not established by this voice check.
+0x008753A0	function	interaction_setup_fighter_resources	void interaction_setup_fighter_resources(void *owner)	Verified containing entry0x008753A0 includes previously cited fragment0x008754C0; read fighter selectors178/17A through jutsu_selector_resource and clear/index two116-pointer caches,each0x1D0 bytes; also resolve body resources through1BOD1 character table.
+0x0087D9E0	function	interaction_apply_source_action_damage		Primary Lotus state3 uses source action24 float;update attack service86F880 then valid opponent gets resident1B60A0(amount,participantD4,122h).
+0x0087E530	function	interaction_prepare_resource_contact		Virtual1A4 path stores working record and definition at actor110/114,row118;record24=definition28 * source action24,then prepares target contact fields.
+0x0087F270	function	interaction_publish_resource_contact		Virtual1A0 path constructs working contact from resource3EC,44-byte definition row,68-byte participant/resource cache;record24=definition28 * source action24.
+0x00886680	function	interaction_begin_screen_fragment_effect		Virtual190 common route creates RendererOwner effect264960 based source facing,binds actor+C8 handle and validates it with23AB60.
+0x00886700	function	interaction_release_screen_fragment_handle		Validate actor+C8 against effect manager23AB60;found object virtual18 ends effect;clear wrapper238AC0.
+0x00888A20	function	interaction_begin_capture_services		Virtual1FC flag argument routes118/164/210/21C;4 selects concrete capture begin210 unless resource listed941438;marks411.
+0x00888C90	function	interaction_end_capture_services		Virtual200 routes11C,participant cleanup,114/208/70/80,concrete214/220;clears411.
+0x0088A300	function	interaction_finish_phase_dispatch		After pause/status gates virtual108 then concreteF0 unless alternate4E0;updates participant timers and actorE0. Dynamic Entry main phases useF0.
+0x00899250	function	guy_dynamic_entry_construct		Common interaction base87B720 then vtable69B5F0;three50 embedded contact shapes5A0,one50 shape690,contact receiver6E0,six animation pointers700 and state tail. Shapes172930 and receiver registration17FF80/180120 do not construct CCS models.
+0x00899350	function	guy_dynamic_entry_destroy		Virtual214 capture_end restores participant services;unregister receivers50C/6E0,destruct6E0,shape690 and three50 shapes5A0;common cleanup and optional free.
+0x00899430	function	guy_dynamic_entry_update_reserved		VtableE8 no-op:jr ra;nop;main phase dispatch instead lives F0=899460.
+0x00899440	function	guy_dynamic_entry_draw_reserved		VtableEC no-op:jr ra;nop.
+0x00899450	function	guy_dynamic_entry_reserved104		Vtable104 no-op:jr ra;nop.
+0x00899460	function	guy_dynamic_entry_phase_update		VtableF0 dispatches state71C 0/1/2/3 to startup89ACC0/leap89ADB0/finish89B810/recoil89B4D0 then virtual240=89A220 positions embedded contact shapes.
+0x00899510	function	guy_dynamic_entry_bind_animations		Resource67 uses pnrzcha00 family; other resources pguycha00 family from required CHA; next three animations resolve signed fighter slots from941942.
+0x008999E0	function	guy_dynamic_entry_select_animation		Set slot718 and bind source scene1D8 from six borrowed animations700;reset218 and refresh participant animation.
+0x00899A60	function	guy_dynamic_entry_set_state		States0..3 reset71C/720/724 and unregister receivers50C/54C;1 binds animation and registers50C;2 selects source animation5;3 restores movement/orientation unless common870CE0 veto.
+0x00899CA0	function	guy_dynamic_entry_update		Vtable1A4 contact callback dispatch:490 mask2 set->contact_alternate89A6B0,clear->contact_hit89A380. Main per-frame state dispatch instead F0=899460.
+0x00899CF0	function	guy_dynamic_entry_begin		Prepare participant, effect state and six animations; begin action state0; set orientation and transition common interaction to1.
+0x00899DB0	function	guy_dynamic_entry_register_contact		Register receiver50C or6E0 through resident17FF80 according to argument.
+0x00899E10	function	guy_dynamic_entry_unregister_contact		Unregister receiver50C or6E0 through resident180000 then common interaction contact finalize87F1E0.
+0x00899E90	function	guy_dynamic_entry_align_captured_participant		Source l foot and opponent pelvis named scene transforms drive captured participant placement after stage collision query.
+0x0089A220	function	guy_dynamic_entry_position_contact_shapes		Vtable240 reads source l foot,l calf,pelvis matrices and copies translations to embedded contact shapes5A0/5F0/640;no direct CCS model lookup.
+0x0089A380	function	guy_dynamic_entry_contact_hit		Update when490 bit2 clear;virtual1FC,opponent animation slot4 or9 based facing,source dialogue0 or random0..2,movement/contact finalization;source actionE.
+0x0089A6B0	function	guy_dynamic_entry_contact_alternate		Update when490 bit2 set;common actor contact finalize and valid actual source fighter action13.
+0x0089A720	function	guy_dynamic_entry_effect_reserved		No-op jr ra;nop;calls in leap/recoil phases do not create a CCS effect or model.
+0x0089A730	function	guy_dynamic_entry_setup_contact_shapes		Three embedded50 contact shapes initialized with side masks40/410900 or800/208048 and sizes45/30/30;owner50C links via180120 then unregisters. Fourth shape690 uses10/10100 or200/8008,size200 and receiver6E0.
+0x0089A8D0	function	guy_dynamic_entry_contact_resolve_reserved		Vtable148 no-op:jr ra;nop. Contact updates via1A4=899CA0 and specialized118/11C lock wrappers.
+0x0089A8E0	function	guy_dynamic_entry_contact_lock		Vtable118: acquire service238770(1,80FFFFFF,1),retainD4 and clear session80.
+0x0089A950	function	guy_dynamic_entry_contact_unlock		Vtable11C: release2387B0 onD4 then set session80.
+0x0089A9B0	function	guy_dynamic_entry_capture_begin		Vtable210: save participant positions750/760,source velocity778..780;disable participant services806D0/80960,stage2B7CE0,presentation gate;arm771.
+0x0089AB30	function	guy_dynamic_entry_capture_end		Vtable214:if771 armed clear,restore participant transforms/velocity,stage2B7D00,services80760/809F0/8AAA0/818C0,presentation gate896C0;destructor calls this.
+0x0089ACC0	function	guy_dynamic_entry_startup_phase		State0 increments720;animation completion and source vertical-speed gates enter state1.
+0x0089ADB0	function	guy_dynamic_entry_leap_phase		State1 movement/collision;capture771 aligns foot/pelvis and shake;first capture tick creates effects2607F0 or25F360,not camera requests;after30 ticks virtual200 releases capture and changes source velocity.
+0x0089B4D0	function	guy_dynamic_entry_recoil_phase		State3 holds source position,shake;at phase15 binds slot3 and requests participant contact80;later slot4 and grounding enter state2.
+0x0089B810	function	guy_dynamic_entry_finish_phase		State2 finishes via virtual22C when animation complete218 and224 equals22C.
+0x0089B860	function	guy_primary_lotus_construct		Common interaction base then vtable69B3A0;embedded animation player5E0,tail state5C0,auxiliary pointers7F0/7F4;seven borrowed animations860..878 and six-entry scalar table941990 retained41C.
+0x0089B950	function	guy_primary_lotus_destroy		Undo surface services2B80F0/2B8280 if87C armed;serial-check invalidates aux7F0/7F4 via34/23C then clear;embedded animation player5E0 cleanup23CB20(-1),common base cleanup and optionalfree.
+0x0089BB90	function	guy_primary_lotus_update		Dispatch state5C0 0/1/2/3; state2 updates embedded model5E0.
+0x0089BC40	function	guy_primary_lotus_draw		State2 resolve OBJ_eff_dummy_guyall; derive placement matrix and submit embedded model5E0.
+0x0089BE30	function	guy_primary_lotus_finish_frame		State3 participant updates when counter5C8 zero; state2 embedded model finish; clear5D2.
+0x0089BEF0	function	guy_primary_lotus_begin		Initialize participant/state; request ANM_pguyskl10 from loaded CHA into embedded animation owner5E0.
+0x0089C010	function	guy_primary_lotus_set_state		States0..3 initialize movement/collision,voice,embedded animation,auxiliary scene and final opponent interaction.
+0x0089CB20	function	guy_primary_lotus_bind_animations		Seven slots860..878 from loaded CHA:F0;resource68 uses names924D70 pnrzcha10..14,21,22,else924D50 pguy equivalents. Does not request cha15/16.
+0x0089CC20	function	guy_primary_lotus_select_target_height		Probe above opponent position by1250 with stage1E exception;hit adjusts target below ceiling by200.
+0x0089CD20	function	guy_primary_lotus_probe_ceiling		Probe above participant by500;masked D0D0 surface arms5D1 and adjusts both participant axis3.
+0x0089CDE0	function	guy_primary_lotus_clear_ceiling_mode		If5D1 armed reset participant axis modes through880BF0 on100/270;clear5D1.
+0x0089CE40	function	guy_primary_lotus_resolve_ceiling_landing		Ceiling-mode fall query20000001 requires primitive flag1 and excludesD0D0;positions participants and clears ceiling mode before ground-service work.
+0x0089D030	function	guy_primary_lotus_fall_sound		State2 emits SFX16/32 on phase counters whose counter-3 is divisible by5.
+0x0089D080	function	guy_primary_lotus_follow_anchor		Matching participant side:resource68 OBJ_eff_dummy_nrzcha1 else OBJ_eff_dummy_guycha1;source-model170AE0 lookup,matrix refresh,stage projection83700 then participant positions/orientation;no anchor model requirement.
+0x0089D420	function	guy_primary_lotus_stage_height_gate		Vtable210: stage12,source participant1 above1150 returns;otherwise calls common interaction setup8895F0.
+0x0089D4C0	function	guy_primary_lotus_contact_prepare		Vtable118 forwards virtual190=guy_primary_lotus_screen_fragment_begin89D560;creates framebuffer fragment effect,not a camera controller.
+0x0089D530	function	guy_primary_lotus_contact_submit		Vtable11C forwards virtual194=interaction_release_screen_fragment_handle886700 after state3 assembly;effect-manager handle cleanup,not contact damage.
+0x0089D560	function	guy_primary_lotus_screen_fragment_begin		Vtable190 creates screen fragment RendererOwner via264960(2,-1,-1,1,actor+C8);effect handle validation23AB60. Reached through contact-prepare wrapper118.
+0x0089D5C0	function	guy_primary_lotus_shutdown		Vtable21C: when source participant/fighter valid,5D0=0 restores presentation,stage services,camera;else if87C armed selects opponent action6,row5E then common source finalization.
+0x0089D6C0	function	guy_primary_lotus_save_participants		Save source/opponent position,orientation,ground-state in800/810/820 and830/840/850.
+0x0089D760	function	guy_primary_lotus_restore_participants		Restore saved source/opponent transform and ground state.
+0x0089D840	function	guy_primary_lotus_impact_service		Calls resident237780 with opponent position360 and argument30.
+0x0089D870	function	guy_primary_lotus_startup_phase		State0 animation and common participant action completion gate state1;zero movement and update both participant positions.
+0x0089D990	function	guy_primary_lotus_lift_phase		State1 binds source slot864 cha11 and opponent874 cha21,follow anchor mode2;two-subphase animation gate enters state2 (a1=2 in disassembly).
+0x0089DB80	function	guy_primary_lotus_fall_phase		State2 follows anchor,ceiling/ground gate enters3,phase sound16/32;spin adds step5CE until200h via both participants virtual178.
+0x0089DD00	function	guy_primary_lotus_recovery_phase		State3 holds special-surface opponent,shake first5 ticks;phase15 or87C binds cha13,serial-check invalidates7F4;ground binds cha14 and later animation finishes22C;periodic SFX16/38.
+0x0089E280	function	guy_primary_lotus_regular_impact		Other surface: common finalization89D840;valid opponent action/status helper,countersA8A=120,A8C=90,response835DD0,state1A30A0.
+0x0089E320	function	guy_primary_lotus_arm_surface_services		Surface202020/E0E000: stage service2B8050/2B81E0 retains opponent ID380 with source-side mask1/2;save impact source position5B0 and set87C. Destructor undoes through2B80F0/2B8280.
+0x008A9B50	function	kisame_mad_dance_construct		Common interaction constructor, interface0x0069A4B0; two0x50 shapes, participant handles640/64C,three emitted actor pointers658; animation storage668.
+0x008A9C40	function	kisame_mad_dance_destroy		Validate/delete three emitted actors; restore participant handle state, destroy auxiliary handle, timer and two shapes, then common/free.
+0x008A9E50	function	kisame_mad_dance_contact		Repeat contact invokes followup; charge-state3 adjusts response and emitted definitions; owner IDs24/11 select variants0x58/52,others51.
+0x008AA000	function	kisame_mad_dance_emit_followup		Stage-indexed effect definitions and offsets; charge stage2/3 emit different objects; select variant58 for owner24.
+0x008AA640	function	kisame_mad_dance_input_dispatch		Flags+490 bit0/1 choose input helpers0x008AB150/0x008AB2B0.
+0x008AA690	function	kisame_mad_dance_begin		Setup participant animations and charge state7; allocate220 auxiliary compound object andA0 three-object controller, register with fighter manager.
+0x008AA800	function	kisame_mad_dance_participant_update		Collision correction, charge stage0..3 in+664; dialogue0/1/3 on charge completion/admission; synchronize two auxiliary charge objects.
+0x008AAED0	function	kisame_mad_dance_draw		Copies OBJ_2cmn00t0 trall participant transform to charge helper and hides it under interruption flag.
+0x008AAFE0	function	kisame_mad_dance_update		Timed compact cues; charge state7 versus combo phases; 12-byte frame/action table0x00941CE0.
+0x008AB110	function	kisame_mad_dance_finish		Common finish and private mode reset.
+0x008ABD00	function	kisame_mad_dance_combo_update		Phase/timing contact and chain advance, dialogue2, state transitions0..6.
+0x008AC040	function	kisame_mad_dance_charge_update		Charge state7 tick10 creates three emitted actors; positions around participant trall using924FD0.
+0x008AC340	function	kisame_mad_dance_update_shapes		Stage-indexed two shape definitions and offsets from9250C0; participant trall transform.
+0x008AC6B0	function	kisame_mad_dance_bind_animations		Nine slots from924FA0 resolved in selected jutsu resource filename.
+0x008AC820	function	kisame_mad_dance_set_state		Eight states0..7; set animation indexes0,2..8; restores three emitted actors and charge helper.
+0x008AF390	function	itachi_haze_jutsu_construct		Resource50 BC0-byte actor; shared base then resident interface00699D00, helper730, tables00941FE0/42000/42020 at41C/420/424.
+0x008AF400	function	itachi_haze_jutsu_position		Positions from bound OBJ_2cmn00t0; missing model uses stored actor+360 vector.
+0x008AF510	function	itachi_haze_jutsu_update		Embedded helper730; commands2D/51/6E select states1/2/3; command51 requests dialogue or common cue6..8.
+0x008AF740	function	itachi_haze_jutsu_draw		Scopes renderer and submits embedded actor730 virtual+58.
+0x008B3E00	function	fanged_pursuit_base_construct		Common skill base8_7B720;vtable699430;initialize transforms and state5A0..724 incl contact630;Kakashi730 derived actor uses this base.
+0x008C8650	function	kakashi_fanged_pursuit_construct		Resource10;call shared base8B3E00 then install resident vtable694F90 at+28;no additional constructor-owned initialization.
+0x008C8690	function	kakashi_fanged_pursuit_begin		Virtual274 inherited begin with two attacker/one defender GP-selected names, then virtualC registers two GP callbacks.
+0x008C86F0	function	kakashi_fanged_pursuit_frame_events		At frame1 create GP-selected transient callback resource; voice/action events table926290 and sound table9262A0 tested against actorE0.
+0x008C8920	function	kakashi_fanged_pursuit_restore_participants		Reset opponent through virtualDC/2C then participant restoration via87F270 for opponent270 and attacker100.
+0x008E54F0	function	lightning_blade_construct		Resource11;common skill base,primary vtable690E10;embedded animation players660/6B0,contact8C4,helpers600/720/8E0/914,14 lookup slots5A0,per-side matrices and state cleared through92C.
+0x008E5720	function	lightning_blade_destroy		Shared resource3/B/35/59 class cleanup; bothparticipants,players660/6B0/720,auxrenderer704,threechildren708,handle650,base cleanup and deleting free.
+0x008E59B0	function	lightning_blade_contact_response		State3 scales factor by0.6, destroys3children andsound87; response state4/5, halfdamage descriptorF4*record24*.5, response5/4B.
+0x008E5C20	function	lightning_blade_begin		ResourceB chooses14-name bank928240 andtextures+E/F; creates3 registered4C children from927DF0+i*B0 andD0 auxrenderer; participant/camera/contact setup; state0.
+0x008E6260	function	lightning_blade_update		Update auxrenderer,motion600,player720; exact attackerfighterID8 branch finds93E6A0 OBJ_2cmn00t0 r_hand and alters node state.
+0x008E6DF0	function	lightning_blade_enter_state		Store state5DE; cases0/1/3/4/5/6/7 dispatch player names,sounds,dialogue,contacts,camera,state cleanup; resourceB-specific duration fromGP packed field in state3.
+0x00903330	function	jutsu_compound_initialize		Factory shared setup clears state68C/690, participant780/784 and handles5A0/5A4/5A8/5AC/5B0/5B4/5B8/5BC plus6F4..700/72C;Young Fang caller verified.
+0x00903380	function	jutsu_compound_release		Validate registered5B0/5B4 then mark deletion34/23C;destroy/free and zero5A0/5B8/5AC/5A4,including helper302260;reset embedded788. Young Fang destructor caller verified. Does not directly release private990.
+0x009043A0	function	jutsu_compound_helper_allocate		Allocate30 helper,construct3021E0,publish actor5A4 then configure with resident6A5C20; Young Fang binding caller verified.
+0x00905570	function	kisame_water_shark_reset		Reset short fields+5A0/+5A2/+5A4/+5A6 and word+5A8; factory separately initializes+5AC/+5B0/+5B4.
+0x009055A0	function	kisame_water_shark_sword_transform		Actor model player resolves EXT_2ksmswd and resets four matrix rows; resource37 interface slot0x10.
+0x00905620	function	kisame_water_shark_update		At attacker animation frame15 allocates0x9A0 shark projectile, base0x00875C20, common water0x00902D70, projectile vtable0x0068E080; binds/setup; publishes with side-bank registration. After terminal animation waits15 counts then completion.
+0x009058B0	function	kisame_water_shark_projectile_reset		Clear six handles+0x980..+0x994 and movement/collision vectors; projectile private init.
+0x00905910	function	kisame_water_shark_projectile_bind		Require2ksmcha0, CMP_2ksmskd00t0 body1 and ANM_pksmskd00; own A0 model,F0 path object,120 animation player; set projectile state and shape flags.
+0x00905B70	function	kisame_water_shark_projectile_update		Projectile phase0,1,2,3 dispatch common water and shark motion/contact paths; phases4/5 terminate7.
+0x00905C60	function	kisame_water_shark_projectile_active		Active projectile integrates shark movement, water collision, model transforms and secondary emitted records, timer+0x520.
+0x00905D90	function	kisame_water_shark_projectile_motion		Increment motion timer and transform position; wall probe flags 0x40000200. Wall ends phase 5, emits shared effect 1 and spatial SFX controls 0x79/9 with key 0x3C; every six updates emit spatial SFX control 0x35 with key 0x46.
+0x00906080	function	kisame_water_shark_projectile_enter_impact		Proximity test advances phase 3; position impact player/path, release two auxiliary actors, emit shared effect 2 and positional SFX 9/0xB. Includes stage-0x1E placement.
+0x00906EB0	function	kisame_water_shark_projectile_contact_effect		Derive randomized contact position from response+50 and attacker state; emit contact effect unless projectile+724 is set.
+0x00907010	function	kisame_water_shark_projectile_auxiliary_draw		Under saved/restored renderer context, draw impact player in phase3 and player/model in phase2; phase5 skips.
+0x0090A620	function	itachi_clone_explosion_clear		Resource49 private init clears854,880,87C,850,870,960,878.
+0x0090A6D0	function	itachi_clone_explosion_setup		Initialize helper890 and compound helper; helper initial lifetime30.
+0x0090A730	function	itachi_clone_explosion_bind		CMP_2itcdash from2itccha0 or selected clone body+D84; ID17 borrows fighter colour0..2, foreign identity CLT_2itcdashc3. OwnA0 helper at854; hitcount850=-1; state870=3.
+0x0090AF30	function	itachi_clone_explosion_attack_update		Fade/raycast/attack-count phase; final0090BFA0 and state7.
+0x0090BA00	function	itachi_clone_explosion_update		States0 bind,1 animation wait,2 approach,3 attack,4/5 finish,6 finalphase.
+0x0090BB10	function	itachi_clone_explosion_draw		Scopes renderer and restores borrowed fighter model state after clone draw.
+0x0090BD00	function	itachi_clone_explosion_contact_dispatch		State3 per-side descriptor00949D40 stride68 and virtual+A4 contact; state7 cloneAB0=100 and cleanup virtual+22C.
+0x0090C070	function	itachi_clone_explosion_contact		Hit counter850; response2C=12/28=.35, final2C=E/32=7FFF/28=1.0 then shared submit.
+0x0090C230	function	anbu_young_fang_initialize_state		Clears actor private flags/counters864/868/8C0/8C4/950..970.
+0x0090C290	function	anbu_young_fang_release		Unbind actor participant100 if1D4 nonzero;restore linked scale19C=1;release target270 when87D030 allows;destroy three-player allocation850 via114C40(...,16CFE0),zero pointer and private state.
+0x0090C340	function	anbu_young_fang_bind_players		Provider2anbcha1;alloc370 backing three120 compound players at850;first two names944520/944530=panbcha14a/b,third944550=panbcha10d; bind/compose and publish descriptor index banks9444F0/944500/944510;alloc30 helper via9043A0.
+0x0090C530	function	anbu_young_fang_camera_position		Virtual34; both418 branches copy actor360..36C to980..98C; subtract968*100 from988,return980. Role assigned from virtual slot only;968 source meaning not established.
+0x0090C590	function	anbu_young_fang_prepare		Initialize speed/motion/visibility state;shared904070;fighter784 scaleAB0=1A0,reset970,resolve movement handle990 from stage/resource9414B8;ownership/release not established.
+0x0090C620	function	anbu_young_fang_place_players		Read fighter780 pose,probe collision on both sides at50/35 heights;choose adjusted center970,place two850 players at opposed orientations;shared903960 participants; optional camera/effects.
+0x0090CC10	function	anbu_young_fang_approach_update		State2: approach scalar854 toward1,place/advance two clones;at>=.25 submit50C contact record through86FAA0;at1 invoke90DD20.
+0x0090CE20	function	young_fang_reserved_noop		Young Fang final vtable slot244; jr ra/nop, no side effects.
+0x0090CE30	function	anbu_young_fang_state6_noop		State6 update returns without work.
+0x0090CE40	function	anbu_young_fang_miss_update		State9 substates0..2;bind panbcha15a/b to850 pair,advance/fade,frame5/7 effects;completion releases target270 and contact50C and enters7.
+0x0090D2C0	function	anbu_young_fang_escape_update		StateC waits30 updates then7,restore target344 scale19C=1 and release participant270.
+0x0090D330	function	anbu_young_fang_hit_update		State3 substates0..4;bind panbcha15a/b,freeze/restore receiver19C, eight clone-animation completion cycles then rising third-player10d,up to ten intermediate hit submissions from94A080/949EE0 and final94A130;receiver action(5,41) selects escapeC.
+0x0090DD20	function	anbu_young_fang_enter_miss		Approach completion sets actor68C=9 and returns0.
+0x0090DD40	function	anbu_young_fang_initialize_noop		Virtual148; raw leaf jr ra/nop;does not perform further resource binding.
+0x0090DD50	function	anbu_young_fang_update		Private68C state dispatcher0/1/2/3/4/5/6/9/C; participant784 animation progress triggers state2, linked players850 and streamed dialogue path from actor100.
+0x0090DF50	function	anbu_young_fang_draw		Scale/restore shared renderer fields using95C;draw two850 players in state9,three in2/3;state5 no submission.
+0x0090E0E0	function	anbu_young_fang_contact_pass		Process8C4 accepted hit latch and ten-hit counter952;record949EE0 vs final94A130;state9 contact selects949FB0 with copied current action damage;state7 restoresfighter784 AB0=100 then virtual22C.
+0x0090E350	function	anbu_young_fang_finish		Reset contact helper930 then shared903580 finish.
+0x0090E390	function	anbu_young_fang_contact_response		State2 receiver flags490 bits1/2 choose miss9 or hit3;hit binds participants/camera,sound6F,shared effect9044B0,zero counters and linked95C/968 then position target from970.
+0x0090E530	function	anbu_young_fang_contact_effect		VirtualA4;position from source action, random mirror,hit-record48==10 chooses directional particle+effect17;860 changes alternate effect path.
+0x0090FAA0	function	anbu_young_fang_destroy		Final vtable0068D960;release90C290,embedded930/8E0/870;intermediate0068E360 shared release903380 then800/7B0/788/730/5D0;common destruction87BE80;positive flag frees.
+0x0090FE30	function	kisame_water_shark_projectile_destroy		Release seven private0x50 shapes, private shape, common water state and base projectile; optional free.
+0x00912A70	data	stage_s04_combo_anchors_side0	float[1][4]	S04 side-0 combo anchor (-50,0,50,1).
+0x00912A80	data	stage_s04_combo_anchors_side1	float[5][4]	S04 side-1 combo anchors c0=-550..-150 step 100 at (1100,50).
+0x009133D0	label	stage_auxiliary_archive_names		Four30-byte archive names ojmgmk,ojmgmt,ojmpkn,ojmnkm consumed by stage_release_archives.
+0x00913450	label	stage_scene_tables		27 scene-record pointers plus null terminator; first record type1,label is stage name,primary resource archive path.
+0x009137D0	data	stage_kite_legs	int[10][4]	Waypoints each leg's curve runs through
+0x009139C0	data	landing_extra_item_distribution		field_item_random_select rows (2,40),(1,30),(3,20),(0,10),(0,0); the kind-0 row is never reached.
+0x00913AE0	data	stage_fish_items		field_item_random_select rows (kind 2, 40), (kind 1, 60), end.
+0x00914780	data	stage_falls_mist_rows		13 x 0x50: generator and three field descriptors, origin +0x20, second point +0x30, alpha +0x40
+0x00914FE0	data	stage_flag_constants	float[12]	700, 7000, 0.0015, -100, 1000, 50, 0, 0, 0, 0, 0, 1
+0x009153B0	data	stage_forest_effect_rows		3 x 0x50 rows as stage_falls_mist_rows, scale at +0x44
+0x00915748	data	prop_leaf_generator_parameters		0x38-byte generator parameters for stage_dispatch_prop_effect kind 0x10 (falling leaves).
+0x00915EF0	data	prop_leaf_spin_field		Force key 3 (Euler spin); kind 0x10 replaces its values with random direct values.
+0x00915F90	data	prop_fall_field		Force key 1, -2 velocity on the vertical axis.
+0x00915FB0	data	prop_drift_left_field		Force key 0, -0.8 displacement on X.
+0x00915FD0	data	prop_drift_right_field		Force key 0, +0.8 displacement on X.
+0x009160B0	data	prop_leaf_scale_field		Force key 5 scale/aspect 2 to 2 over 1.
+0x00917810	data	stage_falling_leaves_generators		Two 0x38-byte generator rows for 0x52B token 8.
+0x00917880	data	stage_falling_leaves_forces		Three 0x20-byte force rows: 0 spin, 1 fall -7, 2 fall -2 (token 9).
+0x009180B0	data	stage_flying_leaves_generator_parameters		
+0x009180F0	data	stage_flying_leaves_force		
+0x00918550	data	stage_s04_navigation_routes	un3StageRouteRecord[5]	S04 authored routes 3->2/2->3/3->1/1->3 and terminator.
+0x009192D0	data	stage_navigation_authored_routes	un3StageRouteRecord *[20]	Authored route lists indexed by scene_index; NA2 route format and first-family line numbering.
+0x00919850	data	item_layout_side0	un3ItemLayoutPoint[7]	Seven16-byte layout records for relative positions-3..3;imported x keys all0,y=-25,-25,-9,0,8,7,7;runtime key values and producer not established.
+0x009198C0	data	item_layout_side1	un3ItemLayoutPoint[7]	Seven16-byte side1 layout records,y=7,7,8,0,-9,-25,-50;imported x keys all0,runtime keys/producer unresolved.
+0x00919930	data	item_frame_scales	float[7]	Frame scale for relative positions-3..3:0.6,0.8,1,1.2,1,0.8,0.6.
+0x00919950	data	item_visible_ranges	float[6][4]	Six occupied-count rows at16-byte stride;negative x reads-negated first two as outer/inner,nonnegative x reads last two as inner/outer;layout bounds for fade.
+0x0091ACC0	data	action_descriptor_table		Own-game native substate descriptors stride8 selected by fighter_set_action_state; below62 names and phase pointers. Guy checked 20 complete phase lists through sentinel byte-identical to NA2:27/29/2A unchanged,2E..31->30..33,33->35,36/37->38/39,3A..3E->3C..40,46..4A->4A..4E; descriptor pointers and body animation payloads not equated.
+0x00920ECC	data	guy_dynamic_entry_interaction_definition		One44-byte definition for resource29;byte-identical to Green Beast resource67 definition921EBC.
+0x00920F10	data	guy_primary_lotus_interaction_definition		One44-byte definition for resource30;byte-identical to Green Beast resource68 definition921F00.
+0x00921EBC	data	green_beast_ultimate_entry_interaction_definition		One44-byte definition for resource67;byte-identical to Guy resource29 definition920ECC.
+0x00921F00	data	green_beast_primary_lotus_interaction_definition		One44-byte definition for resource68;byte-identical to Guy resource30 definition920F10.
+0x00923DA0	data	jutsu_resource_filenames	unsigned int[116]	116 resource-index filename pointers;all match NA2 prefix;next pointer starts MAT_cmneye1 material table.
+0x00926290	data	kakashi_fanged_pursuit_event_rows	int[4]	Frame,event pairs {50,21},{85,8} consumed by fanged-pursuit frame callback through86B200.
+0x009262A0	data	kakashi_fanged_pursuit_sound_rows	int[14]	Frame,sound pairs {15,14},{20,111},{30,111},{50,13},{85,134},{90,134},{104,135} to resident188AE0.
+0x00928180	data	anbu_young_lightning_name_bank	char *[16]	Resource53 bank14 named slots plusTEX_panbcha02/01;panbcha01..05/eanbcha01a/b/c/02/e0x_tidori00; null0/3/4/5. Shared lightning_blade_begin selects it explicitly.
+0x00928240	data	kakashi_lightning_blade_name_bank	char *[16]	14 animation/name slots plusTEX_pkkscha02/01; selected only forresourceB.
+0x009297B0	data	stage_combo_anchors	un3StageAnchorRecord[20]	Combo anchor records indexed by scene_index; NA2 StageAnchorRecord layout.
+0x00929AA0	data	stage_render_coefficients		Per scene index: two floats for the render descriptor's +0x28 and +0x24; scene 0 0.45/0.35, scene 3 0.2/0.45.
+0x00929B78	label	stage_background_bullet_name		Background bullet resource name resolved by stage_scene_construct.
+0x00929B80	label	stage_object_bullet_name		Object bullet resource name resolved by stage_scene_construct.
+0x00929B90	label	stage_category_dispatch		15 constructor switch destinations indexed by record category; category12 routes to skip.
+0x00929BD0	label	stage_indexed_node_format		%s_%d format for prepared doll nodes after entry0; entry0 uses unmodified stem.
+0x00939F20	label	stage_doll_appear_animation_name		Training-doll appearance animation selected at elapsed==delay.
+0x00939F30	label	stage_doll_normal_animation_name		Training-doll positive-sequence animation.
+0x00939F40	label	stage_doll_final_animation_name		Training-doll sequence-zero animation.
+0x0093ADF0	label	ai_character_descriptors		Eight-byte per-character descriptors read by ai_update_fighter using selected fighter+64; Guy20 row93AE90.
+0x0093AE30	data	kakashi_ai_descriptor	unsigned int[2]	UN3 ID8 row ofai_character_descriptors93ADF0; selector2,flags46hex; loaded byai_tick using actualfighterID64.
+0x0093AEA8	data	itachi_ai_descriptor	uint[2]	ID23 eight-byte donor row{2,5}; ai_tick00825260 indexes0093ADF0 by actualfighter+64 ID*8. NativeID71 actual table row008C357C is signed halfwords2,20.
+0x0093AEB0	data	kisame_ai_descriptor	unsigned int[2]	Actual ID 24 selects eight-byte row in ai_character_descriptors; stored words 1 and 5.
+0x0093AEE0	data	anbu_kakashi_ai_descriptor	unsigned int[2]	Actual fighterID30 eight-byte row of ai_character_descriptors at93ADF0, copied by ai_tick825260; stored words1/5. Numeric strategy semantics not established.
+0x0093AF20	data	fighter_id_038_ai_descriptor	unsigned int[2]	Actual fighterID38 eight-byte row of ai_character_descriptors at93ADF0;stored words1/0A.
+0x0093B270	label	item_wheel_count_dispatch		Six switch destinations for occupied counts0..5 in item_wheel_draw; table code pointers are live.
+0x0093D250	label	stage_unused_skk2_archive_path		stage/ktys_skk2.ccs exists as a string/archive but is absent from27-entry scene table and eight-row summon mapping.
+0x0093D3D0	data	dialogue_voice_rows		Own UN3 eight-byte rows, each with four halfword cue values, selected by root word +0x3EC through dialogue_voice_row. Concrete row meanings and selection writers remain open.
+0x0093E800	data	jutsu_selector_resource_table	int[114]	114 signed selector-to-resource words;107 match NA2 prefix and7 differ;selectors0/1=-1.
+0x00945910	label	stage_tracked_archives		Four32-bit tracked runtime handles written/cleared by stage archive helpers; file-image bytes are overwritten at runtime and do not establish initial handle values.
+0x00945920	data	stage_navigation_routes	un3StageRouteRecord[64]	Runtime route work table filled by stage_navigation_initialize.
+0x00946050	label	item_inventory_cache		Verified runtime cache destination:two sides,five8-byte code-word/count-byte entries per side,side stride0x28; imported bytes here are animation strings,not initial cache contents.
