@@ -4,8 +4,9 @@
 
 Established statically: the main-loop states, New Game's manager setup, the
 scene and mode dispatch, Mode Select's results, the Practice controller's
-states, how Character and Stage Select hand their results to the manager, and
-where Practice Behavior, Command Display, Easy Display and the COM flags live.
+states, how Character and Stage Select hand their results to the manager,
+where each side's Ultimate Jutsu is kept, and where Practice Behavior, Command
+Display, Easy Display and the COM flags live.
 Open: which choice the Easy Display dialog labels on, modes 1, 5 and 6 and
 scenes 2..4, Load Game beyond its manager setup, the HOME.BIN New Game
 sequence, and what Mode Select stores in the active-side word. No runtime
@@ -52,6 +53,14 @@ does no Practice setup of its own.
 
 Stage Select lists scene indices `0..19` (archives `S01..S20`); see
 [UN3 stages](../gameplay/stages/un3_stages.md#stage-select-presentation).
+
+`battle_side_finalize_loadout` leaves each side's Ultimate Jutsu as a record
+of `ultimate_jutsu_record_get`'s table in the side's active halfword (`+0x70`
+for Player 1, `+0x72` for Player 2) and its pending choice (`+0x8A` + side ×
+2). State 6 passes the active record through `ultimate_matchup_variant`, which
+changes only character `0x2E` against `9`, and the fighter takes it from there.
+Naruto (ID 1) lists records 1..21; record 1 is Naruto Uzumaki Barrage and his
+normal default is record 9, The Nine-Tailed Rasengan.
 
 ## Behavior, Command Display, Easy Display and COM flags
 
