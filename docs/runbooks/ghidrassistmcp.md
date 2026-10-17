@@ -94,6 +94,14 @@ program; a change the program rejects is removed from the files again. After
 the [annotation files](../disassembly.md#annotations) change any other way,
 restart the host.
 
+Annotate everything as soon as you establish what it is or does, and refer to
+it only by its annotated name. Cite live runtime addresses. Before carrying an
+annotation over from another game, check that this game's code does the same
+thing; check every struct field against this game's code before adding it to
+the game's `types.h`. Record conclusions that span routines, such as behavior,
+invariants, ordering and hook constraints, in the relevant knowledge document
+with only the evidence needed to assess them: conclusions, not the investigation.
+
 ## Install
 
 Run the installer with a disposable directory inside the active task's own

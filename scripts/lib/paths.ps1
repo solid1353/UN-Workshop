@@ -57,6 +57,88 @@ function Find-UnWorkshopProjectRoot {
     return $null
 }
 
+# Workshop's paths.py resolves every manifest; one result serves every caller
+# within the same command line.
+function Invoke-UnWorkshopPathLoader {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$ManifestPath,
+        [switch]$Workshop,
+        [switch]$Local,
+        [switch]$NoGames
+    )
+
+    if (-not (Test-Path -LiteralPath $ManifestPath -PathType Leaf)) {
+        throw "Path manifest not found: $ManifestPath"
+    }
+    $manifest = (Get-Item -LiteralPath $ManifestPath).FullName
+    $cacheKey = "$($MyInvocation.HistoryId)|$manifest|$Workshop|$Local|$NoGames"
+    $cache = Get-Variable -Name UnWorkshopPathCache -Scope Global -ValueOnly `
+        -ErrorAction SilentlyContinue
+    if ($cache -isnot [hashtable]) {
+        $cache = @{}
+        Set-Variable -Name UnWorkshopPathCache -Scope Global -Value $cache
+    }
+    if ($cache.ContainsKey($cacheKey)) {
+        return $cache[$cacheKey]
+    }
+
+    $arguments = @('-B', (Join-Path $PSScriptRoot 'paths.py'), $manifest)
+    if ($Workshop) { $arguments += '--workshop' }
+    if ($Local) { $arguments += '--local' }
+    if ($NoGames) { $arguments += '--no-games' }
+    $output = @(& (Get-UnPython) @arguments 2>&1)
+    $lines = [string[]]@($output | ForEach-Object { [string]$_ })
+    if ($LASTEXITCODE -ne 0) {
+        throw "Paths could not be resolved: $($lines -join "`n")"
+    }
+    $loaded = ($lines -join "`n") | ConvertFrom-Json
+    $cache[$cacheKey] = $loaded
+    return $loaded
+}
+
+# A project's paths with each root as a property, plus its files, settings and
+# games.
+function Resolve-UnWorkshopManifest {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$ManifestPath,
+        [switch]$Local
+    )
+
+    $loaded = Invoke-UnWorkshopPathLoader `
+        -ManifestPath $ManifestPath `
+        -Local:$Local
+    $resolved = [ordered]@{ ManifestPath = [string]$loaded.manifest }
+    foreach ($root in $loaded.roots.PSObject.Properties) {
+        $resolved[$root.Name] = [string]$root.Value
+    }
+    if ($null -ne $loaded.settings) {
+        $resolved['settings'] = $loaded.settings
+    }
+    $resolved['files'] = $loaded.files
+    $entries = [ordered]@{}
+    $aliases = [ordered]@{}
+    foreach ($game in $loaded.games.PSObject.Properties) {
+        foreach ($alias in @($game.Value.aliases)) {
+            $aliases[[string]$alias] = $game.Name
+        }
+        $aliases[$game.Name] = $game.Name
+        $entries[$game.Name] = [pscustomobject]@{
+            Name = $game.Name
+            Config = $game.Value.config
+        }
+    }
+    $resolved['games'] = [pscustomobject]@{
+        Entries = [pscustomobject]$entries
+        Aliases = [pscustomobject]$aliases
+        Names = @($entries.Keys)
+    }
+    [pscustomobject]$resolved
+}
+
 function Get-UnWorkshopPaths {
     [CmdletBinding()]
     param(
@@ -65,206 +147,53 @@ function Get-UnWorkshopPaths {
     )
 
     $workshop = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
-    $manifestPath = Join-Path $workshop 'paths.json'
-    $manifest = Get-Content -Raw -LiteralPath $manifestPath | ConvertFrom-Json
-    $roots = [ordered]@{ repository = $workshop }
-    $pending = [Collections.Generic.List[string]]::new()
-    foreach ($name in $manifest.roots.PSObject.Properties.Name) {
-        $pending.Add($name)
-    }
-    while ($pending.Count -gt 0) {
-        $progress = $false
-        foreach ($name in @($pending)) {
-            $raw = [string]$manifest.roots.$name
-            $base = $workshop
-            $child = $raw
-            if ($raw.StartsWith('@')) {
-                $match = [regex]::Match(
-                    $raw,
-                    '^@(?<root>[^/\\]+)(?:[/\\](?<child>.*))?$'
-                )
-                if (-not $match.Success) {
-                    throw "Invalid Workshop root alias: $raw"
-                }
-                $parent = $match.Groups['root'].Value
-                if (-not $roots.Contains($parent)) { continue }
-                $base = [string]$roots[$parent]
-                $child = $match.Groups['child'].Value
-            }
-            elseif ([IO.Path]::IsPathRooted($raw)) {
-                throw "Workshop root '$name' must be relative: $raw"
-            }
-            $value = [IO.Path]::GetFullPath((Join-Path $base $child))
-            if ($raw.StartsWith('@')) {
-                $prefix = $base.TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
-                if (-not [IO.Path]::Equals($value, $base) -and
-                    -not $value.StartsWith(
-                        $prefix,
-                        [StringComparison]::OrdinalIgnoreCase
-                    )) {
-                    throw "Workshop root '$name' escapes its parent: $raw"
-                }
-            }
-            $roots[$name] = $value
-            [void]$pending.Remove($name)
-            $progress = $true
-        }
-        if (-not $progress) {
-            throw "Workshop root aliases contain a dependency cycle: $($pending -join ', ')"
-        }
-    }
-    $files = [ordered]@{}
-    foreach ($property in $manifest.files.PSObject.Properties) {
-        $raw = [string]$property.Value
-        if ($raw.StartsWith('@')) {
-            $match = [regex]::Match(
-                $raw,
-                '^@(?<root>[^/\\]+)[/\\](?<child>.+)$'
-            )
-            if (-not $match.Success -or -not $roots.Contains($match.Groups['root'].Value)) {
-                throw "Invalid Workshop file alias: $raw"
-            }
-            $base = [string]$roots[$match.Groups['root'].Value]
-            $child = $match.Groups['child'].Value
-        }
-        else {
-            $base = $workshop
-            $child = $raw
-        }
-        $files[$property.Name] = [IO.Path]::GetFullPath((Join-Path `
-            $base `
-            $child
-        ))
-    }
     $project = if ($NoProject) {
         $null
     }
     else {
         Find-UnWorkshopProjectRoot -ProjectRoot $ProjectRoot
     }
-    $effectiveRoots = [ordered]@{}
-    foreach ($name in $roots.Keys) {
-        $effectiveRoots[$name] = $roots[$name]
+    $loaded = if ($project) {
+        Invoke-UnWorkshopPathLoader `
+            -ManifestPath (Join-Path $project 'paths.json') `
+            -NoGames
     }
-    $effectiveFiles = [ordered]@{}
-    foreach ($name in $files.Keys) {
-        $effectiveFiles[$name] = $files[$name]
+    else {
+        Invoke-UnWorkshopPathLoader `
+            -ManifestPath (Join-Path $workshop 'paths.json') `
+            -Workshop
     }
-    if ($project) {
-        $projectManifestPath = Join-Path $project 'paths.json'
-        $projectManifest = Get-Content -Raw -LiteralPath $projectManifestPath |
-            ConvertFrom-Json
-        $localRootNames = @($projectManifest.roots.PSObject.Properties.Name)
-        if ($localRootNames.Count -eq 0) {
-            throw 'Project path manifest has no roots.'
-        }
-        $effectiveRoots.workshop = $roots.repository
-        $effectiveRoots.repository = $project
-        $pending = [Collections.Generic.List[string]]::new()
-        foreach ($name in $localRootNames) {
-            $pending.Add($name)
-        }
-        while ($pending.Count -gt 0) {
-            $progress = $false
-            foreach ($name in @($pending)) {
-                $raw = [string]$projectManifest.roots.$name
-                $base = $project
-                $child = $raw
-                if ($raw.StartsWith('@')) {
-                    $match = [regex]::Match(
-                        $raw,
-                        '^@(?<root>[^/\\]+)(?:[/\\](?<child>.*))?$'
-                    )
-                    if (-not $match.Success) {
-                        throw "Invalid project root alias: $raw"
-                    }
-                    $parent = $match.Groups['root'].Value
-                    if ($pending.Contains($parent)) { continue }
-                    if (-not $effectiveRoots.Contains($parent)) {
-                        throw "Unknown project root alias: $raw"
-                    }
-                    $base = [string]$effectiveRoots[$parent]
-                    $child = $match.Groups['child'].Value
-                }
-                elseif ([IO.Path]::IsPathRooted($raw)) {
-                    throw "Project root '$name' must be relative: $raw"
-                }
-                $value = [IO.Path]::GetFullPath((Join-Path $base $child))
-                if ($raw.StartsWith('@')) {
-                    $prefix = $base.TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
-                    if (-not [IO.Path]::Equals($value, $base) -and
-                        -not $value.StartsWith(
-                            $prefix,
-                            [StringComparison]::OrdinalIgnoreCase
-                        )) {
-                        throw "Project root '$name' escapes its parent: $raw"
-                    }
-                }
-                $effectiveRoots[$name] = $value
-                [void]$pending.Remove($name)
-                $progress = $true
-            }
-            if (-not $progress) {
-                throw "Project root aliases contain a dependency cycle: $($pending -join ', ')"
-            }
-        }
-        if (-not [IO.Path]::Equals([string]$effectiveRoots.repository, $project)) {
-            throw "The project 'repository' root must contain paths.json."
-        }
-        foreach ($property in $projectManifest.files.PSObject.Properties) {
-            $raw = [string]$property.Value
-            if ($raw.StartsWith('@')) {
-                $match = [regex]::Match(
-                    $raw,
-                    '^@(?<root>[^/\\]+)[/\\](?<child>.+)$'
-                )
-                if (-not $match.Success -or
-                    -not $effectiveRoots.Contains($match.Groups['root'].Value)) {
-                    throw "Invalid project file alias: $raw"
-                }
-                $base = [string]$effectiveRoots[$match.Groups['root'].Value]
-                $child = $match.Groups['child'].Value
-            }
-            else {
-                $base = $project
-                $child = $raw
-            }
-            $effectiveFiles[$property.Name] = [IO.Path]::GetFullPath((Join-Path `
-                $base `
-                $child
-            ))
-        }
+    $roots = $loaded.roots
+    $files = $loaded.files
+    $optional = {
+        param($Table, [string]$Name)
+        $property = $Table.PSObject.Properties[$Name]
+        if ($null -ne $property) { [string]$property.Value } else { $null }
     }
     [pscustomobject][ordered]@{
-        Workshop = $roots.repository
+        Workshop = $workshop
         Project = $project
-        Source = $effectiveRoots.source
-        Disassembly = $effectiveRoots.disassembly
-        Annotations = $effectiveRoots.annotations
-        Tools = $effectiveRoots.tools
-        Work = if ($effectiveRoots.Contains('work')) {
-            $effectiveRoots.work
-        } else { $null }
-        GhidraMcpWork = if ($effectiveRoots.Contains('ghidra_mcp_work')) {
-            $effectiveRoots.ghidra_mcp_work
-        } else { $null }
-        Build = if ($effectiveRoots.Contains('build')) {
-            $effectiveRoots.build
-        } else { $null }
-        Scripts = $effectiveRoots.scripts
-        SourceCatalog = $effectiveFiles.source_catalog
+        Source = & $optional $roots 'source'
+        Disassembly = & $optional $roots 'disassembly'
+        Annotations = & $optional $roots 'annotations'
+        Tools = & $optional $roots 'tools'
+        Work = & $optional $roots 'work'
+        GhidraMcpWork = & $optional $roots 'ghidra_mcp_work'
+        Build = & $optional $roots 'build'
+        Scripts = & $optional $roots 'scripts'
+        SourceCatalog = & $optional $files 'source_catalog'
         ProjectSettings = if ($project) {
-            $effectiveFiles.project_settings
+            & $optional $files 'project_settings'
         } else { $null }
-        Pcsx2Dev = $effectiveRoots.pcsx2_dev
-        Pcsx2Fork = $effectiveRoots.pcsx2_fork
-        Pcsx2Files = $effectiveRoots.pcsx2_files
-        InputProfiles = $effectiveRoots.pcsx2_input_profiles
-        InputRecordings = $effectiveRoots.pcsx2_input_recordings
-        MemoryCards = $effectiveRoots.pcsx2_memory_cards
-        ResolveGame = $effectiveFiles.game_resolver
-        Roots = [pscustomobject]$effectiveRoots
-        Files = [pscustomobject]$effectiveFiles
+        Pcsx2Dev = & $optional $roots 'pcsx2_dev'
+        Pcsx2Fork = & $optional $roots 'pcsx2_fork'
+        Pcsx2Files = & $optional $roots 'pcsx2_files'
+        InputProfiles = & $optional $roots 'pcsx2_input_profiles'
+        InputRecordings = & $optional $roots 'pcsx2_input_recordings'
+        MemoryCards = & $optional $roots 'pcsx2_memory_cards'
+        ResolveGame = & $optional $files 'game_resolver'
+        Roots = $roots
+        Files = $files
     }
 }
 

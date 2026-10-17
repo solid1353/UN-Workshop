@@ -16,6 +16,22 @@ workflows, marker editing, memory cards, PNACH overlays, and input profiles.
 Commands that stage temporary files read `UN_TASK_WORK_ROOT`, the acting
 task's folder as an immediate child of a consuming project's work root.
 
+## Path configuration
+
+`paths.json` defines Workshop's roots and named files. A consuming project's
+own `paths.json` imports it and adds only its own entries. `scripts/lib/paths.py`
+loads both, for Python and through `paths.ps1` for PowerShell. It only resolves
+paths; it never checks that they exist.
+
+- Resolve each path from the manifest that defines it: relative paths and
+  alias references use that manifest's directory and entries, never the
+  importing manifest or the caller's working directory.
+- Loaders inject `repository`; manifests do not define it.
+- Define parent roots before entries derived from them, and keep related
+  entries together.
+- Each registered game's alias-owned PCSX2 bundle exists in exactly one
+  configured `pcsx2_files` root.
+
 ## Tracked layout
 
 - `paths.json`: authoritative Workshop roots and named reusable files.

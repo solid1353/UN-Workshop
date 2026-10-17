@@ -89,9 +89,11 @@ try {
     New-Item -ItemType Directory -Force -Path (Join-Path $repository 'scripts\pcsx2') | Out-Null
     Copy-Item -LiteralPath (Join-Path $sourceRepository 'workshop.ps1') -Destination $repository
     Copy-Item -LiteralPath (Join-Path $sourceRepository 'CLI.txt') -Destination $repository
-    Copy-Item `
-        -LiteralPath (Join-Path $sourceRepository 'scripts\lib\paths.ps1') `
-        -Destination (Join-Path $repository 'scripts\lib')
+    foreach ($name in @('paths.ps1', 'paths.py')) {
+        Copy-Item `
+            -LiteralPath (Join-Path $sourceRepository "scripts\lib\$name") `
+            -Destination (Join-Path $repository 'scripts\lib')
+    }
     Copy-Item `
         -LiteralPath (Join-Path $sourceRepository 'scripts\lib\console_help.ps1') `
         -Destination (Join-Path $repository 'scripts\lib')
@@ -345,7 +347,7 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
             -LiteralPath (Join-Path $sourceRepository 'scripts\pcsx2\launch_games.ps1') `
             -Destination (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
             -Force
-        foreach ($name in @('resolve_game.py', 'game_catalog.py', 'paths.py')) {
+        foreach ($name in @('resolve_game.py', 'game_catalog.py')) {
             Copy-Item `
                 -LiteralPath (Join-Path $sourceRepository "scripts\lib\$name") `
                 -Destination (Join-Path $repository "scripts\lib\$name")
