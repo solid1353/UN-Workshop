@@ -111,6 +111,9 @@ address	kind	name	type	comment
 0x0080DD10	function	stage_foot_ripple_parse	void stage_foot_ripple_parse(int object)	0x59A: fixed OBJ_s0befe09 ripple pool of 40 at +0x50 and EFF_s0befe10 splash pool of 10 at +0xCE0.
 0x0080DE70	function	stage_foot_ripple_area	int stage_foot_ripple_area(int object, int section, float *position)	Section 0: c2<100 and c0 in (-690,-480) or (420,620); section 1: c2<100 and c0 in (430,665).
 0x0080DF90	function	stage_foot_ripple_update	void stage_foot_ripple_update(int object)	Per fighter and two foot nodes: when area check 0x0080DE70 passes and a 100-unit downward cast on flag 0x20000001 is within 20, spawn a ripple (scale 2 on first contact, then scale 1 every 15 updates) and a splash; update both pools.
+0x0080E500	function	stage_flag_parse		0x79B: token 7 texture, token 3 node, tokens 8/9 x4 size, token 10 solver selector; 4x6 cloth with stage_flag_constants, step 0.064
+0x0080E6F0	function	stage_flag_update		w=-stage_wind_strength (at least +-0.005); force 5000w along normalized (0.5w+rng 0.5, rng 0.02, rng 0.02); one cloth step
+0x0080E8B0	function	stage_flag_draw		Scales the render context clip bounds +0x200 by 0.9 and +0x210 by 1.1 around the cloth draw
 0x00813700	function	stage_training_doll_destroy	long stage_training_doll_destroy(long arg1,short arg2)	Reset derived state,install base break vtable,base cleanup;destroy embedded shapeE0/receiversC0/A0,common model cleanup,optionally self;borrowed node/stage archive not freed.
 0x008137E0	function	stage_monkey_doll_destroy	long stage_monkey_doll_destroy(long arg1,short arg2)	Reset derived state,install base break vtable,base cleanup;destroy shapeE0/receiversC0/A0,common model cleanup,optionally self;no stage archive ownership proof.
 0x008139A0	function	stage_wind_bell_destroy	long stage_wind_bell_destroy(long arg1,short arg2)	Reset derived state,install base break vtable,base cleanup;destroy shapeE0/receiversC0/A0,common model cleanup,optionally self;no stage archive ownership proof.
@@ -317,6 +320,7 @@ address	kind	name	type	comment
 0x009133D0	label	stage_auxiliary_archive_names		Four30-byte archive names ojmgmk,ojmgmt,ojmpkn,ojmnkm consumed by stage_release_archives.
 0x00913450	label	stage_scene_tables		27 scene-record pointers plus null terminator; first record type1,label is stage name,primary resource archive path.
 0x009139C0	data	landing_extra_item_distribution		field_item_random_select rows (2,40),(1,30),(3,20),(0,10),(0,0); the kind-0 row is never reached.
+0x00914FE0	data	stage_flag_constants	float[12]	700, 7000, 0.0015, -100, 1000, 50, 0, 0, 0, 0, 0, 1
 0x00915748	data	prop_leaf_generator_parameters		0x38-byte generator parameters for stage_dispatch_prop_effect kind 0x10 (falling leaves).
 0x00915EF0	data	prop_leaf_spin_field		Force key 3 (Euler spin); kind 0x10 replaces its values with random direct values.
 0x00915F90	data	prop_fall_field		Force key 1, -2 velocity on the vertical axis.
