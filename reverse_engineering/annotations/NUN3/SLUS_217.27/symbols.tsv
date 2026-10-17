@@ -268,6 +268,9 @@ address	kind	name	type	comment
 0x00184E40	function	audio_write_pending_stream	void audio_write_pending_stream(void *context, int character, int member, int slot, int alternate_family)	Own NUN3 pending writer uses context+slot*0x14: bank=character-1 at +0, unchanged member at +4, slot at +8, alternate-family at +0xC and pending byte=1 at +0x10. No bounds checks or allocation.
 0x00185570	function	audio_consume_pending_streams	void audio_consume_pending_streams(void)	Own NUN3 consumer scans four pending rows and stops the stored mono slot first. Alternate-family zero requests PLVOICE family 3 with bank=(character-1)+56*(voice_set==1), preserving member narrowed to short. Other rows request SOUND family 0 with alternate+14*(voice_set==1). Reads setting at consumption and clears pending regardless of admission.
 0x001856D0	function	audio_queue_player_voice	void audio_queue_player_voice(int character, int member, int slot)	Own NUN3 queue checks only signed character<57, then writes character, unchanged sparse member, slot and alternate-family zero. No filename-number lookup. Character zero passes and writes bank -1. Compact SNDDATA commands use a separate path.
+0x00185720	function	audio_reference_vectors		Current camera eye (+0x30) and target (+0x70)
+0x001857D0	function	audio_position_velocity		control volume x max(0, 5500 x scale/256 - distance)/50/100, 0x7F without a listener, -1 below 1
+0x00185920	function	audio_position_direction		Always 0x3F0000: centred, never behind
 0x00185A30	function	audio_character_bank_descriptor		Select SNDDATA bank triple00388290+character*12+2AC*audio_alternate_voice_set_enabled(); checked Guy ID20 offsets00970800/019E3000,header13B0,samples5B2B0/5DCE0.
 0x00186460	function	audio_emit_fighter_voice_control		Admit control0..201 and signed program>=0,excludeID39;select side packet by bit60;C0 program followed by F9 spatial controls and FD10 channel/key/tag0/velocity/trailing0;default key from control+3 when caller byte out of0..127.
 0x00186810	function	audio_emit_character_voice_control		Compact control dispatcher selects bound participant ID after form-to-base remap;C0 and FD10 key/default+3,velocity+4. Not PLVOICE.
@@ -277,6 +280,8 @@ address	kind	name	type	comment
 0x00188740	function	audio_alternate_voice_set_enabled	int audio_alternate_voice_set_enabled(void)	Own NUN3 equality query returns one only when audio_command_context_ptr+0xC equals one. Other values return zero. The pending PLVOICE consumer multiplies this result by 56; mode-bank selection also consumes it.
 0x001894B0	function	audio_emit_spatial_sfx_control		Index control 0..0x90 except 0x90 in eight-byte table 0x00385A90; derive position gain/direction, emit program and FD10 with row default key to global sound context.
 0x00189700	function	audio_emit_spatial_sfx_control_with_key		Spatial SFX control table 0x00385A90, index <0x91 and explicit key 0..127; position gain/direction, program and FD10 use caller key rather than row default.
+0x00189970	function	audio_common_loop_start		Allocates a token and starts a common sound from audio_common_controls; returns the token or 0xFF
+0x00189C20	function	audio_common_loop_update_position		Sends FD 01 pan, FD 02 when behind, FD 00 velocity for a playing common sound token
 0x00189EA0	function	audio_stream_set_parameter		Inferred from an exact code match with NA2 SLPS_258.37 0x001D9370. Send RPC 0xA0+slot with enabled*0x100+parameter for a sound-bank slot: slot1 mode bank (after bind 0x9051, parameter 0x40/0x10), slot side+2 character bank (after bind 0x9052+side, parameter 0/1).
 0x0018A1C0	function	audio_request_sound_member_for_voice_set		Request SOUND family0 descriptor base+14*(alternate==1),member,slot. Green Beast UJ intro122 uses base9=>outer9/23,not PLVOICE ID32.
 0x0018A270	function	audio_select_music_track	int audio_select_music_track(int descriptor, int member, int channel)	Reject negatives or an unchanged active member; otherwise start member of sound_descriptors[descriptor] on channel. Same role as NA2 audio_select_music_track.
@@ -633,6 +638,9 @@ address	kind	name	type	comment
 0x003130D0	function	splash_element_start		Start one pooled splash element at a position; stage_foot_ripple_update passes (element, position).
 0x00313120	function	splash_element_update		Per-update step of one pooled splash element; stage_foot_ripple_update calls it for all 10.
 0x003131A0	function	splash_element_draw		Draw one pooled splash element with the shared splash sprite; called for all 10 by the 0x59A draw.
+0x00315220	function	cloth_build		Same contract as NA2 bg_cloth_build_geometry: (width, height, cloth, texture, columns, rows, selector)
+0x00315410	function	cloth_step		One cloth solver step at cloth +0x40
+0x00315470	function	cloth_draw		
 0x0032F0E0	function	rofs_release_file		Inferred from an exact code match with NA2 SLPS_258.37 0x0011B778. For nonnull in-use file (short+0x34),stop state2 (short+0x38),then clear operation+0x36 and in-use. Never close backing archive.
 0x0032F6A0	function	rofs_stop_file		Inferred from an exact code match with NA2 SLPS_258.37 0x0011BD38. Require in-use linked state2 file; backend stop only for operation1,then operation2. Other states clear operation. Does not close backing archive.
 0x0032F8F8	function	rofs_add_volume		Inferred from an exact code match with NA2 SLPS_258.37 0x0011BF90. ROFS service+0x18 adds named volume using existing backing handle and password configuration.
@@ -789,6 +797,7 @@ address	kind	name	type	comment
 0x00373A50	function	summon_scene_row	Nun3SummonSceneRow * summon_scene_row(int index)	Verified standalone leaf returns table base from gp-71E4 plus index*16 without bounds check; eight rows at673590 hold mapping index,character,scene and zero.
 0x00373FB0	function	sp_skill_request_row		Return resident request table0x00670140 + skill*0x14; row is separate from 0x24-byte Ultimate Jutsu record.
 0x00385430	data	afs_startup_names	unsigned int[4]	Own NUN3 pointers to sound.afs, stream.afs, rpgvoice.afs and plvoice.afs; afs_startup_load_archive reads them.
+0x00385A90	data	audio_common_controls		8-byte rows: program, channel, sub-channel, note, volume, pan, scale halfword
 0x003882F0	data	kakashi_compact_bank_english	unsigned int[3]	NUN3 ID8 SNDDATA offset58C000,header13B0,samples4E9E0;sample start58D800.
 0x00388380	data	guy_compact_bank_descriptor	unsigned int[3]	Guy ID20 set0 SNDDATA offset00970800,header13B0,sample5B2B0.
 0x003883A4	data	itachi_compact_bank_english	uint[3]	ID23,set0 descriptor: SNDDATA bankA65000,header1000,sample68300; aligned sample startA66000.

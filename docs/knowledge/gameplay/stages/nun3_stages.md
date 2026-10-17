@@ -7,7 +7,8 @@ update gates, selected prop states, the bounded summon switch/return path,
 the per-stage camera, combo-anchor, route, intensity and music tables, Stage
 Select preview and name assets, record translation evidence from the shared
 stages, the archive conversion rules those stages show, S04's stage-specific
-handlers, the landing-tree reaction and the glare's draw order. Open: other prop states/teardown,
+handlers, the landing-tree reaction, the glare's draw order, and S01's flags,
+wind sound and far-animation fog modes. Open: other prop states/teardown,
 full scene binding, mode/effect meanings, texture-pixel sharing, complete
 NA2 equivalence and Stage Select name-sprite rectangles. Names and
 layouts come from
@@ -412,18 +413,20 @@ controller construction belong to the routine annotations.
 
 | Type | Parser | Authored contract |
 | --- | --- | --- |
-| `0x301` | `stage_animation_parse` | Token 10 Boolean, which `model_set_child_parameter` writes to bits 3-4 of each model child's `+0xA8` flags; their reader is unidentified. |
+| `0x301` | `stage_animation_parse` | Token 10 Boolean, which `model_set_child_parameter` writes to bits 3-4 of each model child's `+0xA8` flags: the fog mode NA2 keeps in bits 0-1 (`model_draw_select_fog`: bit 0 distance fog, bit 1 the fixed percentage). S01's `are01`/`are02` set 1 and `are03` 0; base models keep 3. |
 | `0x38A` | `stage_rotating_sky_parse` | First resource is animation; token 10 float speed; random initial angle over ±pi. `stage_rotating_sky_update` adds 0.98 × speed every update and wraps at ±pi. |
 | `0x390/0x590/0x690` | `stage_frame_animation_parse` | Shared parser; nonzero token 10 integer divides model playback step. |
 | `0x392` | `stage_glare_parse` | Tokens 7/8/9/10 are mode, packed colour, float amount, packed colour; draw submits up to three resource models plus controller. |
 | `0x502` | `stage_wire_parse` | Second/third resources are endpoints ordered by component 0; texture token 6; 15 interior nodes, three arrays and segment/controller storage. |
 | `0x507`, `0x506` | `stage_sway_animation_parse` (`0x007E58A0`) | Token 5 pieces: the record's animation and `_1`.. siblings, at the token-3 node and its `_1`.. siblings, each with a random phase and amplitude 0.1 + rng(0.3) (mode 0), or 0.025 + rng(0.01) when the label holds the lantern string (mode 1); `0x506` is mode 5. |
-| `0x518` | `stage_wind_parse` | One wind per scene: after a hold of 10 × 60 / frame divisor updates (300 at 30 updates per second) the phase advances a degree per update with `stage_wind_strength` = sin(phase); it holds at +1 (phase 90), 0 (180) and -1 (270), and after 360 rests 25 × 60 / divisor updates. `stage_wind_update` also keeps common sound `0x3E` at the camera, offset by the wind. |
+| `0x518` | `stage_wind_parse` | One wind per scene: after a hold of 10 × 60 / frame divisor updates (300 at 30 updates per second) the phase advances a degree per update with `stage_wind_strength` = sin(phase); it holds at +1 (phase 90), 0 (180) and -1 (270), and after 360 rests 25 × 60 / divisor updates. `stage_wind_update` starts common sound `0x3E` (velocity `0x40`) on its first update and, outside holds, places it at the camera eye plus (550 w − 600, 6000 \|w\| − 6000), or 6000 below while `0x0030FA20` reports a battle restriction. `audio_position_velocity` gives volume × max(0, 5500 − distance) / 50 / 100 and `audio_position_direction` always centres it. The sound plays the same sample, split and sample record as NA2's common sound `0x27`. |
 | `0x51B` | `stage_flying_leaves_parse` | A generator from `stage_flying_leaves_generator_parameters` and `stage_flying_leaves_force` with token 8 as lifetime, token 7's composition as its material, token 4 scale and distance fade 100/22000/500/20000. `stage_flying_leaves_update` puts its origin token 3 ahead of the camera along the view, offset upwind by token 10, sets the force's x to token 9 × -wind and the alpha scale to the wind's magnitude, or 0 below 0.3. |
 | `0x52D` | `stage_rising_leaves_parse` | Token 7 composition, token 0 section, tokens 1/2 x range and 3/4 height range. `stage_rising_leaves_update` starts leaf generators at a fighter in states (1, 0x15/0x16) or (5, 0x42/0x43/0x45) inside them, up to six per kind. |
 | `0x601` | `stage_transparent_parse` | Token 3 hit/position node; token 8 plus 150 contact divisor; a radius-150 receiver with mask `0x108` at the node. `stage_transparent_update` takes the nearer fighter's contact distance / divisor, 1 without contact, raises the fade by a tenth of that when it would rise more than 0.1, and sets opacity to fade × `bg_animation_limit(700)`. |
+| `0x79B` | `stage_flag_parse` | Token 7 texture at the token-3 node, tokens 8/9 width and height × 4, token 10 solver selector; a 4 × 6 cloth with `stage_flag_constants` on the cloth solver NA2's factory 6 also uses. `stage_flag_update` blows it with w = −`stage_wind_strength`, at least ±0.005: force 5000 w along the normalized (0.5 w + rng(0.5), rng(0.02), rng(0.02)), then one solver step of 0.064. `stage_flag_draw` widens the render context's clip bounds by a tenth while the cloth draws. |
 | `0x587` | `stage_bridge_parse` | Tokens 1/2 endpoints, 3 segment-node stem, 5 segment count, 6 texture, 7 model, 8/9 floats, 10 byte; three model/rope/helper arrays. |
 | `0x801/0x871`; `0x803/0x813` base | `stage_breakable_parse` | Token 0 count; 3/4 position nodes; 5 shape count; 7 debris; 8/9 integer-derived dimensions; 10 pose/sequence integer. Second/third resources are later animations. Token 5 attack spheres of radius token 9 × 2, mask `0x210`, at `DMY_<stem>_hit` and its `_1`.. siblings; one proximity sphere of radius token 8 + 150, mask `0x108`, at the token-4 node with the first hit node's component 1. |
+| `0x863` | `stage_breakable_parse` | As `0x801`; token 10 names the shadow object, and its `<token 10>s1` model child has its fog bits cleared, so the shadow draws without fog. |
 | category 13 | `stage_parse_lighting` | Token 10 `r,g,b` sets the light colour /255. Without a comma the light keeps its animation's colour, which lights the models (S01: 247, 240, 223 in the per-draw light block), while the render environment's light colour (`+0x70`) stays (1, 1, 1). |
 | `0x81C` | `stage_construct_training_dolls` / `stage_training_doll_parse` | Token 5 controls doll count; each borrows one prepared node and determines its section. |
 
