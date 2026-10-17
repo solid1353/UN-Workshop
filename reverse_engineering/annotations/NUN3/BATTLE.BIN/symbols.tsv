@@ -66,16 +66,33 @@ address	kind	name	type	comment
 0x007DA250	function	stage_lantern_motion	void stage_lantern_motion(int arg1)	Contact entity s16+8E0==1 resets phase0,==0 phase36,other values keep phase;missing entity phase0;phase148+=2,samples scale amplitude144;wrap amplitude*=0.6 floor0.05,re-register receiver only positive count;transform receives sample and0.3*sample.
 0x007DA490	function	stage_wind_bell_update	void stage_wind_bell_update(unsigned long long arg1)	Contact resets phase/restores configured amplitude and sets158=30;shared count/animation/contact sequence and wind-bell motion.
 0x007DA590	function	stage_wind_bell_motion	void stage_wind_bell_motion(int arg1)	Phase+=2 through shared oscillation table;end decay amplitude*=0.6 floor0.05,reset phase;positive count permits receiver re-registration;transform combines sample and0.3*resident scalar whose producer remains unidentified.
+0x007DA7B0	function	stage_face_rock_parse		0x711: breakable with per-hit damage animations; position and first attack sphere lowered 300
+0x007DA910	function	stage_face_rock_trigger		Each hit binds the next damage animation (effect 5); the last binds the broken one (effect 0xB) and credits the side
+0x007DAB40	function	stage_face_rock_update		
 0x007DACF0	function	stage_monkey_doll_parse	void stage_monkey_doll_parse(int arg1)	Run base parser;shape18=3*object60 and shape1C+=50 distinguishes81D.
 0x007DADD0	function	stage_monkey_doll_update	void stage_monkey_doll_update(unsigned long long arg1)	81D shared count/animation/contact sequence;no randomized training-doll respawn delay in this method.
 0x007DAFA0	function	stage_training_doll_parse	void stage_training_doll_parse(unsigned long long arg1,unsigned long long arg2,unsigned long long arg3)	81C token1 D=10*integer=>168,token10 sequence94 copied164; borrowed node170; initial contact offset-150/+100 then prepared-node offset-100/+100; hardcode a1/n1/v1 animation resources; object does not own prepared node.
 0x007DB5A0	function	stage_training_doll_reset	void stage_training_doll_reset(int arg1)	Set elapsed15C=0,delay160=D-(R%trunc(0.4*D)) with D168;restore sequence94 from164;requires nonzero divisor;example token1=10 givesD100.
 0x007DB720	function	stage_training_doll_update	void stage_training_doll_update(unsigned long long arg1)	elapsed<delay=>count-1,elapsed++ and skip contact/animation;equal=>a1,advance,restore configured count,elapsed++;later completion n1 for positive sequence,v1 for0,decrement and selected receiver disable/re-enable;negative step or broken contact/debris conditions schedule delay;scene140==3 retained broken contact calls resident side counter/value helpers;follow borrowed node170 into model,shapes,debris with contact-100/+100;elapsed counts invocations,not seconds.
+0x007DBD30	function	stage_kite_parse		0x81E: token 3 start node, its _1 center, token 1 absence x30; one hit
+0x007DC140	function	stage_kite_first_approach		Approach curve start->center through points 500 out, turned by rng(0.01) about x, y, z; speed 0.015
+0x007DC3C0	function	stage_kite_lay_waypoints		Eight waypoints: center plus (0,0),(400,100),(800,0),(400,-400),(-400,100),(-800,0),(-400,-400),(0,0)
+0x007DC4A0	function	stage_kite_next_leg		Leg 1 arms receivers and lays out waypoints; legs cycle 2..9 through stage_kite_legs, from segment 1
+0x007DC690	function	stage_kite_leg_eight		Empty
+0x007DC6A0	function	stage_kite_fly		Curve plus 10*bob in z, roll = amount*bob, yaw turns to the heading; receivers at the center depth
+0x007DC940	function	stage_kite_flee		Fades 0.02 per update along the drop curve, then returns to the start, re-arms and draws the next absence
+0x007DCCA0	function	stage_kite_update		Absence countdown; flies or flees; replays the idle at a random speed; a hit sets a 0.07 drop curve 100/250/450 down
+0x007DCFE0	function	stage_kite_arrive		Empty
 0x007E5790	function	stage_sway_animation_construct		
 0x007E58A0	function	stage_sway_animation_parse		Records 0x507/0x506: token 5 animations (first, first_%d) at token-3 node (_%d), each with a random amplitude and phase; +0x4C mode 0, 1 (lantern label), 5 (0x506).
 0x007E5C90	function	stage_sway_animation_update		Per piece: angle = amplitude (+ wind scaled in modes 5/2) * stage_sway_sine[phase++]; rotates about y (mode 1) or x with z = 0.3x around the node; mode 0 decays amplitude *0.6 each cycle and redraws below 0.1.
 0x007E65C0	function	stage_wire_parse	void stage_wire_parse(unsigned long long arg1,int arg2)	502 endpoints from record resources0C/10,texture token6; order endpoints by component0,copyE0/F0; segment count64=15,three node arrays plus segment/controller storage.
 0x007E6A40	function	stage_wire_build_segments	void stage_wire_build_segments(Nun3StageWire *wire, unsigned long long texture)	Build wire segment/controller storage using segment_count+0x64; computes endpoint separation from first_endpoint+0xE0 and second_endpoint+0xF0, forwards endpoint addresses to end segments.
+0x007E7D40	function	stage_gondola_parse		0x50C: token 3 node, token 1 wait x30, token 10 line,list,amplitude,doll node; curve object at +0x60
+0x007E7FA0	function	stage_gondola_place		Initial curve step and placement of model, line and doll node
+0x007E8100	function	stage_gondola_bind_line		Keeps the selected line record and its endpoints as offsets
+0x007E8150	function	stage_gondola_next_move		Rise rand%amplitude, or fall when above node+amplitude; points at halves 1/2,3/4,7/8; random speed; end hold 90
+0x007E8300	function	stage_gondola_update		Frozen in battle state 2; steps the curve, moves model, line endpoints and doll node; next move after the end hold
 0x007E8580	function	stage_landing_tree_reaction	void stage_landing_tree_reaction(int object)	Per fighter whose contact flags hold all of +9C: bounds |dx|<width +A0, |depth|<30, |dz|<height +A8 from +F0; on accepted states queue -50 sway and spawn func 0x002621C0(2.0,width,node +40 +(0,0,height-100),field_surface_variant,10) plus stage_dispatch_prop_effect(pos,1,7,0); landing (major 4) also calls stage_landing_tree_landing_extra.
 0x007E8C50	function	stage_landing_tree_landing_extra	void stage_landing_tree_landing_extra(int object)	20% of landings: at node +40 +(rand(width-50),0,height-100) dispatch prop effect 0x10 with token j +B0, call 0x003100B0 with the table at 0x009139C0, and dispatch prop effect (1,0x4E,0x4B).
 0x007E90D0	function	stage_transparent_parse	void stage_transparent_parse(int arg1,int arg2)	601 token3 resolves hit/position node80/B0; integer token8+150 toC8; construct collision controller3C/60.
@@ -319,6 +336,7 @@ address	kind	name	type	comment
 0x00912A80	data	stage_s04_combo_anchors_side1	float[5][4]	S04 side-1 combo anchors c0=-550..-150 step 100 at (1100,50).
 0x009133D0	label	stage_auxiliary_archive_names		Four30-byte archive names ojmgmk,ojmgmt,ojmpkn,ojmnkm consumed by stage_release_archives.
 0x00913450	label	stage_scene_tables		27 scene-record pointers plus null terminator; first record type1,label is stage name,primary resource archive path.
+0x009137D0	data	stage_kite_legs	int[10][4]	Waypoints each leg's curve runs through
 0x009139C0	data	landing_extra_item_distribution		field_item_random_select rows (2,40),(1,30),(3,20),(0,10),(0,0); the kind-0 row is never reached.
 0x00914FE0	data	stage_flag_constants	float[12]	700, 7000, 0.0015, -100, 1000, 50, 0, 0, 0, 0, 0, 1
 0x00915748	data	prop_leaf_generator_parameters		0x38-byte generator parameters for stage_dispatch_prop_effect kind 0x10 (falling leaves).
