@@ -9,6 +9,7 @@ address	kind	name	type	comment
 0x007C3A40	function	stage_prepare_doll_nodes	void stage_prepare_doll_nodes(Nun3StageControl *scene, int index)	If scene1D0 null scan entire stage table for81C and invoke stage_build_doll_nodes; called after each category3 record; all20 normal doll tables place category3 before81C.
 0x007C4930	function	battle_background_particle_variant		Stage/background8C maps1->1,9->2,3->5,6/default->0;stageF null position->4 else proximity aroundX -700/+700 selects3/6. Return range0..6.
 0x007C5A40	function	item_pickup_destroy	long item_pickup_destroy(long param_1,short param_2)	Inferred from an exact code match with NA2 BTL.BIN 0x0070A0F0. ItemData virtual3C calls common cleanup;positive signed destructor mode frees object; no side clear or fighter release before free.
+0x007C67D0	function	stage_apply_render_coefficients		Copies stage_render_coefficients[scene_index] into the battle render descriptor's +0x28 and +0x24 (NA2 factory 17's tokens 0 and 1).
 0x007C6870	function	stage_parse_player_nodes	void stage_parse_player_nodes(Nun3StageControl *scene, Nun3StageRecord *record)	Player1/2 records token3 names DMY_pp1_010/DMY_pp2_010; resolve through ccs_find_named_resource.
 0x007C6910	function	stage_parse_line_nodes	void stage_parse_line_nodes(Nun3StageControl *scene, Nun3StageRecord *record)	Front/back token3 names DMY_line_010/DMY_line_020; token5 is family node count.
 0x007C7180	function	stage_parse_fog	void stage_parse_fog(Nun3StageControl *scene, Nun3StageRecord *record)	Seven tokens: RGB to1B8, near/far distance tokens3/4 to1BC/1C0, far/near percentage tokens5/6 to1C4/1C8; fog_set_distances_and_percentages receives near percentage token6 and far token5, mapping(100-p)*2.55 with linear ramp.
@@ -70,6 +71,9 @@ address	kind	name	type	comment
 0x007DAFA0	function	stage_training_doll_parse	void stage_training_doll_parse(unsigned long long arg1,unsigned long long arg2,unsigned long long arg3)	81C token1 D=10*integer=>168,token10 sequence94 copied164; borrowed node170; initial contact offset-150/+100 then prepared-node offset-100/+100; hardcode a1/n1/v1 animation resources; object does not own prepared node.
 0x007DB5A0	function	stage_training_doll_reset	void stage_training_doll_reset(int arg1)	Set elapsed15C=0,delay160=D-(R%trunc(0.4*D)) with D168;restore sequence94 from164;requires nonzero divisor;example token1=10 givesD100.
 0x007DB720	function	stage_training_doll_update	void stage_training_doll_update(unsigned long long arg1)	elapsed<delay=>count-1,elapsed++ and skip contact/animation;equal=>a1,advance,restore configured count,elapsed++;later completion n1 for positive sequence,v1 for0,decrement and selected receiver disable/re-enable;negative step or broken contact/debris conditions schedule delay;scene140==3 retained broken contact calls resident side counter/value helpers;follow borrowed node170 into model,shapes,debris with contact-100/+100;elapsed counts invocations,not seconds.
+0x007E5790	function	stage_sway_animation_construct		
+0x007E58A0	function	stage_sway_animation_parse		Records 0x507/0x506: token 5 animations (first, first_%d) at token-3 node (_%d), each with a random amplitude and phase; +0x4C mode 0, 1 (lantern label), 5 (0x506).
+0x007E5C90	function	stage_sway_animation_update		Per piece: angle = amplitude (+ wind scaled in modes 5/2) * stage_sway_sine[phase++]; rotates about y (mode 1) or x with z = 0.3x around the node; mode 0 decays amplitude *0.6 each cycle and redraws below 0.1.
 0x007E65C0	function	stage_wire_parse	void stage_wire_parse(unsigned long long arg1,int arg2)	502 endpoints from record resources0C/10,texture token6; order endpoints by component0,copyE0/F0; segment count64=15,three node arrays plus segment/controller storage.
 0x007E6A40	function	stage_wire_build_segments	void stage_wire_build_segments(Nun3StageWire *wire, unsigned long long texture)	Build wire segment/controller storage using segment_count+0x64; computes endpoint separation from first_endpoint+0xE0 and second_endpoint+0xF0, forwards endpoint addresses to end segments.
 0x007E8580	function	stage_landing_tree_reaction	void stage_landing_tree_reaction(int object)	Per fighter whose contact flags hold all of +9C: bounds |dx|<width +A0, |depth|<30, |dz|<height +A8 from +F0; on accepted states queue -50 sway and spawn func 0x002621C0(2.0,width,node +40 +(0,0,height-100),field_surface_variant,10) plus stage_dispatch_prop_effect(pos,1,7,0); landing (major 4) also calls stage_landing_tree_landing_extra.
@@ -79,8 +83,18 @@ address	kind	name	type	comment
 0x007EF250	function	stage_swing_grass_parse	void stage_swing_grass_parse(int object, Nun3StageRecord *record)	0x526: token7 object plus %sa%d children 1..token5, all placed at node token3.
 0x007EF5A0	function	stage_swing_grass_update	void stage_swing_grass_update(int object)	Same deformer as NA2 bg_grass_sway_step with fixed values: gust when rand(0..10)==5 for 100 updates, step 3 degrees, amplitude 20, height threshold 5.
 0x007EF970	function	stage_swing_grass_draw	void stage_swing_grass_draw(int object)	Unless 0x0030FA20 returns nonzero, submit every grass child (count token5+1). Children share the deformed resource geometry with any base-animation instance of the same object.
+0x007F1030	function	stage_wind_construct		
+0x007F10C0	function	stage_wind_parse		0x518: token 10 x -2 at +0x50; hold 10 x 60 / frame divisor updates (300 at 30 updates per second); ramp marks 90/270/180, cycle 360.
+0x007F11E0	function	stage_wind_update		After each hold, phase advances one degree per update with strength sin(phase); holds at +1 (90), 0 (180), -1 (270); at 360 rests 25 x 60 / divisor updates. Publishes stage_wind_strength and positions common sound 0x3E.
 0x007F2980	function	stage_landing_tree_parse	void stage_landing_tree_parse(int object, Nun3StageRecord *record)	0x50D: moves the object's base model +2C to node token3 and sets its contact word +9C to 0x2000D801; token7 object plus children 1..token5 at the same node; token9 float +110; token10 'w,h,i,j' gives receiver width/height floats +A0/+A8 and ints +B4/+B8.
 0x007F2FF0	function	stage_landing_tree_update	void stage_landing_tree_update(int object)	Sway children by wind angle (+110 token9 scale); stage_landing_tree_reaction then the queued -50 impulse curve as NA2's bg_landing_tree_update.
+0x007F6010	function	stage_rising_leaves_parse		0x52D: token 7 composition, token 0 section, tokens 1/2 x range, 3/4 height range.
+0x007F6160	function	stage_rising_leaves_spawn		Fighter on the record's section inside its x and height ranges: kind 1 -> 0x007F5D80, kind 0 -> 0x007F5EA0, at the fighter's position.
+0x007F63D0	function	stage_rising_leaves_update		Per fighter in state (1, 0x15/0x16) or (5, 0x42/0x43/0x45) starts leaf generators through stage_rising_leaves_spawn; six slots per kind, each retuned after 16 updates.
+0x007F8200	function	stage_flying_leaves_construct		
+0x007F8210	function	stage_flying_leaves_release		Sets a live generator's deferred stop to 2.
+0x007F82A0	function	stage_flying_leaves_parse		0x51B: generator from 0x009180B0/0x009180F0 with token 8 lifetime; token 7 composition as its one material; distance fade 100/22000/500/20000; tokens 3, 9, 10 distance ahead, speed, upwind offset.
+0x007F84D0	function	stage_flying_leaves_update		Origin = camera eye + view direction x token 3, x offset upwind by token 10; force x = token 9 x -wind; alpha scale = |wind| when >= 0.3, else 0.
 0x00803E10	function	stage_bridge_parse	void stage_bridge_parse(int arg1,int arg2,unsigned long long arg3)	587 tokens5 segment count,7 model,8/9 floats48/4C,10 byte50;3 per-segment node stem,6 texture,1/2 endpoints; three arrays3C/40/44 hold model and rope/helpers.
 0x00805B60	function	stage_rotating_sky_parse	void stage_rotating_sky_parse(int arg1,int arg2)	38A animation from record resource08, token10 float angular speed38,initial angle48 from rng_signed_scaled(pi).
 0x00805BE0	function	stage_rotating_sky_update	void stage_rotating_sky_update(int arg1)	Add0.98*angular speed38 per invocation,wrap±pi,apply vector40 to model2C; no elapsed-seconds derivation.
@@ -309,6 +323,8 @@ address	kind	name	type	comment
 0x00915FB0	data	prop_drift_left_field		Force key 0, -0.8 displacement on X.
 0x00915FD0	data	prop_drift_right_field		Force key 0, +0.8 displacement on X.
 0x009160B0	data	prop_leaf_scale_field		Force key 5 scale/aspect 2 to 2 over 1.
+0x009180B0	data	stage_flying_leaves_generator_parameters		
+0x009180F0	data	stage_flying_leaves_force		
 0x00918550	data	stage_s04_navigation_routes	Nun3StageRouteRecord[5]	S04 authored routes 3->2/2->3/3->1/1->3 and terminator.
 0x009192D0	data	stage_navigation_authored_routes	Nun3StageRouteRecord *[20]	Authored route lists indexed by scene_index; NA2 route format and first-family line numbering.
 0x00919850	data	item_layout_side0	Nun3ItemLayoutPoint[7]	Seven16-byte layout records for relative positions-3..3;imported x keys all0,y=-25,-25,-9,0,8,7,7;runtime key values and producer not established.
@@ -326,6 +342,7 @@ address	kind	name	type	comment
 0x00928180	data	anbu_young_lightning_name_bank	char *[16]	Resource53 bank14 named slots plusTEX_panbcha02/01;panbcha01..05/eanbcha01a/b/c/02/e0x_tidori00; null0/3/4/5. Shared lightning_blade_begin selects it explicitly.
 0x00928240	data	kakashi_lightning_blade_name_bank	char *[16]	14 animation/name slots plusTEX_pkkscha02/01; selected only forresourceB.
 0x009297B0	data	stage_combo_anchors	Nun3StageAnchorRecord[20]	Combo anchor records indexed by scene_index; NA2 StageAnchorRecord layout.
+0x00929AA0	data	stage_render_coefficients		Per scene index: two floats for the render descriptor's +0x28 and +0x24; scene 0 0.45/0.35, scene 3 0.2/0.45.
 0x00929B78	label	stage_background_bullet_name		Background bullet resource name resolved by stage_scene_construct.
 0x00929B80	label	stage_object_bullet_name		Object bullet resource name resolved by stage_scene_construct.
 0x00929B90	label	stage_category_dispatch		15 constructor switch destinations indexed by record category; category12 routes to skip.

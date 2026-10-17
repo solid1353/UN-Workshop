@@ -201,6 +201,11 @@ scene-specific branch in these readers:
 S04's routes use lines 1..3, numbered from its category-14 counts: one
 front and three back `cl` lines.
 
+`stage_apply_render_coefficients` copies `stage_render_coefficients`
+(BATTLE `0x00929AA0`, two floats per `scene_index`) into the battle render
+descriptor's `+0x28` and `+0x24`, the fields NA2's factory 17 sets from its
+tokens 0 and 1: 0.45/0.35 for S01 and 0.2/0.45 for S04.
+
 Two resident byte/word tables are also indexed by `scene_index`:
 
 | Table | Contract | S04 |
@@ -407,14 +412,19 @@ controller construction belong to the routine annotations.
 
 | Type | Parser | Authored contract |
 | --- | --- | --- |
-| `0x301` | `stage_animation_parse` | Token 10 Boolean propagated to model children; distinct from rotating sky. |
-| `0x38A` | `stage_rotating_sky_parse` | First resource is animation; token 10 float speed; random initial angle over ±pi. |
+| `0x301` | `stage_animation_parse` | Token 10 Boolean, which `model_set_child_parameter` writes to bits 3-4 of each model child's `+0xA8` flags; their reader is unidentified. |
+| `0x38A` | `stage_rotating_sky_parse` | First resource is animation; token 10 float speed; random initial angle over ±pi. `stage_rotating_sky_update` adds 0.98 × speed every update and wraps at ±pi. |
 | `0x390/0x590/0x690` | `stage_frame_animation_parse` | Shared parser; nonzero token 10 integer divides model playback step. |
 | `0x392` | `stage_glare_parse` | Tokens 7/8/9/10 are mode, packed colour, float amount, packed colour; draw submits up to three resource models plus controller. |
 | `0x502` | `stage_wire_parse` | Second/third resources are endpoints ordered by component 0; texture token 6; 15 interior nodes, three arrays and segment/controller storage. |
-| `0x601` | `stage_transparent_parse` | Token 3 hit/position node; token 8 plus 150 contact divisor. Update blends from the smaller positive contact scalar matching the two fighters. |
+| `0x507`, `0x506` | `stage_sway_animation_parse` (`0x007E58A0`) | Token 5 pieces: the record's animation and `_1`.. siblings, at the token-3 node and its `_1`.. siblings, each with a random phase and amplitude 0.1 + rng(0.3) (mode 0), or 0.025 + rng(0.01) when the label holds the lantern string (mode 1); `0x506` is mode 5. |
+| `0x518` | `stage_wind_parse` | One wind per scene: after a hold of 10 × 60 / frame divisor updates (300 at 30 updates per second) the phase advances a degree per update with `stage_wind_strength` = sin(phase); it holds at +1 (phase 90), 0 (180) and -1 (270), and after 360 rests 25 × 60 / divisor updates. `stage_wind_update` also keeps common sound `0x3E` at the camera, offset by the wind. |
+| `0x51B` | `stage_flying_leaves_parse` | A generator from `stage_flying_leaves_generator_parameters` and `stage_flying_leaves_force` with token 8 as lifetime, token 7's composition as its material, token 4 scale and distance fade 100/22000/500/20000. `stage_flying_leaves_update` puts its origin token 3 ahead of the camera along the view, offset upwind by token 10, sets the force's x to token 9 × -wind and the alpha scale to the wind's magnitude, or 0 below 0.3. |
+| `0x52D` | `stage_rising_leaves_parse` | Token 7 composition, token 0 section, tokens 1/2 x range and 3/4 height range. `stage_rising_leaves_update` starts leaf generators at a fighter in states (1, 0x15/0x16) or (5, 0x42/0x43/0x45) inside them, up to six per kind. |
+| `0x601` | `stage_transparent_parse` | Token 3 hit/position node; token 8 plus 150 contact divisor; a radius-150 receiver with mask `0x108` at the node. `stage_transparent_update` takes the nearer fighter's contact distance / divisor, 1 without contact, raises the fade by a tenth of that when it would rise more than 0.1, and sets opacity to fade × `bg_animation_limit(700)`. |
 | `0x587` | `stage_bridge_parse` | Tokens 1/2 endpoints, 3 segment-node stem, 5 segment count, 6 texture, 7 model, 8/9 floats, 10 byte; three model/rope/helper arrays. |
-| `0x801/0x871`; `0x803/0x813` base | `stage_breakable_parse` | Token 0 count; 3/4 position nodes; 5 shape count; 7 debris; 8/9 integer-derived dimensions; 10 pose/sequence integer. Second/third resources are later animations. |
+| `0x801/0x871`; `0x803/0x813` base | `stage_breakable_parse` | Token 0 count; 3/4 position nodes; 5 shape count; 7 debris; 8/9 integer-derived dimensions; 10 pose/sequence integer. Second/third resources are later animations. Token 5 attack spheres of radius token 9 × 2, mask `0x210`, at `DMY_<stem>_hit` and its `_1`.. siblings; one proximity sphere of radius token 8 + 150, mask `0x108`, at the token-4 node with the first hit node's component 1. |
+| category 13 | `stage_parse_lighting` | Token 10 `r,g,b` sets the light colour /255. Without a comma the light keeps its animation's colour, which lights the models (S01: 247, 240, 223 in the per-draw light block), while the render environment's light colour (`+0x70`) stays (1, 1, 1). |
 | `0x81C` | `stage_construct_training_dolls` / `stage_training_doll_parse` | Token 5 controls doll count; each borrows one prepared node and determines its section. |
 
 `stage_prepare_doll_nodes` follows every category-3 record. If
@@ -462,6 +472,7 @@ or one frame.
 | `0x803`, lanterns | `stage_lantern_motion`: contact restores amplitude and local value 30. `Nun3StageLanternContactEntity.phase_selector` values 1/0 select phase 0/36; other values keep phase, absence selects 0. Phase advances by 2; samples scale amplitude. Each wrap decays amplitude by 0.6 with floor 0.05; positive count permits receiver re-registration. Transform uses sample and 0.3×sample. Contact side is retained and `stage_lantern_contact_effect` selects three parameter paths from `effect_mode`. |
 | `0x813`, wind bells | `stage_wind_bell_motion`: contact resets phase, restores amplitude and local value 30. Phase advances by 2 through the same table; at its end amplitude decays by 0.6 with floor 0.05, phase resets and positive count permits receiver re-registration. Transform combines sample with 0.3×a resident scalar whose producer is unidentified. |
 | `0x81D`, `うっきー君` | `stage_monkey_doll_update` shares count/animation/contact transitions; parser triples the base shape dimension and adds 50 to its offset. This update has no randomized doll-respawn delay. |
+| `0x507` mode 0, noren | `stage_sway_animation_update` (`0x007E5C90`): angle = amplitude × `stage_sway_sine`[phase], phase advancing by 1; rotation (angle, 0, 0.3 × angle) about the piece's node. At the table's end the amplitude decays by 0.6, and below 0.1 becomes 0.2 + rng(0.3). Modes 5 and 2 add 0.7 and 0.5 × the wind scalar `0x006A3BB8` to the amplitude; mode 1 rotates about component 1 and does not decay. `stage_sway_tables_init` fills `stage_sway_sine` with 72 samples of sin(5i°), sample 36 at 3.14 radians. |
 | `0x81C`, `訓練君` | `stage_training_doll_update` adds delayed appearance, a separate sequence and node-following reset. |
 
 Training-doll token 1 sets `delay_base = D = 10 * integer(token 1)`;

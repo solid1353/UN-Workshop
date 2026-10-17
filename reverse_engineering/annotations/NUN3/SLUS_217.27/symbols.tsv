@@ -572,6 +572,7 @@ address	kind	name	type	comment
 0x002A1180	function	menu_create_named_texture_sprite		Allocates and constructs a0xF8 sprite, binds the named texture from the named CCS container through sprite_bind_named_texture, sets draw order/suborder, and assigns scene owner at sprite+0xD0. NUN3 settings voice sprite selects option/TEX_option_so.
 0x002A1310	function	menu_draw_sprite_rectangle		Draws a supplied four-halfword (u,v,width,height) rectangle through the supplied sprite: writes UVs shifted left4 at sprite+0x68/+0x6C, dimensions and centered placement, scales it, then calls scene_output_finalize. Used by audio_settings_draw_voice_choice.
 0x002A6EE0	function	battle_particle_descriptor_remap_palette		Store replacement palette at descriptor +0x10 and original palette at +0x0C; hit-effect setup uses this to replace par00/par01 palettes with c5 variants.
+0x002A6EF0	function	particle_material_set_model		Entry +0 kind 1, +2 index 0, +8 model.
 0x002AAB00	function	generator_initialize_parameters		NA2 generator_initialize_parameters' counterpart; parameters at +0x1F8 (NA2 +0x1E8), elements 0x90 bytes (NA2 0xA0).
 0x002AB260	function	particle_emitter_find_field		Field list +0xC walked by +0x80; returns the field whose slot +0x88 matches, or the last for a negative slot; NA2 0x0034C280.
 0x002AB450	function	particle_emitter_destroy_fields		Inferred from an exact code match with NA2 SLPS_258.37 0x0034C380. Walk next links, virtually destroy each 0x90-byte field through slot 08 with delete=1, and zero field count.
@@ -585,6 +586,7 @@ address	kind	name	type	comment
 0x002B0000	function	particle_force_scale_aspect		Force key 5; same code as NA2.
 0x002B0A50	function	particle_force_angle_set		Inferred from an exact code match with NA2 SLPS_258.37 0x00351CC0. Force dispatch keys `0xB`, `0x1C`: Set that element angle directly from the signed halfword.
 0x002B15B0	function	generator_create_from_descriptor		Inferred from an exact code match with NA2 SLPS_258.37 0x00352A10. Create ccGenerator2 from the CCS generator descriptor through allocation and parameter initialization. | Package four supplied force descriptor pointers then delegate to manager emitter producer; registration returns emitter identifier via delegated result. | Raw forwarding preserves manager,parameters,four force pointers,capacity and emission_mode and returns particle_manager_create_emitter identifier in v0.
+0x002B1740	function	particle_manager_find_emitter		NA2 0x00352C40.
 0x002B1CC0	function	rng_low31	unsigned int rng_low31(void)	Inferred from an exact code match with NA2 SLPS_258.37 0x001801B0. Return prng_next() & 0x7FFFFFFF, consuming one MT word without reseeding; the discarded high bit prevents raw-output state recovery from these results alone.
 0x002B1CF0	function	rng_next_integer	unsigned int rng_next_integer(void)	Return RNG integer used by training-doll reset modulo trunc(0.4*D).
 0x002B1D20	function	prng_inclusive		Random integer 0..abs(bound) inclusive; same contract as NA2 prng_inclusive.
@@ -611,8 +613,11 @@ address	kind	name	type	comment
 0x002FFA90	function	battle_particle_create_fields		Allocate290 emitter;copy38 descriptor,allocate particles and up to five90 field operators from20 descriptors;Primary Lotus state2 passes47A600/640/660/680 before selecting238=34+surface variant.
 0x002FFEE0	function	battle_particle_destroy		Free resource descriptor array230 and reset count234;install base table and optional free.
 0x002FFF90	function	battle_particle_cleanup_fields		Releases four retained field choices then particle_emitter_destroy_fields;separate destructor frees resource descriptor array.
+0x00300140	function	battle_generator_allocate_material_objects		NA2 0x0034A4B0; array at +0x230, count +0x234.
 0x003001C0	function	battle_particle_bind_resources		Allocate14-byte per-resource descriptors;typed900 composition,700 animation,E00 effect;cache alias suffix drives palette/frame remap160F30;register via3003A0.
 0x003003A0	function	battle_particle_register_resources		Kinds1/0/2 dispatch generator_register_composition/effect/animation;choice slots index48D310;optional remap when both palette pointers present.
+0x00300540	function	battle_generator_set_uniform_scale		Scale (s, s, s, 1) at +0x150.
+0x0030F380	function	stage_sway_tables_init		Fills the sway sine/cosine tables: 72 entries of sin/cos(i*5 deg), entry 36 uses 3.14; 18 entries of sin(i*20 deg).
 0x0030F870	function	stage_contact_mode_blocked	int stage_contact_mode_blocked(void)	Global predicate suppresses break-object contact resolution when nonzero; full mode meaning unresolved.
 0x0030FCB0	function	stage_doll_increment_side_counter	void stage_doll_increment_side_counter(int side)	Verified standalone leaf increments signed halfword at global owner+66+side*2 when owner exists; doll scene3 broken-contact branch calls with retained contact side; gameplay effect meaning unresolved.
 0x0030FD30	function	stage_doll_set_side_value	void stage_doll_set_side_value(int side)	Verified standalone leaf stores argument at global owner+78 when owner exists; doll scene3 broken-contact branch passes retained contact side; gameplay effect meaning unresolved.
@@ -991,5 +996,11 @@ address	kind	name	type	comment
 0x006A109C	data	itachi_cinematic_auxiliary_requests	uint[5]	Single request of each skill66..6A selects00584870/586090/5871C0/587A70/5885C0.
 0x006A10E4	data	anbu_kakashi_cinematic_auxiliary_descriptors	unsigned int[2]	Skill78 request-ordinal pointers5909F0/591B50;scene/renderer auxiliary descriptors,not audio/damage cue rows.
 0x006A10E8	label	green_beast_cinematic_auxiliary_requests		Skill79 ordinal0/1 pointers591B50/591F60;all four counted12-byte auxiliary channels zero in both selected descriptors.
+0x006A16B8	data	stage_sway_length	int	72
+0x006A16BC	data	stage_sway_coarse_length	int	18
 0x006A30F4	data	audio_request_context_ptr	unsigned int	Own NUN3 published 0x60-byte request-context pointer. Four 0x14-byte pending rows at its base are written by audio_write_pending_stream and drained by audio_consume_pending_streams.
 0x006A3110	data	audio_command_context_ptr	unsigned int	Own NUN3 published command-context pointer, allocated as 0x184 bytes. Signed voice-set word at +0xC is initialized to zero, written by audio_set_voice_set and queried by audio_alternate_voice_set_enabled.
+0x006A3ADC	data	stage_sway_coarse_sine	float *	stage_sway_coarse_length entries of sin(i*360/length deg).
+0x006A3AE0	data	stage_sway_sine	float *	stage_sway_length entries of sin(i*360/length deg).
+0x006A3AE4	data	stage_sway_cosine	float *	
+0x006A3BB8	data	stage_wind_strength	float	Written by stage_wind_update; read by the flying leaves and wind-scaled sways.
