@@ -6,8 +6,8 @@ Established: archive compatibility, compiled records, construction routing,
 update gates, selected prop states, the bounded summon switch/return path,
 the per-stage camera, combo-anchor, route, intensity and music tables, Stage
 Select preview and name assets, record translation evidence from the shared
-stages, S04's stage-specific handlers, the landing-tree reaction and the
-glare's draw order. Open: other prop states/teardown,
+stages, the archive conversion rules those stages show, S04's stage-specific
+handlers, the landing-tree reaction and the glare's draw order. Open: other prop states/teardown,
 full scene binding, mode/effect meanings, texture-pixel sharing, complete
 NA2 equivalence and Stage Select name-sprite rectangles. Names and
 layouts come from
@@ -586,20 +586,29 @@ catalog rows `0x34` and `0x4C`, the same rows as NA2's
 NA2's common bank holds the same samples and program records as NUN3's
 programs 7 and `0x4E` under its programs 7 and `0x2E`.
 
-The NA2 archives rename sections to the names those parsers build. NUN3 S16
-→ NA2 S14 shows the rules:
+The nine pairs' archives, compared section by section, show how NA2
+converted the content:
 
-- `ANM_anm_doll_a1/n1/v1` become `_a0/_a1/_a2`, byte-identical.
-- `ANM_s2auki00_d1/n1/n2` become `ANM_s14uki00_a0/_a1/_a2`, with translation
-  keys made node-relative (432/84/84 to 432/72/72 bytes).
-- Each break stem's base piece gains `_a0` (`OBJ_doll_bre_000`,
-  `OBJ_uki_bre_000`, `OBJ_obj_070_`).
-- `DMY_s2auki00_hit` becomes `DMY_s14uki00_hit`.
-- NA2 adds `DMY_s14doll00_hit`..`02_hit`, which NUN3 lacks, at each doll
-  node + (0, -100, +100).
-
-NA2 S14 also stores these nodes 400 lower in component 2 than NUN3 S16
-(and the monkey-doll hit node 320 lower).
+- Names: NUN3's stage code becomes the NA2 file's number: `s6b` → `s08`,
+  `s2c` → `s09`, `s8a` → `s10` (partly kept), `s4a` → `s13`, `s2a` → `s14`,
+  `s7b` → `s15`, `s3a` → `s16`, `s2b` → `s23`, `s7a` → `s24`.
+- Breakable pieces: the parsers' `_a0`.. pieces take NUN3's role-named
+  animations as idle `n1` → `a0`, hit `d1` → `a1`, broken `n2` → `a2` in
+  seven pairs; S14's monkey doll alone orders `d1`, `n1`, `n2`. Training dolls
+  map `a1/n1/v1` to `a0/a1/a2`, and each break stem's base piece gains `_a0`.
+  Idle and broken poses lose their translation keys (84 to 72 bytes), because
+  the factory places the piece at its node. Every converted break animation
+  ends with frame -1; NUN3 ends them with -1 too, except S04's monkey-doll
+  idle and broken poses, which end with the loop marker -2.
+- Nodes: break-object nodes `DMY_pg_*` move 50..100 lower in component 2 in
+  S08, S13, S16, S23 and S24, and hit nodes are re-placed one by one (monkey
+  dolls 25..80 higher). In every pair the outer ends of the front and back
+  `cl` lines move 25..65 inward along component 0. NA2 adds
+  `DMY_s??doll0N_hit` at each doll node + (0, -100, +100). S14 also stores
+  every node 400 lower in component 2 than NUN3 S16 (its monkey-doll hit node
+  320 lower).
+- Art: every pair's textures and palettes, and many models and other
+  animations, differ.
 
 ### S04 stage-specific records
 
