@@ -548,6 +548,7 @@ address	kind	name	type	comment
 0x00272710	function	battle_composite_effect_destroy		Destroy embedded210 via23CB20(-1),main scene player and optional owner free;paired model/effect consumers release their owned objects.
 0x00272F30	function	battle_surface_drop_destroy		Destroy the 0x260-byte moving scene-effect object's main player through battle_effect_player_destroy, then optionally free the allocated owner.
 0x002730D0	function	battle_particle_resource_cache_setup		Allocate101 eight-byte cached resource rows from16-byte source478E70;require named provider and resource on base rows,alias prior pointer otherwise;encode palette/frame suffix choice. Publish6A31BC,manager6A31B8.
+0x00273550	function	ultimate_matchup_variant		With direction 1, character 0x2E against 9 swaps records 0x1B2/0x1B3 for 0x1B4/0x1B5; direction 0 swaps back; every other pair is unchanged.
 0x002753C0	function	battle_classify_stage_scene	void battle_classify_stage_scene(unsigned long long arg1)	Current context61 indices20..26 set scene class word5C=2, all other indices1.
 0x00275460	function	overlay_load		Loads overlay_filenames[index] when it differs from manager+8 and records it.
 0x002754D0	function	overlay_require		Loads overlay_filenames[index] through overlay_load once battle_manager exists, else directly.
@@ -561,6 +562,10 @@ address	kind	name	type	comment
 0x0027BCD0	function	practice_command_display_set		Command Display (OFF 0, ON 1): modes 1 and 5 store bit 1 of +0xA4F; other modes store bit 1 of profile byte +0x5F.
 0x0027BD40	function	practice_command_display_get		Command Display: bit 1 of profile byte +0x5F in mode 7, bit 1 of +0xA4F in modes 1 and 5, else 1. Practice's command display reads it every frame (BATTLE.BIN 0x00837410/0x00837510).
 0x0027BED0	function	character_ultimate_default_record		Mode argument-1 reads manager58; mode1 returns halfword47BDD0+character*2; other modes return47BD50+character*2. KakashiID8 normal98/mode196.
+0x0027D2C0	function	battle_side_pending_ultimate_set	void battle_side_pending_ultimate_set(void *manager, long side, short record)	Stores side 1/2's chosen Ultimate record halfword at +0x8A + side*2.
+0x0027D2E0	function	battle_side_pending_ultimate_get		Reads side 1/2's chosen Ultimate record halfword at +0x8A + side*2.
+0x0027D340	function	battle_side_ultimate_set	void battle_side_ultimate_set(void *manager, long side, short record)	Stores the side's active Ultimate record: +0x70 for side 1, +0x72 otherwise.
+0x0027D370	function	battle_side_ultimate_get		Reads the side's active Ultimate record: +0x70 for side 1, +0x72 otherwise; the fighter spawn descriptor and battle_request_match_resources read it.
 0x0027E5F0	function	battle_owner_destroy	long battle_owner_destroy(long arg1,short arg2)	Destroy running battle owner for manager state12; optional allocation release controlled by second argument.
 0x00281520	function	battle_active_scene_update	long battle_active_scene_update(unsigned long long arg1)	Return request gate context5C==2, owner halfword08==5,context00 bit20 and both participant checks zero; copy saved7D to pending7B, clear7C,set request bit and context960=11.
 0x00282620	function	new_game_start		Builds battle_manager with profile defaults and loads Battle.bin. Outside the attract demo, a nonzero memory_card_check_directories result runs a HOME.BIN sequence and sets money to 50000; then fades and returns 1.
