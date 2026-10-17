@@ -634,7 +634,7 @@ address	kind	name	type	comment
 0x0030F380	function	stage_sway_tables_init		Fills the sway sine/cosine tables: 72 entries of sin/cos(i*5 deg), entry 36 uses 3.14; 18 entries of sin(i*20 deg).
 0x0030F5D0	function	vector_direction_angles		atan2(dy,dz), atan2(dz,dx), atan2(dy,dx) of b-a
 0x0030F870	function	stage_contact_mode_blocked	int stage_contact_mode_blocked(void)	Global predicate suppresses break-object contact resolution when nonzero; full mode meaning unresolved.
-0x0030FA20	function	battle_restriction_check		1 when the director is in state 5 substate 0 and the battle state object's +0x10/+0x9F8/+0x9FE/+0xAA0/+0xAA6 flags are set; meaning open
+0x0030FA20	function	battle_restriction_check		1 when the pause controller (+0x10 lifecycle or its suppression halfwords) is set while the director is in state 5 substate 0; NA2 scene_update_restricted ports it as its pause controller's lifecycle in director state 6 substate 0
 0x0030FAC0	function	battle_state_is_2		
 0x0030FBB0	function	stage_prop_contact_accepted		Registration 1's attacker rejected only for attack category 0xF00000/bit 2 or flags 0x2000000; returns 1 otherwise, also with no result; stores the attacker only through a null pointer.
 0x0030FCB0	function	stage_doll_increment_side_counter	void stage_doll_increment_side_counter(int side)	Verified standalone leaf increments signed halfword at global owner+66+side*2 when owner exists; doll scene3 broken-contact branch calls with retained contact side; gameplay effect meaning unresolved.
