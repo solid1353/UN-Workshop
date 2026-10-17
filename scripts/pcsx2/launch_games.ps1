@@ -45,6 +45,8 @@ param(
 
     [UInt64]$UnlimitedForFrames = 0,
 
+    [hashtable]$UnlimitedForFramesByGame,
+
     [switch]$ClosePcsx2,
 
     [string]$ProjectRoot,
@@ -95,10 +97,16 @@ if ($PSBoundParameters.ContainsKey('UnlimitedForFrames') -and
     $UnlimitedForFrames -eq 0) {
     throw '-UnlimitedForFrames requires a positive frame count.'
 }
-if ($Unlimited -and $UnlimitedForFrames -gt 0) {
+$frameLimitedUnlimited = $UnlimitedForFrames -gt 0 -or
+    ($null -ne $UnlimitedForFramesByGame -and $UnlimitedForFramesByGame.Count -gt 0)
+if ($null -ne $UnlimitedForFramesByGame -and
+    @($UnlimitedForFramesByGame.Values | Where-Object { [UInt64]$_ -eq 0 }).Count -gt 0) {
+    throw '-UnlimitedForFramesByGame requires positive frame counts.'
+}
+if ($Unlimited -and $frameLimitedUnlimited) {
     throw 'Permanent Unlimited cannot be combined with frame-limited Unlimited.'
 }
-if ($Snapshots -and ($Turbo -or $Unlimited -or $UnlimitedForFrames -gt 0)) {
+if ($Snapshots -and ($Turbo -or $Unlimited -or $frameLimitedUnlimited)) {
     throw 'Snapshot replay owns its permanent Unlimited speed mode.'
 }
 if (-not [string]::IsNullOrWhiteSpace($CaptureDirectory) -and -not $Snapshots) {
@@ -312,6 +320,15 @@ foreach ($requestedGame in $Games) {
         -DiscardMemoryCardWrites:$DiscardMemoryCardWrites `
         -VolatileMemoryCard:$VolatileMemoryCard `
         -DefaultDiscard:$Snapshots
+    $gameUnlimitedForFrames = if (
+        $null -ne $UnlimitedForFramesByGame -and
+        $UnlimitedForFramesByGame.ContainsKey($selector)
+    ) {
+        [UInt64]$UnlimitedForFramesByGame[$selector]
+    }
+    else {
+        $UnlimitedForFrames
+    }
     $selectedGames.Add([pscustomobject]@{
         Selector = $selector
         IsoPath = $isoPath
@@ -320,6 +337,7 @@ foreach ($requestedGame in $Games) {
         GameSettingsPath = $gameSettingsPath
         Pnach = $pnach
         PnachLines = $pnachLines
+        UnlimitedForFrames = $gameUnlimitedForFrames
     })
 }
 
@@ -330,6 +348,13 @@ foreach ($mapping in @($PnachByGame, $PnachLinesByGame)) {
     foreach ($selector in $mapping.Keys) {
         if (-not $seenSelectors.Contains([string]$selector)) {
             throw "PNACH override targets an unselected game: $selector"
+        }
+    }
+}
+if ($null -ne $UnlimitedForFramesByGame) {
+    foreach ($selector in $UnlimitedForFramesByGame.Keys) {
+        if (-not $seenSelectors.Contains([string]$selector)) {
+            throw "Frame-limited Unlimited targets an unselected game: $selector"
         }
     }
 }
@@ -603,8 +628,8 @@ try {
             if ($Unlimited) {
                 $launchParameters.Unlimited = $true
             }
-            elseif ($UnlimitedForFrames -gt 0) {
-                $launchParameters.UnlimitedForFrames = $UnlimitedForFrames
+            elseif ($game.UnlimitedForFrames -gt 0) {
+                $launchParameters.UnlimitedForFrames = $game.UnlimitedForFrames
             }
         }
         if ($selectedGames.Count -eq 1 -and -not $AgentReplay) {

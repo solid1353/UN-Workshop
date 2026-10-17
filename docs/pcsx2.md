@@ -39,7 +39,8 @@ card names insert that postfix after the project's serial-wide memory-card
 base. Speed selection is positive throughout the launcher: callers may request
 Turbo, permanent Unlimited, or frame-limited Unlimited; no speed option means
 Normal. Frame-limited Unlimited uses PCSX2's `-unlimited-for-frames`, and Turbo
-may accompany it as its fallback; see the
+may accompany it as its fallback; a caller may give each launched game its own
+frame count. See the
 [speed options](../../../PCSX2/docs/launch_options.md#speed). Snapshot replay
 explicitly selects permanent Unlimited.
 
