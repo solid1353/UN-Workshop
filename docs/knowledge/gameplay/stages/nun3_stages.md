@@ -6,7 +6,8 @@ Established: archive compatibility, compiled records, construction routing,
 update gates, selected prop states, the bounded summon switch/return path,
 the per-stage camera, combo-anchor, route, intensity and music tables, Stage
 Select preview and name assets, record translation evidence from the shared
-stages and S04's stage-specific handlers. Open: other prop states/teardown,
+stages, S04's stage-specific handlers, the landing-tree reaction and the
+glare's draw order. Open: other prop states/teardown,
 full scene binding, mode/effect meanings, texture-pixel sharing, complete
 NA2 equivalence and Stage Select name-sprite rectangles. Names and
 layouts come from
@@ -502,12 +503,14 @@ Concrete NA2 comparisons use `bg_rotating_sky_parse` (`0x003986F0`),
 | Behavior | NA2 inputs | NUN3 inputs |
 | --- | --- | --- |
 | Rotating sky | Resource/node tokens 0/1, float scale 2, initial integer angle 3 (-1 random), speed 4. | Animation in first record resource; speed token 10. |
-| Glare | Pack tokens 0..3 and 5..7 into colour words; mode 8, floats 4/9. | Already-packed integer colours 8/10; mode 7, float 9. |
+| Glare | Pack tokens 0..3 and 5..7 into colour words; mode 8, floats 4/9. Every retail record is in selector 5 (draw key 10), after the scene. | Already-packed integer colours 8/10; mode 7, float 9. `stage_glare_draw` draws the record's models in a draw environment keyed -5122 and the glare in one keyed -5121, ahead of the stage's own environments (-5120, -2304, 15), so the glare samples only those models. |
 | Wire | Endpoints/texture tokens 0/1/2; fifteen interior nodes and three arrays. | Endpoints in second/third record resources; texture token 6; parallel node/array setup. |
 | Suspension bridge | Token contract in [Stages](stages.md#animated-and-breakable-background-evidence). | Segment/model/endpoint token positions differ as listed above. |
 | Transparency | `ccBgTransObject` uses token 4 radius and fighter-distance easing. | Token 8 plus 150 and collision-contact scalars. |
 
 Related scene responsibilities do not make these formats interchangeable.
+Both games' glare objects use the same effect class (`pause_auxiliary_refresh`
+initializer, `ccfm_sampling_pass_submit`) with byte-identical pass settings.
 
 ## Correspondence with NA2 records
 
@@ -566,6 +569,23 @@ grass and leaf constants.
 | `0x81C` training doll (all pairs) | factory 41 per doll | `ANM_anm_doll,3,1`, doll node, `DMY_s??doll0N_hit,1,100,OBJ_doll_bre_000,4`; token 5's doll count becomes that many records on `DMY_dd_010`, `_1`, `_2` |
 | `0x81D` monkey doll (all pairs) | factory 50 | `ANM_s??uki00,3,2`, token 4 node, `DMY_s??uki00_hit`, `0.8` or `1`, `100,OBJ_uki_bre_000,4`. NUN3's monkey animations hold absolute translation keys; NA2's equal them minus the token-4 node's position, because factory 50 places the doll at that node. |
 
+`stage_landing_tree_reaction` (`0x007E8580`) reacts to a fighter within the
+receiver width, 30 in depth and the receiver height of the swaying node.
+It queues the -50 sway, spawns ten leaves through `surface_effect_spawn` at
+the node raised by height - 100, and plays common sound 7 there. The leaf
+colour follows `field_surface_variant` (5 on S04): `surface_effect_variants`
+rows `0x89 + v` and `0x90 + v` name `CLT_e0xleaf01`/`02` with suffix `cv`,
+the same palettes as NA2's rows `0x7B + v`/`0x82 + v`, and both
+`PARTICLE.CCS` archives hold the same colours. On a landing (major state 4)
+`stage_landing_tree_landing_extra` (`0x007E8C50`) acts one time in five, at a
+random point along the branch: `stage_dispatch_prop_effect` kind `0x10`
+starts two falling-leaf generators (`prop_leaf_generator_parameters` with
+catalog rows `0x34` and `0x4C`, the same rows as NA2's
+`battle_particle_catalog_rows`), `field_item_random_select` draws an item from
+`landing_extra_item_distribution`, and program `0x4E` plays at key `0x4B`.
+NA2's common bank holds the same samples and program records as NUN3's
+programs 7 and `0x4E` under its programs 7 and `0x2E`.
+
 The NA2 archives rename sections to the names those parsers build. NUN3 S16
 → NA2 S14 shows the rules:
 
@@ -588,7 +608,7 @@ fixed resource names:
 
 | Type | Handlers | Behavior |
 | --- | --- | --- |
-| `0x595` water sparkle | `stage_memorial_sparkle_parse`, `stage_memorial_sparkle_reset` (`0x0080C7C0`, `0x0080C8B0`) | `EFF_s0befe07` at 30 random positions: x within ±5000, depth 6200..13200, scale depth/7000×5, angle π/4, random phase |
+| `0x595` water sparkle | `stage_memorial_sparkle_parse`, `stage_memorial_sparkle_reset` (`0x0080C7C0`, `0x0080C8B0`) | `EFF_s0befe07` at 30 random positions: x within ±5000, depth 6200..13200, base scale depth/7000×5, angle π/4. `stage_memorial_sparkle_update` (`0x0080C9A0`) grows each size factor by 0.03 per update to 0.4, shrinks it by 0.03, and below 0.1 respawns that sparkle at a new random position; NA2's factory 96 (`bg_s13_sparkle_update`) runs the same cycle for S13 with 15 sparkles and its own constants |
 | `0x597` water surface | `stage_water_surface_parse`, `stage_water_surface_draw` (`0x0080D110`, `0x0080D4C0`) | token-3 object `OBJ_s0briv01` drawn three times, each layer scrolling its UVs from a random start by 1/period per update for periods (250, -250), (-250, -230), (0, -250); NA2's [factory 29](stages.md#native-background-configuration-formats) has the same per-layer contract |
 | `0x59A` foot ripples | `stage_foot_ripple_parse`, `stage_foot_ripple_update` (`0x0080DD10`, `0x0080DF90`) | for each fighter's two feet, when `0x0080DE70` accepts its area and a 100-unit downward cast on collision flag `0x20000001` hits within 20, spawn an `OBJ_s0befe09` ripple (pool 40; scale 2 on first contact, then 1 every 15 updates) and an `EFF_s0befe10` splash (pool 10) |
 

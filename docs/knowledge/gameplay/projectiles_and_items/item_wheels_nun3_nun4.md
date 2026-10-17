@@ -2,8 +2,8 @@
 
 ## Research coverage
 
-Established: NUN3's five-slot panel, cache, compacting removal and scrolling
-HUD; NUN4's five-slot layout, placement, fading and item-select badges.
+Established: NUN3's field-item codes and their NA2 equivalents, five-slot
+panel, cache, compacting removal and scrolling HUD; NUN4's five-slot layout, placement, fading and item-select badges.
 Open: NUN3 addition and selection input, runtime layout/range values and writers.
 NUN3 evidence is static with one corroborating screenshot; NUN4 layout keys
 were observed in one battle state, with formulas confirmed in retail code.
@@ -13,6 +13,29 @@ This document records the battle-item inventories of retail NUN3 and NUN4.
 Retail NA2 (`SLPS-25837`) uses the three-slot inventory recorded in
 [Battle item inventory](battle_item_inventory.md). File identities and overlay
 bases belong to [Retail game file identities](../../game/files/file_identities.md#address-conventions).
+
+## NUN3 field-item codes
+
+NUN3's item codes differ from NA2's. `item_catalog_rows` (`0x004D7440`) names
+each inventory code; `item_metadata` (`0x00490930`) gives codes 1..3 life and
+6..8 chakra of 5, 10 and 15, code 9 chakra 0.75, and code `0x1B` the kind,
+flags and effect of NA2's Curse Tag: Chakra Points Seal (`29`). Matching names
+give the NA2 codes:
+
+| NUN3 | NA2 | NUN3 | NA2 | NUN3 | NA2 |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| `0A` | `23` | `19` | `27` | `0C` | `06` |
+| `0B` | `24` | `1A` | `28` | `0D` | `07` |
+| `0F` | `09` | `1B` | `29` | `0E` | `08` |
+| `17` | `25` | `1C` | `2A` | `10` | `0A` |
+| `18` | `26` | `1E` | `2B` | `20` | `0B` |
+| `2C` | `2C` | `2E` | `2E` | `21` | `0C` |
+| `2F` | `2F` | `33` | `30` | | |
+
+NA2 has no Curse Tag: Steal (`1D`), Frog Pill (`1F`) or Kunai Rain (`30`).
+NUN3's `field_item_random_select` (`0x0030FE80`) works as NA2's, with fallback
+code 9 and its own pools: pool 1 is NA2's pool 1 with Frog Pill and without
+Medical Pack and Item Pouch; pool 3 holds chakra codes 6..8.
 
 ## NUN3 five-slot inventory
 

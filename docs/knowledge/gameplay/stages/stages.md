@@ -456,6 +456,8 @@ remain unresolved.
 | ---: | --- | --- |
 | 0 | `bg_draw_object_parse`, `0x00395870` | 0 object name; 1 transform dummy or literal `0`; 2 float opacity; 3 float uniform scale. |
 | 2 | `bg_animation_initialize`, `0x00396320` | 0 animation name; 1 transform dummy or `0`; 2 opacity; 3 uniform scale; 4 rate multiplier, all floats; 5 integer initial frame, with `-1` choosing a random frame. |
+| 3 | `bg_draw_effect_parse`, `0x00396890` | 0 effect name; 1 transform dummy or `0`; 2 float opacity; 3 float uniform scale. `bg_draw_effect_draw` draws the effect at frame 0 without advancing it. No retail stage uses factory 3. |
+| 4 | `bg_draw_effect_animation_parse`, `0x00396C90` | Factory 3's tokens. `bg_draw_effect_animation_draw` advances the frame at the scene rate through `effect_step_frame`, which loops a repeating effect and otherwise stops it; every instance starts at frame 0. No retail stage uses factory 4. |
 | 6 | `bg_cloth_flag_parse`, `0x00397680` | 0 texture name; 1 position/Euler dummy; 2 integer construction selector; 3/4 float dimensions multiplied by four; 5/6 floats; 7 **integer converted to float**; 8/9 floats; 10/11 integer grid dimensions. |
 | 7 | `bg_swing_grass_parse`, `0x003980D0` | 0 object stem, children `stem_a0`..; 1 node; 2 integer child count; 3 float sway amplitude, multiplied by the scene factor; 4/5 integer minimum/maximum gust length in updates; 6 float not read by `bg_grass_sway_step`; 7 integer gust chance in percent per update; 8 integer angle step in degrees. Vertices at or above height 2.5 move. |
 | 10 | `bg_factory_fog`, `0x00398A90` | 0..2 integer RGB; 3 float near percentage; 4 integer far percentage; 5/6 integer near/far distance, converted to float. |
@@ -475,6 +477,7 @@ remain unresolved.
 | 48 | `bg_landing_tree_parse`, `0x006C9BA0` | 0 object stem, children `stem_a0`..; 1 integer child count; 2 transform node; 3 float converted but not stored; 4 float uniform scale; 5/6 float landing-reaction width/height. |
 | 75 | `bg_escape_bird_parse`, `0x006CD1D0` | 0 starting dummy; 1/2 floats; 3 ending dummy; 4 container filename; 5/6 animation names. |
 | 79 | `bg_trans_object2_parse`, `0x006CE250`, through `bg_trans_object_parse`, `0x006C7510` | 0 visual name; 1 transform dummy; 2 float scale; 3 position dummy; 4 float radius; 5 float stored at `+0x60`, with initial blend at `+0x54` set to zero. |
+| 96 | `bg_s13_sparkle_parse`, `0x003A6F20` | Configuration ignored. Binds `EFF_s13efe00` and keeps 15 sparkles at x within ±600, depth 500..30500, angle π/4 and base scale depth/30000×120; `bg_s13_sparkle_update` grows each size factor by 0.03 to 0.5, shrinks it by 0.03 and below 0.1 re-randomizes that sparkle, and `bg_s13_sparkle_draw` submits each as a sprite whose alpha is its size factor. S13 uses one record. |
 
 Factory 6 constructs `ccBgClothFlag` at `0x00397AA0`:
 vtable `0x005DD400` → RTTI `0x005D6150` →
