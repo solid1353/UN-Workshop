@@ -12,6 +12,8 @@ from typing import Mapping
 
 MANIFEST_NAME = "paths.json"
 LAUNCH_SETTING_NAMES = ("startup_fast_forward_frames", "speed_after_startup")
+# A launch profile's per-source-game overrides of its startup frames.
+LAUNCH_GAME_OVERRIDES = "games"
 WORKSHOP_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -158,16 +160,30 @@ def _validate_launch_settings(settings: Mapping[str, object]) -> None:
         label = f"Project launch_settings.{name}"
         if not isinstance(definition, dict):
             raise ValueError(f"{label} must be an object")
-        if set(definition) - set(LAUNCH_SETTING_NAMES):
+        if set(definition) - {*LAUNCH_SETTING_NAMES, LAUNCH_GAME_OVERRIDES}:
             raise ValueError(
-                f"{label} may define only startup_fast_forward_frames and "
-                "speed_after_startup"
+                f"{label} may define only startup_fast_forward_frames, "
+                f"speed_after_startup and {LAUNCH_GAME_OVERRIDES}"
             )
-        frames = definition.get("startup_fast_forward_frames", 0)
-        if isinstance(frames, bool) or not isinstance(frames, int) or frames < 0:
+        overrides = definition.get(LAUNCH_GAME_OVERRIDES, {})
+        if not isinstance(overrides, dict) or not all(
+            isinstance(game, str) and game
+            and isinstance(override, dict)
+            and set(override) == {"startup_fast_forward_frames"}
+            for game, override in overrides.items()
+        ):
             raise ValueError(
-                f"{label}.startup_fast_forward_frames must be a non-negative integer"
+                f"{label}.{LAUNCH_GAME_OVERRIDES} must map source games to "
+                "startup_fast_forward_frames"
             )
+        for game, override in {"": definition, **overrides}.items():
+            frames = override.get("startup_fast_forward_frames", 0)
+            if isinstance(frames, bool) or not isinstance(frames, int) or frames < 0:
+                where = f"{LAUNCH_GAME_OVERRIDES}.{game}." if game else ""
+                raise ValueError(
+                    f"{label}.{where}startup_fast_forward_frames must be a "
+                    "non-negative integer"
+                )
         if definition.get("speed_after_startup", "normal") not in {"normal", "turbo"}:
             raise ValueError(f"{label}.speed_after_startup must be normal or turbo")
     for name in LAUNCH_SETTING_NAMES:

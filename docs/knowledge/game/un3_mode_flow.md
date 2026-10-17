@@ -5,9 +5,10 @@
 Established statically: the main-loop states, New Game's manager setup, the
 scene and mode dispatch, Mode Select's results, the Practice controller's
 states, how Character and Stage Select hand their results to the manager, and
-where Practice Behavior, Command Display and the COM flags live. Open: modes
-1, 5 and 6 and scenes 2..4, Load Game beyond its manager setup, the HOME.BIN
-New Game sequence, and what Mode Select stores in the active-side word. No runtime
+where Practice Behavior, Command Display, Easy Display and the COM flags live.
+Open: which choice the Easy Display dialog labels on, modes 1, 5 and 6 and
+scenes 2..4, Load Game beyond its manager setup, the HOME.BIN New Game
+sequence, and what Mode Select stores in the active-side word. No runtime
 observation backs this document.
 
 Routines and globals are named by `@annotations/UN3`; addresses are live
@@ -52,15 +53,18 @@ does no Practice setup of its own.
 Stage Select lists scene indices `0..19` (archives `S01..S20`); see
 [UN3 stages](../gameplay/stages/un3_stages.md#stage-select-presentation).
 
-## Behavior, Command Display and COM flags
+## Behavior, Command Display, Easy Display and COM flags
 
 Practice Settings' BEHAVIOR row offers MANUAL `0`, COM `1`, STAND `2` and
 JUMP `3`. In mode `7`, `practice_behavior_set` stores it in profile byte
 `+0x5A`. Its COMMAND DISPLAY row, OFF `0` or ON `1`, is bit 1 of profile byte
 `+0x5F` (`practice_command_display_set`); Practice's command display reads
-it every frame. On commit, `practice_toggle_com` writes the COM flag of the
-side opposite `+0xA38` (`+0x67` for Player 2), set unless Behavior is MANUAL,
-and updates a live dummy's behavior bits.
+it every frame. The pause menu's Easy Display Setup, in every battle mode,
+sets or clears bit 6 of the same byte (`easy_display_update`), and the
+battle shows Easy Display cues only while it is set (`easy_display_show`).
+On commit, `practice_toggle_com` writes the COM flag of the side opposite
+`+0xA38` (`+0x67` for Player 2), set unless Behavior is MANUAL, and updates a
+live dummy's behavior bits.
 
 Fighters take their COM flag from the manager when
 `battle_fill_fighter_spawn_descriptor` builds them, so a flag cleared before

@@ -372,6 +372,7 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
                 (Join-Path $repository 'pcsx2_files\input_recordings\practice-menu.p2m2') | Out-Null
         $global:UnWorkshopFakeCenteredWindows = @()
         $global:UnWorkshopFakeNoRecenter = @()
+        $global:UnWorkshopFakeFrames = @()
         @'
 param(
     [string]$IsoPath,
@@ -398,6 +399,7 @@ if ($Surfaceless) { $message }
 if ($PassThru) {
     $global:UnWorkshopFakeCenteredWindows += $CenteredWindow.IsPresent
     $global:UnWorkshopFakeNoRecenter += $NoRecenter.IsPresent
+    $global:UnWorkshopFakeFrames += $UnlimitedForFrames
     Start-Process `
         -FilePath ([Diagnostics.Process]::GetCurrentProcess().MainModule.FileName) `
         -ArgumentList @('-NoProfile', '-Command', 'Start-Sleep -Milliseconds 50') `
@@ -622,6 +624,8 @@ if ($PassThru) {
         try {
             & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
                 -Games @($workerIso, $secondIso) `
+                -UnlimitedForFrames 100 `
+                -UnlimitedForFramesByGame @{ candidate = [UInt64]300 } `
                 -ProjectRoot $repository
         }
         catch {
@@ -638,6 +642,9 @@ if ($PassThru) {
         Assert-WorkshopLaunchTest `
             -Condition ($global:UnWorkshopFakeNoRecenter[-1] -eq $true) `
             -Message 'Paired launch let game starts recenter its tiled windows.'
+        Assert-WorkshopLaunchTest `
+            -Condition ($global:UnWorkshopFakeFrames[-1] -eq 300) `
+            -Message "A game's own frame-limited Unlimited count did not override the shared one."
 
         $missingIsoRejected = $false
         try {
@@ -738,7 +745,7 @@ if ($PassThru) {
 }
 finally {
     Remove-Variable `
-        -Name UnWorkshopFakeCenteredWindows, UnWorkshopFakeNoRecenter `
+        -Name UnWorkshopFakeCenteredWindows, UnWorkshopFakeNoRecenter, UnWorkshopFakeFrames `
         -Scope Global `
         -ErrorAction SilentlyContinue
     if (Test-Path -LiteralPath $testRoot) {
