@@ -330,7 +330,7 @@ callback census or a material-name assignment.
 | Class 2 (`0xE0A000`), outside major states 2, 3 and 6 | `effect_activate_wash` | `ccEffWash`; sets `EffectWashActivation.active = 1` |
 | Class 1 (`0x202020/0xE0E000`), major 0 or 1, `contact_flags & 0x10` clear | `effect_activate_leak_chakra_current_manager` / `effect_activate_leak_chakra` | `ccEffLeakChakra`; sets `EffectLeakChakraActivation.active = 1` |
 
-Each helper resolves or creates the object. Wash excludes definition
+Each helper resolves or creates the object. `effect_wash_bind_fighter` attaches the wash to the fighter's `OBJ_2cmn00t0` calf and foot nodes, so it uses no stage resource. Wash excludes definition
 `0x4C` (76), Sasori (Hiruko)
 ([Character IDs](../characters/character_ids.md)). Leak-chakra requires
 `Fighter.hp != 0`, not current `chakra`. These are specific activation

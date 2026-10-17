@@ -508,6 +508,7 @@ address	kind	name	type	comment
 0x0023EC90	function	battle_effect_update_draw_factors		Forward scene-effect virtual +0x0C to draw-factor update at battle_effect_advance_draw_factors.
 0x002402F0	function	battle_surface_drop_reserved		No-op reserved virtual method at moving scene-effect vtable +0x38; jr ra with nop.
 0x00240BD0	function	battle_surface_drop_update		Advance common typed scene-effect player state, add +0x220 acceleration to +0x1C0 velocity, and optionally clamp motion-derived +0x230 scale to 1..3. Does not read raw selector +0x250.
+0x002416F0	function	surface_effect_construct		Picks effect row surface_effect_variants[bit][variant]: 0x89+v CLT_e0xleaf01(c v) on CMP_e0xleaf01, 0x90+v CLT_e0xleaf02(c v); NA2 rows 0x7B/0x82 name the same palettes.
 0x002464A0	function	battle_composite_effect_construct		Construct main and embedded210 scene players;ID-34h selects two resource IDs at5100B0;each binds through virtual28.
 0x00257AD0	function	battle_screen_fragment_construct		Common object owner,installed689EC0,embedded renderer/draw environment records40/148/188/1C0;fragment effect allocationA30.
 0x00257B80	function	battle_screen_fragment_destroy		Release optional secondary renderer at +0x138, render packet +0x1C0, draw environments +0x180/+0x140 and embedded renderer +0x40; destroy base owner and optionally free the framebuffer-fragment effect.
@@ -516,6 +517,7 @@ address	kind	name	type	comment
 0x0025F360	function	battle_hit_effect_with_composite		Base25EDC0;type2 argument selects randomcomposite ID37h or35h from478940[2/3],respectivelypaired resources57/58 or53/54;draw colorFF and movement.
 0x002607F0	function	battle_dynamic_entry_initial_hit_effect		Bind common resource74h aliasbase8 ANM_e0x_gard_01,c1 palette plus sceneCMP_e0xfla12-00 atcacheindex44;particle descriptor4795A0/fieldindex4795D0,overridechoice29 CLT_e0xpar00c1.
 0x002621C0	function	surface_effect_spawn	void surface_effect_spawn(undefined4 arg1,undefined4 arg2)	Inferred from an exact code match with NA2 SLPS_258.37 0x00336630. Spawn requested count of surface/background effect variant; LandingTree passes count10.
+0x002621F0	function	surface_effect_spawn_one		NA2 surface_effect_spawn_one's counterpart.
 0x002629D0	function	battle_create_composite_effect		IDs34h..47h allocate430 and construct2464A0;manager owns registration,420 retains draw parameter.
 0x00263560	function	battle_effect_advance_draw_factors		Update enabled transition factors in +0x180 flags, +0x188/+0x18C floats and +0x192 byte using timers and rates; no CCS binding or moving-object selector +0x250 use.
 0x00263C50	function	battle_landing_smoke_effects		Eight pooled common effect objects bind resource88h EFF_e0xsmok20 fromPARTICLE;movement/lifetime40 and randomized draw/rotation.
@@ -549,7 +551,11 @@ address	kind	name	type	comment
 0x0028BED0	function	ultimate_record_is_normal_default		Character-1 scans normal default table47BD50 forIDs1..46; otherwise compares supplied character halfword. Returns1 only matching record.
 0x0028BFF0	function	ultimate_jutsu_record_form		Maps record effect+14 3Dh..46h to fighter47..56; other effects return0. Guy21h causes no fighter-ID replacement.
 0x00291120	function	item_manager_init	void item_manager_init(Nun3ItemManager *manager)	Allocate two0x90-byte item panels,call item_panel_construct at008294C0 with side0/1 and retain at manager84/88; allocation failure stores null; constructor also initializes other manager/HUD state.
+0x002916E0	function	item_field_publish		Creates a field pickup via item_field_create and links it into the item manager's list; counterpart of NA2 item_field_publish.
+0x00291730	function	item_field_create		Allocates a field pickup for a code: 0x16 own class, 9/0x22 chakra-ball class, else by metadata kind 1 or other.
 0x002931A0	function	item_inventory_count		Inferred from an exact code match with NA2 SLPS_258.37 0x003759B0. Return occupied count for selected side panel.
+0x00293AE0	function	item_metadata_row		Returns item_metadata + code*12: kind u16, flags u16, amount float, direct effect s32 (NA2 layout).
+0x00293D20	function	item_metadata_kind		Kind byte of item_metadata_row(code).
 0x00294770	function	sp_skill_defender_camera_admission		Only defender IDs38h/35h/23h/32h/33h/30h consult skill-indexed47C010 range list; inclusive matching frame rejects camera auxiliary,otherwise admit. Other IDs always admit.
 0x002948B0	function	sp_skill_update_camera_auxiliary		Ask sp_skill_defender_camera_admission with defender ID,skill,frame; temporarily use request+1CC/1C8 contexts then update retained auxiliary6C,restore previous globals.
 0x00294EA0	function	sp_skill_play_completion_task		While scene task readiness true, advance retained request player then service state1; finish task each call. No own damage/audio-row loop.
@@ -566,15 +572,22 @@ address	kind	name	type	comment
 0x002A1180	function	menu_create_named_texture_sprite		Allocates and constructs a0xF8 sprite, binds the named texture from the named CCS container through sprite_bind_named_texture, sets draw order/suborder, and assigns scene owner at sprite+0xD0. NUN3 settings voice sprite selects option/TEX_option_so.
 0x002A1310	function	menu_draw_sprite_rectangle		Draws a supplied four-halfword (u,v,width,height) rectangle through the supplied sprite: writes UVs shifted left4 at sprite+0x68/+0x6C, dimensions and centered placement, scales it, then calls scene_output_finalize. Used by audio_settings_draw_voice_choice.
 0x002A6EE0	function	battle_particle_descriptor_remap_palette		Store replacement palette at descriptor +0x10 and original palette at +0x0C; hit-effect setup uses this to replace par00/par01 palettes with c5 variants.
+0x002AAB00	function	generator_initialize_parameters		NA2 generator_initialize_parameters' counterpart; parameters at +0x1F8 (NA2 +0x1E8), elements 0x90 bytes (NA2 0xA0).
+0x002AB260	function	particle_emitter_find_field		Field list +0xC walked by +0x80; returns the field whose slot +0x88 matches, or the last for a negative slot; NA2 0x0034C280.
 0x002AB450	function	particle_emitter_destroy_fields		Inferred from an exact code match with NA2 SLPS_258.37 0x0034C380. Walk next links, virtually destroy each 0x90-byte field through slot 08 with delete=1, and zero field count.
 0x002AB520	function	generator_register_effect	unsigned int generator_register_effect(void *generator, void *descriptor, unsigned int flags, void *attachment, void *auxiliary, unsigned char mode)	Inferred from an exact code match with NA2 SLPS_258.37 0x0034C420. Registers effect descriptor in generator entry kind0 and stores supplied fields; never rejects zero/4; returns entry handle. | Resource selector0; choice+00 resource,+04/+08 first auxiliary pair,+18 playback flags,+1C byte option.
 0x002AB5A0	function	generator_register_composition	unsigned int generator_register_composition(void *generator, void *descriptor, unsigned int flags, void *attachment)	Inferred from an exact code match with NA2 SLPS_258.37 0x0034C4A0. Registers composition descriptor in generator entry kind1; never rejects zero/4; returns entry handle. | Resource selector1 and resource/auxiliary pair; wrapper rebuilding uses this choice's resource pointer.
 0x002AB600	function	generator_register_animation	unsigned int generator_register_animation(void *generator, void *descriptor, unsigned int flags, void *attachment, void *auxiliary)	Inferred from an exact code match with NA2 SLPS_258.37 0x0034C570. Registers animation descriptor in generator entry kind2; never rejects zero/4; returns entry handle. | Resource selector2; choice+00 resource,+04/+08 auxiliary pair,+18 playback configuration.
+0x002ABBD0	function	particle_emitter_set_primary_origin		Same code as NA2 particle_emitter_set_primary_origin; primary_origin +0xB0, changed flag +0x1F5.
 0x002AC030	function	particle_emitter_clear_resources		Inferred from an exact code match with NA2 SLPS_258.37 0x0034CDA0. Free linked 0x28-byte resource choices and reset head/count.
+0x002AEDB0	function	particle_force_displacement		Force key 0; same code as NA2.
+0x002AFDC0	function	particle_force_euler		Force key 3; same code as NA2.
+0x002B0000	function	particle_force_scale_aspect		Force key 5; same code as NA2.
 0x002B0A50	function	particle_force_angle_set		Inferred from an exact code match with NA2 SLPS_258.37 0x00351CC0. Force dispatch keys `0xB`, `0x1C`: Set that element angle directly from the signed halfword.
 0x002B15B0	function	generator_create_from_descriptor		Inferred from an exact code match with NA2 SLPS_258.37 0x00352A10. Create ccGenerator2 from the CCS generator descriptor through allocation and parameter initialization. | Package four supplied force descriptor pointers then delegate to manager emitter producer; registration returns emitter identifier via delegated result. | Raw forwarding preserves manager,parameters,four force pointers,capacity and emission_mode and returns particle_manager_create_emitter identifier in v0.
 0x002B1CC0	function	rng_low31	unsigned int rng_low31(void)	Inferred from an exact code match with NA2 SLPS_258.37 0x001801B0. Return prng_next() & 0x7FFFFFFF, consuming one MT word without reseeding; the discarded high bit prevents raw-output state recovery from these results alone.
 0x002B1CF0	function	rng_next_integer	unsigned int rng_next_integer(void)	Return RNG integer used by training-doll reset modulo trunc(0.4*D).
+0x002B1D20	function	prng_inclusive		Random integer 0..abs(bound) inclusive; same contract as NA2 prng_inclusive.
 0x002B1D80	function	rng_signed_scaled	float rng_signed_scaled(float scale)	Generate signed scaled random value; rotating sky uses pi; return float established by caller use.
 0x002B3300	function	panel_set_rectangle_record		Inferred from an exact code match with NA2 SLPS_258.37 0x003805F0. Apply five signed halfwords(style,x,y,width,height) through panel_set_rectangle; geometry converted to floats.
 0x002B4C30	function	panel_get_origin		Inferred from an exact code match with NA2 SLPS_258.37 0x00382060. Copy float panel.x/y at+4/+8 to supplied output pointers; proven by lwc1/swc1.
@@ -604,7 +617,17 @@ address	kind	name	type	comment
 0x0030FCB0	function	stage_doll_increment_side_counter	void stage_doll_increment_side_counter(int side)	Verified standalone leaf increments signed halfword at global owner+66+side*2 when owner exists; doll scene3 broken-contact branch calls with retained contact side; gameplay effect meaning unresolved.
 0x0030FD30	function	stage_doll_set_side_value	void stage_doll_set_side_value(int side)	Verified standalone leaf stores argument at global owner+78 when owner exists; doll scene3 broken-contact branch passes retained contact side; gameplay effect meaning unresolved.
 0x0030FE70	function	stage_restriction_predicate	unsigned long long stage_restriction_predicate(void)	Complete retail body returns0, so restriction bit4 is never set by this branch.
+0x0030FE80	function	field_item_random_select		NA2 field_item_random_select's counterpart: (kind, increment) rows, inclusive 99 draw, kind 0 ends after row 0, fallback code 9. NUN3's five pools differ.
+0x003100B0	function	field_item_amount_apply		NA2 field_item_amount_apply's counterpart: (source short, code, pos, p4, count, velocity, p7); Items setting 2 doubles and adds an 80% extra, 0 drops the count loop; the loop publishes code 9.
 0x00311140	function	item_sprite_draw	void item_sprite_draw(float scale, float opacity, float angle, int layer, int sprite, float *position)	Inferred from an exact code match with NA2 SLPS_258.37 0x00377720. Wheel item draw forwards its scale and opacity to this resident sprite draw;personal auxiliary model draw has no opacity argument. Preserve scale/opacity/angle float inputs; wrapper duplicates scale into x/y scales before record copy. | Single-status foreground uses this uniform wrapper with scale1,opacity and rotation0;duplicates scale into X/Y parameters.
+0x00312EB0	function	ripple_element_bind		Give a pooled ripple element the shared ring model.
+0x00312EC0	function	ripple_element_start		Start one pooled ripple element; stage_foot_ripple_update passes (scale, 1.0, element, position).
+0x00312F20	function	ripple_element_update		Per-update step of one pooled ripple element; stage_foot_ripple_update calls it for all 40.
+0x00312FE0	function	ripple_element_draw		Draw one pooled ripple element with the shared ring model; called for all 40 by the 0x59A draw.
+0x003130C0	function	splash_element_bind		Give a pooled splash element the shared splash sprite descriptor.
+0x003130D0	function	splash_element_start		Start one pooled splash element at a position; stage_foot_ripple_update passes (element, position).
+0x00313120	function	splash_element_update		Per-update step of one pooled splash element; stage_foot_ripple_update calls it for all 10.
+0x003131A0	function	splash_element_draw		Draw one pooled splash element with the shared splash sprite; called for all 10 by the 0x59A draw.
 0x0032F0E0	function	rofs_release_file		Inferred from an exact code match with NA2 SLPS_258.37 0x0011B778. For nonnull in-use file (short+0x34),stop state2 (short+0x38),then clear operation+0x36 and in-use. Never close backing archive.
 0x0032F6A0	function	rofs_stop_file		Inferred from an exact code match with NA2 SLPS_258.37 0x0011BD38. Require in-use linked state2 file; backend stop only for operation1,then operation2. Other states clear operation. Does not close backing archive.
 0x0032F8F8	function	rofs_add_volume		Inferred from an exact code match with NA2 SLPS_258.37 0x0011BF90. ROFS service+0x18 adds named volume using existing backing handle and password configuration.
@@ -869,6 +892,8 @@ address	kind	name	type	comment
 0x00476830	data	green_beast_definition	Nun3CharacterDefinition	Dedicated NUN3 ID32 definition: green_beast_create and green_beast_character_record.
 0x00476900	data	camera_stage_tracking_gains	Nun3StageCameraRecord[27]	Per-scene camera records; NA2 StageCameraRecord layout. Records shared with NA2 stages are byte-identical.
 0x00477320	data	stage_camera_records_by_scene	Nun3StageCameraRecord *[28]	27 record pointers indexed by scene_index, null-terminated.
+0x004783B0	data	surface_effect_variants		Effect rows 0x89..0x8F and 0x90..0x96 by variant column.
+0x00478E70	data	battle_particle_catalog_rows		16-byte particle catalog rows (archive, name, base row, palette-name row); rows 0x34 CLT_x002c1 on 6 EFF_x002 and 0x4C CLT_e0xpar01c3 on 0x12 EFF_e0xpar01 match NA2's.
 0x0047B400	data	kakashi_ultimate_jutsu_list	short[14]	ID8 counted13 records96..108;four distinct cinematic skills30/31/32/33.
 0x0047B580	data	guy_ultimate_jutsu_list	short[21]	Guy ID20 local list: count20, global Ultimate record indices237..256.
 0x0047B610	data	itachi_ultimate_jutsu_list	short[21]	ID23 count20 global records294..313;five distinct skills66..6A, four variants per timeline.
@@ -901,8 +926,15 @@ address	kind	name	type	comment
 0x0047D3E0	data	character_presentation_body_filenames	unsigned int[60]	60 character-ID filename pointers;0 and57..59 null,1..56 populated; IDs26/29/31/33 reuse nrt names.
 0x0047D4D0	data	character_end_demo_filenames	unsigned int[60]	60 character-ID filename pointers;0 and57..59 null,1..56 populated; IDs26/29/31/33 reuse nrt names.
 0x0047D5C0	data	character_portrait_filenames	unsigned int[60]	60 character-ID filename pointers;0 and57..59 null,1..56 populated; IDs26/29/31/33 reuse nrt names.
+0x0047DB90	data	particle_force_dispatch_table		Force key/handler pairs, as NA2 particle_force_dispatch_table.
 0x0047DE30	data	audio_voice_choice_rectangles	unsigned short[8]	Own NUN3 two sprite rectangles: first(168,232,64,20) ENGLISH, second(104,232,64,20) JAPANESE in option/TEX_option_so. Choice0 changes first Y to212; nonzero changes second Y to212. Direct menu confirmation maps0 English/PLVOICE bank0,1 Japanese/bank1.
+0x00490850	data	item_random_pool0		Codes 1,2,3,6,7,8; field_item_random_select pool 0.
+0x00490868	data	item_random_pool3		Codes 6,7,8; pool 3.
+0x00490880	data	item_random_pool1		Codes 0C,0D,0E,0F,10,1F,20,21,17,19,1E; pool 1.
+0x004908B0	data	item_random_pool2		Codes 0B,0A,19,17,1E,1A,18,1B,1C,1D,1E,2C,2E,2F,30,33; pool 2.
+0x00490930	data	item_metadata		12-byte rows per item code; codes 1..3 life 5/10/15, 6..8 chakra 5/10/15, 9 chakra 0.75, 0x1B kind 3 flags 0180 effect 0A (Curse Tag: Chakra Points Seal).
 0x004A7F14	data	cri_rpc_service_id	unsigned int	0x90000200, used by EE CRI RPC server worker and cri_bind_iop_rpc_service; matches checked NUN3 CRI_ADXI.IRX service.
+0x004D7440	data	item_catalog_rows		12-byte rows: item code, price, English name pointer; e.g. 0A Demon Wind Shuriken, 1D Curse Tag: Steal, 1F Frog Pill, 30 Kunai Rain, 33 Random Ball.
 0x004D9160	data	kakashi_ultimate_jutsu_records	Nun3UltimateJutsuRecord[13]	Indices96..108;Origin/Double Charge/Single Slash each four variants plus Eternal Rivals;skills30/31/32/33,damage20/25/30/40,intro46/47/48/49,effect15 in all13;effect15 does not map to replacement fighter.
 0x004DA534	data	guy_ultimate_jutsu_records	Nun3UltimateJutsuRecord[20]	Guy ID20 list indices237..256; skills56h..5Bh plus borrowed1Ah/33h; +6 ability prerequisite count (not NA2 category), +14 effect,+16 percent damage;20 records share eight distinct cinematic skills.
 0x004DAD38	data	itachi_ultimate_jutsu_records	Nun3UltimateJutsuRecord[20]	20 records294..313;skills66..6A repeat four times;first two select effect24,other three FFFF;intro103..107;ability prerequisite counts1/1/3/3/3.
