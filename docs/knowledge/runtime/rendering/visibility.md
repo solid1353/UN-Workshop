@@ -214,7 +214,7 @@ the current submission context's `BattleHudRenderContext.renderer`.
 | `model_part_queue_projection` (`0x0018CF70`) | Off-screen entry 0 with controller renderer and additional vector. |
 | `bg_update_visibility_rays` (`0x00392430`) | `BgVisibilityRayView.bounds_minimum/bounds_maximum` and `position`; retention permits ray queries and `visible`. |
 | `bg_classify_inline_transform` (`0x00393AC0`) | `BgInlineVisibilityView.bounds/transform`; returns the wrapper result. |
-| `bg_update_visibility_screen_placements` (`0x00394040`) | `BgVisibilityPlacementView.bounds_minimum/bounds_maximum` and `position`; retention permits ray queries, screen placement and `visible`. |
+| `lens_flare_update` (`0x00394040`) | `BgVisibilityPlacementView.bounds_minimum/bounds_maximum` and `position`; retention permits ray queries, screen placement and `visible`. |
 | `bg_submit_optional_model` (`0x003957C0`) | Existing primary instance box rejects before ordinary draw; absent primary draws directly. |
 | `bg_submit_visible_composition` (`0x00395DD0`) | First composition child's primary box gates aggregate drawing through `projectile_simple_service_submit`. |
 | `bg_update_visible_grass` (`0x00397E60`) | Each child has its own box; `BgVisibilityChildView.visible` records retention and only retained children run `bg_grass_sway_step` (`0x00397BC0`). |

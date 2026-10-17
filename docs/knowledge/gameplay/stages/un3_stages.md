@@ -8,11 +8,12 @@ the per-stage camera, combo-anchor, route, intensity and music tables, Stage
 Select preview and name assets, record translation evidence from the shared
 stages, the archive conversion rules those stages show, S04's stage-specific
 handlers, the landing-tree reaction, the glare's draw order, S01's flags,
-wind sound and far-animation fog modes, S02's gondolas, faces and kite, and
-S14's falls mist and bridge planks. Open: other prop states/teardown,
-full scene binding, mode/effect meanings, texture-pixel sharing, complete
-NA2 equivalence and Stage Select name-sprite rectangles. Names and
-layouts come from
+wind sound and far-animation fog modes, S02's gondolas, faces and kite,
+S14's falls mist and bridge planks, S20's clouds, lens flare and depth of
+field, and every scene comparison outside the records. Open: other prop
+states/teardown, full scene binding, mode/effect meanings, texture-pixel
+sharing, complete NA2 equivalence and Stage Select name-sprite rectangles.
+Names and layouts come from
 `@annotations/UN3`; NA2 comparison names come from `@annotations/NA2`.
 
 This document owns retail UN3 (`SLUS-21727`) battle-stage behavior and
@@ -648,3 +649,44 @@ fixed resource names:
 layer's U/V and wraps them. `stage_foot_ripple_area` (`0x0080DE70`) accepts a
 foot below height 100 at x in (-690, -480) or (420, 620) on section 0 and
 (430, 665) on section 1.
+
+### S20 stage-specific records
+
+S20's `0x39F`, `0x3A1` and `0x6A0` records use fixed tables; `0x501` is a
+plain animation object in the animation-props list.
+
+| Type | Handlers | Behavior |
+| --- | --- | --- |
+| `0x39F` clouds below the cliff | `stage_cliff_clouds_parse`, `_update`, `_draw` | Sixteen models from the first 16 rows of `stage_cliff_cloud_rows`, each bound to `ANM_s8bbac00_b00` or `_c00` at its initial frame (0..550), with the playback step divided by its divisor (4..7), translated to one of `DMY_kumo_dummy00`..`04`. In the far-objects list. |
+| `0x3A1` depth of field | `stage_depth_of_field_parse`, `stage_depth_of_field_draw` | A draw environment at token 10's priority (-3000) holding two glare-filter passes: mode 0, colour `0x20808080`, amount -0.2, second colour 0, parameter 50000 and 80000 (`stage_depth_of_field_depths`). That priority falls between the far-objects environment (-5120) and the main one (-2304). NA2's factory 11 builds the same pass class with the same fields. |
+| `0x6A0` lens flare | `stage_lens_flare_parse`, `_update`, `_draw` | The resident lens flare (`lens_flare_initialize`, `_update`, `_draw`; NA2 carries the same code unused) with token 3's node as the sun, descriptor `stage_lens_flare_descriptors`[token 9] (priority `0x65`, 19 quads, screen radius 933.33) and quads `lens_flare_quad_sets`[token 10] (`TEX_s8befe10`..`40`). The flare shows while the sun is on screen and two segment queries from the camera reach it; each quad sits along the sun-to-screen-centre axis at its distance, and a full-screen white flash grows to (1 − d/r)³ × 60 as the sun nears the centre. |
+
+## Scene-keyed code outside the stage records
+
+Code reads the battle context's scene byte (`+0x61`) outside the record
+handlers. Every read that compares it with a normal scene (0..19), traced
+in both `SLUS_217.27` and `BATTLE.BIN`, falls into these groups; NA2's
+counterpart compares its raw slot where one exists
+([Stages](stages.md#other-recovered-raw-slot-equality-cases)).
+
+| UN3 routine | Scenes | Behavior | NA2 counterpart |
+| --- | --- | --- | --- |
+| `stage_choose_combo_anchor` | 1/10/15/16/18, 2/4/5/12/13/14 | Forced return side 0, 1 | Its own slots |
+| `effect_select_polygon_code` | 9, 16 | Water (`E0E000`) landing effect variant 4, or 2 at scale 0.55, both at height 0 | Slot 12 only |
+| `field_player_placement` | 9, 16 | Players start in section 1 | Slot 12 |
+| `stage_landing_tree_reaction` | 1 | Leaving a branch calls `stage_doll_increment_side_counter` | None |
+| `stage_scene2_resource_select` | 2 | Resource `+0x24A0`, environment index 4 | `stage_slot8_resource_select`, slot 8 |
+| `stage_scene13_object_initialize` | 13 | Byte `+0x60` set | `stage_slot9_object_initialize`, slot 9 |
+| `ai_water_chakra_gate`, `ai_water_section_gate` | 9, 16 | COM water handling | `ai_predict_environment_reaction`, `stage_navigation_s13`, slot 12 |
+| `ai_point_route_update` | 0/5/6; 6 | Near gate 40; input `0x1000` | Slot 7 at both |
+| `stage_navigation_response` | 19/14/4/1 | Planar endpoint clamp before recovery | Slots 5/22 |
+| `ai_route_region_gate` | 14/4 | Region 0 rejected | `ai_construct_point_route`, slot 22 |
+| `stage_execute_route` | 2 | COM in section 0 on `E0E000`/`E0A000` past route step 1 jumps on rand100 < 5 | None |
+| `fanged_pursuit_hide_stage_objects`, `interaction_hide_stage_objects` | 0 | Hide swaying trees (subtype `0x82`); other scenes hide subtypes `0x26`/`0x86` | None |
+| `interaction_scene13_reflection` | 13 | Second effect copy 400 below | None |
+| `effect_scene13_burst_delay` | 13 | Random delay range 1 instead of 30 | None |
+| `projectile_fall_to_ground` | 13 | Ground probe raised by 70 | Probe padding differs |
+| Water-height reads (about 25 sites) | 2, 13 | Heights 50, 387 | `stage_effect_height_override`/`_bits` |
+
+The remaining reads pass the scene to archive, record or summon routines
+without comparing it. UN3 has no line-change rules or `n_rash` groups.
