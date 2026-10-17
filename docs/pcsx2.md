@@ -162,3 +162,24 @@ out after three seconds, so clients follow these rules:
 - Do not disable PINE or change its port while a step is in progress.
 - Release agent overrides explicitly when done; a failed non-agent request does
   not clear them.
+
+## GS dumps
+
+`@pcsx2_scripts/gs_dump.py` reads PCSX2 GS dumps (`.gs` or `.gs.zst`, from
+the `snaps` folder) to find why something draws differently in two games or
+builds. `list` prints one frame's image uploads, local moves and draw batches
+in submission order, with the GS state of the context each draw's PRIM
+selects; `diff` diffs that list between two dumps. Textures and palettes are
+named by a hash of the image last uploaded to their base block, so a diff
+shows a texture that is uploaded or drawn in one dump only, even when the two
+games place it at different addresses. The first line of `list` gives the
+displayed framebuffers, which a frame's draws reach only after the game
+copies them there.
+
+```powershell
+& '@pcsx2_scripts/../lib/run_python.ps1' -Script '@pcsx2_scripts/gs_dump.py' `
+  -ArgumentList diff, first.gs.zst, second.gs.zst, --frame, 1
+```
+
+Frame 0 holds only the state at the dump's start; games that render at half
+the display rate draw in every other frame.
