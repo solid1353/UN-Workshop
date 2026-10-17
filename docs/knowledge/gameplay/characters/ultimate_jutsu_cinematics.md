@@ -10,9 +10,9 @@ Open: the intended optional-body constant/resource, targets across every
 cinematic, accumulated matrix orientation and visible body animation in
 omitted-draw ranges. Names come from `@annotations/NA2`; comments and types
 carry code-level details. Static resident/BTL/ETC and clean CCS evidence
-establishes dependencies, not live allocation success. NUN4's cinematic formats
-are compared in [NUN4 Ultimate Jutsu](nun4/ultimate_jutsu.md); donor character
-cinematics are in [NUN3 and NUN4 characters](nun3_nun4_characters.md).
+establishes dependencies, not live allocation success. UN4's cinematic formats
+are compared in [UN4 Ultimate Jutsu](un4/ultimate_jutsu.md); donor character
+cinematics are in [UN3 and UN4 characters](un3_un4_characters.md).
 
 Retail NA2 (`SLPS-25837`) selects and adjusts authored Ultimate Jutsu cinematics
 for an attacker, defender and skill. Starting the cinematic, the contest and

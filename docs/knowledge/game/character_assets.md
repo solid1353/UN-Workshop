@@ -6,21 +6,21 @@ Established: NA2's character-indexed filename families, fighter CCS layout and
 shared skeleton containers, character/form/action records and animation-name
 tables, per-character code, the jutsu-resource filename mapping, the voice
 archive layout and descriptors, compact fighter-bank resources, and match asset
-selection, loading and release. Bounded NUN3 format comparisons explain where
+selection, loading and release. Bounded UN3 format comparisons explain where
 NA2's layout departs from its predecessor.
 Open: complete character dependency closure, effect-name consumption and most
-row fields. Names come from `@annotations/NA2`, and from `@annotations/NUN3`
-where a section compares NUN3. Donor character research for NUN3 and NUN4 is in
-[NUN3 and NUN4 characters](../gameplay/characters/nun3_nun4_characters.md).
+row fields. Names come from `@annotations/NA2`, and from `@annotations/UN3`
+where a section compares UN3. Donor character research for UN3 and UN4 is in
+[UN3 and UN4 characters](../gameplay/characters/un3_un4_characters.md).
 
 ## Evidence and address conventions
 
 This document owns playable-fighter files and static asset data in retail NA2
-(`SLPS-25837`), with bounded NUN3 (`SLUS-21727`) and NUN4 (`SLUS-21862`)
+(`SLPS-25837`), with bounded UN3 (`SLUS-21727`) and UN4 (`SLUS-21862`)
 comparisons.
 Routine comments carry code details and search censuses. Addresses below are live.
 Evidence is static clean-file and MCP analysis; load timing, residency,
-missing/foreign-asset behavior and NUN3 execution are not established.
+missing/foreign-asset behavior and UN3 execution are not established.
 The inspected `SNDBASE.IRX` load/packet paths and embedded synthesizer
 lookup are described in the owning audio research.
 
@@ -81,30 +81,30 @@ character ID alone therefore does not establish that an asset family exists.
 ## Disc placement and file contents
 
 NA2 keeps fighter files in `DATA.CVM` directory `PL/`, with `3EYE/` holding the
-`3???3EYE` and `3???3PCT` families. NUN3 keeps its `1???BOD1`, `2???BOD1`, and
+`3???3EYE` and `3???3PCT` families. UN3 keeps its `1???BOD1`, `2???BOD1`, and
 `2???CHA0/1` files at the `DATA.CVM` root and the `3EYE`/`3PCT` pair in `3EYE/`.
 The four filename tables hold bare basenames; the directory comes from the
 resident path construction described under the per-fighter load path below.
 
 ### CCS format
 
-**Observation:** NA2 and NUN3 fighter CCS files begin with the same header
+**Observation:** NA2 and UN3 fighter CCS files begin with the same header
 section `0xCCCC0001` carrying `CCSF`, the container name, and version word
 `0x123`, followed by the table of contents `0xCCCC0002`. Both use the same
 section-type set in fighter files: `0x0100`, `0x0200`, `0x0300`, `0x0400`,
 `0x0700`, `0x0800`, `0x0900`, `0x0A00`, `0x0C00`, `0x2000`, and, in some NA2
 files, `0x1900` and `0x2400`, besides `0x0005` and `0xFF01`. The object-type
-identities are in [CCS object types](files/ccs_object_types.md). NUN3's clean
+identities are in [CCS object types](files/ccs_object_types.md). UN3's clean
 `STAGE/S04.CCS` has the same header version.
 
 **Observation:** The file families contain:
 
 | Family | Content in the compared files |
 | --- | --- |
-| `2???BOD1` | Battle body: roughly 110 `ANM_` animations, the body `MDL_`/`OBJ_` hierarchy, one `TEX_` and several `CLT_` palettes, and `CMP_eff_dummy_*` effect anchors. NUN3 `2NRTBOD1` and NA2 `PL/2NRTBOD1` both hold 118 source files and 111 animations; NA2's copy has more `OBJ_` rows (4,467 against 3,492). |
-| `1???BOD1` | A second, animation-free model: about 88 `OBJ_`/`MDL_` pairs, eye, mouth, and body textures. NUN3's compared copies (`1NRT`, `1KKS`, `1ASM`) also contain a `x\name\???\name.bmp` source; NA2's compared copies (`1NRT`, `1KKW`) do not. |
+| `2???BOD1` | Battle body: roughly 110 `ANM_` animations, the body `MDL_`/`OBJ_` hierarchy, one `TEX_` and several `CLT_` palettes, and `CMP_eff_dummy_*` effect anchors. UN3 `2NRTBOD1` and NA2 `PL/2NRTBOD1` both hold 118 source files and 111 animations; NA2's copy has more `OBJ_` rows (4,467 against 3,492). |
+| `1???BOD1` | A second, animation-free model: about 88 `OBJ_`/`MDL_` pairs, eye, mouth, and body textures. UN3's compared copies (`1NRT`, `1KKS`, `1ASM`) also contain a `x\name\???\name.bmp` source; NA2's compared copies (`1NRT`, `1KKW`) do not. |
 | `2???CHA0`, `2???CHA1` | Jutsu resources: `ANM_p???cha0*`/`cha1*` animations, effect models, and textures, bound to both the `2cmn` and `1cmn` skeleton containers. |
-| `3???3EYE` | Every file in both games (78 in NA2, 52 in NUN3) names its own `#c\1???\max\1???bod1.max` as an external source; all but two NA2 files and one NUN3 file also contain `c\3???\anm\3???win*` animation sources. |
+| `3???3EYE` | Every file in both games (78 in NA2, 52 in UN3) names its own `#c\1???\max\1???bod1.max` as an external source; all but two NA2 files and one UN3 file also contain `c\3???\anm\3???win*` animation sources. |
 | `3???3PCT` | Name and portrait visuals; see [Disc and archive file inventory](files/disc_files.md#ccs-directory-map). |
 
 **Inference (high confidence):** `1???BOD1` is a second character model,
@@ -115,17 +115,17 @@ Explicit skill-stream dependencies and the cinematic replacement path below
 also establish use of the family during jutsu presentation.
 
 **Observation:** NA2's `3EYE/` also holds `3EYE` and `3PCT` files for
-NUN3-only codes `guy`, `itc`, `kks`, and `ksm`, which the NA2 filename tables do
+UN3-only codes `guy`, `itc`, `kks`, and `ksm`, which the NA2 filename tables do
 not name. Their `3PCT` files contain only a `p\cut_sp\sp_???.bmp` source and no
 `TEX_name` object; they are the four name-less `3PCT` members noted in the disc
 inventory. Their `3EYE` files reference `1???bod1` models that are not on the
 NA2 disc.
 
-**Observation:** NA2 `PL/` also contains `1???BOD1` files for NUN3-only codes
+**Observation:** NA2 `PL/` also contains `1???BOD1` files for UN3-only codes
 `asm`, `jry`, `kbt`, `krn`, `orc`, `szn`, and `tnd`, and for `ukn`/`ukv`. Each
-is smaller than, and not byte-identical to, the NUN3 file of the same name. No
-`2???BOD1` file exists on the NA2 disc for any NUN3-only code, and the only
-NUN3-only `CHA` file is `2KBTCHA0`. No NA2 executable or overlay contains any of
+is smaller than, and not byte-identical to, the UN3 file of the same name. No
+`2???BOD1` file exists on the NA2 disc for any UN3-only code, and the only
+UN3-only `CHA` file is `2KBTCHA0`. No NA2 executable or overlay contains any of
 these `1???bod1.ccs` names as a string.
 
 ### Explicit jutsu-stream body dependencies
@@ -176,17 +176,17 @@ already loaded containers by name; see
 The boot ELF names the providers `cmn/2cmnbod1.ccs` and `pl/1cmnbod1.ccs`.
 
 **Observation:** NA2's `CMN/2CMNBOD1.CCS` holds 178 object names, all of which
-are also in NUN3's 191. The 13 NUN3-only names are the `muffler` chain
+are also in UN3's 191. The 13 UN3-only names are the `muffler` chain
 (`OBJ_`/`MDL_2cmn00t0 muffler`, `muffler d`, and `muffler1..3`) and
 `CMP_`/`OBJ_eff_dummy_cmnrun0` and `OBJ_eff_dummy_spn0`. NA2's
-`PL/1CMNBOD1.CCS` lacks NUN3's `1cmn00t0 cloth3`, `joe d`, and `joe01` object
+`PL/1CMNBOD1.CCS` lacks UN3's `1cmn00t0 cloth3`, `joe d`, and `joe01` object
 and model rows.
 
 **Observation:** Checking every external `2cmnbod1` reference in the thirteen
-NUN3-only `2???BOD1` files against NA2's provider: `jry`, `guy`, `szn`, `kbt`,
+UN3-only `2???BOD1` files against NA2's provider: `jry`, `guy`, `szn`, `kbt`,
 and `anb` resolve completely. `kks`, `orc`, `itc`, `ksm`, `krn`, `nrz`, and
 `asm` each reference the four `OBJ_2cmn00t0 muffler*` rows; `tnd` also
-references `muffler d`. NUN3 `2KKSCHA0` and `2ASMCHA0` reference
+references `muffler d`. UN3 `2KKSCHA0` and `2ASMCHA0` reference
 `OBJ_1cmn00t0 joe01` and `cloth3`, which NA2's `1cmnbod1` lacks.
 
 **Inference (high confidence):** NA2's providers have no record for those
@@ -197,7 +197,7 @@ names, and the NA2 resolver leaves an unmatched `#` record at runtime sentinel
 
 The [definition table](../gameplay/characters/character_ids.md#character-definition-table)
 selects a static boot-ELF record. Its asset fields are named in
-`AwakeningCharacterRecord` (NA2) and `Nun3CharacterRecord` (NUN3):
+`AwakeningCharacterRecord` (NA2) and `un3CharacterRecord` (UN3):
 
 | Field | Asset meaning |
 | --- | --- |
@@ -220,12 +220,12 @@ to the record; examples are `naruto_classic_character_descriptor`,
 `chiyo_character_descriptor` and `hiruko_character_descriptor`.
 
 For Classic Naruto (1) and Classic Sakura (7), every parameter word
-+0x58..+0xDC agrees between NA2 and NUN3. Only pointers and action/row counts differ:
-Naruto has 47 actions and 183 rows in NUN3, against 48 and 190 in NA2.
++0x58..+0xDC agrees between NA2 and UN3. Only pointers and action/row counts differ:
+Naruto has 47 actions and 183 rows in UN3, against 48 and 190 in NA2.
 
-NA2 and NUN3 `fighter_load_character_record` copy the same 55 words,
+NA2 and UN3 `fighter_load_character_record` copy the same 55 words,
 but into different fighter layouts. NA2 also has setup steps absent from the
-NUN3 loader, including its owned child-list allocation. Asset code compiled
+UN3 loader, including its owned child-list allocation. Asset code compiled
 for one fighter layout cannot be assumed to use the other's fields.
 
 ### Model and appearance name consumers
@@ -301,15 +301,15 @@ open. The screen does not establish that the field is unused.
 
 ### Action records
 
-NA2 and NUN3 use 0x54-byte records. Aligning Classic Naruto/Sakura on words
+NA2 and UN3 use 0x54-byte records. Aligning Classic Naruto/Sakura on words
 +0x0C..+0x18 shows one additional NA2 record at index 20; earlier records
 match those words, while many later ones differ. Other words can differ even
 in aligned rows, for example +0x2C values `0x0001041A` and
 `0x0001041D`.
 
-The corresponding fields are named in NA2 `ActionRecord` and NUN3
-`Nun3ActionRecord`. `debug_name` is an NUN3 name such as `PL01_ATK_CHA1`,
-but an empty string in NA2. `display_name` is English in NUN3 SLUS and
+The corresponding fields are named in NA2 `ActionRecord` and UN3
+`un3ActionRecord`. `debug_name` is an UN3 name such as `PL01_ATK_CHA1`,
+but an empty string in NA2. `display_name` is English in UN3 SLUS and
 Japanese with ruby markup in NA2. `owner_character` and
 `jutsu_selector` occupy the low/high halfwords of the packed identity
 word; Sai record 3 is `0x00B9005C`, Sasuke record 3
@@ -317,16 +317,16 @@ word; Sai record 3 is `0x00B9005C`, Sasuke record 3
 [Chakra and guard](../gameplay/combat/chakra_and_guard.md). Apart from
 three string pointers, the compared authored records contain no pointers.
 
-Records 0..3 follow NUN3 debug order CHB0, CHA0, CHB1, CHA1; slots 1 and 3
+Records 0..3 follow UN3 debug order CHB0, CHA0, CHB1, CHA1; slots 1 and 3
 carry the two jutsu display names in both games. Sai (92) record 3,
 `忍法・超獣偽画　狛犬`, and Sasuke (93) record 3, `千鳥`,
 both cost 2.625.
 
 ### Animation-name and `0x4C`-stride tables
 
-Animation-name arrays for IDs 1, 2, 7 and 34 agree between NA2 and NUN3; ID 47
+Animation-name arrays for IDs 1, 2, 7 and 34 agree between NA2 and UN3; ID 47
 differs in two names. Compared arrays begin with shared `ANM_pcmn*`
-names before character-specific names, except NUN3 Kisame (24) and Anbu
+names before character-specific names, except UN3 Kisame (24) and Anbu
 (30), which use their own codes in the leading positions, such as
 `ANM_pksmjmp2`.
 
@@ -412,7 +412,7 @@ Dedicated fighter definitions select resident factories that allocate concrete
 fighters and call their constructors. Construction calls the common base,
 installs the concrete vtable, supplies fighter-owned action/row/animation
 storage to the selected record, loads it and runs character-specific setup.
-Classic Naruto allocates 0x5630 bytes in NUN3 (`naruto_classic_create`)
+Classic Naruto allocates 0x5630 bytes in UN3 (`naruto_classic_create`)
 and 0x5980 in NA2 (`fighter_id_001_create`); the corresponding constructors
 are both named `naruto_classic_construct` in their own programs.
 
@@ -448,23 +448,23 @@ fighter's copied table is used. The callback always receives the original
 fighter pointer, even when its table belongs to another owner.
 Gameplay documents own callback effects and timing.
 
-NUN3 Kakashi's `kakashi_channel3` uses NUN3 fighter fields and resident
+UN3 Kakashi's `kakashi_channel3` uses UN3 fighter fields and resident
 helpers, including its phase and particle-colour fields in
-`Nun3FighterAssets`. **Inference (high confidence):** per-character
+`un3FighterAssets`. **Inference (high confidence):** per-character
 code is compiled against its game's fighter layout and resident addresses;
 both differ from NA2.
 
 ## Jutsu-resource filename table
 
 NA2 BTL `skill_resource_name_table` (live `0x008A7AA0`) and
-NUN3 BATTLE `jutsu_resource_filenames` (live `0x00923DA0`) are flat
+UN3 BATTLE `jutsu_resource_filenames` (live `0x00923DA0`) are flat
 resource-index tables of `2???cha?.ccs` names.
 
-The first 116 names agree, including every NUN3-only code's cha0/cha1 pair.
+The first 116 names agree, including every UN3-only code's cha0/cha1 pair.
 NA2 appends names and ends with `2bdycha0..4`. Resource order is not
 character-ID order. Of the retained names, 33 have no NA2 disc file,
-including all NUN3-only resources except `2kbtcha0`; eight, such as
-`2forcha0` and `2dtucha0`, have no NUN3 disc file either.
+including all UN3-only resources except `2kbtcha0`; eight, such as
+`2forcha0` and `2dtucha0`, have no UN3 disc file either.
 
 ### Selector-to-resource mapping
 
@@ -517,7 +517,7 @@ Shared selector arithmetic does not make the two lookup paths interchangeable.
 
 **Observation:** NA2's `DATA/PLVOICE.AFS` has 93 outer entries. Reading entry
 `n` as character ID `n + 1`, the null entries are exactly IDs 8, 9, 20, 21,
-23..33, 39, 44, 45, 51, 74, and 88. NUN3's 112 entries form two 56-entry banks
+23..33, 39, 44, 45, 51, 74, and 88. UN3's 112 entries form two 56-entry banks
 with the same null pattern in each bank; read the same way, they are null at
 IDs 26, 29, 31, 33, 39, and 51.
 
@@ -531,7 +531,7 @@ interpretation independently of the null pattern.
 ### Nested member layout
 
 **Clean-file observation:** NA2 `DATA/PLVOICE.AFS` is 22,192,128 bytes and
-NUN3's is 34,574,336 bytes; their tables were read from the clean
+UN3's is 34,574,336 bytes; their tables were read from the clean
 extraction. Both targets' annotations name the serialized file layouts.
 At both outer and inner levels, the eight-byte `AfsArchiveHeader` holds
 `magic` (`AFS` plus NUL) and the 32-bit little-endian `member_count`.
@@ -549,7 +549,7 @@ its owning outer entry's declared size.
 | Game | Populated sub-archives | Declared slots per sub-archive | Populated clips | Inner layout |
 | --- | ---: | --- | ---: | --- |
 | NA2 | 72 | `1..48`; commonly `39..44` for base fighters | 2,232 | Every declared slot is nonempty; first clip always starts at `+0x800`. |
-| NUN3 | 100, across two banks | `209..256`; 76 archives declare 209 | 2,525 | Every archive is sparse; first clip starts at `+0x800` except the two 256-slot archives, which start at `+0x1000`. |
+| UN3 | 100, across two banks | `209..256`; 76 archives declare 209 | 2,525 | Every archive is sparse; first clip starts at `+0x800` except the two 256-slot archives, which start at `+0x1000`. |
 
 All 4,757 nonempty clips share first 12 header bytes
 `80 00 00 20 11 00 00 01 00 00 5D C0`, consistent with the AHX type-`0x11`,
@@ -564,17 +564,17 @@ Naruto's four members (outer index 46 / ID 47) are named
 Thus a voice number such as 213 cannot be used directly as a physical inner
 index in that NA2 archive.
 
-**Observation:** NUN3 retains sparse numbering: its ID 1 bank-0 archive has
+**Observation:** UN3 retains sparse numbering: its ID 1 bank-0 archive has
 27 populated slots at
 `0..3, 6..7, 23..24, 45, 47, 49..50, 68..69, 85, 92, 111..112, 118,
 125, 151, 165..167, 199, 202, 208`. Its ID 47 archives declare 218 slots,
 with only `213..217` populated; ID 56 declares 256 slots, with only
 `249..255` populated. Corresponding banks have identical populated-index
 sets for every ID except 40: bank 1 additionally has member 182. The
-[menu-texture evidence](../gameplay/characters/nun3_nun4_characters.md#nun3-streamed-bank-language)
+[menu-texture evidence](../gameplay/characters/un3_un4_characters.md#un3-streamed-bank-language)
 establishes bank 0 as English and bank 1 as Japanese.
-NUN3's own request code establishes direct sparse-member selection and the
-56-entry bank offset in [Battle audio](../gameplay/characters/nun3_nun4_characters.md#checked-nun3-streamed-bank-selection).
+UN3's own request code establishes direct sparse-member selection and the
+56-entry bank offset in [Battle audio](../gameplay/characters/un3_un4_characters.md#checked-un3-streamed-bank-selection).
 
 ### Voice descriptors and filename-number lists
 
@@ -637,13 +637,13 @@ sample records and offsets are established in
 MCP does not map this external data file, so these header observations used
 read-only source bytes; the loader contract came from MCP code.
 
-NUN4 `audio_character_bank_descriptor` (`0x001D4D90`) uses a separate
+UN4 `audio_character_bank_descriptor` (`0x001D4D90`) uses a separate
 descriptor set when its audio context word `+0x10` equals 1. The sets begin
 at `audio_character_banks` (`0x00435670`) and
 `audio_character_banks_alternate` (`0x00435A18`). Its checked rows use the
-same three-word load contract against NUN4's own `DATA/SNDDATA.BIN`:
+same three-word load contract against UN4's own `DATA/SNDDATA.BIN`:
 
-| NUN4 character / ID | Descriptor set | Language | Bank header file offset | Header bytes | Sample bytes |
+| UN4 character / ID | Descriptor set | Language | Bank header file offset | Header bytes | Sample bytes |
 | --- | ---: | --- | ---: | ---: | ---: |
 | Naruto Uzumaki (Classic), 1 | 0 | English | `0x00335800` | `0x2310` | `0x827F0` |
 | Naruto Uzumaki (Classic), 1 | 1 | Japanese | `0x01814800` | `0x2310` | `0x76C70` |
@@ -652,9 +652,9 @@ same three-word load contract against NUN4's own `DATA/SNDDATA.BIN`:
 | Naruto Uzumaki, 57 | 0 | English | `0x00F79800` | `0x2310` | `0x88440` |
 | Naruto Uzumaki, 57 | 1 | Japanese | `0x0225C800` | `0x2310` | `0x73120` |
 
-[Battle audio](../gameplay/characters/nun3_nun4_characters.md#compact-bank-set-language)
+[Battle audio](../gameplay/characters/un3_un4_characters.md#compact-bank-set-language)
 owns the code-linked sprite evidence for the language labels and the setting
-consumers; its [checked compact contract](../gameplay/characters/nun3_nun4_characters.md#checked-nun4-compact-contract)
+consumers; its [checked compact contract](../gameplay/characters/un3_un4_characters.md#checked-un4-compact-contract)
 owns the event-list comparison. Complete source identities belong
 to [Retail game file identities](files/file_identities.md#character-comparison-inputs).
 

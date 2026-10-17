@@ -3,12 +3,12 @@
 ## Research coverage
 
 Established: five resident NA2 ELF candidates were historically matched to
-official NUN5 dialogue; their live storage is verified. Open: exact NUN5
+official UN5 dialogue; their live storage is verified. Open: exact UN5
 homologs, current correspondence, screen context, reachability and the complete
 structural family. Names come from `@annotations/NA2`; addresses are live.
 
 Established source and donor relationships belong to
-[NA2 and NUN5 text correspondence](translation_importer.md).
+[NA2 and UN5 text correspondence](translation_importer.md).
 
 ## Unresolved executable targets
 

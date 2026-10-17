@@ -3,10 +3,10 @@
 ## Research coverage
 
 Established: the 22 resident field-item names, their index lookup and state
-mirror, and the corresponding official NUN5 English names in table order.
-Open: retail NA2/NUN5 names for code `29` and user-facing names for `02`/`03`;
+mirror, and the corresponding official UN5 English names in table order.
+Open: retail NA2/UN5 names for code `29` and user-facing names for `02`/`03`;
 the latter have internal BTL identifiers only. Other item-name sources remain open.
-Names come from `@annotations/NA2` and `@annotations/NUN5`.
+Names come from `@annotations/NA2` and `@annotations/UN5`.
 The code `29` identification is user-supplied; its English name is external.
 
 Selection and weighting belong to
@@ -17,7 +17,7 @@ and presentation to [Battle item-status presentation](ui/battle/item_status.md).
 
 ## Address conventions
 
-The retail NA2 executable and official NUN5 `PRG/TEXTENG.BIN` are identified
+The retail NA2 executable and official UN5 `PRG/TEXTENG.BIN` are identified
 in [Retail game file identities](../game/files/file_identities.md).
 All addresses below are live; the annotation comments own layout and mapping
 details. External-bank loading belongs to
@@ -39,13 +39,13 @@ between `SaveProfile.small_availability` and
 `SaveProfile.secondary.byte_bank2`. Their saved-state contract belongs to
 [Save-data lifecycle](../game/save_data.md#secondary-block-and-opaque-tail).
 
-The official NUN5 English bank has the corresponding 22 titles in the same
+The official UN5 English bank has the corresponding 22 titles in the same
 order, from `field_item_scroll_of_teleportation_title` (`TEXTENG.BIN`,
 `0x009052B0`) to `field_item_medical_pack_title` (`0x00905488`). This establishes
-the English names for these NA2 rows, without establishing NUN5 numeric item
+the English names for these NA2 rows, without establishing UN5 numeric item
 codes, naming absent NA2 codes, or proving every item source uses this table.
 
-| NA2 code | Retail NA2 source name | Official NUN5 English name |
+| NA2 code | Retail NA2 source name | Official UN5 English name |
 | ---: | --- | --- |
 | `09` | `瞬身の巻物` | Scroll of Teleportation |
 | `0E` | `アイテムポーチ` | Item Pouch |
@@ -73,7 +73,7 @@ codes, naming absent NA2 codes, or proving every item source uses this table.
 The selector can also produce codes `02`, `03`, and `29`, which are absent
 from this name table. BTL identifies the first two internally as
 `ItemRecoverLife` (`item_recover_life_class_name`, `0x00898B60`) and
-`ItemChakraBall` (`item_chakra_ball_class_name`, `0x00898B40`); no retail NA2 or official NUN5
+`ItemChakraBall` (`item_chakra_ball_class_name`, `0x00898B40`); no retail NA2 or official UN5
 user-facing name was established for code `29` from the binaries.
 
 ## Code `29`: Curse Tag: Chakra Points Seal
@@ -83,11 +83,11 @@ The user identified NA2 item `0x29` as the Chakra Seal Tag.
 lists **Curse Tag: Chakra Points Seal** and describes temporarily preventing
 the struck opponent from using chakra. This provides the PS2-series English
 name; the association with NA2 code `29` comes from the user's identification,
-not from an NA2 or NUN5 name-table entry.
+not from an NA2 or UN5 name-table entry.
 
-No corresponding item name was recovered from NUN5 `TEXTENG.BIN`.
+No corresponding item name was recovered from UN5 `TEXTENG.BIN`.
 **Curse Tag: Chakra Points Seal** remains an externally sourced UN2 name;
-the negative-search evidence is retained in the NUN5 title-run annotation.
+the negative-search evidence is retained in the UN5 title-run annotation.
 
 Pool membership and weighting are owned by
 [Random field-item selection](../gameplay/projectiles_and_items/battle_item_inventory.md#random-field-item-selection).

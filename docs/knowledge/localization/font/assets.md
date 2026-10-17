@@ -4,7 +4,7 @@
 
 Established: all five retail NA2 (`SLPS-25837`) font resources, their loading,
 selection, descriptors, glyph cells and palettes; GRF4 ruby behavior; and the
-NUN5 GF4/GF4C cell and palette differences. Open: meanings of every descriptor
+UN5 GF4/GF4C cell and palette differences. Open: meanings of every descriptor
 flag. Static comparisons establish data differences, not rendered appearance.
 Routine, field and data names come from `@annotations/NA2`; addresses are live.
 
@@ -66,21 +66,21 @@ box is 6x14 pixels, with median top 4 and bottom 17.
 
 NA2's native `font_decode_secondary_byte` (`0x001873E0`) selects cell `107`
 for byte `0xAE`, the halfwidth small katakana yo (`ョ`), rather than the
-Windows-1252 registered sign. NUN5's GF4 raster has the registered sign
+Windows-1252 registered sign. UN5's GF4 raster has the registered sign
 at cell `142`, with metric bytes `00 04 00 03`, and the middle dot at cell
 `151`, with metric bytes `05 09 04 06`. The middle dot's Windows-1252 byte
 `0xB7` selects NA2 secondary cell `116`. These are static decoder and
 raster observations.
 
-## NA2 and NUN5 cell and palette differences
+## NA2 and UN5 cell and palette differences
 
 The two GF4 rasters do not share cell semantics throughout their first 123
-cells: NUN5 cells `59..64` and `91..94` are blank or have different semantics
-from the NA2 cells at the same indices, and NUN5 stores the at-sign in cell
+cells: UN5 cells `59..64` and `91..94` are blank or have different semantics
+from the NA2 cells at the same indices, and UN5 stores the at-sign in cell
 `63` while NA2 printable ASCII addresses cell `32`.
 
 Retail NA2's primary GF4 raster uses palette index 15 for 265,344 of 1,746,272
-pixels (`15.194884%`). NA2's GF4C maps index 15 to opaque white, while NUN5's
+pixels (`15.194884%`). NA2's GF4C maps index 15 to opaque white, while UN5's
 maps it to black. The same NA2 raster uses palette indices 13 and 14 zero times.
 
 Renderer math belongs to [Renderer metrics](renderer_metrics.md); screen

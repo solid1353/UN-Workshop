@@ -20,7 +20,7 @@ owns battle-manager slot publication, logical IDs and loading;
 [Practice mode](../gameplay/modes/practice_mode.md)
 owns the settings parent and outer-state lifetime;
 [Stage Select UI](../localization/ui/stage_select.md)
-owns NA2/NUN5 layout and localization differences.
+owns NA2/UN5 layout and localization differences.
 
 ## Binary identity and address conventions
 

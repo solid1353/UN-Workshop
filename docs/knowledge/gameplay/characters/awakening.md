@@ -9,7 +9,7 @@ ordering, and selected character parameter overrides. Open: visible timing,
 class-7 skill-play outcome seeding, record 0's use, later indirect parameter
 writers, and the identity of the earlier contest-type-0 observation. Donor
 Ultimate Jutsu and power comparisons are in
-[NUN3 and NUN4 characters](nun3_nun4_characters.md).
+[UN3 and UN4 characters](un3_un4_characters.md).
 
 Routine, field and data names come from `@annotations/NA2`. Per-routine
 details are in their annotation comments; addresses are live. BSS globals

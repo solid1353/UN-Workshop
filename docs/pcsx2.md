@@ -9,7 +9,7 @@ user-facing syntax is available through `workshop help`.
 `workshop resolve` returns every available source game and, when invoked inside
 a configured project, every available project build. Supplying a game returns
 all of its resolved properties; supplying a property prints only that value,
-such as `workshop resolve NUN5 iso`.
+such as `workshop resolve UN5 iso`.
 
 When invoked inside a supported project, Workshop discovers that project's root
 settings automatically. Shared source games remain available without project

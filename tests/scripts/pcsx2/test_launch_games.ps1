@@ -131,16 +131,16 @@ try {
   }
 }
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'paths.json')
-    '{"sources":{"NUN5":{"serial":"SLES-55605","crc":"C071D4C1"}}}' |
+    '{"sources":{"UN5":{"serial":"SLES-55605","crc":"C071D4C1"}}}' |
         Set-Content -NoNewline -LiteralPath (Join-Path $repository 'games.json')
     '{"title":"Test Project","serial":"SLOP-TEST1"}' |
         Set-Content -NoNewline -LiteralPath (Join-Path $repository 'game.json')
     New-Item -ItemType Directory -Force -Path (
-        Join-Path $repository 'pcsx2_files\games\NUN5'
+        Join-Path $repository 'pcsx2_files\games\UN5'
     ) | Out-Null
     foreach ($extension in @('ini', 'pnach', 'ps2')) {
         New-Item -ItemType File -Force -Path (
-            Join-Path $repository "pcsx2_files\games\NUN5\NUN5.$extension"
+            Join-Path $repository "pcsx2_files\games\UN5\UN5.$extension"
         ) | Out-Null
     }
     @'
@@ -187,30 +187,30 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
         $isoTarget = 'build/cached.iso'
         $projectHelp = (& .\workshop.ps1 help) -join "`n"
         Assert-WorkshopLaunchTest `
-            -Condition ($projectHelp.Contains('sources: NUN5')) `
+            -Condition ($projectHelp.Contains('sources: UN5')) `
             -Message 'Workshop help depended on project settings.'
         Assert-WorkshopLaunchTest `
             -Condition ($projectHelp.Contains('properties: iso, synthetic_property')) `
             -Message 'Workshop help did not use generated resolver properties.'
 
-        $play = (& .\workshop.ps1 NUN5 $isoTarget -p practice-menu) -join "`n"
+        $play = (& .\workshop.ps1 UN5 $isoTarget -p practice-menu) -join "`n"
         Assert-WorkshopLaunchTest `
-            -Condition ($play.Contains("games=NUN5,$isoTarget play=practice-menu record=")) `
+            -Condition ($play.Contains("games=UN5,$isoTarget play=practice-menu record=")) `
             -Message 'Paired playback was not forwarded to the shared launcher.'
 
         $agentReplay = (
-            & .\workshop.ps1 NUN5 -p practice-menu `
+            & .\workshop.ps1 UN5 -p practice-menu `
                 -agent-replay -logfile 'work/agent.log'
         ) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition ($agentReplay -match (
-                'games=NUN5 play=practice-menu .*log=work/agent\.log ' +
+                'games=UN5 play=practice-menu .*log=work/agent\.log ' +
                 'agentReplay=True$'
             )) `
             -Message 'Agent replay options were not forwarded to the shared launcher.'
 
         $memoryCardLaunch = (
-            & .\workshop.ps1 NUN5 $isoTarget -mc 'Custom.ps2' -dmc
+            & .\workshop.ps1 UN5 $isoTarget -mc 'Custom.ps2' -dmc
         ) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition (
@@ -220,7 +220,7 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
 
         foreach ($flag in @('-dmc', '-vmc')) {
             foreach ($cardArguments in @(@($flag, 1), @('-mc', 1, $flag))) {
-                $cardLaunch = (& .\workshop.ps1 NUN5 @cardArguments) -join "`n"
+                $cardLaunch = (& .\workshop.ps1 UN5 @cardArguments) -join "`n"
                 $discard = $flag -eq '-dmc'
                 $volatile = $flag -eq '-vmc'
                 Assert-WorkshopLaunchTest `
@@ -230,7 +230,7 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
                     -Message "Card number and mode were not forwarded for $cardArguments."
             }
         }
-        $namedCardLaunch = (& .\workshop.ps1 NUN5 -vmc full) -join "`n"
+        $namedCardLaunch = (& .\workshop.ps1 UN5 -vmc full) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition ($namedCardLaunch.Contains('memory=full discard=False volatile=True')) `
             -Message 'Named volatile card shorthand was not forwarded.'
@@ -239,7 +239,7 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
         $secondAdditionalPnach = Join-Path $repository 'second-extra.pnach'
         $pnachLaunch = (
             & .\workshop.ps1 `
-                NUN5 `
+                UN5 `
                 -pnach $firstAdditionalPnach `
                 -pnach $secondAdditionalPnach
         ) -join "`n"
@@ -250,7 +250,7 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
             -Message 'Repeatable PNACH files were not forwarded in command-line order.'
 
         $missingPnachValueRejected = $false
-        try { & .\workshop.ps1 NUN5 -pnach }
+        try { & .\workshop.ps1 UN5 -pnach }
         catch {
             $missingPnachValueRejected = $_.Exception.Message -ceq (
                 '-pnach requires a value.'
@@ -260,51 +260,51 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
             -Condition $missingPnachValueRejected `
             -Message 'Workshop accepted -pnach without a file.'
 
-        $turboLaunch = (& .\workshop.ps1 NUN5 -t) -join "`n"
+        $turboLaunch = (& .\workshop.ps1 UN5 -t) -join "`n"
         Assert-WorkshopLaunchTest `
-            -Condition ($turboLaunch -match 'games=NUN5 .*turbo=True unlimited=False') `
+            -Condition ($turboLaunch -match 'games=UN5 .*turbo=True unlimited=False') `
             -Message 'Turbo launch was not forwarded to the shared launcher.'
 
-        $unlimitedLaunch = (& .\workshop.ps1 NUN5 -u) -join "`n"
+        $unlimitedLaunch = (& .\workshop.ps1 UN5 -u) -join "`n"
         Assert-WorkshopLaunchTest `
-            -Condition ($unlimitedLaunch -match 'games=NUN5 .*turbo=False unlimited=True') `
+            -Condition ($unlimitedLaunch -match 'games=UN5 .*turbo=False unlimited=True') `
             -Message 'Unlimited launch was not forwarded to the shared launcher.'
 
-        $closeLaunch = (& .\workshop.ps1 NUN5 -k) -join "`n"
+        $closeLaunch = (& .\workshop.ps1 UN5 -k) -join "`n"
         Assert-WorkshopLaunchTest `
-            -Condition ($closeLaunch -match 'games=NUN5 .*close=True') `
+            -Condition ($closeLaunch -match 'games=UN5 .*close=True') `
             -Message 'Closing PCSX2 before launch was not forwarded to the shared launcher.'
 
-        $record = (& .\workshop.ps1 NUN5 $isoTarget -r font/collection/generic) -join "`n"
+        $record = (& .\workshop.ps1 UN5 $isoTarget -r font/collection/generic) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition ($record.Contains(
-                "games=NUN5,$isoTarget play= record=font/collection/generic"
+                "games=UN5,$isoTarget play= record=font/collection/generic"
             )) `
             -Message 'Nested rightmost recording was not forwarded to the shared launcher.'
 
-        $snapshots = (& .\workshop.ps1 NUN5 -s practice-menu) -join "`n"
+        $snapshots = (& .\workshop.ps1 UN5 -s practice-menu) -join "`n"
         Assert-WorkshopLaunchTest `
-            -Condition ($snapshots -match 'games=NUN5 play=practice-menu record= snapshots=True') `
+            -Condition ($snapshots -match 'games=UN5 play=practice-menu record= snapshots=True') `
             -Message 'Snapshot playback was not forwarded to the shared launcher.'
 
         $pairedSnapshots = (
-            & .\workshop.ps1 NUN5 $isoTarget -s practice-menu
+            & .\workshop.ps1 UN5 $isoTarget -s practice-menu
         ) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition (
                 $pairedSnapshots.Contains(
-                    "games=NUN5,$isoTarget play=practice-menu record= snapshots=True"
+                    "games=UN5,$isoTarget play=practice-menu record= snapshots=True"
                 )
             ) `
             -Message 'Paired snapshot playback was not forwarded to the shared launcher.'
 
         $snapshotsWithPath = (
-            & .\workshop.ps1 NUN5 -s practice-menu -o 'captures/custom'
+            & .\workshop.ps1 UN5 -s practice-menu -o 'captures/custom'
         ) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition (
                 $snapshotsWithPath -match (
-                    'games=NUN5 play=practice-menu record= snapshots=True ' +
+                    'games=UN5 play=practice-menu record= snapshots=True ' +
                     'capture=captures/custom'
                 )
             ) `
@@ -323,14 +323,14 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
             -Message 'The ISO snapshot target was not forwarded.'
 
         $captureWithoutSnapshotsRejected = $false
-        try { & .\workshop.ps1 NUN5 -o 'captures/invalid' }
+        try { & .\workshop.ps1 UN5 -o 'captures/invalid' }
         catch { $captureWithoutSnapshotsRejected = $_.Exception.Message -ceq '-o requires -s.' }
         Assert-WorkshopLaunchTest `
             -Condition $captureWithoutSnapshotsRejected `
             -Message 'Workshop accepted -o without snapshot replay.'
 
         $conflictingSpeedRejected = $false
-        try { & .\workshop.ps1 NUN5 -t -u }
+        try { & .\workshop.ps1 UN5 -t -u }
         catch { $conflictingSpeedRejected = $true }
         Assert-WorkshopLaunchTest `
             -Condition $conflictingSpeedRejected `
@@ -355,18 +355,18 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
             -Force `
             -Path (Join-Path $repository 'source'), `
                 (Join-Path $repository 'pcsx2_files\games\NA2'), `
-                (Join-Path $repository 'pcsx2_files\games\NUN5'), `
+                (Join-Path $repository 'pcsx2_files\games\UN5'), `
                 (Join-Path $repository 'pcsx2_files\input_recordings') | Out-Null
         New-Item `
             -ItemType File `
             -Force `
-            -Path (Join-Path $repository 'source\NUN5.iso'), `
+            -Path (Join-Path $repository 'source\UN5.iso'), `
                 (Join-Path $repository 'pcsx2_files\games\NA2\NA2.pnach'), `
                 (Join-Path $repository 'pcsx2_files\games\NA2\NA2.ini'), `
                 (Join-Path $repository 'pcsx2_files\games\NA2\NA2.ps2'), `
-                (Join-Path $repository 'pcsx2_files\games\NUN5\NUN5.pnach'), `
-                (Join-Path $repository 'pcsx2_files\games\NUN5\NUN5.ini'), `
-                (Join-Path $repository 'pcsx2_files\games\NUN5\NUN5.ps2'), `
+                (Join-Path $repository 'pcsx2_files\games\UN5\UN5.pnach'), `
+                (Join-Path $repository 'pcsx2_files\games\UN5\UN5.ini'), `
+                (Join-Path $repository 'pcsx2_files\games\UN5\UN5.ps2'), `
                 (Join-Path $repository 'pcsx2_files\input_recordings\practice-menu.p2m2') | Out-Null
         $global:UnWorkshopFakeCenteredWindows = @()
         $global:UnWorkshopFakeNoRecenter = @()
@@ -413,14 +413,14 @@ if ($PassThru) {
 
         $resolver = Join-Path $repository 'scripts\lib\resolve_game.py'
         $resolvedSource = (
-            & $python -B $resolver NUN5 --project-root $repository
+            & $python -B $resolver UN5 --project-root $repository
         ) | ConvertFrom-Json
         Assert-WorkshopLaunchTest `
             -Condition (
                 [string]$resolvedSource.cheats -ceq
-                (Join-Path $repository 'pcsx2_files\games\NUN5\NUN5.pnach')
+                (Join-Path $repository 'pcsx2_files\games\UN5\UN5.pnach')
             ) `
-            -Message 'The project-owned NUN5 PNACH did not resolve from its game bundle.'
+            -Message 'The project-owned UN5 PNACH did not resolve from its game bundle.'
         $firstAdditionalPnach = Join-Path $repository 'first-extra.pnach'
         $secondAdditionalPnach = Join-Path $repository 'second-extra.pnach'
         New-Item `
@@ -430,13 +430,13 @@ if ($PassThru) {
 
         $defaultSnapshotLaunch = (
             & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
-                -Games NUN5 `
+                -Games UN5 `
                 -Play practice-menu `
                 -Snapshots `
                 -AdditionalPnach @($firstAdditionalPnach, $secondAdditionalPnach) `
                 -ProjectRoot $repository
         ) -join "`n"
-        $defaultCaptureDirectory = Join-Path $repository 'captures\practice-menu\nun5'
+        $defaultCaptureDirectory = Join-Path $repository 'captures\practice-menu\un5'
         Assert-WorkshopLaunchTest `
             -Condition (
                 $defaultSnapshotLaunch.Contains(
@@ -449,7 +449,7 @@ if ($PassThru) {
             -Condition (
                 $defaultSnapshotLaunch -match (
                     'pnach=' + [regex]::Escape(
-                        (Join-Path $repository 'pcsx2_files\games\NUN5\NUN5.pnach')
+                        (Join-Path $repository 'pcsx2_files\games\UN5\UN5.pnach')
                     ) + '\|' + [regex]::Escape($firstAdditionalPnach) + '\|' +
                     [regex]::Escape($secondAdditionalPnach) + ' lines='
                 )
@@ -466,9 +466,9 @@ if ($PassThru) {
             -NoNewline `
             -LiteralPath $secondPracticePnach `
             -Value '[+Practice Second]'
-        $practicePnachByGame = @{ nun5 = @($practicePnach, $secondPracticePnach) }
+        $practicePnachByGame = @{ un5 = @($practicePnach, $secondPracticePnach) }
         $practiceLinesByGame = @{
-            nun5 = [string[]]@(
+            un5 = [string[]]@(
                 'patch=1,EE,003D0FF0,word,00000039',
                 'patch=1,EE,003D0FF4,word,00000025'
             )
@@ -476,7 +476,7 @@ if ($PassThru) {
 
         $snapshotLaunch = (
             & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
-                -Games NUN5 `
+                -Games UN5 `
                 -Play practice-menu `
                 -Snapshots `
                 -InputRecordingCaptureMode screenshots `
@@ -502,12 +502,12 @@ if ($PassThru) {
             ) `
             -Message 'Snapshot playback did not forward the selected game PNACH and inline lines.'
 
-        $secondIso = Join-Path $repository 'source\NUN3.iso'
+        $secondIso = Join-Path $repository 'source\UN3.iso'
         New-Item -ItemType File -Force -Path $secondIso | Out-Null
         $pairedCaptureRoot = Join-Path $repository 'captures-paired'
         $pairedSnapshotLaunch = @(
             & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
-                -Games @('NUN5', $secondIso) `
+                -Games @('UN5', $secondIso) `
                 -Play practice-menu `
                 -Snapshots `
                 -InputRecordingCaptureMode screenshots `
@@ -515,8 +515,8 @@ if ($PassThru) {
                 -ProjectRoot $repository
         )
         $pairedText = $pairedSnapshotLaunch -join "`n"
-        $leftCapture = Join-Path $pairedCaptureRoot 'nun5'
-        $rightCapture = Join-Path $pairedCaptureRoot 'NUN3'
+        $leftCapture = Join-Path $pairedCaptureRoot 'un5'
+        $rightCapture = Join-Path $pairedCaptureRoot 'UN3'
         $pinePorts = @(
             [regex]::Matches($pairedText, 'arguments=-pine-port,(\d+)') |
                 ForEach-Object { $_.Groups[1].Value }
@@ -550,7 +550,7 @@ if ($PassThru) {
         $unselectedPnachRejected = $false
         try {
             & (Join-Path $repository 'scripts\pcsx2\launch_games.ps1') `
-                -Games NUN5 `
+                -Games UN5 `
                 -Play practice-menu `
                 -Snapshots `
                 -CaptureDirectory (Join-Path $repository 'captures-invalid') `
@@ -675,7 +675,7 @@ if ($PassThru) {
         }
 
         & (Join-Path $repository 'scripts\pcsx2\launch.ps1') `
-            -IsoPath (Join-Path $repository 'source\NUN5.iso') `
+            -IsoPath (Join-Path $repository 'source\UN5.iso') `
             -ReadOnlySettings `
             -Turbo `
             -UnlimitedForFrames 321
@@ -689,7 +689,7 @@ if ($PassThru) {
             -Message 'Configured launcher did not compose read-only settings with timed Unlimited and a Turbo fallback.'
 
         & (Join-Path $repository 'scripts\pcsx2\launch.ps1') `
-            -IsoPath (Join-Path $repository 'source\NUN5.iso') `
+            -IsoPath (Join-Path $repository 'source\UN5.iso') `
             -Unlimited
         $unlimitedArguments = @($global:UnWorkshopCapturedStartArguments)
         Assert-WorkshopLaunchTest `
@@ -701,7 +701,7 @@ if ($PassThru) {
             -Message 'Configured launcher did not compose permanent Unlimited independently.'
 
         & (Join-Path $repository 'scripts\pcsx2\launch.ps1') `
-            -IsoPath (Join-Path $repository 'source\NUN5.iso') `
+            -IsoPath (Join-Path $repository 'source\UN5.iso') `
             -Surfaceless
         $backgroundArguments = @($global:UnWorkshopCapturedStartArguments)
         Assert-WorkshopLaunchTest `
@@ -714,7 +714,7 @@ if ($PassThru) {
             -Message 'Surfaceless launcher did not centrally select one mute flag without redundant no-GUI.'
 
         & (Join-Path $repository 'scripts\pcsx2\launch.ps1') `
-            -IsoPath (Join-Path $repository 'source\NUN5.iso')
+            -IsoPath (Join-Path $repository 'source\UN5.iso')
         $normalArguments = @($global:UnWorkshopCapturedStartArguments)
         Assert-WorkshopLaunchTest `
             -Condition (

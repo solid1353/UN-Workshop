@@ -2,16 +2,16 @@
 
 ## Research coverage
 
-Established: retail NA2 (`SLPS-25837`) and NUN5 confirmation owners,
+Established: retail NA2 (`SLPS-25837`) and UN5 confirmation owners,
 geometry, fragment/paragraph drawing, choices, closing, and message boundaries.
-The supplied NUN5 create-data confirmation has observed coverage; other
+The supplied UN5 create-data confirmation has observed coverage; other
 documented states have static coverage. Open: other callers, strings and
-animation phases. Names come from `@annotations/NA2` and `@annotations/NUN5`;
+animation phases. Names come from `@annotations/NA2` and `@annotations/UN5`;
 per-routine details are in their comments. All addresses below are live.
 
 Glyph metrics belong to [Renderer metrics](../renderer_metrics.md);
 memory-card text and storage belong to
-[NA2 and NUN5 text correspondence](../../translation_importer.md#memory-card-failure-messages).
+[NA2 and UN5 text correspondence](../../translation_importer.md#memory-card-failure-messages).
 
 ## Battle quit-confirmation callers
 
@@ -25,7 +25,7 @@ draw still advances its animation.
 `modal_initialize_yes_no` (`0x00382DD0`) uses `modal_yes_no_layout`.
 Its `ModalChoiceState.x/y` are `50/24`, with `row_extra = 12`;
 the native 20-unit line advance puts the second row at Y `56`.
-The NUN5 measurements map Yes to `(64.5,31.5)` and No to `(68.5,49)`.
+The UN5 measurements map Yes to `(64.5,31.5)` and No to `(68.5,49)`.
 
 ## Mode Select Return to Title confirmation caller
 
@@ -132,16 +132,16 @@ therefore do not establish a lower-panel truncation bug.
 unformatted-card notice `0x0A` to format question `0x0B` and
 insufficient-space warning `0x08` to required-space explanation `0x09`.
 Status `0x0C` already combines its statement and question.
-NUN5 combines some of the separate notices into one paragraph, so message
+UN5 combines some of the separate notices into one paragraph, so message
 counts alone do not identify lost text.
 
 `save_yes_draw_record` and `save_no_draw_record` use local Y `80`
 in the lower panel; the startup renderer replaces that Y before drawing.
 The fixed Save/Return questions use their own records and direct body draws.
 
-### NUN5 memory-card paragraph
+### UN5 memory-card paragraph
 
-NUN5 `save_ui_refresh_text` (`0x001EB950`) publishes the selected
+UN5 `save_ui_refresh_text` (`0x001EB950`) publishes the selected
 message in `SaveDialogUi.text`. `save_ui_draw` (`0x001EB9D0`)
 dispatches `save_ui_draw_paragraph` (`0x001EBEE0`), which draws the
 complete NUL-terminated message through `panel_draw_paragraph`

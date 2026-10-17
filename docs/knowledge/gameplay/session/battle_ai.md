@@ -4,7 +4,7 @@
 
 Established: retail NA2 (`SLPS-25837`) AI ownership, lifecycle, configuration,
 targeting, decision precedence, dispatch, action queues, numeric exceptions
-and shared RNG. The bounded NUN4 ID-9/NA2 ID-89 Orochimaru comparison covers
+and shared RNG. The bounded UN4 ID-9/NA2 ID-89 Orochimaru comparison covers
 separate AI value/flag lookups and the checked direct reaction exceptions.
 Open: move names and reaction reachability/semantics, the seventh profile row,
 consumers of parameters 24/31 and descriptor bits
@@ -12,7 +12,7 @@ consumers of parameters 24/31 and descriptor bits
 and unrecognized external aliases.
 
 Routines, structures and data are named by the annotations in
-`@annotations/NA2` and `@annotations/NUN4`; their comments carry the per-routine
+`@annotations/NA2` and `@annotations/UN4`; their comments carry the per-routine
 detail. Findings are static; names describe demonstrated behavior rather than
 native move names.
 

@@ -4,8 +4,8 @@
 
 Established: retail NA2 settings geometry, viewports, resource bindings,
 scrolling, title/cell separation, cursor/arrow gates, Handicap and footers;
-NUN5 footer and VS prompt comparisons. Names come from `@annotations/NA2`
-and `@annotations/NUN5`; addresses are live. Open: complete menu lifecycle,
+UN5 footer and VS prompt comparisons. Names come from `@annotations/NA2`
+and `@annotations/UN5`; addresses are live. Open: complete menu lifecycle,
 every animation phase/configuration, and the model stream attribute mapping.
 Prior object/resource observations establish the layouts within those bounds.
 
@@ -116,7 +116,7 @@ colors. Their yellow, olive and orange appearances come from distinct
 Row vertices `0..17` form the label panel; `18..61` form the divider and
 value panel. NA2 `SETTING.CCS` uses the same 62-vertex player-row geometry
 with the separate `s_menu` atlas, which contains the yellow row but no orange
-title or olive row region. Both NA2 and NUN5 `prac_t01` have dominant opaque
+title or olive row region. Both NA2 and UN5 `prac_t01` have dominant opaque
 fill RGBA `(230,195,43,255)` and orange title fill `(245,134,32,255)`.
 
 ### Resource construction
@@ -161,7 +161,7 @@ available in the upper section and requires `lower_start < 2` in the lower.
 
 ## Footer legends
 
-| Owner | Retail NA2 live entry | NUN5 live entry |
+| Owner | Retail NA2 live entry | UN5 live entry |
 | --- | --- | --- |
 | `battle_settings_present` | `0x008807A0` | `0x0089D280` |
 | `practice_settings_draw` | `0x00882250` | `0x0089F130` |
@@ -170,16 +170,16 @@ available in the upper section and requires `lower_start < 2` in the lower.
 
 Both screens use the same footer Y `356` and horizontal values:
 
-| Legend call | NA2 X | NUN5 effective X |
+| Legend call | NA2 X | UN5 effective X |
 | --- | ---: | ---: |
 | OK | 400 | 388 |
 | Back | 470 | 462 |
 | Select icon request | 230 | 200 |
 | Select companion sprite | 230 | 200 |
 
-NUN5 loads both Select positions directly as `200`; nominal OK/Back
+UN5 loads both Select positions directly as `200`; nominal OK/Back
 positions `400`/`470` receive regional additions `-12`/`-8` before
-submission. NA2 has no equivalent additions. NUN5's
+submission. NA2 has no equivalent additions. UN5's
 `button_icon_submit` returns without drawing for icon `3`, so its Select
 request coordinates do not establish an emitted icon; the companion sprite
 has a separate draw. The VS confirmation prompt has its own draw owner and
@@ -233,9 +233,9 @@ arrows.
 | Game | Live entry | Practice prompt source | X |
 | --- | --- | --- | ---: |
 | NA2 | `0x006C0D00` | `vs_practice_prompt_rectangle`: (1,281,112,22) | 60 |
-| NUN5 | `0x006D4170` | English (0,280,176,24) | 100 |
+| UN5 | `0x006D4170` | English (0,280,176,24) | 100 |
 
-NUN5 selects the rectangle through
+UN5 selects the rectangle through
 `localized_vs_practice_prompt_rectangle` (`0x003D46C0`) and
 `vs_practice_prompt_locale_tables`. Its English entry,
 `vs_practice_prompt_english_rectangle`, draws the label and Square icon as

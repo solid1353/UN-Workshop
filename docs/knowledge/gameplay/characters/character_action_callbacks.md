@@ -7,7 +7,7 @@ rows, all six relative-cycle destinations, and Lee/Guy drawing-state ownership.
 Open: unvisited aliases, copied-descriptor lifetimes, action reachability and
 Kidomaru interruptions; static paths do not establish duration or appearance.
 Routine, field and data names come from `@annotations/NA2`. Donor callback
-comparisons are in [NUN3 and NUN4 characters](nun3_nun4_characters.md).
+comparisons are in [UN3 and UN4 characters](un3_un4_characters.md).
 
 ## Static scope
 

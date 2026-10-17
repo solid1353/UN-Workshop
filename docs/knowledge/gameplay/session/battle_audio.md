@@ -13,8 +13,8 @@ per-update ordering are established in the shared synthesizer and SNDBASE
 timer/worker path.
 Open: live IOP relocation bases, audible identity and observed timing,
 complete resources and indirect reachability, and initial guide payload/state
-writers. NUN3 and NUN4 voice contracts and donor character voices are in
-[NUN3 and NUN4 characters](../characters/nun3_nun4_characters.md).
+writers. UN3 and UN4 voice contracts and donor character voices are in
+[UN3 and UN4 characters](../characters/un3_un4_characters.md).
 
 Routines, structures and data are named in `@annotations/NA2` and `shared`;
 their comments carry per-routine detail. Numeric code/data citations below
@@ -207,7 +207,7 @@ Both members have one ELF load segment starting at module-relative zero;
 Ghidra maps the initialized sections and their uninitialized tails. This is
 a clean file-to-module mapping, not a fixed live IOP address. The loader's
 live relocation bases remain unresolved; all IOP references below use
-qualified program/symbol names. The NUN3/NUN4 source containers and selected
+qualified program/symbol names. The UN3/UN4 source containers and selected
 members are byte-identical to the NA2 inputs.
 
 `shared:MODHSYN.IRX:hsyn_export_table` identifies `hsyn_main`,
@@ -225,7 +225,7 @@ the checked compact packet worker invokes `hsyn_main` directly.
 seven-word `HsynBankBinding`: Head, Prog, Sset, Smpl, Vagi, optional Setb,
 and SPU base. Head is header `+0x10`; the five section offsets at Head
 `+0x14..+0x24` are relative to the whole header. Bank index is distinct
-from the EE NUN4 language-set selector. The per-channel bank byte selects
+from the EE UN4 language-set selector. The per-channel bank byte selects
 a binding row; the checked fighter binding installs bank zero.
 
 `hsyn_decode_compact_packet` consumes `C0` as two bytes, `F9` as five
@@ -300,7 +300,7 @@ Prog entry 27. Thus the enabled alternate event `0x19` can emit program 27,
 but that program clears selection in those banks and cannot reach a VAG
 through this decoder. EE control enablement alone does not establish a clip.
 
-| NUN4 exact character / ID | Program | Key | Sset / Smpl | Vagi | English / Japanese sample file offsets |
+| UN4 exact character / ID | Program | Key | Sset / Smpl | Vagi | English / Japanese sample file offsets |
 | --- | ---: | ---: | ---: | ---: | --- |
 | Naruto Uzumaki (Classic), 1 / normal | 0 | `0x3C` | 0 / 0 | 6 | `0x0034A670` / `0x0182DFA0` |
 | Same / alternate | 0 | `0x3E` | 61 / 61 | 7 | `0x0034B150` / `0x0182E7E0` |
@@ -375,7 +375,7 @@ candidates are retained on the staged list until dispatch can start them.
 #### Checked compact admission fields
 
 These reads use the already established candidate indices, without
-repeating the decoder or identifying spoken content. Complete NA2/NUN4
+repeating the decoder or identifying spoken content. Complete NA2/UN4
 `SNDDATA.BIN` SHA-256 values were rechecked against
 [File identities](../../game/files/file_identities.md#character-comparison-inputs).
 All entries below have exclusive group **0**, priority **10**, sample
@@ -385,9 +385,9 @@ core/mix flags **`0x03`**, and VAG flags **0**.
 | --- | --- |
 | NA2 Classic Naruto, ID 1 | `0,58,46,81` |
 | NA2 Naruto, ID 57 | `0,41,23,64` |
-| NUN4 English Classic Naruto, ID 1 | `0,61,46,84,85` |
-| NUN4 English Naruto, ID 57 | `0,31,23,77,79` |
-| NUN4 English Orochimaru, ID 9 | `0,26` |
+| UN4 English Classic Naruto, ID 1 | `0,61,46,84,85` |
+| UN4 English Naruto, ID 57 | `0,31,23,77,79` |
+| UN4 English Orochimaru, ID 9 | `0,26` |
 
 Joined to the inspected NA2 fighter-port configuration, these candidates
 have incoming priority 10 and allow either core. Sample flag bits `1/2`

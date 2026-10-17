@@ -2,12 +2,12 @@
 
 ## Research coverage
 
-Established: retail NA2 and NUN5 selector, prompt, scroll-arrow and label differences.
+Established: retail NA2 and UN5 selector, prompt, scroll-arrow and label differences.
 The recorded awakening-texture correspondences have high confidence; all 72
 mapped ordinary labels have checked retail source hashes and decoded textures.
-Open: other callers and animation phases, and the NUN5 player-marker comparison.
+Open: other callers and animation phases, and the UN5 player-marker comparison.
 Jutsu-name lead `jutsu_name_display_unverified_lead` (`0x001F64A4`) remains open.
-Names come from `@annotations/NA2` and `@annotations/NUN5`.
+Names come from `@annotations/NA2` and `@annotations/UN5`.
 Addresses are live; annotation comments hold the per-routine details.
 
 Binary identities and address conventions are defined in the
@@ -56,7 +56,7 @@ the label keeps unit scale.
 | Game | Routine | Live resident entry |
 | --- | --- | ---: |
 | NA2 | `effect_aux_visual_construct` | `0x00303AA0` |
-| NUN5 | `effect_aux_visual_construct` | `0x0030E250` |
+| UN5 | `effect_aux_visual_construct` | `0x0030E250` |
 
 Both games build the ordinary awakening-name panel from the same resource
 roles. `effect_apply` supplies a side and effect; the side selects the common
@@ -85,18 +85,18 @@ use only the first two.
 
 Recorded asset correspondences include:
 
-- NA2 `x\mode1\tex\hnt\mode1name1.bmp` → NUN5
+- NA2 `x\mode1\tex\hnt\mode1name1.bmp` → UN5
   `x\mode1\tex\hnw\mode1name1.bmp`;
-- NA2 `x\mode1\tex\row\mode1name1.bmp` → NUN5
+- NA2 `x\mode1\tex\row\mode1name1.bmp` → UN5
   `x\mode1\tex\roc\mode1name1.bmp`;
-- NA2 `x\mode1\tex\tnd\mode1name2.bmp` → NUN5
+- NA2 `x\mode1\tex\tnd\mode1name2.bmp` → UN5
   `x\mode1\tex\tnw\mode1name2.bmp`.
 
 The recorded comparison established decoded RGBA equality for all 72
 mappings across the complete retail CVM inventory. The compositor interpretation
 and texture correspondence have high confidence.
 
-The current naming census checked the maintained NA2/NUN5 source hashes for
+The current naming census checked the maintained NA2/UN5 source hashes for
 all 61 portrait containers behind the 72 mapped `mode1name` textures and
 decoded all 144 source textures. [Status identity and naming coverage](../../../gameplay/projectiles_and_items/battle_items_and_status_effects.md#status-identity-and-naming-coverage)
 owns the effect/character/phrase joins. Shared phrases and paired IDs need
@@ -110,7 +110,7 @@ mechanics or a fixed title for arbitrary recipients.
 | Game | Open callback | Closed callback |
 | --- | --- | --- |
 | NA2 | `jutsu_selector_draw_open`, `0x006BD510` | `jutsu_selector_draw_closed`, `0x006BD130` |
-| NUN5 | `jutsu_selector_draw_open`, `0x006D0890` | `jutsu_selector_draw_closed`, `0x006D04B0` |
+| UN5 | `jutsu_selector_draw_open`, `0x006D0890` | `jutsu_selector_draw_closed`, `0x006D04B0` |
 
 Both open callbacks render two rows and the selected entry through
 `jutsu_select_draw`. The confirmation-state object dispatches them
@@ -121,7 +121,7 @@ Jutsu. In the stable open state, their center is X 115 for side 0 or X 409
 for the other side, and Y `selected_row * 68 + 210`.
 Their pulse displacement is `sin(pulse_angle) * 6`.
 
-NUN5 draws only the two vertical arrows. It clears vertical flip, sets
+UN5 draws only the two vertical arrows. It clears vertical flip, sets
 `ProjectedTextGeometryView.rotation` to +pi/2, and draws the upper arrow
 at `centerY - 56 - pulse`. It then sets vertical flip and rotation -pi/2
 and draws the lower arrow at `centerY + 56 + pulse`. After both draws,
@@ -130,7 +130,7 @@ it restores rotation zero and clears vertical flip.
 NA2 retains two horizontal-arrow submissions while open and does not set
 either quarter-turn rotation before its vertical submissions.
 Its `jutsu_selector_vertical_arrow_rectangle` (`0x008C08E0`) is
-`(139,257,38,22)`. NUN5's `localized_jutsu_arrow_rectangle(0)` selects
+`(139,257,38,22)`. UN5's `localized_jutsu_arrow_rectangle(0)` selects
 `jutsu_selector_english_arrow_rectangle` (`0x005DDF70`),
 `(145,385,22,38)`, in English. Draw count, orientation and source geometry
 all differ between the two presentations.
@@ -138,15 +138,15 @@ all differ between the two presentations.
 ## VS confirmation prompts and bottom legends
 
 `vs_settings_draw_prompts` is the confirmation draw callback in both games:
-NA2 `0x006C0D00`, NUN5 `0x006D4170`. It draws selection prompts, then
+NA2 `0x006C0D00`, UN5 `0x006D4170`. It draws selection prompts, then
 reuses `VsConfirmationPromptView.footer_sprite` for OK followed by Back.
-Both use base X anchors 400 and 470 and Y 356; NUN5 adds its regional
+Both use base X anchors 400 and 470 and Y 356; UN5 adds its regional
 horizontal offsets.
 
 The native `button_icon_submit` implementations differ. NA2's first two
 `common_prompt_regional_rectangles` (`0x005D4690`) are 70×22 regional
 legends, with a backing rectangle submitted before each. The backing's sprite
-identity is unestablished. NUN5's first two
+identity is unestablished. UN5's first two
 `common_prompt_english_rectangles` (`0x005DE870`) combine Cross/OK
 `(1,1,56,22)` and Triangle/Back `(1,25,64,22)`.
 The shared sprite's queued geometry changes between submissions, so equal
@@ -159,11 +159,11 @@ base anchors do not establish equal raster placement in the two games.
 | Game | Draw callback | Scroll rectangle |
 | --- | --- | --- |
 | NA2 | `command_list_draw`, `0x00878860` | `command_scroll_arrow_rectangle`, `0x008D1548` |
-| NUN5 | `command_list_draw`, `0x00894FA0` | `command_scroll_arrow_rectangle`, `0x008E81D8` |
+| UN5 | `command_list_draw`, `0x00894FA0` | `command_scroll_arrow_rectangle`, `0x008E81D8` |
 
 NA2's callback is the draw slot of `start_menu_basic_command_vtable`
 (`0x005FBA60`), the `ccStartMenuBasicCmd` Command Chart child, whose init slot
-is `command_list_build`; its draw dispatch is indirect. The NUN5 child table
+is `command_list_build`; its draw dispatch is indirect. The UN5 child table
 was not checked.
 
 Both games obtain layer 3 through `command_menu_sprite_get`, set its
@@ -177,16 +177,16 @@ The draw ordering and orientation agree. The source geometry differs:
 | Game | Rectangle | Bytes |
 | --- | --- | --- |
 | NA2 | `(194,195,20,20)` | `C200C30014001400` |
-| NUN5 | `(1,225,20,22)` | `0100E10014001600` |
+| UN5 | `(1,225,20,22)` | `0100E10014001600` |
 
 ## Ultimate Jutsu one-part label
 
-NA2's Ultimate Jutsu banner uses two 64×64 label halves. Official NUN5 uses
+NA2's Ultimate Jutsu banner uses two 64×64 label halves. Official UN5 uses
 one 128×64 label and one-part construction behavior; its `OUGI.CCS` contains
 the corresponding model, UV, texture and animation layout.
 
 ## Round label
 
 NA2 constructs `Round` from two Japanese 38×38 glyph rectangles at X 216,
-Y 44 and scale 1.4. NUN5 uses one English 94×30 rectangle at X 256,
+Y 44 and scale 1.4. UN5 uses one English 94×30 rectangle at X 256,
 Y 24, scale 1.2 and a Y 64 render constant.

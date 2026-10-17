@@ -36,7 +36,7 @@ Related owners: [Native Stage Select](../../game/stage_select.md),
 [Section transfers](section_transfers.md), [Damage](../combat/damage.md),
 [Match outcomes](../session/battle_statistics.md#ninja-tools-and-stage-objects),
 [Pause and replay](../session/pause_and_replay.md#shared-ownership-and-controller-lifecycle),
-[Battle camera](../session/battle_camera.md), [NUN3 battle stages](nun3_stages.md).
+[Battle camera](../session/battle_camera.md), [UN3 battle stages](un3_stages.md).
 Stage Select presentation and fighter mechanics beyond stage consumers belong
 to those owners.
 
@@ -273,10 +273,10 @@ indices 1/2. Its archive and parallel-animation decisions inline the raw-slot
 grouping separately; they do not both delegate to the named selectors.
 
 Group 0's `ANM_rash_b` and `ANM_rash_p1` are byte-identical to the fixed
-NUN4 resources, including their authored camera/target coordinates. Their
+UN4 resources, including their authored camera/target coordinates. Their
 typed model/material/texture dependencies also correspond; the sampling
 texture comes from NA2's common provider. This correspondence is established
-under [NUN4 fixed n_rash](nun4_stages.md#fixed-n_rash-archive). Raw slot 24's
+under [UN4 fixed n_rash](un4_stages.md#fixed-n_rash-archive). Raw slot 24's
 default group 0 therefore already selects the corresponding parallel content.
 
 Other consumers resolve `ANM_gear1_la/ra`,
@@ -391,7 +391,7 @@ That heuristic selects embedded `ccBgAttackHit` for BTL entries 50/84/102.
 Decoded constructors establish the outer classes for resident entries
 0/2/6/11/18/23/45. The remaining resident identities retain the heuristic's
 qualification. Their scoped parser formats are recorded below; the
-[NUN4 comparison](nun4_stages.md#s01-background-archive-and-native-factory-parity)
+[UN4 comparison](un4_stages.md#s01-background-archive-and-native-factory-parity)
 records both games' outer-vtable/RTTI chains.
 
 | Factory | Confirmed meaning and retail use |
@@ -436,7 +436,7 @@ S01's `BLT_bg/BLT_obj` are section-less names; their result was not traced.
 resets the context afterward. `render_set_fog` converts `p` to
 `(100-p)*2.55` and derives the distance ramp. S01 means distances
 0..100000/percentages 0..40.
-[NUN3 category 1](nun3_stages.md#nun3-scene-record-dispatch) has the same
+[UN3 category 1](un3_stages.md#un3-scene-record-dispatch) has the same
 role with different token ordering.
 
 ### Native background configuration formats
@@ -1151,11 +1151,11 @@ This is full destruction after borrowed lookups.
 
 ## Other retail games compared with NA2
 
-[NUN3 battle stages](nun3_stages.md) owns retail archives, compiled scene
+[UN3 battle stages](un3_stages.md) owns retail archives, compiled scene
 records, summon scenes and comparison.
-[Stage content shared with NA2](nun3_stages.md#stage-content-already-shared-with-na2)
+[Stage content shared with NA2](un3_stages.md#stage-content-already-shared-with-na2)
 lists reuse.
-[NUN4 battle stages](nun4_stages.md) owns its archive comparison, scene
+[UN4 battle stages](un4_stages.md) owns its archive comparison, scene
 formats, stage data, soundtrack and Stage Select assets.
 
 ## Address index

@@ -4,11 +4,11 @@
 
 Established: the resident task record, start/wait/wake and destruction contracts,
 manager ordering, root pacing and engine gate, and the 24 direct resident
-creation lifecycles. NUN5 corroborates the core; NUN3 corroborates the shifted
+creation lifecycles. UN5 corroborates the core; UN3 corroborates the shifted
 gate and pending-resume state. Open: gate producers and units, indirect callers,
 callback installation, failure recovery and independent-thread scheduling.
-Names come from `@annotations/NA2`, `@annotations/NUN5` and
-`@annotations/NUN3`; routine comments carry local code details. Addresses are live.
+Names come from `@annotations/NA2`, `@annotations/UN5` and
+`@annotations/UN3`; routine comments carry local code details. Addresses are live.
 
 The retail NA2 (`SLPS-25837`) framework coordinates independent EE kernel
 threads. `TaskCleanupRecord.entry` is a thread entry receiving its own record,
@@ -59,8 +59,8 @@ parent/child relation.
 
 The opaque word `+0x44`, halfword `+0x48` and byte `+0x4A` are zeroed;
 byte `+0x4B` is untouched. No direct use outside initialization was recovered
-among the 24 resident creator/entry paths. NUN5 retains the same pattern;
-NUN3 retains it at `+0x4C/+0x4E`, leaving `+0x4F` untouched. Their meaning
+among the 24 resident creator/entry paths. UN5 retains the same pattern;
+UN3 retains it at `+0x4C/+0x4E`, leaving `+0x4F` untouched. Their meaning
 remains unknown; aliasing and excluded overlays remain limits.
 
 `resident_flow_dispatch` installs `mother_cleanup_noop` and a zero
@@ -80,7 +80,7 @@ These are `TaskCleanupRecord.runtime_flags`.
 | `0x0002` | Termination requested; takes precedence over resume and cooperative wake. |
 | `0x0004` | Termination observed; the first eligible request pass sets it, the next destroys the record. |
 | `0x0008` | Cooperative sleep: waits set it before sleeping; the manager clears it and wakes only when `wake_gate == 0`. |
-| `0x0010` | Pending resume: the manager clears it and resumes the thread. NUN3 has a set/suspend helper; no in-scope NA2 producer was recovered. |
+| `0x0010` | Pending resume: the manager clears it and resumes the thread. UN3 has a set/suspend helper; no in-scope NA2 producer was recovered. |
 | `0x0020` | One-pass barrier bypass: immediate starts and `task_force_wake` set it; the barrier consumes it. It is not a persistent started state. |
 
 ### Control flags at `+0x12`
@@ -384,8 +384,8 @@ clearing its transition slot, and `zg_break_screen_task` counts its own waits.
 The manager wakes only for exact `wake_gate == 0`, narrower than the
 waiter's signed `<= 0` return condition. Only constructor zeroing and
 `task_force_wake` zeroing were established; no in-scope nonzero writer,
-incrementer or decrementer was recovered. NUN5 preserves both predicates;
-NUN3 has the same asymmetry with its shifted `+0x10` gate. None supplies
+incrementer or decrementer was recovered. UN5 preserves both predicates;
+UN3 has the same asymmetry with its shifted `+0x10` gate. None supplies
 the producer or unit.
 
 ## Kernel threads and synchronization outside the task list
@@ -536,13 +536,13 @@ workers self-request. The core imposes neither convention.
 
 ## Cross-version corroboration and overlay boundary
 
-NUN5 (`SLES_556.05`) retains the same record shape, start/wait/wake contracts,
+UN5 (`SLES_556.05`) retains the same record shape, start/wait/wake contracts,
 manager precedence and barrier, and two-pass destruction. Its
 immediate-removal search also skips the first ordinary record. That
 behavior and the wake-gate asymmetry are inherited, not NA2 decompiler
 artifacts; source-level design intent remains unknown.
 
-NUN3 (`SLUS_217.27`) uses a different `0x50`-byte record.
+UN3 (`SLUS_217.27`) uses a different `0x50`-byte record.
 `task_suspend_pending_resume` sets pending-resume and
 suspends the target; its manager clears that bit and resumes. Callers check
 thread status. This establishes the historical state role, not normal NA2
