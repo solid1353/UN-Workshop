@@ -42,6 +42,7 @@ address	kind	name	type	comment
 0x007D1100	function	stage_section_for_position	int stage_section_for_position(un3StageControl *scene, float *position)	Compare absolute vertical distances from input position to scene section reference heights114/124; ties choose second section.
 0x007D1600	function	stage_build_update_restrictions	void stage_build_update_restrictions(un3StageControl *scene)	Clear C30 each invocation; with battle context set bits1=scene74,2=contextA2C child34==1,4=resident restriction predicate(nonzero; retail always0),8=mode(5,0) plus owner10 or context halfwords9FE/9F8/AA6/AA0,10=predicate(contextAC0),20=owner8 child10==2,40=context960. Bit8 halfwords belong to separate global owner gp-51F8, not battle context; bits10/20/40 require nonnull mode owner gp-5A8C.
 0x007D17C0	function	pause_clear_stage_tag_refresh	void pause_clear_stage_tag_refresh(undefined8 arg1,undefined1 *arg2,undefined8 arg3)	Inferred from an exact code match with NA2 BTL.BIN 0x006C2F10. Ignore/overwrite stage-slot argument; clear pause byte +0x6B8 and refresh object +0x6BC; no stage resource or geometry operation.
+0x007D19F0	function	stage_set_subtype_disabled		Set the disabled byte of every stage object of the subtype in all seven lists; NA2 has no counterpart
 0x007D1E20	function	stage_load_archive	void stage_load_archive(int index)	Find record0 path, synchronously load(path,0) if missing, store handle in tracked slot945910; no index range check, skip null table pointer.
 0x007D1EA0	function	stage_release_archives	void stage_release_archives(void)	Free each nonnull tracked handle945910..94591C via ccs_destroy_container(handle,1), clear slots; look up/free ojmgmk/ojmgmt/ojmpkn/ojmnkm from four30-byte entries9133D0.
 0x007D1FC0	function	stage_queue_archive	void stage_queue_archive(int index)	Queue scene record0 resource08 path through archive_queue_request(path,0); no index range check, skip null table pointer.
@@ -155,13 +156,30 @@ address	kind	name	type	comment
 0x0080F200	function	stage_forest_effect_destroy		Live generators: +0x34 = 1 and deferred stop 1
 0x0080F2E0	function	stage_forest_effect_parse		0x59E: three looping generators from stage_forest_effect_rows with token 7's effect, scaled by row +0x44, published
 0x0080F4D0	function	stage_forest_effect_update		stage_generator_restriction_visibility on each generator
+0x0080F5B0	function	stage_lens_flare_destroy		
+0x0080F630	function	stage_lens_flare_parse		0x6A0: token 3 node as the sun position in descriptor stage_lens_flare_descriptors[token 9], quads lens_flare_quad_sets[token 10]; builds the resident lens flare (lens_flare_initialize)
+0x0080F780	function	stage_lens_flare_update		lens_flare_update
+0x0080F7B0	function	stage_lens_flare_draw		lens_flare_draw
+0x0080F870	function	stage_cliff_clouds_parse		0x39F: sixteen models bound to stage_cliff_cloud_rows' animations at their initial frames, playback step divided by the row's divisor, translated to the row's node position
+0x0080FA40	function	stage_cliff_clouds_update		Advance each of the sixteen cloud models by its playback step and apply its animation
+0x0080FAD0	function	stage_cliff_clouds_draw		Draw the sixteen cloud models
+0x0080FBF0	function	stage_depth_of_field_parse		0x3A1: a draw environment at token 10's priority (-3000 in S20) with two glare-filter passes (pause_auxiliary_refresh class): mode 0, colour 0x20808080, amount -0.2, second colour 0, parameters stage_depth_of_field_depths (50000, 80000)
+0x0080FD30	function	stage_depth_of_field_draw		Submit both passes (ccfm_sampling_pass_submit) in the record's draw environment
+0x0080FE30	function	stage_cliff_clouds_destroy		
 0x00813700	function	stage_training_doll_destroy	long stage_training_doll_destroy(long arg1,short arg2)	Reset derived state,install base break vtable,base cleanup;destroy embedded shapeE0/receiversC0/A0,common model cleanup,optionally self;borrowed node/stage archive not freed.
 0x008137E0	function	stage_monkey_doll_destroy	long stage_monkey_doll_destroy(long arg1,short arg2)	Reset derived state,install base break vtable,base cleanup;destroy shapeE0/receiversC0/A0,common model cleanup,optionally self;no stage archive ownership proof.
 0x008139A0	function	stage_wind_bell_destroy	long stage_wind_bell_destroy(long arg1,short arg2)	Reset derived state,install base break vtable,base cleanup;destroy shapeE0/receiversC0/A0,common model cleanup,optionally self;no stage archive ownership proof.
 0x00813A80	function	stage_lantern_destroy	long stage_lantern_destroy(long arg1,short arg2)	Reset derived state,install base break vtable,base cleanup;destroy shapeE0/receiversC0/A0,common model cleanup,optionally self;no stage archive ownership proof.
+0x00814CB0	function	ai_water_chakra_gate		Scenes 16/9 (S17, S10): COM without 2.5 chakra on water in route states 8/0x16/0x18/5/4/3 (or 2 with step 5) reacts; NA2 ai_predict_environment_reaction keys slot 12
+0x00814E00	function	ai_water_section_gate		Scenes 16/9: outside section 1 the fighter's surface query decides; NA2 stage_navigation_s13 keys slot 12
+0x00818150	function	stage_navigation_response		Major 5 on scenes 19/14/4/1 clamps the predicted planar endpoint first; NA2's keys slots 5/22
+0x008185A0	function	ai_point_route_update		Scenes 0/5/6 widen the near distance gate to 40, scene 6 alone queues input 0x1000; NA2's keys slot 7 at both
+0x0081AAC0	function	stage_execute_route		After steering, on scene 2 a COM in section 0 on E0E000/E0A000 past route step 1 jumps (0x10000) on rand100<5; NA2's has no such case
+0x0081FE70	function	ai_route_region_gate		Scenes 14/4 reject argument 0; NA2 ai_construct_point_route keys slot 22
 0x00825260	function	ai_tick		Own UN3 shared per-side AI tick selects side, refreshes actors then indexes93ADF0/93ADF4 at actual characterID*8; Green Beast virtual1C calls this routine.
 0x008257F0	function	stage_navigation_initialize	void stage_navigation_initialize(void)	Initialize line pointers/extrema; copy stage_navigation_authored_routes[scene_index] until source -1 into stage_navigation_routes and fill the rest with -1. Scene 15 widens line index 3 to -415/420; scene 5 conditionally sets work record 1 to fraction 0/type 3.
 0x008268C0	function	field_surface_variant	undefined8 field_surface_variant(int arg1)	Inferred from an exact code match with NA2 BTL.BIN 0x00708C70. Return 1 if no background control, otherwise classify stage/position surface effect variant.
+0x00826CC0	function	field_player_placement		Scenes 16/9 return section 1; NA2's keys slot 12
 0x00826EA0	function	field_ctrl_construct	undefined8 field_ctrl_construct(undefined8 arg1)	Inferred from an exact code match with NA2 BTL.BIN 0x00709150. Construct standalone 0x10-byte ccFieldCtrl derived from ccGameObjCtrl; retained by battle owner, distinct from field's embedded controller. Construct 0x10-byte ccFieldCtrl generic registry. | Construct primary index3/bit4 ccFieldCtrl,0x10 bytes,vtable005DDD60; phase callbacks006D67E0/006D67A0/006D67C0.
 0x008294C0	function	item_panel_construct	un3ItemPanel * item_panel_construct(un3ItemPanel *panel, int side)	Forward panel and side to item_panel_init without changing side; return the supplied panel.
 0x00829560	function	item_panel_init	void item_panel_init(un3ItemPanel *panel, int side)	Initialize 0x90-byte panel: five allocated 0x20-byte slots at +2C..3C, selected_slot40=0, side44, occupied_count48=0, position50=base_position60 plus shared vector, scroll70=16; slots set byte occupied00=0,index04,item_code08=0,count0C=0,list_position10=index*32+16,animated_position14=0,word animation_state18=0 and animation_auxiliary1C=0; construct side badge objects and other HUD children.
@@ -185,9 +203,11 @@ address	kind	name	type	comment
 0x00835DD0	function	phase_select_animation		Secondary1C8 event0 and clock bit8 clear gate; phase slot>=0 selected, negative start adds donor animation+10 frame_count; row+6 published ushortAB0 rate and +4->AB4 start.
 0x00837590	function	commands_hud_stop_guide		Inferred from an exact code match with NA2 BTL.BIN 0x00728CD0. Parent wrapper invokes guide stop;key1 draw gate separate.
 0x0083BF80	function	projectile_free_nodes	void projectile_free_nodes(int param_1)	Inferred from an exact code match with NA2 BTL.BIN 0x0072FB10. Drain nodes via saved word-zero next pointer; free each separately allocated node; clear head. | Drain head+0x218 via each node's saved word-zero next pointer and heap_free, then clear the head.
+0x0083F800	function	stage_scene13_object_initialize		Scene 13 sets byte +0x60; NA2 stage_slot9_object_initialize keys slot 9
 0x00840C10	function	projectile_lineage_absent	unsigned int projectile_lineage_absent(int param_1,int param_2,short param_3,int param_4)	Inferred from an exact code match with NA2 BTL.BIN 0x00735CA0. Compare signed key and word in four inverse-side lineage slots; consumed flag ignored; report whether tuple absent.
 0x00840D90	function	transient_manager_enable_update	void transient_manager_enable_update(void)	Inferred from an exact code match with NA2 BTL.BIN 0x00735E10. Clear global transient manager +0x20 first-pass suppression byte. Clear manager update_disabled=0.
 0x00840DD0	function	transient_manager_enable_second	void transient_manager_enable_second(void)	Inferred from an exact code match with NA2 BTL.BIN 0x00735E50. Clear global transient manager +0x21 second-pass suppression byte. Live 0x00735E30 sets manager +0x21; live 0x00735E50 clears it. The parallel update-pass gate +0x20 is set/cleared by live 0x00735DF0 and 0x00735E10.
+0x008412A0	function	stage_scene2_resource_select		Scene 2 selects resource +0x24A0 and environment index 4, other scenes index 5; NA2 stage_slot8_resource_select keys slot 8
 0x00866BB0	function	summon_scene_index	int summon_scene_index(int index)	Return summon row scene field08 for supplied mapping index; index is forwarded unchanged to resident row accessor.
 0x00866BE0	function	summon_scene_mapping_for_character	int summon_scene_mapping_for_character(int character)	Scan eight summon rows by character field04, return mapping index00 or-1 if absent.
 0x0086AF70	function	dialogue_voice_remap_for_fighter	int dialogue_voice_remap_for_fighter(void *fighter, int cue)	Own UN3 character-ID dispatch at fighter+0x64: ID20 predicate 0x21 suppresses cues85/81; ID3 predicate 0x10 suppresses13/11; ID2 alternate predicate adds133; IDs1/31 alternate predicate suppresses0 and preserves-1. Kakashi ID8 is unchanged; Naruto ID1 nonzero cues are not renumbered. Predicate meanings remain outside this check.
@@ -215,12 +235,14 @@ address	kind	name	type	comment
 0x0086DBF0	function	jutsu_create_and_bind_participants		Create resource actor86C740,register in interaction manager870040 using source controller60 bit0;nonnull actor binds supplied participants/scene through884690.
 0x0086E6C0	function	jutsu_selector_resource	int jutsu_selector_resource(int selector)	Translate signed selector0..113 through114 signed resource words0x0093E800; negative or>=114 returns0,valid0/1 returns table-1; selector bound differs from116-resource capacity.
 0x00870210	function	interaction_record_for_resource		Resource cache354 indexed participant slot *1D0 + resource *4;selected definition row contributes68-byte record stride.
+0x00871EE0	function	interaction_hide_stage_objects		As fanged_pursuit_hide_stage_objects before its interaction setup; NA2 hides none
 0x00874018	label	battle_phase_queue_voice_stop_first		Own UN3 call in phase word232==0 and count230==0 branch queues fighter character+64, member-1, slot fighter byte60&1; pending consumer stops slot then request rejects negative member. Wider phase purpose is not established by this voice check.
 0x008740F0	label	battle_phase_queue_voice6_first		Own UN3 call in phase word232==0 and count230==5 branch queues fighter character+64, sparse PLVOICE member6, slot fighter byte60&1; second-fighter call00874110 in both-side branch. Wider phase purpose is not established by this voice check.
 0x008753A0	function	interaction_setup_fighter_resources	void interaction_setup_fighter_resources(void *owner)	Verified containing entry0x008753A0 includes previously cited fragment0x008754C0; read fighter selectors178/17A through jutsu_selector_resource and clear/index two116-pointer caches,each0x1D0 bytes; also resolve body resources through1BOD1 character table.
 0x0087D9E0	function	interaction_apply_source_action_damage		Primary Lotus state3 uses source action24 float;update attack service86F880 then valid opponent gets resident1B60A0(amount,participantD4,122h).
 0x0087E530	function	interaction_prepare_resource_contact		Virtual1A4 path stores working record and definition at actor110/114,row118;record24=definition28 * source action24,then prepares target contact fields.
 0x0087F270	function	interaction_publish_resource_contact		Virtual1A0 path constructs working contact from resource3EC,44-byte definition row,68-byte participant/resource cache;record24=definition28 * source action24.
+0x00880F50	function	interaction_scene13_reflection		Scene 13 adds a second effect copy 400 below; NA2 has no counterpart
 0x00886680	function	interaction_begin_screen_fragment_effect		Virtual190 common route creates RendererOwner effect264960 based source facing,binds actor+C8 handle and validates it with23AB60.
 0x00886700	function	interaction_release_screen_fragment_handle		Validate actor+C8 against effect manager23AB60;found object virtual18 ends effect;clear wrapper238AC0.
 0x00888A20	function	interaction_begin_capture_services		Virtual1FC flag argument routes118/164/210/21C;4 selects concrete capture begin210 unless resource listed941438;marks411.
@@ -302,10 +324,12 @@ address	kind	name	type	comment
 0x008AF510	function	itachi_haze_jutsu_update		Embedded helper730; commands2D/51/6E select states1/2/3; command51 requests dialogue or common cue6..8.
 0x008AF740	function	itachi_haze_jutsu_draw		Scopes renderer and submits embedded actor730 virtual+58.
 0x008B3E00	function	fanged_pursuit_base_construct		Common skill base8_7B720;vtable699430;initialize transforms and state5A0..724 incl contact630;Kakashi730 derived actor uses this base.
+0x008B55B0	function	fanged_pursuit_hide_stage_objects		Scene 0 hides subtype 0x82 (swaying trees), others subtypes 0x26/0x86 from 0x0093FB88; NA2 hides none
 0x008C8650	function	kakashi_fanged_pursuit_construct		Resource10;call shared base8B3E00 then install resident vtable694F90 at+28;no additional constructor-owned initialization.
 0x008C8690	function	kakashi_fanged_pursuit_begin		Virtual274 inherited begin with two attacker/one defender GP-selected names, then virtualC registers two GP callbacks.
 0x008C86F0	function	kakashi_fanged_pursuit_frame_events		At frame1 create GP-selected transient callback resource; voice/action events table926290 and sound table9262A0 tested against actorE0.
 0x008C8920	function	kakashi_fanged_pursuit_restore_participants		Reset opponent through virtualDC/2C then participant restoration via87F270 for opponent270 and attacker100.
+0x008D7030	function	projectile_fall_to_ground		Falls 10 per update to -100; scene 13 raises the ground probe by 70
 0x008E54F0	function	lightning_blade_construct		Resource11;common skill base,primary vtable690E10;embedded animation players660/6B0,contact8C4,helpers600/720/8E0/914,14 lookup slots5A0,per-side matrices and state cleared through92C.
 0x008E5720	function	lightning_blade_destroy		Shared resource3/B/35/59 class cleanup; bothparticipants,players660/6B0/720,auxrenderer704,threechildren708,handle650,base cleanup and deleting free.
 0x008E59B0	function	lightning_blade_contact_response		State3 scales factor by0.6, destroys3children andsound87; response state4/5, halfdamage descriptorF4*record24*.5, response5/4B.
@@ -366,6 +390,7 @@ address	kind	name	type	comment
 0x00914780	data	stage_falls_mist_rows		13 x 0x50: generator and three field descriptors, origin +0x20, second point +0x30, alpha +0x40
 0x00914FE0	data	stage_flag_constants	float[12]	700, 7000, 0.0015, -100, 1000, 50, 0, 0, 0, 0, 0, 1
 0x009153B0	data	stage_forest_effect_rows		3 x 0x50 rows as stage_falls_mist_rows, scale at +0x44
+0x009154A0	data	stage_cliff_cloud_rows		18 rows of (initial frame, playback divisor, animation, node); stage_cliff_clouds_parse uses the first 16 (S20 ANM_s8bbac00_b00/c00 at DMY_kumo_dummy00..04)
 0x00915748	data	prop_leaf_generator_parameters		0x38-byte generator parameters for stage_dispatch_prop_effect kind 0x10 (falling leaves).
 0x00915EF0	data	prop_leaf_spin_field		Force key 3 (Euler spin); kind 0x10 replaces its values with random direct values.
 0x00915F90	data	prop_fall_field		Force key 1, -2 velocity on the vertical axis.
@@ -401,6 +426,8 @@ address	kind	name	type	comment
 0x00939F20	label	stage_doll_appear_animation_name		Training-doll appearance animation selected at elapsed==delay.
 0x00939F30	label	stage_doll_normal_animation_name		Training-doll positive-sequence animation.
 0x00939F40	label	stage_doll_final_animation_name		Training-doll sequence-zero animation.
+0x0093A660	data	stage_s20_lens_flare_quads		19 0x14-byte quads: texture name, distance along the sun-to-centre axis, width, height, packed colour; S20 TEX_s8befe10..40
+0x0093A9A0	data	stage_lens_flare_descriptors		0x30-byte lens flare descriptors: +0 draw-environment priority (0x65), +0x10 sun position (the parse fills it), +0x20 quad count (19), +0x24 screen radius (933.33)
 0x0093ADF0	label	ai_character_descriptors		Eight-byte per-character descriptors read by ai_update_fighter using selected fighter+64; Guy20 row93AE90.
 0x0093AE30	data	kakashi_ai_descriptor	unsigned int[2]	UN3 ID8 row ofai_character_descriptors93ADF0; selector2,flags46hex; loaded byai_tick using actualfighterID64.
 0x0093AEA8	data	itachi_ai_descriptor	uint[2]	ID23 eight-byte donor row{2,5}; ai_tick00825260 indexes0093ADF0 by actualfighter+64 ID*8. NativeID71 actual table row008C357C is signed halfwords2,20.

@@ -117,7 +117,7 @@ resident cohort includes these owners:
 
 | Geometry owner | Named routines | Coordinate ownership |
 | --- | --- | --- |
-| Textured quads | `immediate_textured_rectangle_scaled_rotated` (`0x00353A60`), `centered_texture_owner_draw` (`0x00391EA0`), `centered_record_quad_draw` (`0x003943B0`) | Caller dimensions, optional local rotation or uniform scale, then shared 2D. Texture/artwork identity is separate from quad extent. |
+| Textured quads | `immediate_textured_rectangle_scaled_rotated` (`0x00353A60`), `centered_texture_owner_draw` (`0x00391EA0`), `lens_flare_draw_quad` (`0x003943B0`) | Caller dimensions, optional local rotation or uniform scale, then shared 2D. Texture/artwork identity is separate from quad extent. |
 | Atlas number | `atlas_number_with_suffix_draw` (`0x00360740`) | Up to three decimal digits and suffix use local atlas metrics on the supplied context. Exact screen identity remains open. |
 | Colored mesh/segments | `colored_six_rectangle_pairs_draw` (`0x0036E480`), `colored_radial_mesh_draw` (`0x0036E590`), `gradient_axis_segment_draw` (`0x00378AD0`), `gradient_rectangle_draw` (`0x00378D50`), `gradient_axis_segment_color_first_draw` (`0x0037DDB0`) | Caller pairs, ring/band geometry or segment/rectangle dimensions. None has an intrinsic screen-cover contract. |
 | Rectangle records | `immediate_rectangle_outline_draw` (`0x0037DC20`), `colored_rectangle_record_draw` (`0x0037E030`), `twelve_rectangle_color_pulse_draw` (`0x0038AB60`) | Closed perimeter, caller rectangle or twelve signed-halfword table rectangles. Producer semantics remain separate. |
@@ -198,20 +198,23 @@ geometry in that cohort, rather than every call to these generic services.
 | Results, jutsu and Start Menu | `battle_score_presentation_create` (`0x001EE880`), `manager_update_substate_four` (`0x001EF9C0`), `encounter_conditions_result_update` (`0x001F2920`), `position_player_seek` (`0x00717A60`), `jutsu_presentation_render` (`0x0076A8E0`), `rng_case5_state_update` (`0x0076CC00`), `start_menu_select_update` (`0x0087C720`), `start_menu_update_module` (`0x0087CB20`) | Screen-sized color/opacity requests remain independent of result stamps, fighter scenes and bounded menu panels. |
 | Collection | `collection_skill_open` (`ETC:0x006C0500`), `collection_movie_confirm` (`ETC:0x006C3D70`), `replay_play_selected_movie` (`ETC:0x006C4260`), `collection_completion_query` (`ETC:0x006C7DA0`) | White entry/confirmation/movie-return/exit covers select the same resident global pool. |
 
-`transition_member_owner_draw` (`0x00392730`) and
-`transition_record_owner_draw` (`0x00394620`) request one-step full-frame white
-flashes from pools embedded at owner `+0x90` and `+0x40`. Their constructors,
-`transition_member_owner_initialize` (`0x00392140`) and
-`transition_record_owner_initialize` (`0x00393E70`), bind the pools to contexts
-borrowing `default_renderer`. The separate textured flare quads remain bounded.
-Visibility/alpha comes from `bg_update_visibility_rays` and
-`bg_update_visibility_screen_placements`. The first constructor reads container
-and animation names from supplied `0x58`-byte descriptors; the second receives
-its container and name/size/color records from its caller. Exact asset indexing
-is separate from this completed fill/artwork distinction. Indexed references,
-stored-pointer and direct J/JAL searches across resident, BTL and ETC expose no
-attachment to the second initializer/draw, without truncation. Computed-address
-reachability remains open; these searches do not establish that the code is dead.
+`transition_member_owner_draw` (`0x00392730`) and `lens_flare_draw`
+(`0x00394620`) request one-step full-frame white flashes from pools embedded at
+owner `+0x90` and `+0x40`. Their constructors,
+`transition_member_owner_initialize` (`0x00392140`) and `lens_flare_initialize`
+(`0x00393E70`), bind the pools to contexts borrowing `default_renderer`. The
+separate textured flare quads remain bounded. Visibility/alpha comes from
+`bg_update_visibility_rays` and `lens_flare_update`. The first constructor reads
+container and animation names from supplied `0x58`-byte descriptors; the second
+receives its container and name/size/color records from its caller. Exact asset
+indexing is separate from this completed fill/artwork distinction.
+
+The second owner is the lens flare UN3 builds for its `0x6A0` stage record
+([UN3 battle stages](../../gameplay/stages/un3_stages.md#s20-stage-specific-records)).
+UN3's copy is the same code. Indexed references, stored-pointer and direct J/JAL
+searches across NA2's resident, BTL and ETC expose no attachment to its
+initializer or draw, without truncation; computed-address reachability remains
+open.
 
 ### Presentation-rectangle records
 

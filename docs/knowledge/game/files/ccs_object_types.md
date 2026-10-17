@@ -3,7 +3,7 @@
 ## Research coverage
 
 Established: the 34 resident file routes, 29 resource identities or block roles,
-texture/CLUT transfer groups, projection/composite controller behavior, the
+texture/CLUT transfer groups and file layouts with their VRAM placement, projection/composite controller behavior, the
 packet-ring producer contract and their resident BSS globals. Open: legacy file
 tags `0x1000..0x1200`, `0x1F00` semantics, the projection algorithm/units, and ring activation,
 read-side consumer and packet language. Names and per-routine facts come from
@@ -370,6 +370,52 @@ at the member-list field. That file block cannot safely precede group
 members in the same stream. A legacy placeholder relationship is plausible,
 but neither the shared number nor pointer-only teardown proves it; no clean
 non-excluded file block uses it.
+
+### File tags `0x0300` and `0x0400`: texture and palette placement
+
+At container version `>= 0x92`, `ccs_parse_image_block` reads a texture
+block as:
+
+| Field | Size | Use |
+| --- | --- | --- |
+| Texture, CLUT and group record IDs | 3 × u32 | Group as in the section above. |
+| Flags | u8 | See below. |
+| Pixel format | u8 | GS PSM: `0x13` PSMT8, `0x14` PSMT4. |
+| Extra mip levels | u8 | Levels after the first. |
+| Alpha reference | u8 | Copied to `CcsTextureChunk.alpha_reference`. |
+| Log2 width, log2 height | 2 × u8 | Then padding to four bytes. |
+| Per level: x, y | 2 × s16 | VRAM coordinates. |
+| Per level: pixel words, pixels | u32 + data | The count governs the read, not the block's declared length. |
+
+`ccs_parse_clut_block` reads a palette block as record and group IDs,
+flags (u8), colour format (u8), two ignored bytes, x and y (s16 each),
+a colour count and the colours. Sixteen colours or fewer make an 8×2
+PSMT4 palette; more make a 16×16 palette in CSM1 order.
+
+The coordinates are PSMCT32 VRAM coordinates in 64-pixel columns
+1024 rows tall: `gs_vram_texture_address` places them on GS page
+`(x / 64) × 32 + y / 32` plus the block within the page. Texture bases,
+widths and TEX0 come from these and the size; no field stores them.
+
+Flags bit `0x01` chooses residency. Clear, `texture_vram_allocate`
+places a texture through the VRAM allocator, which replaces its file
+coordinates; it is uploaded once and its pixels freed
+(`texture_release_levels`). Set, the pixels stay in memory and every
+draw uploads them to the file coordinates
+(`texture_chunk_submit_levels`, `image_transfer_submit`), so textures
+sharing coordinates are uploaded just before each use. Zero coordinates,
+or coordinates below the allocator's floor, fall back to
+`texture_default_level_coordinates` (palettes to `0x380, 0x3E0`) and set
+bit `0x01`. Both parsers set bit `0x04` when an alpha byte, of a palette
+or of a texture without one, has any of bits 0..6 set; bit `0x10` clamps the texture and bit `0x20` makes a
+sampling texture.
+
+`LOGO.CCS` keeps every texture and palette in memory: its 512×512
+PSMT8 textures at `0x3C0, 0`, pages 480..511, its 512×512 PSMT4 texture at
+`0x380, 0x200`, pages 464..479, and its palettes at `0x380, 0x100` and
+`0x380, 0x120`, pages 456 and 457. Any texture with at most 262,144
+pixels fits the same pages at either depth; a larger one runs past the
+end of VRAM or into the other depth's pages.
 
 ## Negative results and labels not promoted
 

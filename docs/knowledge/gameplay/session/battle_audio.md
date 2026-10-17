@@ -162,6 +162,16 @@ is clear, frees positive IOP header allocations and restores initial placement.
 That establishes header ownership and SPU placement reuse, without proving
 hardware execution timing or every indirect bank writer.
 
+`sndbase_bind_bank` serves slots `0..4`: slot 1 binds bank 1 on port 0, beside
+the common bank 0 that `sound_snddata_handshake` binds there; every other slot
+binds bank 0 on the port of its number. So port 0 holds at most two banks,
+and `audio_emit_common_control` selects bank 1 by `B0 00 01` before its
+program; `sfx_play_common` selects bank 0 the same way. The dispatcher also
+holds `sndbase_bind_bank_unreachable`, which would bind bank 3 on port 0
+for slot 8, but compares the masked command with `0x9056`, so nothing reaches
+it. `sndbase_configure_modules` also sets up port 4 with its own input
+(RPC `0x8100` index 3), but `sound_task` fetches only indices 1 and 2.
+
 `sound_task` (`0x001D2570`) obtains the two side DMA destinations from RPC
 `0x8100` indices 1 and 2. `shared:SNDBASE.IRX:sndbase_packet_worker` copies
 the submitted packets into the inputs used by synth ports 2 and 3 and calls
@@ -226,7 +236,8 @@ seven-word `HsynBankBinding`: Head, Prog, Sset, Smpl, Vagi, optional Setb,
 and SPU base. Head is header `+0x10`; the five section offsets at Head
 `+0x14..+0x24` are relative to the whole header. Bank index is distinct
 from the EE UN4 language-set selector. The per-channel bank byte selects
-a binding row; the checked fighter binding installs bank zero.
+a binding row; `hsyn_dispatch_controller` writes it from controller 0
+(`B0 | channel, 00, bank`). The checked fighter binding installs bank zero.
 
 `hsyn_decode_compact_packet` consumes `C0` as two bytes, `F9` as five
 and `FD` as seven; incomplete commands return without dispatch.
