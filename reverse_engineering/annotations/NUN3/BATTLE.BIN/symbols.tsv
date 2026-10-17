@@ -115,6 +115,9 @@ address	kind	name	type	comment
 0x00803E10	function	stage_bridge_parse	void stage_bridge_parse(int arg1,int arg2,unsigned long long arg3)	587 tokens5 segment count,7 model,8/9 floats48/4C,10 byte50;3 per-segment node stem,6 texture,1/2 endpoints; three arrays3C/40/44 hold model and rope/helpers.
 0x00805B60	function	stage_rotating_sky_parse	void stage_rotating_sky_parse(int arg1,int arg2)	38A animation from record resource08, token10 float angular speed38,initial angle48 from rng_signed_scaled(pi).
 0x00805BE0	function	stage_rotating_sky_update	void stage_rotating_sky_update(int arg1)	Add0.98*angular speed38 per invocation,wrap±pi,apply vector40 to model2C; no elapsed-seconds derivation.
+0x00806290	function	stage_falls_mist_destroy		Deferred stop 1 on each live generator
+0x00806340	function	stage_falls_mist_parse		0x58E: thirteen looping generators from stage_falls_mist_rows with the record's effect (S14 EFF_s8aefe08), drawn in primary_draw_environment
+0x00806540	function	stage_falls_mist_update		Environment: the current one while battle_restriction_check reports a restriction, else primary_draw_environment
 0x00806B00	function	stage_frame_animation_parse	void stage_frame_animation_parse(int arg1,int arg2)	Shared parser for390/590/690; nonzero token10 integer divides model u16 playback step94.
 0x00806B70	function	stage_frame_animation_update	void stage_frame_animation_update(int arg1)	Advance model using u16 step94 via model_advance_animation then model_finalize_animation; local invocations do not prove frame or seconds cadence.
 0x00806D70	function	stage_glare_parse	void stage_glare_parse(int arg1,int arg2)	392 effect38 token7=>mode81,8=>packed84,9=>float88,10=>packed8C; up to three optional record resources create separate models.
@@ -338,6 +341,7 @@ address	kind	name	type	comment
 0x00913450	label	stage_scene_tables		27 scene-record pointers plus null terminator; first record type1,label is stage name,primary resource archive path.
 0x009137D0	data	stage_kite_legs	int[10][4]	Waypoints each leg's curve runs through
 0x009139C0	data	landing_extra_item_distribution		field_item_random_select rows (2,40),(1,30),(3,20),(0,10),(0,0); the kind-0 row is never reached.
+0x00914780	data	stage_falls_mist_rows		13 x 0x50: generator and three field descriptors, origin +0x20, second point +0x30, alpha +0x40
 0x00914FE0	data	stage_flag_constants	float[12]	700, 7000, 0.0015, -100, 1000, 50, 0, 0, 0, 0, 0, 1
 0x00915748	data	prop_leaf_generator_parameters		0x38-byte generator parameters for stage_dispatch_prop_effect kind 0x10 (falling leaves).
 0x00915EF0	data	prop_leaf_spin_field		Force key 3 (Euler spin); kind 0x10 replaces its values with random direct values.

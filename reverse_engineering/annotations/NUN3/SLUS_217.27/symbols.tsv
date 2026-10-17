@@ -633,6 +633,7 @@ address	kind	name	type	comment
 0x0030F380	function	stage_sway_tables_init		Fills the sway sine/cosine tables: 72 entries of sin/cos(i*5 deg), entry 36 uses 3.14; 18 entries of sin(i*20 deg).
 0x0030F5D0	function	vector_direction_angles		atan2(dy,dz), atan2(dz,dx), atan2(dy,dx) of b-a
 0x0030F870	function	stage_contact_mode_blocked	int stage_contact_mode_blocked(void)	Global predicate suppresses break-object contact resolution when nonzero; full mode meaning unresolved.
+0x0030FA20	function	battle_restriction_check		1 when the director is in state 5 substate 0 and the battle state object's +0x10/+0x9F8/+0x9FE/+0xAA0/+0xAA6 flags are set; meaning open
 0x0030FAC0	function	battle_state_is_2		
 0x0030FCB0	function	stage_doll_increment_side_counter	void stage_doll_increment_side_counter(int side)	Verified standalone leaf increments signed halfword at global owner+66+side*2 when owner exists; doll scene3 broken-contact branch calls with retained contact side; gameplay effect meaning unresolved.
 0x0030FD30	function	stage_doll_set_side_value	void stage_doll_set_side_value(int side)	Verified standalone leaf stores argument at global owner+78 when owner exists; doll scene3 broken-contact branch passes retained contact side; gameplay effect meaning unresolved.
@@ -1023,3 +1024,4 @@ address	kind	name	type	comment
 0x006A3AE0	data	stage_sway_sine	float *	stage_sway_length entries of sin(i*360/length deg).
 0x006A3AE4	data	stage_sway_cosine	float *	
 0x006A3BB8	data	stage_wind_strength	float	Written by stage_wind_update; read by the flying leaves and wind-scaled sways.
+0x006A5C20	data	primary_draw_environment		Inferred from use: sprites' default render context and the falls mist's environment, as NA2's primary_draw_environment
