@@ -265,6 +265,12 @@ address	kind	name	type	comment
 0x0017F910	function	query_registration_activate		Inferred from an exact code match with NA2 SLPS_258.37 0x001DCCC0. Appends an inactive registration to the resident global active-registration chain and marks it active; query_process_active_pairs enumerates this chain.
 0x0017FF80	function	contact_receiver_register	void contact_receiver_register(int *arg1)	Register contact receiver; scoped positive-count completion branches re-registerC0/A0.
 0x00180000	function	contact_receiver_unregister	void contact_receiver_unregister(int *arg1)	Unregister contact receiver; scoped break paths call for receiverC0/A0.
+0x00180B50	function	curve_set_points		+0x50 and +0x10 = a, +0x20 = b, +0x30 = c, +0x40 = d
+0x00180BA0	function	curve_set_point		
+0x00180BE0	function	curve_get_point		
+0x00180C20	function	curve_construct		
+0x00180CB0	function	curve_restart		Speed 0 draws |rng(0.045)| floored to 0.03; clears time, segment, done and delays
+0x00180ED0	function	curve_step		Advances time by the speed through segments 0..2 of four points, output at +0x50; segment 4 counts down the end hold, then sets done +0x7C
 0x00184E40	function	audio_write_pending_stream	void audio_write_pending_stream(void *context, int character, int member, int slot, int alternate_family)	Own NUN3 pending writer uses context+slot*0x14: bank=character-1 at +0, unchanged member at +4, slot at +8, alternate-family at +0xC and pending byte=1 at +0x10. No bounds checks or allocation.
 0x00185570	function	audio_consume_pending_streams	void audio_consume_pending_streams(void)	Own NUN3 consumer scans four pending rows and stops the stored mono slot first. Alternate-family zero requests PLVOICE family 3 with bank=(character-1)+56*(voice_set==1), preserving member narrowed to short. Other rows request SOUND family 0 with alternate+14*(voice_set==1). Reads setting at consumption and clears pending regardless of admission.
 0x001856D0	function	audio_queue_player_voice	void audio_queue_player_voice(int character, int member, int slot)	Own NUN3 queue checks only signed character<57, then writes character, unchanged sparse member, slot and alternate-family zero. No filename-number lookup. Character zero passes and writes bank -1. Compact SNDDATA commands use a separate path.
@@ -596,6 +602,8 @@ address	kind	name	type	comment
 0x002B1CF0	function	rng_next_integer	unsigned int rng_next_integer(void)	Return RNG integer used by training-doll reset modulo trunc(0.4*D).
 0x002B1D20	function	prng_inclusive		Random integer 0..abs(bound) inclusive; same contract as NA2 prng_inclusive.
 0x002B1D80	function	rng_signed_scaled	float rng_signed_scaled(float scale)	Generate signed scaled random value; rotating sky uses pi; return float established by caller use.
+0x002B21A0	function	angle16_turn_step		Rate 0x100: a sixteenth of the gap, at least 1, at most 0x6000
+0x002B2340	function	angle_turn_toward		Turns a radian angle toward a target by angle16_turn_step
 0x002B3300	function	panel_set_rectangle_record		Inferred from an exact code match with NA2 SLPS_258.37 0x003805F0. Apply five signed halfwords(style,x,y,width,height) through panel_set_rectangle; geometry converted to floats.
 0x002B4C30	function	panel_get_origin		Inferred from an exact code match with NA2 SLPS_258.37 0x00382060. Copy float panel.x/y at+4/+8 to supplied output pointers; proven by lwc1/swc1.
 0x002B4CC0	function	panel_get_extent		Inferred from an exact code match with NA2 SLPS_258.37 0x003820C0. Copy float panel.width/height at+C/+10 to supplied output pointers; proven by lwc1/swc1.
@@ -623,7 +631,9 @@ address	kind	name	type	comment
 0x003003A0	function	battle_particle_register_resources		Kinds1/0/2 dispatch generator_register_composition/effect/animation;choice slots index48D310;optional remap when both palette pointers present.
 0x00300540	function	battle_generator_set_uniform_scale		Scale (s, s, s, 1) at +0x150.
 0x0030F380	function	stage_sway_tables_init		Fills the sway sine/cosine tables: 72 entries of sin/cos(i*5 deg), entry 36 uses 3.14; 18 entries of sin(i*20 deg).
+0x0030F5D0	function	vector_direction_angles		atan2(dy,dz), atan2(dz,dx), atan2(dy,dx) of b-a
 0x0030F870	function	stage_contact_mode_blocked	int stage_contact_mode_blocked(void)	Global predicate suppresses break-object contact resolution when nonzero; full mode meaning unresolved.
+0x0030FAC0	function	battle_state_is_2		
 0x0030FCB0	function	stage_doll_increment_side_counter	void stage_doll_increment_side_counter(int side)	Verified standalone leaf increments signed halfword at global owner+66+side*2 when owner exists; doll scene3 broken-contact branch calls with retained contact side; gameplay effect meaning unresolved.
 0x0030FD30	function	stage_doll_set_side_value	void stage_doll_set_side_value(int side)	Verified standalone leaf stores argument at global owner+78 when owner exists; doll scene3 broken-contact branch passes retained contact side; gameplay effect meaning unresolved.
 0x0030FE70	function	stage_restriction_predicate	unsigned long long stage_restriction_predicate(void)	Complete retail body returns0, so restriction bit4 is never set by this branch.
