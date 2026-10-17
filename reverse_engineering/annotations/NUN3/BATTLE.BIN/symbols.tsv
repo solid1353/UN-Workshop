@@ -105,9 +105,27 @@ address	kind	name	type	comment
 0x007F11E0	function	stage_wind_update		After each hold, phase advances one degree per update with strength sin(phase); holds at +1 (90), 0 (180), -1 (270); at 360 rests 25 x 60 / divisor updates. Publishes stage_wind_strength and positions common sound 0x3E.
 0x007F2980	function	stage_landing_tree_parse	void stage_landing_tree_parse(int object, Nun3StageRecord *record)	0x50D: moves the object's base model +2C to node token3 and sets its contact word +9C to 0x2000D801; token7 object plus children 1..token5 at the same node; token9 float +110; token10 'w,h,i,j' gives receiver width/height floats +A0/+A8 and ints +B4/+B8.
 0x007F2FF0	function	stage_landing_tree_update	void stage_landing_tree_update(int object)	Sway children by wind angle (+110 token9 scale); stage_landing_tree_reaction then the queued -50 impulse curve as NA2's bg_landing_tree_update.
+0x007F53C0	function	stage_falling_leaves_parse		0x52B: token 3 node, token 7 composition, generator row token 8 (0x917810) with force row token 9 (0x917880) and spin row 0, scale token 10, playback 2, distance 100/500.
+0x007F55F0	function	stage_falling_leaves_release		Deferred stop 1 on a live generator; restores the rewritten rows.
+0x007F56D0	function	stage_falling_leaves_update		Restriction visibility; the last parsed record rewrites the shared rows from the wind, which made generators have already copied.
 0x007F6010	function	stage_rising_leaves_parse		0x52D: token 7 composition, token 0 section, tokens 1/2 x range, 3/4 height range.
 0x007F6160	function	stage_rising_leaves_spawn		Fighter on the record's section inside its x and height ranges: kind 1 -> 0x007F5D80, kind 0 -> 0x007F5EA0, at the fighter's position.
 0x007F63D0	function	stage_rising_leaves_update		Per fighter in state (1, 0x15/0x16) or (5, 0x42/0x43/0x45) starts leaf generators through stage_rising_leaves_spawn; six slots per kind, each retuned after 16 updates.
+0x007F6940	function	stage_rainbow_parse		0x52F: token 3 model at (400,700,-25), scale (7,1,7), opacity 0.2
+0x007F6A90	function	stage_rainbow_update		Opacity clamp((1600 - camera distance)/1600) while both fighters' +0x946 are 0, else 0; counts visible updates
+0x007F6D40	function	stage_rainbow_draw		
+0x007F6EF0	function	stage_fish_parse		0x746: swim node token 3 and its _1 leap point, token 1 wait; <stem>_n1/_a1; two radius-100 receivers; five effect0x splash rings
+0x007F72C0	function	stage_fish_update		States 0 swim, 1 to the leap point, 2 airborne (hittable), 3 dive back; rings
+0x007F7450	function	stage_fish_draw		Draw the fish, then its active rings in stage draw environment 2.
+0x007F7500	function	stage_fish_spawn_ring		
+0x007F7660	function	stage_fish_swim		State 0: replay n1 at its end, follow the swim curve (a new one when done), pose (rotation 0,0,-pi, scale +0x40), rings; countdown 0 -> state 1 with the leap curve.
+0x007F77D0	function	stage_fish_to_leap		State 1: follow the leap curve; at its end state 2, bind a1, new swim curve, activate receivers +0x230.
+0x007F7960	function	stage_fish_airborne		State 2: unblocked contact -> stage_fish_hit_effect, deactivate, prop effect 3 with sound 0x12 at +0x280, side counter; a1 end -> n1, state 3, dive curve; splash at a1 frames 8 and 25.
+0x007F7B30	function	stage_fish_dive		State 3: follow the dive curve; at its end state 0, new swim curve and countdown wait - rand % (wait/2).
+0x007F7CC0	function	stage_fish_hit_effect		
+0x007F7D90	function	stage_fish_swim_curve		
+0x007F7FA0	function	stage_fish_leap_curve		
+0x007F80D0	function	stage_fish_dive_curve		
 0x007F8200	function	stage_flying_leaves_construct		
 0x007F8210	function	stage_flying_leaves_release		Sets a live generator's deferred stop to 2.
 0x007F82A0	function	stage_flying_leaves_parse		0x51B: generator from 0x009180B0/0x009180F0 with token 8 lifetime; token 7 composition as its one material; distance fade 100/22000/500/20000; tokens 3, 9, 10 distance ahead, speed, upwind offset.
@@ -134,6 +152,9 @@ address	kind	name	type	comment
 0x0080E500	function	stage_flag_parse		0x79B: token 7 texture, token 3 node, tokens 8/9 x4 size, token 10 solver selector; 4x6 cloth with stage_flag_constants, step 0.064
 0x0080E6F0	function	stage_flag_update		w=-stage_wind_strength (at least +-0.005); force 5000w along normalized (0.5w+rng 0.5, rng 0.02, rng 0.02); one cloth step
 0x0080E8B0	function	stage_flag_draw		Scales the render context clip bounds +0x200 by 0.9 and +0x210 by 1.1 around the cloth draw
+0x0080F200	function	stage_forest_effect_destroy		Live generators: +0x34 = 1 and deferred stop 1
+0x0080F2E0	function	stage_forest_effect_parse		0x59E: three looping generators from stage_forest_effect_rows with token 7's effect, scaled by row +0x44, published
+0x0080F4D0	function	stage_forest_effect_update		stage_generator_restriction_visibility on each generator
 0x00813700	function	stage_training_doll_destroy	long stage_training_doll_destroy(long arg1,short arg2)	Reset derived state,install base break vtable,base cleanup;destroy embedded shapeE0/receiversC0/A0,common model cleanup,optionally self;borrowed node/stage archive not freed.
 0x008137E0	function	stage_monkey_doll_destroy	long stage_monkey_doll_destroy(long arg1,short arg2)	Reset derived state,install base break vtable,base cleanup;destroy shapeE0/receiversC0/A0,common model cleanup,optionally self;no stage archive ownership proof.
 0x008139A0	function	stage_wind_bell_destroy	long stage_wind_bell_destroy(long arg1,short arg2)	Reset derived state,install base break vtable,base cleanup;destroy shapeE0/receiversC0/A0,common model cleanup,optionally self;no stage archive ownership proof.
@@ -341,14 +362,18 @@ address	kind	name	type	comment
 0x00913450	label	stage_scene_tables		27 scene-record pointers plus null terminator; first record type1,label is stage name,primary resource archive path.
 0x009137D0	data	stage_kite_legs	int[10][4]	Waypoints each leg's curve runs through
 0x009139C0	data	landing_extra_item_distribution		field_item_random_select rows (2,40),(1,30),(3,20),(0,10),(0,0); the kind-0 row is never reached.
+0x00913AE0	data	stage_fish_items		field_item_random_select rows (kind 2, 40), (kind 1, 60), end.
 0x00914780	data	stage_falls_mist_rows		13 x 0x50: generator and three field descriptors, origin +0x20, second point +0x30, alpha +0x40
 0x00914FE0	data	stage_flag_constants	float[12]	700, 7000, 0.0015, -100, 1000, 50, 0, 0, 0, 0, 0, 1
+0x009153B0	data	stage_forest_effect_rows		3 x 0x50 rows as stage_falls_mist_rows, scale at +0x44
 0x00915748	data	prop_leaf_generator_parameters		0x38-byte generator parameters for stage_dispatch_prop_effect kind 0x10 (falling leaves).
 0x00915EF0	data	prop_leaf_spin_field		Force key 3 (Euler spin); kind 0x10 replaces its values with random direct values.
 0x00915F90	data	prop_fall_field		Force key 1, -2 velocity on the vertical axis.
 0x00915FB0	data	prop_drift_left_field		Force key 0, -0.8 displacement on X.
 0x00915FD0	data	prop_drift_right_field		Force key 0, +0.8 displacement on X.
 0x009160B0	data	prop_leaf_scale_field		Force key 5 scale/aspect 2 to 2 over 1.
+0x00917810	data	stage_falling_leaves_generators		Two 0x38-byte generator rows for 0x52B token 8.
+0x00917880	data	stage_falling_leaves_forces		Three 0x20-byte force rows: 0 spin, 1 fall -7, 2 fall -2 (token 9).
 0x009180B0	data	stage_flying_leaves_generator_parameters		
 0x009180F0	data	stage_flying_leaves_force		
 0x00918550	data	stage_s04_navigation_routes	Nun3StageRouteRecord[5]	S04 authored routes 3->2/2->3/3->1/1->3 and terminator.
