@@ -7,7 +7,8 @@ update gates, selected prop states, the bounded summon switch/return path,
 the per-stage camera, combo-anchor, route, intensity and music tables, Stage
 Select preview and name assets, record translation evidence from the shared
 stages, the archive conversion rules those stages show, S04's stage-specific
-handlers, the landing-tree reaction, the glare's draw order, S01's flags,
+handlers, the landing-tree reaction, the glare's draw order, S02's faded-pillar
+order relative to the charging aura, S01's flags,
 wind sound and far-animation fog modes, S02's gondolas, faces and kite,
 S14's falls mist and bridge planks, S20's clouds, lens flare and depth of
 field, and every scene comparison outside the records. Open: other prop
@@ -27,6 +28,8 @@ Inputs and live address mapping belong to
 UN3 stage archives are the retail `DATA.CVM` extraction's `STAGE/` directory.
 Evidence is static against `SLUS_217.27`, `BATTLE.BIN` and those archives;
 sizes agree with each game's `GZLIST.TXT`.
+The faded-pillar comparison also uses the user-identified retail S02 charge
+capture, inspected offline.
 
 Coverage includes all 28 UN3 and 24 NA2 archives and all 27 UN3 scene tables.
 Content comparisons covered every NA2/UN3 archive pair; texture comparisons
@@ -406,6 +409,26 @@ Representative labels/resources below count the 20 normal tables.
 | `0x7xx` | 1..2 | stage creatures and props (toad, snake, spiders, fish, flags) |
 | `0x81C`, `0x81D` | 20 | `訓練君` / `うっきー君` training dolls with `DMY_dd_010`/`DMY_pg_*` and break objects |
 | `0x801..0x87C` | 1..5 | breakable props with `_n1`/`_d1`/`_n2` animations and `OBJ_bre_*` debris |
+
+## Faded pillars and the charging aura
+
+In the captured retail S02 frame, `ANM_e0x_aura_01` submits to priority 1
+(environment `0x0141B7A0`); the faded pillars submit to priority 15
+(`0x015BD4A0`). `stage_transparent_draw` (`0x007E9580`) retains this transparent
+environment while its contact blend is below 1, and selects stage environment
+1 otherwise. `ordered_controller_list_insert` (`0x001095C0`) sorts descending;
+`ordered_controller_list_process` (`0x00109620`) and
+`render_packet_list_splice_submission` (`0x0010E2F0`) prepend each environment
+at the same insertion tag, producing ascending final priority. The aura
+therefore draws before the faded pillars.
+
+The emitted pillar and aura material packets both retain depth comparison
+`GEQUAL` and enabled depth writes (`ZBUF = 0x310000E0`). The left pillar's
+TEST is `0x5130B`, and the aura's is `0x51001`. Fading does not disable depth:
+the later foreground pillar blends over aura colour already in the frame.
+This ordering, rather than opacity alone, permits the aura to remain visible
+through the pillar. These capture observations do not establish every effect's
+environment or every stage's foreground order.
 
 ## UN3 object parsers and concrete comparisons
 
