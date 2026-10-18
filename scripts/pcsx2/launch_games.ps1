@@ -65,11 +65,11 @@ if ($DiscardMemoryCardWrites -and $VolatileMemoryCard) {
     throw 'Use only one of -dmc or -vmc.'
 }
 if ($Snapshots -and $ClosePcsx2) {
-    throw '-k cannot be combined with -s.'
+    throw '-k cannot be combined with -rps.'
 }
 if ($AgentReplay) {
     if ([string]::IsNullOrWhiteSpace($Play) -or $Snapshots) {
-        throw '-agent-replay requires -p and cannot be combined with -s.'
+        throw '-agent-replay requires -rp and cannot be combined with -rps.'
     }
     if ($Turbo -or $Unlimited) {
         throw '-agent-replay cannot be combined with fast-forward options.'
@@ -110,7 +110,7 @@ if ($Snapshots -and ($Turbo -or $Unlimited -or $frameLimitedUnlimited)) {
     throw 'Snapshot replay owns its permanent Unlimited speed mode.'
 }
 if (-not [string]::IsNullOrWhiteSpace($CaptureDirectory) -and -not $Snapshots) {
-    throw 'Snapshot output directory (-o) requires -s.'
+    throw 'Snapshot output directory (-o) requires -rps.'
 }
 
 function Get-UnWorkshopConfiguredPinePort {

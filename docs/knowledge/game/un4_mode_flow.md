@@ -2,11 +2,14 @@
 
 ## Research coverage
 
-Established statically: resident startup, New Game's directory-check branch,
+Established statically: resident startup's language-selection dependency,
+New Game's directory-check branch,
 Mode Select's Practice result, Practice's selection and loading states,
-participant fields, raw stage ownership, and manual-opponent settings.
-Open: runtime confirmation, other settings' complete player-facing meanings,
-and unrelated mode branches. No runtime observation backs this document.
+participant fields, raw stage ownership, manual-opponent settings, and the
+Command Display and Easy Display flags.
+An observed startup snapshot confirms waiting in the language selector before
+the outer state loop. Open: completion of the traced startup path, other
+settings' complete player-facing meanings, and unrelated mode branches.
 
 Names come from `@annotations/UN4`. Addresses are live resident
 `SLUS_218.62` addresses unless a battle-overlay routine is named. Binary
@@ -16,7 +19,20 @@ identity and address conventions belong to
 ## Startup and Practice entry
 
 `game_main_task` (`0x001C94D0`) initializes MOTHER and enters outer state 2
-at `0x001C97CC..0x001C97D0`. States 2 and 3 run logos and title; state 5
+at `0x001C97CC..0x001C97D0`, after its startup readiness loop. Before that
+write, the loop calls `splash_update` (`0x001C8E20`). State 1 constructs the
+English/French selector; state 2 waits for `language_select_update`
+(`0x003F5B20`) to confirm it. The selector's selected row is halfword `+0x1A`.
+Its input load at `0x003F5B40` reads the engine's pressed-button word;
+bit `0x40` commits the selected row through `ui_language_set_index`
+(`0x003F50B0`) and returns 1. Merely choosing a different outer starting
+state does not bypass this earlier wait.
+
+`splash_update` state 3 calls `ui_language_reload_resources`
+(`0x003F50F0`) to load the selected text overlay, adjusts audio resources
+if the language changed, starts audio readiness work, then constructs the
+splash sequence. These steps precede MOTHER's outer loop. States 2 and 3
+of that outer loop run logos and title; state 5
 runs `new_game_start`, state 6 Load Game, and state 7 `game_scene_update`.
 New Game allocates the `0xCF0` manager at `0x00609794`, initializes its
 profile and battle resources, then calls `memory_card_check_directories`
@@ -65,3 +81,19 @@ manager `+4`. `practice_settings_apply` (`0x00384F60`) treats Behavior 0
 as manual and calls `practice_toggle_com` (`0x003850D0`) to clear the
 opposite side's COM flag. The same getter value permits both players'
 menus in `battle_menu_initialize_players` (`0x0038BAD0`).
+
+## Command Display and Easy Display
+
+Both settings occupy profile byte `+0x38`, reached through manager `+4`.
+`practice_command_display_set` (`0x003239E0`) changes bit `0x01` only in
+Practice mode 2; zero disables it. `practice_command_display_get`
+(`0x00323A80`) reads that bit in Practice and returns 1 in other modes.
+The first Practice Settings row commits this field; its English help at
+`TEXTENG.BIN:0x00890F00` identifies Command Display.
+
+Pause menu action 14 is Easy Display Setup, identified by the English label
+at `TEXTENG.BIN:0x00890080`. `easy_display_initialize` (`0x003921E0`)
+selects row 0 when profile bit `0x04` is set and row 1 otherwise.
+`easy_display_update` (`0x003922A0`) confirms row 0 by setting that bit and
+row 1 by clearing it; cancellation leaves it unchanged. Both display flags
+can therefore be cleared with mask `0xFA`, preserving the other profile bits.

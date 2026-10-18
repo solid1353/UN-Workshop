@@ -31,9 +31,9 @@ Assert-WorkshopLaunchTest `
     )) `
     -Message 'Workshop help did not render generated resolver properties.'
 foreach ($expectedOption in @(
-    '-p <name>',
+    '-rp <name>',
     '-r <name>',
-    '-s <name>',
+    '-rps <name>',
     '-o <path>',
     '-mc <card>',
     '-pnach <file>',
@@ -195,13 +195,13 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
             -Condition ($projectHelp.Contains('properties: iso, synthetic_property')) `
             -Message 'Workshop help did not use generated resolver properties.'
 
-        $play = (& .\workshop.ps1 UN5 $isoTarget -p practice-menu) -join "`n"
+        $play = (& .\workshop.ps1 UN5 $isoTarget -rp practice-menu) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition ($play.Contains("games=UN5,$isoTarget play=practice-menu record=")) `
             -Message 'Paired playback was not forwarded to the shared launcher.'
 
         $agentReplay = (
-            & .\workshop.ps1 UN5 -p practice-menu `
+            & .\workshop.ps1 UN5 -rp practice-menu `
                 -agent-replay -logfile 'work/agent.log'
         ) -join "`n"
         Assert-WorkshopLaunchTest `
@@ -284,13 +284,13 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
             )) `
             -Message 'Nested rightmost recording was not forwarded to the shared launcher.'
 
-        $snapshots = (& .\workshop.ps1 UN5 -s practice-menu) -join "`n"
+        $snapshots = (& .\workshop.ps1 UN5 -rps practice-menu) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition ($snapshots -match 'games=UN5 play=practice-menu record= snapshots=True') `
             -Message 'Snapshot playback was not forwarded to the shared launcher.'
 
         $pairedSnapshots = (
-            & .\workshop.ps1 UN5 $isoTarget -s practice-menu
+            & .\workshop.ps1 UN5 $isoTarget -rps practice-menu
         ) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition (
@@ -301,7 +301,7 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
             -Message 'Paired snapshot playback was not forwarded to the shared launcher.'
 
         $snapshotsWithPath = (
-            & .\workshop.ps1 UN5 -s practice-menu -o 'captures/custom'
+            & .\workshop.ps1 UN5 -rps practice-menu -o 'captures/custom'
         ) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition (
@@ -313,7 +313,7 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
             -Message 'The optional snapshot capture path was not forwarded.'
 
         $isoSnapshots = (
-            & .\workshop.ps1 $isoTarget -s practice-menu -o 'captures/worker'
+            & .\workshop.ps1 $isoTarget -rps practice-menu -o 'captures/worker'
         ) -join "`n"
         Assert-WorkshopLaunchTest `
             -Condition (
@@ -326,7 +326,7 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
 
         $captureWithoutSnapshotsRejected = $false
         try { & .\workshop.ps1 UN5 -o 'captures/invalid' }
-        catch { $captureWithoutSnapshotsRejected = $_.Exception.Message -ceq '-o requires -s.' }
+        catch { $captureWithoutSnapshotsRejected = $_.Exception.Message -ceq '-o requires -rps.' }
         Assert-WorkshopLaunchTest `
             -Condition $captureWithoutSnapshotsRejected `
             -Message 'Workshop accepted -o without snapshot replay.'

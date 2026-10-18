@@ -72,18 +72,18 @@ function Invoke-UnWorkshopGameLaunch {
             Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
     )
     if ($selectedModes.Count -gt 1) {
-        throw 'Use only one of -p, -r, or -s.'
+        throw 'Use only one of -rp, -r, or -rps.'
     }
     if (-not [string]::IsNullOrWhiteSpace($CaptureDirectory) -and
         [string]::IsNullOrWhiteSpace($Snapshots)) {
-        throw '-o requires -s.'
+        throw '-o requires -rps.'
     }
     if ($Turbo -and $Unlimited) {
         throw 'Use only one of -t or -u.'
     }
     if (-not [string]::IsNullOrWhiteSpace($Snapshots) -and
         ($Turbo -or $Unlimited)) {
-        throw '-s owns its permanent Unlimited speed mode.'
+        throw '-rps owns its permanent Unlimited speed mode.'
     }
     $parameters = @{
         Games = @($games)
