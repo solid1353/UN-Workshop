@@ -46,14 +46,14 @@ explicitly selects permanent Unlimited.
 
 ## Input recordings and captures
 
-`-p <recording>` replays one shared input recording in every launched instance
+`-rp <recording>` replays one shared input recording in every launched instance
 through PCSX2's
 [read-only playback](../../../PCSX2/docs/input_recording_capture.md#read-only-playback).
 `-r <recording>` records only the last or rightmost instance. Recording names
 may be relative paths below `@pcsx2_input_recordings/`; Workshop adds the
 `.p2m2` extension automatically. Recording creates missing parent directories.
 
-`workshop <game|iso-path> [game|iso-path] -s <recording> [-o <path>]`
+`workshop <game|iso-path> [game|iso-path] -rps <recording> [-o <path>]`
 replays one or two configured games or explicit ISOs concurrently in PCSX2's
 surfaceless no-GUI mode. It captures every recorded L3+R3 snapshot marker in
 PCSX2's `full`
@@ -115,7 +115,7 @@ and `-dmc 1` to `-mc 1 -dmc`. Without a value, the flag uses the normally
 selected card. Specify a card only once.
 
 Ordinary launches persist writes to the selected card, including templates,
-unless `-dmc` or `-vmc` is specified. Snapshot replay with `-s` defaults to
+unless `-dmc` or `-vmc` is specified. Snapshot replay with `-rps` defaults to
 discarded writes for all cards; explicit `-vmc` selects volatile mode.
 
 ## PNACH overlays

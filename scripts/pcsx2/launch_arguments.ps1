@@ -5,7 +5,7 @@ function Test-UnWorkshopLaunchOption {
     param([Parameter(Mandatory)][string]$Token)
 
     return $Token.ToLowerInvariant() -in @(
-        '-p', '-r', '-s', '-o', '-mc', '-pnach', '-dmc', '-vmc', '-t', '-u', '-k', '-agent-replay', '-logfile'
+        '-rp', '-r', '-rps', '-o', '-mc', '-pnach', '-dmc', '-vmc', '-t', '-u', '-k', '-agent-replay', '-logfile'
     )
 }
 
@@ -33,9 +33,9 @@ function ConvertFrom-UnWorkshopLaunchArguments {
     $closePcsx2 = $false
     $agentReplay = $false
     $valueOptions = @{
-        '-p' = 'Play'
+        '-rp' = 'Play'
         '-r' = 'Record'
-        '-s' = 'Snapshots'
+        '-rps' = 'Snapshots'
         '-o' = 'CaptureDirectory'
         '-mc' = 'MemoryCard'
         '-logfile' = 'LogFile'
