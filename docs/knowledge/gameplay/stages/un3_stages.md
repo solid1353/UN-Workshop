@@ -12,8 +12,11 @@ order relative to the charging aura, S01's flags,
 wind sound and far-animation fog modes, S02's gondolas, faces and kite,
 S14's falls mist and bridge planks, S20's clouds, lens flare and depth of
 field, S05's directional wind, flying debris, bells and torches, S08's cargo,
-vending machine and desert eagle, and every
-scene comparison outside the records. Open: other prop
+vending machine and desert eagle, S19's wall, dappled/root sunlight, canopy
+and bed, S06's crash boundaries and steam, S11's sandstorm, their shared
+jutsu-resource particle gates and NA2 factory correspondence, S12's dome,
+the giant and hanging spiders, and every scene comparison outside the
+records. Open: other prop
 states/teardown, full scene binding, mode/effect meanings, texture-pixel
 sharing, complete NA2 equivalence and Stage Select name-sprite rectangles.
 Names and layouts come from
@@ -787,6 +790,61 @@ S08's `0x83F` desert eagle constructs the ordinary kite subtype and uses
 only while the absence counter is zero. Its own three donor animations
 and `DMY_bird_010`/`_1` nodes supply its appearance and flight locations.
 
+## S19 interior, sunlight, canopy and bed
+
+S19's `0x639` binds `ANM_s4bkab00` as the separate house wall.
+`stage_hideout_wall_update` (`0x007E4AB0`) tests both primary fighters'
+section halfword at `+0x946`. With both on section 0 its opacity rises by
+0.03 to 1; with either elsewhere it falls by 0.09 to 0. The wall shares that
+opacity with three root-light groups created from `stage_hideout_wall_light_rows`
+(`0x00913370`): `ANM_s4bmoo20/21`, `30/31` and `40/41`.
+`stage_hideout_wall_draw` (`0x007E4C20`) skips under the battle restriction;
+outdoors it submits to the main stage environment and indoors to the current
+transparent environment. It does not advance the wall animation.
+`stage_scene_draw` (`0x007C2190`) submits category-9 and creature objects in
+the main environment before the base animation, animated props and reactive
+props. It then submits the far objects in their environment and transparent
+objects in the third environment.
+
+Nineteen `0x73A` records place two ground-light models at each `DMY_ld_010`
+node and its numbered siblings. `stage_dappled_light_parse`/`_reset`
+(`0x007E35F0`/`0x007E36C0`) choose from `ANM_s4bmoo00/01`, randomize each
+model's Z rotation within plus/minus pi and its two motion amplitudes within
+plus/minus 5, and choose an initial crossfade fraction. The update
+(`0x007E3B00`) moves them by the shared cosine/sine tables in components 0/1
+and raises component 2 by 1. The 72-entry phase advances every second update.
+The fraction falls by 0.02, restarting at 1 and switching which model fades
+out each time it passes zero; the newly fading-in model gets a new rotation.
+
+Three authored `0x73B` records use `ANM_s4bmoo10/11`, `12/13` and `14/15`;
+the wall adds the other three groups above. `stage_root_light_parse`/`_reset`
+(`0x007E3F00`/`0x007E3FA0`) give each group two independently fading models,
+each with a random initial animation, alpha from 0 to 0.7 and fade direction.
+`stage_root_light_update` (`0x007E41E0`) moves alpha by 0.01: below zero it
+binds the next animation and starts fading in; above 0.5 it clamps to 0.5 and
+fades out. The wall-created groups multiply their alpha by the wall's fade.
+`stage_root_light_draw` (`0x007E45A0`) uses their optional environment override;
+the wall gives its three groups the third stage environment.
+
+The `0x528` canopy record binds `OBJ_obj_170_` and its two siblings at
+`DMY_hadummy_000_`. `stage_sway_leaves_parse` (`0x007EFAC0`) initializes
+independent random phases. `stage_sway_leaves_update` (`0x007EFD60`) negates
+the scene wind and clamps its magnitude to at least 0.3, increments phase by that value times
+0.1, and uses token 10 times `20 * (0.2 + abs(wind))` as its amplitude, with
+component-0 sine scaled by 1.3 and component-2 cosine by 0.5. S19 has no wind
+record; at zero wind its phase advances by 0.03. Its five `0x526` grass groups
+use the shared grass behavior. `ANM_usa_run00` uses frame-animation divisor 4;
+`ANM_s4bmoo70/71` have no divisor.
+
+The bed's `0x83C` uses `stage_hideout_bed_parse`/`_update`/`_trigger`
+(`0x007E2F70`/`0x007E2C10`/`0x007E2D70`). Its three remaining hits do not
+decrease: each accepted contact binds the damage animation, plays kind-2
+prop feedback with its hit sound and rolls `rand % 100 < 20` for an item.
+The update rearms receivers after that animation ends. Every fifth completed
+contact also sets separate availability to -1 for 300 updates, then restores
+it to 1; neither the trigger nor its item-drop path reads that availability.
+Its scene-12 side-counter branch does not run on S19 (scene 18).
+
 ## Scene-keyed code outside the stage records
 
 Code reads the battle context's scene byte (`+0x61`) outside the record
@@ -817,3 +875,178 @@ counterpart compares its raw slot where one exists
 
 The remaining reads pass the scene to archive, record or summon routines
 without comparing it. UN3 has no line-change rules or `n_rash` groups.
+
+## Hidden Leaf Hot Spring boundaries and ambient objects
+
+Scene 5's `0x54B` wall and `0x551` bamboo boundary have two crash transitions,
+not ordinary breakable-object contacts. `hot_spring_wall_check_crash` and
+`hot_spring_bamboo_check_crash` read major-state 5 timeline event 0, positional
+limits and distinct crash substate sets. The wall excludes section 1. The
+final wall transition lowers the section's first pair and linked navigation
+and collision endpoints to height 40. The bamboo extends its last projection
+pair to x1260, moves the last collision endpoint to x1300, changes its separate
+`ANM_s6atake00` backdrop to `ANM_s6atake01` and rebuilds navigation. After the
+wall opens, `stage_navigation_initialize` detects equal heights at the first
+two collision-line starts and changes work route 1 to fraction 0/action 3.
+
+The model collision has a separate lifetime from these section lines.
+`resource_register_environment` (`0x00170C00` in the ELF) registers nested
+and direct animation-track collision environments; registration is idempotent.
+The intact wall and bamboo updates call it. Their final transitions stop
+registering the solid mesh; the wall explicitly unregisters it.
+`resource_update_environment_transforms` (`0x00170F70`) copies scene-child
+transforms and inverse matrices into nested model collision environments;
+the bamboo calls it after advancing. Drawing does not perform registration.
+
+`stage_noren_fixed_parse`/`_update` (`0x598`) preserve a base-animation dummy
+matrix and apply x rotation sin(phase)*0.1, incrementing phase by four degrees
+without visibility gating. This differs from the decaying `0x507` curtains.
+`stage_tree_matrix_parse` (`0x583`) likewise passes the dummy matrix to the
+compound tree solver, preserving its authored rotation and scale.
+
+`hot_spring_steam_parse` creates ten common-particle generators from
+`0x00913C60`; it does not replace their materials with a stage composition.
+`hot_spring_steam_update` zeros alpha under battle restriction and the shared
+[jutsu-resource gates](#steam-and-sand-jutsu-resource-gates), and otherwise
+restores each row's authored colour alpha at generator `+0x16C`. Its live
+generator retirement branch uses `stage_restriction_predicate`
+(`0x0030FE70`), whose complete retail body returns zero, so that branch never
+retires steam in retail. It does not use `battle_scene_restriction_active`
+for retirement. The three water-light
+records advance their animations and draw in main environment 1 unless battle
+restriction is active. Falling-leaf records at nodes050/060 occur twice in the
+retail table; both copies are authored.
+
+## Sunagimo Estate sandstorm
+
+Scene10's `0x73E` controller waits300 updates and follows four randomized
+points (363±300,5000,0),(547±200,900,0),(-363±200,600,0),(-563±200,3000,0)
+at speed0.0028. It fades on the first and last curve segments, rotates the
+camera-relative `ANM_s5astom` overlay by -0.1 per update, moves a common
+particle generator and positional sound71, then repeats after another calm.
+Two spheres of radius250 at offsets200/600 from the moving origin raised500
+are registered per fighter side. Contact reaches the stage-object hit path
+with damage0.03, response selector11 and one hit per descriptor. The two
+carried breakable objects choose among fly00/01/02 animations with matching
+debris each pass and orbit at offsets(0,300,1000)/(0,-300,1200), with randomized
+rotation rates and height sway. Their proximity depth snaps to1000 near the
+back plane. The eagles use the ordinary kite parser/update/draw unchanged.
+
+### Shared particle names do not establish matching visuals
+
+S06's ten emitter descriptors select common catalog row 4 for the two
+chimneys and row 70 for the other eight. Row 4 names
+`PARTICLE/EFF_e0xsmok05`; its catalog playback-mode selector is 2. S11's
+storm descriptor selects row 80, which uses `EFF_e0xsmok11` with palette
+`CLT_e0xsmok11c1` and playback-mode selector 0. These catalog identities
+agree between UN3 and NA2, but their visual assets do not.
+
+In UN3 `CMN/PARTICLE.CCS`, both effects use flags `0x40`, 64x64 8-bit
+textures and 256-colour palettes. NA2's same-named effects use flags `0x60`,
+different 64x64 4-bit textures and different 16-colour palettes. In the
+user-identified S06 ss1 pair, both games have matching emitter descriptors,
+origins and colour alpha, while NA2's two chimney emitters resolve to its
+brown `EFF_e0xsmok05` visual. The eight row-70 emitters use `EFF_x001`,
+`TEX_x001` and `CLT_x001c7` from `EFFECT0X.CCS`; their content matches across
+the games after excluding object references and VRAM coordinates.
+
+### Steam and sand jutsu-resource gates
+
+`hot_spring_steam_update` (`0x007FCC30`) and `sandstorm_advance`
+(`0x007EB310`) read `jutsu_update_resource` (`0x006A1E08`, GP minus
+`0x6E68`). `interaction_update_resource_callbacks` (`0x00875740`) resets
+this value to -1, then publishes each eligible primary actor's resource at
+`+0x3EC` before its callback, retaining the last publication.
+`jutsu_bind_participants` (`0x00884690`) stores the resource argument there.
+This is a jutsu resource ID, not a sequence or event ID.
+
+Both particle controllers suppress colour alpha for resource 69 regardless
+of the manager predicate, and for resources 29 or 67 only while
+`battle_scene_restriction_active` (`0x002B7D30`) reports the manager's
+`+0xAC0` control active. That conjunction is distinct from the steam
+retirement predicate above. Resource 29 is Guy's Dynamic Entry and 67 is
+Green Beast's Ultimate Entry; their actor dependencies are recorded in
+[Guy](../characters/un3/guy.md#shared-guy-jutsu-actor-dependencies).
+UN3's resource-69 factory branch (`0x0086D2D0`, table entry `0x0093FCA4`)
+is a `break` followed by a self-loop, with no actor construction, despite
+its retained `2hnxcha0.ccs` filename.
+
+NA2's corresponding factory entries 29, 67 and 69 at `0x008CD264`,
+`0x008CD2FC` and `0x008CD304` lead to empty arms at `0x00774308`,
+`0x0077459C` and `0x007745B4`. None allocates or constructs an actor.
+The resource-specific particle gates therefore have no actor counterpart
+in retail NA2. Playable NA2 Guy's different resources 140/141 do not establish
+a replacement for these checks. NA2's
+`interaction_reset_sphere_caches_update` (`0x0077E6B0`) does publish its
+current resource from actor `+0x56C`, but adding the donor's numeric checks
+would not supply the missing actors.
+
+
+## Forest of the Giant Spider
+
+Scene 11's `earth_dome_parse` (`0x0080A240`) creates a two-crash dome rather
+than an ordinary attack receiver. `earth_dome_detect_crash` requires front
+section, major 5 and timeline event 0. Substates 3F/40/44 require x500..800
+and height at most500; substates42/43/45 allow x500..1100 and height600.
+`earth_dome_crash` (`0x0080A5C0`) selects the damaged then broken animation.
+The final hit selects front CL and DMY variant1 and rebuilds navigation;
+the variant nodes are `DMY_f2_cl_*` and `DMY_line_0101*`. It scatters15 item9
+and three random items3..5. `earth_dome_update` eases opacity by0.1 toward0.3
+when a back-section fighter is beyond x600, otherwise toward1; its draw
+uses the third environment while faded.
+
+The dome registers its initial animation's collision environment during parse.
+The first crash unregisters the old environment, binds the damaged animation
+and registers its environment. The last binds the broken animation and
+unregisters collision. Intact updates refresh the collision transforms after
+advancing; the broken branch advances without that refresh. These calls are
+independent of selecting the front CL and DMY variants.
+
+`giant_spider_parse` (`0x008079A0`) binds eight spider animations and three
+nest animations, starts at `DMY_km_020`, and creates five web missiles.
+`giant_spider_update` (`0x00809DA0`) dispatches15 states. Idle lasts90..150
+updates, roaming uses speed7.5 and yaw steps0.03 radians, the attack wait
+lasts210..270, and shot frame20 launches an available web toward random
+x±800 on either section. Accepted hits disable the damage receiver, play
+common sound65, drop three pool2 items and retreat500 above home. After
+three hits the spider rises offscreen, chooses x±600 on either section,
+casts to ground and falls from10000, accelerating downward by0.5. Its
+radius600 contact sphere has offset300; stage-hit damage is0.1. Landing
+plays sound12, common dust descriptor `0x00913610` with field `0x00913650`,
+and shake priority3/mode2/duration10. After30 updates it rises and returns.
+The main spider draws at scale1.5; its nest has independent animation.
+
+`spider_web_update` (`0x00807300`) rises150 per update to height3000, moves
+to its target section, then descends at up to10 with lateral sine sway.
+Collision starts the landing animation. Its completed web remains for100
+updates with a radius200 contact sphere, applies status6 on contact, and
+fades by0.1. Retail status6 has action-rate factor0.75 and duration240;
+NA2's effect6 definition and `effect_apply` (`0x00305C30`) carry those values.
+
+`small_spiders_parse` (`0x0080C470`) creates11 spiders at `DMY_pg_020..120`.
+Their vertical offsets are -400,-600,-800,-500,-700,-900,-700,-500,-800,
+-600,-400. `small_spider_update` (`0x0080BD70`) emerges on rand100<11,
+descends3 toward the authored height, occasionally moves within its ±20
+range, and responds to accepted attacks. A hit plays65 and rolls a one-in-three
+item chance, launches sideways30 with lift28.5, then gravity3 and fade0.025.
+Each silk thread uses22 strip vertices along a bowed cubic, width5, and
+`TEX_s3bobj43`; the model turns along its terminal tangent.
+
+The dive's auxiliary registration is an AI danger circle, not a rendering
+or height override. `stage_ai_danger_register`/`_unregister`
+(`0x007D14F0`/`0x007D1560`) maintain section lists of borrowed position,
+radius and next pointers at scene+334. `field_ai_danger_head` (`0x00826A50`)
+feeds `ai_predict_environment_reaction` (`0x008204C0`): within radius plus
+fighter radius and outside its cooldown, rand100<60 selects escape; the
+other outcome sets cooldown150. The spider registers radius300 at its ground
+target and removes it after the landing wait. NA2 retains the same12-byte
+node layout and decision path through `field_ai_danger_head` (`0x00708DE0`),
+with lists at background+100 instead. Both games initialize these lists empty.
+
+Reaction selectors are game-specific. The sandstorm sets UN3 selector0B,
+which selects substate32; NA2 selector0D selects corresponding substate34.
+Their motion rows share the flags, event, planar/vertical speeds and damping.
+The dive sets UN3 selector13/substate3E; NA2 selector15/substate40 has its
+byte-identical24-byte motion row: zero planar speed, vertical -50, damping0.35,
+gravity auxiliary1.25, pause1 and lock120. The rows are at UN3 resident
+`0x00389778` and NA2 resident `0x004078C8`.
