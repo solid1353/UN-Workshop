@@ -11,7 +11,8 @@ handlers, the landing-tree reaction, the glare's draw order, S02's faded-pillar
 order relative to the charging aura, S01's flags,
 wind sound and far-animation fog modes, S02's gondolas, faces and kite,
 S14's falls mist and bridge planks, S20's clouds, lens flare and depth of
-field, S05's directional wind, flying debris, bells and torches, and every
+field, S05's directional wind, flying debris, bells and torches, S08's cargo,
+vending machine and desert eagle, and every
 scene comparison outside the records. Open: other prop
 states/teardown, full scene binding, mode/effect meanings, texture-pixel
 sharing, complete NA2 equivalence and Stage Select name-sprite rectangles.
@@ -745,6 +746,47 @@ is positive; after destruction it submits a model only when the record has
 a later animation. Its debris branch remains independent. A missing later
 animation means disappearance, rather than reuse of the idle model.
 
+## S08 cargo, vending machine and desert eagle
+
+S08's `0x835` cargo uses `stage_cargo_stack_parse` (`0x007E0780`). Token 3
+selects the base node and token 10 the box count, with zero meaning three;
+its two authored stacks contain two and three boxes. The parser creates a
+breakable per box using `ANM_s5bhak00_n1` and `_d1`, places them 100 units
+apart in height, and retains the base position and rank. Contact, proximity
+and item positions are the current box position plus `(0,-150,50)`.
+
+`stage_cargo_piece_fall` (`0x007DFB80`) increases time by 0.12 and subtracts
+`time * 9.8 * time * 0.5` from height on each falling update. It clamps to
+base height plus rank times 100, then clears time and the falling flag.
+`stage_cargo_piece_break_update` (`0x007DFD80`) records destruction;
+`stage_stack_settle` (`0x007E05A0`) then compacts the surviving ranks and
+starts their fall. A destroyed box has no third animation and disappears
+under the shared breakable draw rule, independently of its debris.
+
+The `0x842` vending machine runs `stage_vending_machine_trigger`
+(`0x007E3150`). It plays its damage animation on each accepted hit without
+decreasing its remaining-hit value, and emits an item on a random draw below
+20 out of 100. On scene 7, either side's prop-hit counter being exactly ten
+reduces that threshold to 5; scene 8 compares with eight.
+`stage_doll_side_counter` (`0x0030FCE0`, resident) reads the same signed
+halfword that `stage_doll_increment_side_counter` increments. The trigger
+compares both counters before incrementing the hitting side's counter, so
+the reduced chance applies to exact equality rather than a permanent cap.
+
+`stage_vending_machine_update` (`0x007E2FF0`) rearms contact receivers when
+the damage animation finishes. Every fifth completed contact also sets the
+separate availability value to -1 for 300 updates, then restores it to 1.
+`stage_vending_availability_pointer` (`0x00812EF0`) exposes that value's
+address. Neither the hit trigger nor `stage_vending_machine_drop`
+(`0x007E3400`) tests it, so it is not a timed lock on hitting the machine
+or directly on its drop routine.
+
+S08's `0x83F` desert eagle constructs the ordinary kite subtype and uses
+`stage_kite_parse`. `stage_desert_eagle_update` (`0x007DCC60`) delegates to
+`stage_kite_update`; its draw delegates to `stage_kite_draw`, which draws
+only while the absence counter is zero. Its own three donor animations
+and `DMY_bird_010`/`_1` nodes supply its appearance and flight locations.
+
 ## Scene-keyed code outside the stage records
 
 Code reads the battle context's scene byte (`+0x61`) outside the record
@@ -770,6 +812,7 @@ counterpart compares its raw slot where one exists
 | `interaction_scene13_reflection` | 13 | Second effect copy 400 below | None |
 | `effect_scene13_burst_delay` | 13 | Random delay range 1 instead of 30 | None |
 | `projectile_fall_to_ground` | 13 | Ground probe raised by 70 | Probe padding differs |
+| `stage_vending_machine_trigger` | 7, 8 | A side's prop-hit counter equal to ten or eight reduces the drop threshold from 20 to 5 | Different field-item selection |
 | Water-height reads (about 25 sites) | 2, 13 | Heights 50, 387 | `stage_effect_height_override`/`_bits` |
 
 The remaining reads pass the scene to archive, record or summon routines

@@ -84,8 +84,27 @@ address	kind	name	type	comment
 0x007DC690	function	stage_kite_leg_eight		Empty
 0x007DC6A0	function	stage_kite_fly		Curve plus 10*bob in z, roll = amount*bob, yaw turns to the heading; receivers at the center depth
 0x007DC940	function	stage_kite_flee		Fades 0.02 per update along the drop curve, then returns to the start, re-arms and draws the next absence
+0x007DCC60	function	stage_desert_eagle_update		S08 0x83F subtype uses stage_kite_parse and delegates update unchanged to stage_kite_update.
+0x007DCC80	function	stage_desert_eagle_draw		Delegates to stage_kite_draw; subtype1E matches ordinary kite construction and parse.
 0x007DCCA0	function	stage_kite_update		Absence countdown; flies or flees; replays the idle at a random speed; a hit sets a 0.07 drop curve 100/250/450 down
 0x007DCFE0	function	stage_kite_arrive		Empty
+0x007DCFF0	function	stage_kite_draw		Submit model only when absence countdown22C is zero; shared by S02 kite and S08 desert eagle.
+0x007DF9B0	function	stage_cargo_piece_parse		Base breakable plus position offset(0,-150,50), falling coefficient0.12, acceleration9.8, offset0; attack sphere created if base provided none.
+0x007DFB20	function	stage_cargo_piece_update		Advance falling/settling then ordinary breakable contact, model and debris state.
+0x007DFB60	function	stage_cargo_piece_draw		Delegates to stage_breakable_draw, so no third animation means hidden once destroyed.
+0x007DFB80	function	stage_cargo_piece_fall		While140 set: time14C+=0.12; height48 -= time*9.8*time*0.5; translate model, move attack/proximity at position+(0,-150,50); clamp at base height158+rank170*100, clear falling and time.
+0x007DFD80	function	stage_cargo_piece_break_update		Shared breakable prepass/trigger; contact with negative remaining marks141; update debris/model, rearm unbroken completed contacts.
+0x007DFF50	function	stage_cargo_piece_place		Restore parsed base position then add supplied height; rebuild model translation. Cargo stack supplies index*100.
+0x007E04B0	function	stage_breakable_stack_update		Update every child piece then stage_stack_settle; same update flow as cargo subtype35.
+0x007E0530	function	stage_breakable_stack_draw		Submit each child through stage_cargo_piece_draw.
+0x007E05A0	function	stage_stack_settle		If any piece marked broken141 this update, compact surviving pieces' rank170 bottom-up and set falling140 on all survivors.
+0x007E0780	function	stage_cargo_stack_parse		0x835 S08 cargo: token3 base node, token10 piece count (zero=>3), allocate 0x180 pieces from formatted animation names, place them 100 height units apart.
+0x007E0A50	function	stage_cargo_stack_update		Update each cargo piece then shared stack contact/settling helper stage_stack_settle.
+0x007E0AD0	function	stage_cargo_stack_draw		Temporarily select optional stack render controller230 then draw every child.
+0x007E2FF0	function	stage_vending_machine_update		Base prepass, custom trigger, animation advance; upon completed contact rearm both receivers; every fifth contact reset counter, cooldown300 and availability148=-1; cooldown expiry148=1.
+0x007E3150	function	stage_vending_machine_trigger		Contact with remaining!=-1 plays damage animation/effect if count>1, records hitter side, compares both stage_doll_side_counter values with10 (scene7) or8 (scene8), then increments hitting side through stage_doll_increment_side_counter. Comparison uses old counter values; exact equality selects rand100<5, otherwise<20, before virtual20 drop. Does not decrement remaining break count.
+0x007E3400	function	stage_vending_machine_drop		Select item via resident0030FE80 then emit via003100B0 at interaction position50, section70.
+0x007E3470	function	stage_vending_machine_parse		0x842: base breakable parse, copy remaining count to148, initialize cooldown144=-1.
 0x007E5790	function	stage_sway_animation_construct		
 0x007E58A0	function	stage_sway_animation_parse		Records 0x507/0x506: token 5 animations (first, first_%d) at token-3 node (_%d), each with a random amplitude and phase; +0x4C mode 0, 1 (lantern label), 5 (0x506).
 0x007E5C90	function	stage_sway_animation_update		Per piece: angle = amplitude (+ wind scaled in modes 5/2) * stage_sway_sine[phase++]; rotates about y (mode 1) or x with z = 0.3x around the node; mode 0 decays amplitude *0.6 each cycle and redraws below 0.1.
@@ -188,6 +207,7 @@ address	kind	name	type	comment
 0x0080FBF0	function	stage_depth_of_field_parse		0x3A1: a draw environment at token 10's priority (-3000 in S20) with two glare-filter passes (pause_auxiliary_refresh class): mode 0, colour 0x20808080, amount -0.2, second colour 0, parameters stage_depth_of_field_depths (50000, 80000)
 0x0080FD30	function	stage_depth_of_field_draw		Submit both passes (ccfm_sampling_pass_submit) in the record's draw environment
 0x0080FE30	function	stage_cliff_clouds_destroy		
+0x00812EF0	label	stage_vending_availability_pointer		MCP get_code unavailable; raw leaf addiu v0,a0,0x148; jr ra. Returns address of vending availability value, which parse seeds from hit count and every fifth completed hit sets to-1 for300 updates; trigger/drop do not gate on this value.
 0x00813700	function	stage_training_doll_destroy	long stage_training_doll_destroy(long arg1,short arg2)	Reset derived state,install base break vtable,base cleanup;destroy embedded shapeE0/receiversC0/A0,common model cleanup,optionally self;borrowed node/stage archive not freed.
 0x008137E0	function	stage_monkey_doll_destroy	long stage_monkey_doll_destroy(long arg1,short arg2)	Reset derived state,install base break vtable,base cleanup;destroy shapeE0/receiversC0/A0,common model cleanup,optionally self;no stage archive ownership proof.
 0x008139A0	function	stage_wind_bell_destroy	long stage_wind_bell_destroy(long arg1,short arg2)	Reset derived state,install base break vtable,base cleanup;destroy shapeE0/receiversC0/A0,common model cleanup,optionally self;no stage archive ownership proof.
