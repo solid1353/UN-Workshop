@@ -11,7 +11,8 @@ handlers, the landing-tree reaction, the glare's draw order, S02's faded-pillar
 order relative to the charging aura, S01's flags,
 wind sound and far-animation fog modes, S02's gondolas, faces and kite,
 S14's falls mist and bridge planks, S20's clouds, lens flare and depth of
-field, and every scene comparison outside the records. Open: other prop
+field, S05's directional wind, flying debris, bells and torches, and every
+scene comparison outside the records. Open: other prop
 states/teardown, full scene binding, mode/effect meanings, texture-pixel
 sharing, complete NA2 equivalence and Stage Select name-sprite rectangles.
 Names and layouts come from
@@ -506,7 +507,7 @@ or one frame.
 | Type / role | State behavior |
 | --- | --- |
 | `0x803`, lanterns | `stage_lantern_motion`: contact restores amplitude and local value 30. `un3StageLanternContactEntity.phase_selector` values 1/0 select phase 0/36; other values keep phase, absence selects 0. Phase advances by 2; samples scale amplitude. Each wrap decays amplitude by 0.6 with floor 0.05; positive count permits receiver re-registration. Transform uses sample and 0.3×sample. Contact side is retained and `stage_lantern_contact_effect` selects three parameter paths from `effect_mode`. |
-| `0x813`, wind bells | `stage_wind_bell_motion`: contact resets phase, restores amplitude and local value 30. Phase advances by 2 through the same table; at its end amplitude decays by 0.6 with floor 0.05, phase resets and positive count permits receiver re-registration. Transform combines sample with 0.3×a resident scalar whose producer is unidentified. |
+| `0x813`, wind bells | `stage_wind_bell_motion`: contact resets phase, restores amplitude 0.5 and local value 30. Phase advances by 2 through the same table; at its end amplitude decays by 0.6 with floor 0.05, phase resets and positive count permits receiver re-registration. Transform combines sample with 0.3×the directional-wind scalar. S05's records have one hit and no later animation, so `stage_wind_bell_draw` stops drawing the original model after that hit; debris still draws. |
 | `0x81D`, `うっきー君` | `stage_monkey_doll_update` shares count/animation/contact transitions; parser triples the base shape dimension and adds 50 to its offset. This update has no randomized doll-respawn delay. |
 | `0x507` mode 0, noren | `stage_sway_animation_update` (`0x007E5C90`): angle = amplitude × `stage_sway_sine`[phase], phase advancing by 1; rotation (angle, 0, 0.3 × angle) about the piece's node. At the table's end the amplitude decays by 0.6, and below 0.1 becomes 0.2 + rng(0.3). Modes 5 and 2 add 0.7 and 0.5 × the wind scalar `0x006A3BB8` to the amplitude; mode 1 rotates about component 1 and does not decay. `stage_sway_tables_init` fills `stage_sway_sine` with 72 samples of sin(5i°), sample 36 at 3.14 radians. |
 | `0x81C`, `訓練君` | `stage_training_doll_update` adds delayed appearance, a separate sequence and node-following reset. |
@@ -683,6 +684,66 @@ plain animation object in the animation-props list.
 | `0x39F` clouds below the cliff | `stage_cliff_clouds_parse`, `_update`, `_draw` | Sixteen models from the first 16 rows of `stage_cliff_cloud_rows`, each bound to `ANM_s8bbac00_b00` or `_c00` at its initial frame (0..550), with the playback step divided by its divisor (4..7), translated to one of `DMY_kumo_dummy00`..`04`. In the far-objects list. |
 | `0x3A1` depth of field | `stage_depth_of_field_parse`, `stage_depth_of_field_draw` | A draw environment at token 10's priority (-3000) holding two glare-filter passes: mode 0, colour `0x20808080`, amount -0.2, second colour 0, parameter 50000 and 80000 (`stage_depth_of_field_depths`). That priority falls between the far-objects environment (-5120) and the main one (-2304). NA2's factory 11 builds the same pass class with the same fields. |
 | `0x6A0` lens flare | `stage_lens_flare_parse`, `_update`, `_draw` | The resident lens flare (`lens_flare_initialize`, `_update`, `_draw`; NA2 carries the same code unused) with token 3's node as the sun, descriptor `stage_lens_flare_descriptors`[token 9] (priority `0x65`, 19 quads, screen radius 933.33) and quads `lens_flare_quad_sets`[token 10] (`TEX_s8befe10`..`40`). The flare shows while the sun is on screen and two segment queries from the camera reach it; each quad sits along the sun-to-screen-centre axis at its distance, and a full-screen white flash grows to (1 − d/r)³ × 60 as the sun nears the centre. |
+
+## S05 directional wind and flying props
+
+S05's `0x55E` uses `stage_directional_wind_parse` (`0x007FA980`) and
+`stage_directional_wind_update` (`0x007FAAB0`), separate from the alternating
+`0x518` wind. Parse chooses one direction and sets a five-second initial
+hold. The unsigned strength is sin(phase / 2 degrees), with 360 phases.
+At phases 90, 180 and 270 each update draws a hold of rand(0..3) seconds;
+at phase 360 it resets phase and rests 30 seconds. The sign stays fixed
+for the scene. Token 10 times -2 times signed strength is written to both
+fighters' transient movement component `+0x4B0`; the shared movement routine
+consumes that vector with its ordinary state and contact gates. The sound
+is common `0x3E`; its placement uses the unsigned half-sine. This object
+opts into updates under scene restrictions.
+
+`stage_wind_debris_parse` (`0x007F9A60`) builds 17 pieces from seven S05
+animations. The first four choose among animations 0..2, with matching
+debris sets 1..3; the other thirteen choose animations 3..6 and debris set 1.
+`stage_wind_debris_update` (`0x007FA580`) updates them unless the scene-effect
+restriction is active. Available pieces launch only while 0.9 < abs(wind) < 1:
+each foreground slot draws rand(0..1000) > 990, and at most one background
+slot draws rand(0..100) > 80 per update. Launch timing is therefore confined
+to the shoulders of the gust, excluding its exact peak.
+
+Two pieces use `stage_wind_debris_foreground_path` (`0x007F9E30`), two
+`stage_wind_debris_background_path` (`0x007FA230`), and thirteen
+`stage_wind_debris_far_path` (`0x007FA3E0`). Their endpoint rows are at
+`0x00913BA0..0x00913C3B`; `stage_wind_debris_start_curve` (`0x007F8D10`)
+places the cubic control points at one and two thirds of the horizontal
+span. Rotation advances 0.5 radians on axes 0 and 2 per update. Foreground
+contacts break the piece; a curve ending within absolute x 1500 also breaks
+it with sound `0x37`. Drops and debris snap the depth component to 600 when
+above 600, or zero when below. Offscreen completion or finished debris
+enters a rand(0..20)+10-update cooldown before reuse.
+
+S05's `0x517` creates two independent copies of `EFF_efe_000_` at
+`DMY_dummy_120` and its `_1` node. Each starts at a random effect frame;
+the effect loops by restarting then advancing after its end. Opacity moves
+by a signed random 0.05 per update, clamped to 0.2..0.5. Each node also owns
+a spark generator using descriptors `0x009136A8` and `0x00913700`.
+The lighting animation has one distant light and two animated omni lights,
+all registered by `stage_parse_lighting`; `stage_scene_update` advances the
+lighting animation after its prop lists. Its lens-flare descriptor and
+19 numeric quad rows match S20's, with `TEX_s1cefe10/20/30/40` in place of
+the S20 texture names.
+
+S05's bells have distinct render, interaction and attack nodes. For the first
+bell, `DMY_dummy_010` places the visible model, `DMY_pg_010` supplies the
+interaction anchor, and `DMY_s1cfuu00_hit` supplies the attack sphere. Their
+depths are 745, 700 and 600 respectively. `stage_breakable_parse` takes the
+first attack sphere's depth for the proximity center and item-drop position;
+it keeps the interaction anchor's horizontal position and height. The pickup
+constructor preserves the supplied depth. Using the interaction node as an
+attack node therefore also puts the drop behind the fighting plane.
+
+`stage_wind_bell_draw` (`0x007DA570`) delegates to `stage_breakable_draw`
+(`0x007D9BB0`). The latter submits the original model while remaining count
+is positive; after destruction it submits a model only when the record has
+a later animation. Its debris branch remains independent. A missing later
+animation means disappearance, rather than reuse of the idle model.
 
 ## Scene-keyed code outside the stage records
 
