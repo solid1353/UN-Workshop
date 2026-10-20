@@ -34,7 +34,7 @@ $hostScript = Join-Path $PSScriptRoot 'start_ghidrassist_mcp.ps1'
 $routerRoot = Join-Path $paths.Tools 'ghidra\GhidrAssistMcpRouter'
 $router = Join-Path $routerRoot 'GhidrAssistMcpRouter.exe'
 $taskName = 'UNWorkshop-GhidrAssistMCP'
-$codexUtilsInstaller = 'D:\Games\Modding\codex-utils\install.ps1'
+$motherBaseInstaller = 'D:\Games\Modding\mother-base\install.ps1'
 
 function Get-McpTask {
     Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
@@ -156,20 +156,20 @@ function Start-McpHost {
 }
 
 function Install-CodexRegistration {
-    if (-not (Test-Path -LiteralPath $codexUtilsInstaller -PathType Leaf)) {
-        throw "The canonical Codex utilities installer was not found: $codexUtilsInstaller"
+    if (-not (Test-Path -LiteralPath $motherBaseInstaller -PathType Leaf)) {
+        throw "The canonical Mother Base installer was not found: $motherBaseInstaller"
     }
-    & $codexUtilsInstaller -GhidrAssistMCP -NoReload
+    & $motherBaseInstaller -GhidrAssistMCP -NoReload
     if ($LASTEXITCODE -ne 0) {
         throw 'Failed to install the global Codex GhidrAssist MCP registration.'
     }
 }
 
 function Remove-CodexRegistration {
-    if (-not (Test-Path -LiteralPath $codexUtilsInstaller -PathType Leaf)) {
-        throw "The canonical Codex utilities installer was not found: $codexUtilsInstaller"
+    if (-not (Test-Path -LiteralPath $motherBaseInstaller -PathType Leaf)) {
+        throw "The canonical Mother Base installer was not found: $motherBaseInstaller"
     }
-    & $codexUtilsInstaller -RemoveGhidrAssistMCP -NoReload
+    & $motherBaseInstaller -RemoveGhidrAssistMCP -NoReload
     if ($LASTEXITCODE -ne 0) {
         throw 'Failed to remove the global Codex GhidrAssist MCP registration.'
     }

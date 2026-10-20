@@ -175,7 +175,7 @@ project copy, or point Ghidra at the disassembly trees directly.
 ## Agent clients
 
 The Workshop manager delegates global Codex and Claude registration to the
-tracked `@codex-utils` installer. That installer owns only the `ghidrassist`
+tracked `@mother-base` installer. That installer owns only the `ghidrassist`
 entry in the machine-local `%USERPROFILE%/.codex/config.toml` and
 `%USERPROFILE%/.claude.json` and preserves every other setting. The entry
 launches the installed router through MCP stdio. Game repositories contain no
