@@ -6336,6 +6336,10 @@ address	kind	name	type	comment
 0x006073AC	data	arena_one_shot_high_placement	unsigned char	One-shot placement preference consumed and cleared by heap_allocate_default; nonzero selects high placement when no thread scope applies.
 0x006073B0	data	pad_worker_lifecycle	unsigned char	Pad worker lifecycle: initialized 0, both ports open 1, external shutdown request 2, library ended 3.
 0x006073B4	data	render_pool_list_head	RenderPool *	Head of resident render pools; render_pool_configure appends descriptors, render_pool_allocate scans in order, and render_pool_release_frame coalesces each pool.
+0x006073B8	data	render_bump_cursor	void *	Next free byte of the active bump block; render_environment_packet_allocate returns it and advances it for a same-owner request that fits.
+0x006073BC	data	render_bump_remaining	int	Unused bytes left in the active bump block, which still counts them in its owned total_bytes; render_pool_release_frame splits them off as a free block and clears this and render_bump_block.
+0x006073C0	data	render_bump_block	RenderPoolAllocation *	Header of the active bump block; render_pool_release_frame shrinks its total_bytes by render_bump_remaining + 0x10.
+0x006073C4	data	render_bump_owner	RenderPoolAllocation **	Allocation list owning the active bump block; another owner's request goes through render_bump_change_owner.
 0x006073CC	data	registered_renderer_list_head	RendererTransformState *	Registered renderer-list head; renderer_list_insert prepends through RendererTransformState.next and renderer_list_remove unlinks matching renderers.
 0x006073D4	data	active_render_environment	void *	Selected resident render/light environment pointer; render_environment_select stores the supplied environment at 0x00106210.
 0x006073D8	data	render_ordering_pool_base	RenderOrderingNode *	Shared ordering-node allocation base; render_ordering_pool_initialize publishes it and engine_snapshot_service_word resets the per-frame cursor from it.
