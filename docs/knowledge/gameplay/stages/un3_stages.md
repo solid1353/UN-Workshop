@@ -15,8 +15,8 @@ field, S05's directional wind, flying debris, bells and torches, S08's cargo,
 vending machine and desert eagle, S19's wall, dappled/root sunlight, canopy
 and bed, S06's crash boundaries and steam, S11's sandstorm, their shared
 jutsu-resource particle gates and NA2 factory correspondence, S12's dome,
-the giant and hanging spiders, and every scene comparison outside the
-records. Open: other prop
+the giant and hanging spiders, the water ripples, and every scene
+comparison outside the records. Open: other prop
 states/teardown, full scene binding, mode/effect meanings, texture-pixel
 sharing, complete NA2 equivalence and Stage Select name-sprite rectangles.
 Names and layouts come from
@@ -875,6 +875,32 @@ counterpart compares its raw slot where one exists
 
 The remaining reads pass the scene to archive, record or summon routines
 without comparing it. UN3 has no line-change rules or `n_rash` groups.
+
+## Water ripples
+
+Both games ring water from the same places. UN3 plays its effect0x row
+`0x25`, `ANM_e0x_move_02` on the `OBJ_rpg_hamon00` ring; NA2 plays its row
+`0x21`, an `ANM_e0x_move_02` on its own `e0xhamon00` rings, always at scale 1
+through `effect_create_ground_21`. NA2's effect0x has neither UN3 animation.
+
+| Source (UN3 / NA2) | UN3's effects |
+| --- | --- |
+| `0x00266A50` / `effect_periodic_ground_code`: standing in water, when the cursor is a multiple of 15 | The ring at scale 3 with the fighter's orientation: on `E0A000` at the stage's water height (`0x00267560`), on `E0E000` at the fighter's, a frame per update (`0x002672E0`) |
+| `0x00265330` / `water_splash_spawn`: water splash | The ring at scale 3, at half speed in mode 3 |
+| `0x00266B70` / `effect_create_contact_variant`: contact splash | The ring at scale 3; the splash is row `0x26` at scale 0.75 in effect view 1 plus 60 row-`0x80` droplets, where NA2 plays row `0xC` |
+| `water_ripple_spawn` (`0x0026B3C0`) / `effect_emit_position_code`: a foot entering water, and an effect dispatcher | 20 along x toward the facing, on `E0A000` at the stage's water height: row `0x26` `ANM_e0x_down_04`, a 14-piece wave, at scale 1/7 from frame 6 in effect view 2, and the ring at scale 2 delayed 10 updates, both a frame per update |
+
+A foot enters water when, in the walk/run state (major 1, substate `0xE`),
+`fighter_foot_surface_effects` casts ±15 around the lower of the fighter's
+`OBJ_2cmn00t0 l foot`/`r foot` nodes and hits the surface for the first time
+for that side since a miss; NA2's `FUN_0033A2D0` does the same.
+
+UN3's ring grows from 0.01 to 1 over 37 frames and fades from frame 29.
+UN3's fish rings (`stage_fish_spawn_ring`) play the same ring at scale 1.
+S04's pond (`E0E090`) does not trigger these; its own `0x59A` record makes
+its ripples. Of S01–S06, S08, S11, S12, S14, S17, S19 and S20, the hit
+meshes give S03 and S14 `E0A000` water and S17 `E0E000`; the other stages
+were not checked.
 
 ## Hidden Leaf Hot Spring boundaries and ambient objects
 
