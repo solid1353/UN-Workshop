@@ -32,7 +32,8 @@ $paths = Get-UnWorkshopPaths -ProjectRoot (Get-Location).Path
 ```
 
 The command stages under `temp/source_extraction/` in the task folder,
-recursively expands CVM, inner ISO, AFS, and nested AFS containers, verifies
+recursively expands CVM, inner ISO, AFS, CRI CPK (`cpk.py`) and CyberConnect2
+PIDX (`pidx.py`) containers, recognizing each by its header, verifies
 file sets/bytes, normalizes timestamps, and promotes one complete
 `<ISO filename>.files` tree. It refuses to merge into an existing extraction.
 
@@ -60,6 +61,16 @@ The command refuses the whole source root and `@source/__old/`.
 Confirmed ROFS/CVM passwords:
 
 - NA2, UN3, UN4, UN5: `cc2fuku`
+- UN2, UN2_JP: unencrypted; the splitter copies a CVM without the
+  encrypted-TOC flag as stored
 
 Use `@media_scripts/split_cvm_rofs.ps1` to split encrypted CVM safely. Do not use
 the historical `@tools/old/CVM Parser/cvm_tool.exe` workflow.
+
+## PSP discs
+
+- UNH2 keeps its data in `PSP_GAME/USRDIR/naruto.dat`, a PIDX archive.
+- UNH3 keeps its data in `PSP_GAME/USRDIR/data.cpk`. Its `DATA.DNS`, which
+  the game copies to the memory stick as installed data, is a PGD-encrypted,
+  byte-identical copy of `data.cpk`, so extraction leaves it packed.
+  `@media_scripts/pgd.py <pgd> <out-dir>` decrypts a PGD file.

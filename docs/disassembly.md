@@ -19,7 +19,8 @@ MCP applies them when it opens the project. It contains:
   base, counts, export sizes, and Ghidra version.
 
 [`targets.tsv`](../scripts/ghidra/targets.tsv) lists every program with its
-source and expected SHA-256.
+source and expected SHA-256. Its `target` column names the games, each an
+`@disassembly/<game>/` tree; the Ghidra scripts accept exactly those names.
 
 ## Addresses
 
@@ -66,9 +67,9 @@ from the existing first-member `MODULES.BIN` program. Export both before
 publishing the manifest:
 
 ```powershell
-& .\scripts\ghidra\import_targets.ps1 -Target shared -Program MODMIDI.IRX
-& .\scripts\ghidra\import_targets.ps1 -Target shared -Program MODHSYN.IRX
-& .\scripts\ghidra\export_project.ps1 -Target shared `
+& .\scripts\ghidra\import_targets.ps1 -Target _shared -Program MODMIDI.IRX
+& .\scripts\ghidra\import_targets.ps1 -Target _shared -Program MODHSYN.IRX
+& .\scripts\ghidra\export_project.ps1 -Target _shared `
     -Program MODMIDI.IRX,MODHSYN.IRX -RestartMcp
 ```
 

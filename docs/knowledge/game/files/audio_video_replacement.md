@@ -7,7 +7,7 @@ menu track selection, stream mode and completion, and the master, music, voice
 stream and sound-effect output levels.
 Open: adaptive AHX, ADX history/loop padding, PSS writing and `NOTICE`
 encoding, decoder acceptance/bandwidth and indirect consumers of dormant movie
-rows. Names come from `@annotations/NA2` and `@annotations/shared`; comments
+rows. Names come from `@annotations/NA2` and `@annotations/_shared`; comments
 hold per-routine details. Addresses are live.
 
 This note records the native format and playback constraints for the four AFS audio
@@ -179,7 +179,7 @@ binds. `audio_service_level_fades` can also fade RPC `0xB0` toward
 code, `BTL.BIN`, `ETC.BIN` and the audio routines' context arguments found only
 clears.
 
-`SNDBASE.IRX` (identical in NA2, UN4 and UN5; annotated in the `shared`
+`SNDBASE.IRX` (identical in NA2, UN4 and UN5; annotated in the `_shared`
 target) drives Sony's MIDI sequencer and hybrid synthesizer.
 `sndbase_set_port_volume` applies RPC `0xB0 + n` as a synthesizer port volume:
 `n` 0 sets port 0, and `n` 2 to 4 set ports 2, 3 and 4 together. Port 1

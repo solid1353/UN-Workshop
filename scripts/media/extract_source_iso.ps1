@@ -48,6 +48,45 @@ function Set-DerivedTime {
     }
 }
 
+# An archive is recognized by its extension and header; a file with the
+# extension but not the header, such as a placeholder .afs, stays a plain file.
+function Test-FileMagic {
+    param(
+        [IO.FileInfo]$File,
+        [string]$Extension,
+        [string]$Magic
+    )
+
+    if ($File.Extension -ine $Extension -or $File.Length -lt $Magic.Length) { return $false }
+    $stream = [IO.File]::OpenRead($File.FullName)
+    try {
+        $header = [byte[]]::new($Magic.Length)
+        return $stream.Read($header, 0, $header.Length) -eq $header.Length -and
+            [Text.Encoding]::ASCII.GetString($header) -ceq $Magic
+    }
+    finally {
+        $stream.Dispose()
+    }
+}
+
+function Test-AfsArchive {
+    param([IO.FileInfo]$File)
+
+    return Test-FileMagic -File $File -Extension '.afs' -Magic "AFS`0"
+}
+
+# Archives whose Python extractors take <archive> <out-dir>.
+$scriptArchives = @(
+    [pscustomobject]@{ Kind = 'cpk'; Extension = '.cpk'; Magic = 'CPK '; Script = Join-Path $PSScriptRoot 'cpk.py' }
+    [pscustomobject]@{ Kind = 'pidx'; Extension = '.dat'; Magic = "PIDX0`0`0`0"; Script = Join-Path $PSScriptRoot 'pidx.py' }
+)
+
+function Test-ScriptArchive {
+    param([IO.FileInfo]$File)
+
+    return @($scriptArchives | Where-Object { Test-FileMagic -File $File -Extension $_.Extension -Magic $_.Magic }).Count -gt 0
+}
+
 function Get-FinalAlias {
     param(
         [string]$StagePath,
@@ -166,7 +205,7 @@ try {
         $pendingAfs = @(
             Get-ChildItem -LiteralPath $stageRoot -Recurse -Force -File |
                 Where-Object {
-                    $_.Extension -ieq '.afs' -and
+                    (Test-AfsArchive $_) -and
                     -not (Test-Path -LiteralPath ($_.FullName + '.files'))
                 } |
                 Sort-Object FullName
@@ -186,6 +225,31 @@ try {
             }
             $processedOne = $true
         }
+        if ($processedOne) { continue }
+
+        foreach ($format in $scriptArchives) {
+            $pending = @(
+                Get-ChildItem -LiteralPath $stageRoot -Recurse -Force -File |
+                    Where-Object {
+                        (Test-FileMagic -File $_ -Extension $format.Extension -Magic $format.Magic) -and
+                        -not (Test-Path -LiteralPath ($_.FullName + '.files'))
+                    } |
+                    Sort-Object FullName
+            )
+            if ($pending.Count -eq 0) { continue }
+            $archive = $pending[0]
+            $archiveOut = $archive.FullName + '.files'
+            & (Get-UnPython) -B $format.Script $archive.FullName $archiveOut | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "$($format.Kind) extraction failed: $($archive.FullName)" }
+            $summary.Add([pscustomobject]@{
+                Kind = $format.Kind
+                Archive = Get-FinalAlias -StagePath $archive.FullName -StageRoot $stageRoot -FinalRoot $finalRoot
+                ExtractedDir = Get-FinalAlias -StagePath $archiveOut -StageRoot $stageRoot -FinalRoot $finalRoot
+                TimestampSource = 'container'
+            })
+            $processedOne = $true
+            break
+        }
 
         if (-not $processedOne) { break }
     }
@@ -193,7 +257,7 @@ try {
     $unsupported = @(
         Get-ChildItem -LiteralPath $stageRoot -Recurse -Force -File |
             Where-Object {
-                $_.Extension -in @('.iso', '.cvm', '.afs') -and
+                ($_.Extension -in @('.iso', '.cvm') -or (Test-AfsArchive $_) -or (Test-ScriptArchive $_)) -and
                 -not (Test-Path -LiteralPath ($_.FullName + '.files'))
             }
     )

@@ -4,10 +4,11 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
 . (Join-Path $PSScriptRoot '..\lib\source_paths.ps1')
+. (Join-Path $PSScriptRoot 'target_inputs.ps1')
 $paths = Get-UnWorkshopPaths -NoProject
 
 if (-not $AnalysisDirs -or $AnalysisDirs.Count -eq 0) {
-    $AnalysisDirs = @('NA2', 'UN3', 'UN4', 'UN5', 'shared') | ForEach-Object {
+    $AnalysisDirs = Get-GhidraTargetNames | ForEach-Object {
         Join-Path $paths.disassembly $_
     }
 }

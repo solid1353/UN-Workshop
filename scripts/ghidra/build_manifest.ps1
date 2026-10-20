@@ -1,6 +1,5 @@
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('NA2', 'UN3', 'UN4', 'UN5', 'shared')]
     [string]$Target
 )
 
@@ -9,20 +8,23 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
 . (Join-Path $PSScriptRoot '..\lib\source_paths.ps1')
 . (Join-Path $PSScriptRoot 'target_inputs.ps1')
+Assert-GhidraTarget $Target
 $paths = Get-UnWorkshopPaths -NoProject
 
 function Resolve-SourceAlias([string]$Alias) {
     return Resolve-UnWorkshopSourceAlias -Alias $Alias -Paths $paths
 }
 
+# Every extracted disc counts, registered in games.json or not.
 function Get-SharingGames([object]$Item) {
     $child = [regex]::Match($Item.source, '^@source[/\\][^/\\]+\.iso\.files[/\\](?<child>.+)$').Groups['child'].Value
-    @(foreach ($root in Get-UnWorkshopSourceRoots -Paths $paths) {
-        $candidate = Join-Path $root.Path $child
+    $roots = Get-ChildItem -LiteralPath $paths.Source -Directory -Filter '*.iso.files' | Sort-Object Name
+    @(foreach ($root in $roots) {
+        $candidate = Join-Path $root.FullName $child
         if (Test-Path -LiteralPath $candidate -PathType Leaf) {
             try {
                 [void](Get-GhidraTargetImage -Item $Item -InputPath $candidate)
-                $root.Game
+                $root.Name -replace '\.iso\.files$', ''
             }
             catch { continue }
         }
@@ -85,7 +87,7 @@ $rows = foreach ($item in $targets) {
         ascii_undefined_data = 'false'
         ghidra_version = $ghidraVersion
     }
-    if ($Target -eq 'shared') { $row.Insert(1, 'games', (Get-SharingGames $item)) }
+    if ($Target -eq '_shared') { $row.Insert(1, 'games', (Get-SharingGames $item)) }
     [pscustomobject]$row
 }
 

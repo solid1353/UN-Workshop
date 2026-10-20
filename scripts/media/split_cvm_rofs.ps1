@@ -179,7 +179,8 @@ function Read-CvmSector([IO.FileStream]$Stream, [int]$IsoSector, [int]$IsoStartS
     $Stream.Position = [int64]$physical * $sectorSize
     $read = $Stream.Read($buf, 0, $buf.Length)
     if ($read -ne $buf.Length) { throw "Unexpected EOF reading physical sector $physical." }
-    if ($Decrypt) {
+    # A CVM without the encrypted-TOC flag has no key and is read as stored.
+    if ($Decrypt -and $null -ne $Key) {
         $logical = $IsoSector + $IsoZoneSector - $IsoStartSector
         Decrypt-SectorInPlace $buf $logical $Key $Primes
     }
@@ -253,7 +254,7 @@ try {
 
     $flags = Read-U32BE $cvmh 0x24
     $isoStartSector = [int](Read-U32BE $cvmh 0x7c)
-    if (($flags -band 0x10) -eq 0) { Write-Warning 'CVM does not have encrypted TOC flag set.' }
+    if (($flags -band 0x10) -eq 0) { $key = $null }
 
     $zoneHeader = [byte[]]::new(12)
     [void]$stream.Read($zoneHeader, 0, 12)
