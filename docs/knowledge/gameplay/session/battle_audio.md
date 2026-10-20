@@ -16,7 +16,7 @@ complete resources and indirect reachability, and initial guide payload/state
 writers. UN3 and UN4 voice contracts and donor character voices are in
 [UN3 and UN4 characters](../characters/un3_un4_characters.md).
 
-Routines, structures and data are named in `@annotations/NA2` and `shared`;
+Routines, structures and data are named in `@annotations/NA2` and `_shared`;
 their comments carry per-routine detail. Numeric code/data citations below
 are live EE addresses. IOP symbols are qualified by program because their
 imported zero-based values have no established live relocation base; see

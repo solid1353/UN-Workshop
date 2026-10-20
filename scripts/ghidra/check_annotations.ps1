@@ -1,5 +1,4 @@
 param(
-    [ValidateSet('all', 'NA2', 'UN3', 'UN4', 'UN5', 'shared')]
     [string]$Target = 'all'
 )
 
@@ -9,6 +8,8 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
+. (Join-Path $PSScriptRoot 'target_inputs.ps1')
+if ($Target -ne 'all') { Assert-GhidraTarget $Target }
 $taskContext = Get-UnWorkshopTaskContext
 $paths = $taskContext.Paths
 . $paths.files.ghidra_runtime

@@ -5,7 +5,7 @@ import os
 import stat
 import struct
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 
@@ -13,6 +13,8 @@ REPOSITORY = Path(__file__).resolve().parents[2]
 if str(REPOSITORY) not in sys.path:
     sys.path.insert(0, str(REPOSITORY))
 
+import cpk
+import pidx
 from iso9660_reader import Iso9660, IsoRecord
 from scripts.lib.paths import load_project_paths, load_workshop_paths
 
@@ -25,6 +27,7 @@ class Totals:
     iso_archives: int = 0
     afs_archives: int = 0
     cvm_archives: int = 0
+    script_archives: dict[str, int] = field(default_factory=dict)
     files: int = 0
     bytes: int = 0
 
@@ -76,7 +79,7 @@ def base_tree(root: Path) -> tuple[dict[str, Path], dict[str, Path]]:
             if not (
                 name.lower().endswith(".files")
                 and (current_path / name[:-6]).is_file()
-                and (current_path / name[:-6]).suffix.lower() in {".iso", ".cvm", ".afs"}
+                and (current_path / name[:-6]).suffix.lower() in {".iso", ".cvm", ".afs", ".cpk", ".dat"}
             )
         ]
         for name in names:
@@ -196,14 +199,14 @@ def verify_afs(
         entries = [struct.unpack("<II", handle.read(8)) for _ in range(count)]
         metadata = afs_metadata(handle, count, archive.stat().st_size)
 
-        width = max(3, len(str(max(0, count - 1))))
         expected_names: set[str] = set()
         for index, (offset, size) in enumerate(entries):
             if offset + size > archive.stat().st_size:
                 raise RuntimeError(f"AFS entry points outside archive: {archive} #{index}")
             handle.seek(offset)
             sample = handle.read(min(size, 512))
-            name = f"{index:0{width}d}{guessed_extension(sample)}"
+            # extract_afs.ps1 pads indices to three digits, not to the widest index.
+            name = f"{index:03d}{guessed_extension(sample)}"
             expected_names.add(name.lower())
             target = output / name
             if not target.is_file():
@@ -230,6 +233,61 @@ def verify_afs(
         timestamp = archive.stat().st_mtime
         os.utime(output, (timestamp, timestamp))
     totals.afs_archives += 1
+
+
+# Archives extracted by a Python module with read_members() and member_bytes():
+# suffix, header, module and label.
+SCRIPT_ARCHIVES = (
+    (".cpk", cpk.MAGIC, cpk, "CPK"),
+    (".dat", pidx.MAGIC, pidx, "PIDX"),
+)
+
+
+def script_archive(path: Path):
+    suffix = path.suffix.lower()
+    for archive_suffix, magic, module, label in SCRIPT_ARCHIVES:
+        if suffix == archive_suffix:
+            with path.open("rb") as handle:
+                if handle.read(len(magic)) == magic:
+                    return module, label
+    return None
+
+
+def verify_script_archive(
+    archive: Path,
+    output: Path,
+    normalize_timestamps: bool,
+    totals: Totals,
+) -> None:
+    module, label = script_archive(archive)
+    members = module.read_members(archive)
+    expected = {member.path.upper() for member in members}
+    actual, _ = base_tree(output)
+    if set(actual) != expected:
+        raise RuntimeError(
+            f"{label} file-set mismatch for {archive}: "
+            f"missing={sorted(expected - set(actual))}, "
+            f"extra={sorted(set(actual) - expected)}"
+        )
+    timestamp = archive.stat().st_mtime
+    with archive.open("rb") as handle:
+        for member in members:
+            target = actual[member.path.upper()]
+            data = module.member_bytes(handle, member)
+            if target.read_bytes() != data:
+                raise RuntimeError(f"Content mismatch: {target}")
+            if normalize_timestamps:
+                os.utime(target, (timestamp, timestamp))
+            totals.files += 1
+            totals.bytes += len(data)
+    if normalize_timestamps:
+        for directory in sorted(
+            (path for path in output.rglob("*") if path.is_dir()),
+            key=lambda path: len(path.parts),
+            reverse=True,
+        ):
+            os.utime(directory, (timestamp, timestamp))
+    totals.script_archives[label] = totals.script_archives.get(label, 0) + 1
 
 
 def verify_read_only(paths: list[Path]) -> None:
@@ -263,6 +321,7 @@ def main() -> int:
 
     iso_jobs: list[tuple[Path, Path]] = [(outer_iso, outer_output)]
     afs_jobs: list[tuple[Path, Path]] = []
+    script_jobs: list[tuple[Path, Path]] = []
     cvm_files: list[Path] = []
     for path in outer_output.rglob("*"):
         if not path.is_file():
@@ -272,9 +331,14 @@ def main() -> int:
         if suffix == ".iso":
             iso_jobs.append((path, extracted))
         elif suffix == ".afs":
-            afs_jobs.append((path, extracted))
+            # Placeholder .afs files without an AFS header are plain files.
+            with path.open("rb") as handle:
+                if handle.read(4) == b"AFS\0":
+                    afs_jobs.append((path, extracted))
         elif suffix == ".cvm":
             cvm_files.append(path)
+        elif script_archive(path):
+            script_jobs.append((path, extracted))
 
     totals = Totals(cvm_archives=len(cvm_files))
     for cvm in cvm_files:
@@ -292,10 +356,14 @@ def main() -> int:
         if not output.is_dir():
             raise RuntimeError(f"Missing AFS extraction: {output}")
         verify_afs(archive, output, args.normalize_timestamps, totals)
+    for archive, output in script_jobs:
+        if not output.is_dir():
+            raise RuntimeError(f"Missing archive extraction: {output}")
+        verify_script_archive(archive, output, args.normalize_timestamps, totals)
 
     if args.normalize_timestamps:
         for archive, output in sorted(
-            [*iso_jobs, *afs_jobs, *((cvm, Path(str(cvm) + ".files")) for cvm in cvm_files)],
+            [*iso_jobs, *afs_jobs, *script_jobs, *((cvm, Path(str(cvm) + ".files")) for cvm in cvm_files)],
             key=lambda item: len(item[1].parts),
             reverse=True,
         ):
@@ -308,7 +376,9 @@ def main() -> int:
     print(
         f"Verified {outer_iso.name}: "
         f"{totals.iso_archives} ISO, {totals.cvm_archives} CVM, "
-        f"{totals.afs_archives} AFS, {totals.files} members, {totals.bytes} bytes"
+        f"{totals.afs_archives} AFS, "
+        + "".join(f"{count} {label}, " for label, count in sorted(totals.script_archives.items()))
+        + f"{totals.files} members, {totals.bytes} bytes"
     )
     return 0
 

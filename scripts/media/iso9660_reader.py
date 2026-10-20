@@ -30,15 +30,8 @@ class Iso9660:
 
         primary, primary_offset = self._read_primary_volume_descriptor()
         self.primary_volume_descriptor_offset = primary_offset
-        self.volume_space_size = self._both_endian_u32(
-            primary, 80, "primary volume descriptor"
-        )
-        image_sectors = self.file_size // SECTOR
-        if self.volume_space_size > image_sectors:
-            raise RuntimeError(
-                f"ISO volume space exceeds the image: {self.volume_space_size} > "
-                f"{image_sectors} sectors"
-            )
+        # Dumps may lack trailing padding sectors the volume space counts; each
+        # record is checked against the image instead.
         root_length = primary[156]
         if root_length < 34:
             raise RuntimeError(f"Invalid ISO root directory record: {path}")

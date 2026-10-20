@@ -1,5 +1,4 @@
 param(
-    [ValidateSet('all', 'NA2', 'UN3', 'UN4', 'UN5', 'shared')]
     [string]$Target = 'all',
     [string]$Program,
     [switch]$ReanalyzeExisting,
@@ -12,6 +11,7 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot '..\lib\paths.ps1')
 . (Join-Path $PSScriptRoot '..\lib\source_paths.ps1')
 . (Join-Path $PSScriptRoot 'target_inputs.ps1')
+if ($Target -ne 'all') { Assert-GhidraTarget $Target }
 $paths = Get-UnWorkshopPaths -NoProject
 . $paths.files.ghidra_runtime
 

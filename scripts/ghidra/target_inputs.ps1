@@ -1,5 +1,17 @@
 Set-StrictMode -Version Latest
 
+# The Ghidra targets, one analysis folder each, are the target column of targets.tsv.
+function Get-GhidraTargetNames {
+    return @(Import-Csv -LiteralPath (Join-Path $PSScriptRoot 'targets.tsv') -Delimiter "`t" |
+        ForEach-Object target | Select-Object -Unique)
+}
+
+function Assert-GhidraTarget {
+    param([Parameter(Mandatory)][string]$Name)
+
+    if ($Name -notin (Get-GhidraTargetNames)) { throw "Unknown Ghidra target: $Name" }
+}
+
 function Get-GhidraTargetImage {
     param([Parameter(Mandatory)][object]$Item,
           [Parameter(Mandatory)][string]$InputPath)
