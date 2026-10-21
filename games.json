@@ -4,6 +4,10 @@
       "serial": "SLPS-25837",
       "crc": "C0659AD1"
     },
+    "UN2": {
+      "serial": "SLUS-21575",
+      "crc": "D9D0E6DD"
+    },
     "UN3": {
       "serial": "SLUS-21727",
       "crc": "EE3737A4"

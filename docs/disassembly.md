@@ -128,3 +128,12 @@ target game already declares; it never copies types or replaces existing rows.
 Without `-Apply` it only reports the counts; with `-Apply` it records the rows
 through `annotate_symbol`. Everything else is carried over by hand when an
 investigation reaches it.
+
+[`similar_functions.ps1`](../scripts/ghidra/similar_functions.ps1)
+`-From <game> -FromProgram <program> -To <game> -ToProgram <program> -Functions <addresses or names>`
+ranks the other program's functions by how closely their exported
+instructions match each given function, with call and branch targets,
+addresses, gp offsets and large immediates set aside, to find counterparts
+that differ too much for `match_annotations.ps1`. A high score points at a
+likely counterpart; reading both functions establishes it. It caches each
+listing's parsed functions under `@cache/similar_functions/`.
