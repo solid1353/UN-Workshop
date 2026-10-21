@@ -666,6 +666,15 @@ converted the content:
   `DMY_s??doll0N_hit` at each doll node + (0, -100, +100). S14 also stores
   every node 400 lower in component 2 than UN3 S16 (its monkey-doll hit node
   320 lower).
+- Village props (UN3 `S09` → NA2 `S24`): `0x863`/`0x805` breakables and
+  `0x803`/`0x804` lanterns become factory-50 objects (pieces, threshold,
+  piece node, `DMY_*_hit`, scale, receiver radius, debris, 4), dropping the
+  `0x863` shadow object, the lanterns' swing and glow effect and UN3's hit
+  counts; `0x598` noren become factory-23 curtains
+  (`OBJ,node,1,1,4,0.1,0.0`); `0x566` swinging lanterns become factory-2
+  animations; `0x502` wires become factory 43. NA2 drops the `0x79B` flags,
+  `0x518` wind, `0x51B` blowing leaves, `0x567` smoke and `0x568` neon
+  lanterns.
 - Art: every pair's textures and palettes, and many models and other
   animations, differ.
 
