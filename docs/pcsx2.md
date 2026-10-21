@@ -32,11 +32,7 @@ reject `-k`. Each PCSX2 gets five seconds to close before it is force-stopped.
 
 `workshop pcsx2` launches development PCSX2 without a game in Turbo.
 
-Configured launches pass the catalog-derived memory-card path directly to PCSX2
-without changing GameSettings. Build postfixes derive from canonical build keys
-by replacing underscores with spaces and title-casing the result. Project build
-card names insert that postfix after the project's serial-wide memory-card
-base. Speed selection is positive throughout the launcher: callers may request
+Speed selection is positive throughout the launcher: callers may request
 Turbo, permanent Unlimited, or frame-limited Unlimited; no speed option means
 Normal. Frame-limited Unlimited uses PCSX2's `-unlimited-for-frames`, and Turbo
 may accompany it as its fallback; a caller may give each launched game its own
@@ -66,8 +62,7 @@ is the launcher's `-CaptureRoot` parameter, or the project's `captures/`
 directory when the caller does not pass one.
 
 Each target capture directory is deleted before replay starts, and PCSX2 then
-writes `001.png` and `sstates/001/` style captures into it. Without `-mc`, an
-explicit ISO path uses PCSX2's configured memory-card selection. The command
+writes `001.png` and `sstates/001/` style captures into it. The command
 waits for every replay to finish.
 
 Snapshot recordings are power-on timelines. They may be shortened without
@@ -93,7 +88,8 @@ numbered backups to the Windows Recycle Bin.
 
 ## Memory cards
 
-`-mc <card>` selects one memory-card file for every launched game. A relative
+Without `-mc`, every launch uses PCSX2's configured memory cards. `-mc <card>`
+selects one memory-card file for every launched game. A relative
 value resolves below `@pcsx2_memory_cards/`; an absolute path is also accepted.
 Workshop adds the `.ps2` extension automatically when omitted. A bare name
 falls back to `@pcsx2_memory_cards/templates/` when no root-level card exists.
