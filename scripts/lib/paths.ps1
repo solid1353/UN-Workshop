@@ -188,7 +188,6 @@ function Get-UnWorkshopPaths {
         Pcsx2Dev = & $optional $roots 'pcsx2_dev'
         Pcsx2Fork = & $optional $roots 'pcsx2_fork'
         Pcsx2Files = & $optional $roots 'pcsx2_files'
-        InputProfiles = & $optional $roots 'pcsx2_input_profiles'
         InputRecordings = & $optional $roots 'pcsx2_input_recordings'
         MemoryCards = & $optional $roots 'pcsx2_memory_cards'
         ResolveGame = & $optional $files 'game_resolver'

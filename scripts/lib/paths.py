@@ -435,26 +435,14 @@ def load_project_paths(
                     raw_value,
                 )
 
-            content = [
-                root for root in content_roots if (root / "games" / game_name).is_dir()
-            ]
-            if len(content) != 1:
-                raise ValueError(
-                    f"Registered game {game_name!r} must exist in exactly one "
-                    f"configured pcsx2_files root; found {len(content)}"
-                )
             derived = game_catalog.derive_game_paths(
-                game_name, catalog, {**roots, "pcsx2_files": content[0]}
+                game_name, catalog, roots["source"], content_roots
             )
             for name in (
-                "input_profile",
-                "input_profile_overrides",
                 "cheats",
                 "game_settings",
             ):
-                if name in derived:
-                    config[name] = derived[name]
-            files.setdefault("input_profile", derived["input_profile"])
+                config[name] = derived[name]
 
             extracted_path = derived["extracted"]
             game_key = game_name.casefold()

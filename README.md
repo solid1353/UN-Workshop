@@ -49,13 +49,11 @@ paths; it never checks that they exist.
     compilers saves 128-bit registers to the stack with `sq`, so code that
     calls into a retail game needs that alignment.
 - `games.json`: stable source-game selectors, aliases, serials, and CRCs.
-- `@pcsx2_files/`: UN2, UN3 and UN4
-  [registered bundles](../../PCSX2/docs/content_folders.md#content-aliases)
-  under `games/`, shared input-profile sources, and ignored default and test cards.
-  Consuming projects own their other game bundles and input recordings.
-- `@pcsx2_input_profiles/sources/overrides/`: named input-profile
-  overrides, with game-specific overrides under `games/`.
-- `@pcsx2_scripts/`: reusable PCSX2 launch, worker-copy, PINE, input-profile,
+- `@pcsx2_files/`: the [input profile](docs/pcsx2.md#input-profiles) every
+  game uses, and ignored default and test cards. Consuming projects own the
+  games' [content alias](../../PCSX2/docs/content_folders.md#content-aliases)
+  files under `games/` and their input recordings.
+- `@pcsx2_scripts/`: reusable PCSX2 launch, worker-copy, PINE,
   marker-editing and GS dump utilities.
 - `@ghidra_scripts/`: cross-game import, export, manifest, and
   read-only tooling for the [disassembly trees](docs/disassembly.md); reusable

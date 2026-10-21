@@ -27,7 +27,7 @@ Assert-WorkshopLaunchTest `
     -Message 'Workshop help did not render the shared source catalog cleanly.'
 Assert-WorkshopLaunchTest `
     -Condition ($help.Contains(
-        'properties: iso, extracted, cheats, memory_card, game_settings, input_profile'
+        'properties: iso, extracted, cheats, game_settings'
     )) `
     -Message 'Workshop help did not render generated resolver properties.'
 foreach ($expectedOption in @(
@@ -120,7 +120,6 @@ try {
     "pcsx2_dev": "pcsx2",
     "pcsx2_fork": "pcsx2/fork",
     "pcsx2_files": "pcsx2_files",
-    "pcsx2_input_profiles": "@pcsx2_files/input_profiles",
     "pcsx2_input_recordings": "@pcsx2_files/input_recordings",
     "pcsx2_memory_cards": "@pcsx2_files/memory_cards"
   },
@@ -137,14 +136,6 @@ try {
         Set-Content -NoNewline -LiteralPath (Join-Path $repository 'games.json')
     '{"title":"Test Project","serial":"SLOP-TEST1"}' |
         Set-Content -NoNewline -LiteralPath (Join-Path $repository 'game.json')
-    New-Item -ItemType Directory -Force -Path (
-        Join-Path $repository 'pcsx2_files\games\UN5'
-    ) | Out-Null
-    foreach ($extension in @('ini', 'pnach', 'ps2')) {
-        New-Item -ItemType File -Force -Path (
-            Join-Path $repository "pcsx2_files\games\UN5\UN5.$extension"
-        ) | Out-Null
-    }
     @'
 import json
 import sys
@@ -356,19 +347,13 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
             -ItemType Directory `
             -Force `
             -Path (Join-Path $repository 'source'), `
-                (Join-Path $repository 'pcsx2_files\games\NA2'), `
-                (Join-Path $repository 'pcsx2_files\games\UN5'), `
+                (Join-Path $repository 'pcsx2_files\games'), `
                 (Join-Path $repository 'pcsx2_files\input_recordings') | Out-Null
         New-Item `
             -ItemType File `
             -Force `
             -Path (Join-Path $repository 'source\UN5.iso'), `
-                (Join-Path $repository 'pcsx2_files\games\NA2\NA2.pnach'), `
-                (Join-Path $repository 'pcsx2_files\games\NA2\NA2.ini'), `
-                (Join-Path $repository 'pcsx2_files\games\NA2\NA2.ps2'), `
-                (Join-Path $repository 'pcsx2_files\games\UN5\UN5.pnach'), `
-                (Join-Path $repository 'pcsx2_files\games\UN5\UN5.ini'), `
-                (Join-Path $repository 'pcsx2_files\games\UN5\UN5.ps2'), `
+                (Join-Path $repository 'pcsx2_files\games\UN5.pnach'), `
                 (Join-Path $repository 'pcsx2_files\input_recordings\practice-menu.p2m2') | Out-Null
         $global:UnWorkshopFakeCenteredWindows = @()
         $global:UnWorkshopFakeNoRecenter = @()
@@ -422,9 +407,9 @@ if ($PassThru) {
         Assert-WorkshopLaunchTest `
             -Condition (
                 [string]$resolvedSource.cheats -ceq
-                (Join-Path $repository 'pcsx2_files\games\UN5\UN5.pnach')
+                (Join-Path $repository 'pcsx2_files\games\UN5.pnach')
             ) `
-            -Message 'The project-owned UN5 PNACH did not resolve from its game bundle.'
+            -Message 'The project-owned UN5 PNACH did not resolve from the games folder.'
         $firstAdditionalPnach = Join-Path $repository 'first-extra.pnach'
         $secondAdditionalPnach = Join-Path $repository 'second-extra.pnach'
         New-Item `
@@ -453,7 +438,7 @@ if ($PassThru) {
             -Condition (
                 $defaultSnapshotLaunch -match (
                     'pnach=' + [regex]::Escape(
-                        (Join-Path $repository 'pcsx2_files\games\UN5\UN5.pnach')
+                        (Join-Path $repository 'pcsx2_files\games\UN5.pnach')
                     ) + '\|' + [regex]::Escape($firstAdditionalPnach) + '\|' +
                     [regex]::Escape($secondAdditionalPnach) + ' lines='
                 )
