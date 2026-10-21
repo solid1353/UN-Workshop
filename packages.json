@@ -8,5 +8,10 @@
     "version": "15.2.0-eabi16",
     "package": "https://github.com/solid1353/ps2toolchain-ee/releases/download/ee-v15.2.0-eabi16/ps2dev-windows-latest.tar.gz",
     "sha256": "5FBE35F4F9100187C14B39D72A80F4D98E627CF19EFF840929A46165FC0264C4"
+  },
+  "ffmpeg": {
+    "version": "9.0.2",
+    "package": "https://github.com/GyanD/codexffmpeg/releases/download/9.0.2/ffmpeg-9.0.2-essentials_build.zip",
+    "sha256": "60F467265B1E312373DBCD92200C2618A74850F98D3D078E94296BB3FA2047BA"
   }
 }
