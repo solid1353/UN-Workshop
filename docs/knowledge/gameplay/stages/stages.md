@@ -1159,6 +1159,9 @@ records, summon scenes and comparison.
 lists reuse.
 [UN4 battle stages](un4_stages.md) owns its archive comparison, scene
 formats, stage data, soundtrack and Stage Select assets.
+[UNH2 battle stages](unh2_stages.md) owns UNH2's PSP archives, which run
+UN2's stage engine, its scene records and per-scene tables, battle music
+and Stage Select assets.
 
 ## Address index
 

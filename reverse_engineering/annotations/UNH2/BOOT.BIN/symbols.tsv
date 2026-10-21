@@ -1,0 +1,44 @@
+address	kind	name	type	comment
+0x08810180	function	gu_depth_range		Depth range on the current GU context; set to 0xFFF0..0x10 at 0x0880ACC4.
+0x088101AC	function	gu_depth_offset		Depth offset on the current GU context; effect_sprite_draw_frame passes an effect's instance +0x22 below 0x199A.
+0x088105A4	function	gu_tex_func		sceGuTexFunc(tfx, tcc) with the context's colour doubling flag (+0xE4).
+0x088109D8	function	gu_depth_func		ZTST (0xDE): 1 always, 7 greater-or-equal.
+0x088109FC	function	gu_depth_mask		ZMSK (0xE7): 1 disables depth writes.
+0x08810B2C	function	gu_blend_func		sceGuBlendFunc(op, src, dst, srcfix, dstfix).
+0x08810D44	function	gu_set_status_context		sceGuSetStatus: state 0 ATE, 1 ZTE, 3 STE, 4 ABE, 5 BCE, 6 DTE, 7 FGE, 9 TME; 0x15 colour doubling (context +0xE4, TFUNC 0xC9).
+0x08811744	function	gu_depth_range_context		sceGuDepthRange(near, far) on a context: +0xD8/+0xDC, viewport Z from their midpoint plus the depth offset.
+0x088117EC	function	gu_depth_offset_context		sceGuDepthOffset: stores the offset at context +0xE0 and re-emits viewport Z scale/position (0x44/0x47) and NEARZ/FARZ (0xD6/0xD7) with the depth range at +0xD8/+0xDC.
+0x088254B4	function	light_list_insert		Inserts a light by priority unless already linked (+0xA0), so a repeated lighting record adds no light.
+0x08828A0C	function	effect_sprite_bind		Binds an effect instance: colour 0xFFFFFF, opacity 1, frame table, depth offset at +0x22 from the effect, test state 0x50000 then the blend's.
+0x08828B6C	function	effect_sprite_set_blend		Instance +0x40 = blend table[mode]; +0x48 test state 0x100B for mode 0, else 0x1001 with +0x4C bit 0x20.
+0x08828BD4	function	effect_sprite_draw_frame		Draws one frame of an effect as a camera-facing sprite at a point with the effect's alpha, culled by distance.
+0x0882A600	function	composition_set_model_test		Per composition child: selector 1 sets TEST low bits 0x1001 (value 0) or 0x100B; 0 sets bit 16; 2 sets bits 14..15.
+0x0882AD1C	function	composition_draw		Draws a composition player's models and effects at their composed transforms.
+0x0882BEBC	function	model_select_blend		Adds for a model blend 0x48 and subtracts for 0x42 (table 0x08AF1C08: 0x44,0x48,0x42,0x09,0x54); every other entry blends as plain alpha.
+0x0883C09C	function	animation_set_fog_mode		Sets each animated object's fog mode (+0xA8 bits 3..4) and effect flag (+0xDE bit 5); 0x5AA mist passes 1.
+0x08849250	function	random_next		Mersenne twister (MT19937) next 32-bit output.
+0x088497F4	function	random_signed_scaled		scale x signed Mersenne-twister output / 2^31, in -scale..scale.
+0x0887A914	function	music_request		Requests music row param_1 with its loop and fade arguments.
+0x08880220	function	stage_scene_construct		Walks a scene's records by category (type bits 8..15) to UN2's handlers; publishes the scene at battle context +0x3D.
+0x08882E78	function	stage_parse_fog		Category 1: tokens 0..2 colour, 3 near, 4 far, 5 far percentage.
+0x08883040	function	stage_parse_lighting		Category 13: light animation, token 5 light count; token 10 R,G,B (not "0") sets the render environment colour, else the light's.
+0x08884018	function	stage_parse_animation_props		Category 5: constructs a subtype per record, including UNH2's 0x5A9 lantern lights, 0x5AA mist and 0x5AB translucent layers.
+0x088C4590	function	stage_lantern_lights_construct		0x5A9 constructor: clears the effect, positions, count and opacities.
+0x088C4618	function	stage_lantern_lights_parse		0x5A9: token 5 count, token 3 node and its %s_%d siblings, token 6 effect; one effect sprite drawn at each node.
+0x088C477C	function	stage_lantern_lights_update		0x5A9: unless stage effects are restricted (0x08898EA4(2)), each opacity walks by random_signed_scaled(0.05) within 0.2..0.5.
+0x088C484C	function	stage_lantern_lights_draw		0x5A9: draws frame 0 of the effect at each node at its opacity in draw environment 3.
+0x088C4920	function	stage_translucent_construct		0x5AB constructor: clears the composition player.
+0x088C4960	function	stage_translucent_parse		0x5AB: token 10 composition in a player, its models' TEST set by composition_set_model_test(1, 0) to 0x1001, no depth writes.
+0x088C49F0	function	stage_translucent_draw		0x5AB: composition_draw of its player; its update (0x088C49E8) is empty.
+0x088ECF40	function	camera_bind_stage_record		Saves the previous stage camera record (+0x180) and binds stage_camera_records_by_scene[scene] at +0x17C.
+0x088ECF64	function	camera_stage_track		Lowers the desired elevation by record +0x4C when sections differ and by +0x50 when either is nonzero, as UN2's 0x001ED960.
+0x08905738	function	stage_navigation_initialize		Collects line extents, then copies the scene's routes until source 0xFF or 64 rows, so a zero-row end is copied with the following rows.
+0x08A3E7EC	function	audio_play_mode_music		Case 5: the scene's stage_music_tracks entry unless the override at 0x08BD06F4 is set.
+0x08AF1C08	data	model_blend_alpha_table		PS2 ALPHA values kept as blend identifiers: 0x44, 0x48, 0x42, 0x09, 0x54.
+0x08AF5F88	data	music_rows		12-byte rows: disc path, loop flag, volume; stage00..10, then the other tracks.
+0x08B25E68	data	stage_effect_intensity		A byte per scene 0..19; UN2's 18 then 0xFF, 0xFF.
+0x08B51D50	data	stage_render_coefficients		Two floats per scene 0..19; UN2's 18 then (0.32, 0.3) and (0.45, 0.3).
+0x08B51FB0	data	stage_scene_tables		20 pointers (scenes 0..19: UN2's 18, then s8a Outside and s8b Inside the Mugenjo) to UN2-layout 32-byte scene records.
+0x08B57B60	data	stage_camera_records_by_scene		20 pointers to 22-float camera records: UN2's fields 0..21.
+0x08B58E30	data	stage_navigation_authored_routes		20 pointers to UN2-layout route rows; lists end with a zero row, scenes 18 and 19 reuse scenes 16's and 17's.
+0x08BD071C	data	stage_music_tracks		A word per scene: the music_rows track (stageNN.at3), 0x0F where the disc has no archive.

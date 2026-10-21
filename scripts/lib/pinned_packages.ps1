@@ -80,6 +80,26 @@ function Get-UnEeToolchain {
     return Join-Path $root 'ps2dev\ee\bin'
 }
 
+# The pinned ffmpeg's bin folder: gyan.dev's essentials build, which decodes
+# the PSP games' ATRAC3plus audio.
+function Get-UnFfmpeg {
+    [CmdletBinding()]
+    param()
+
+    $workshop = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
+    $version = [string](Get-Content -Raw -LiteralPath (Join-Path $workshop 'packages.json') |
+        ConvertFrom-Json).ffmpeg.version
+    $folder = "ffmpeg-$version-essentials_build"
+    $root = Install-UnPinnedPackage -Workshop $workshop -Name 'ffmpeg' `
+        -Executable "$folder\bin\ffmpeg.exe" `
+        -Expand {
+            param([string]$Archive, [string]$Target)
+            Add-Type -AssemblyName System.IO.Compression.FileSystem
+            [IO.Compression.ZipFile]::ExtractToDirectory($Archive, $Target)
+        }.GetNewClosure()
+    return Join-Path $root "$folder\bin"
+}
+
 # A repository's cache root, read straight from its paths.json: the path
 # loaders themselves run on this Python.
 function Get-UnCacheRoot {

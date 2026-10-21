@@ -48,6 +48,8 @@ paths; it never checks that they exist.
     keeps the R5900 EABI stack 16-byte aligned. Code from the PS2's native
     compilers saves 128-bit registers to the stack with `sq`, so code that
     calls into a retail game needs that alignment.
+  - `ffmpeg`: gyan.dev's essentials build, whose bin folder `Get-UnFfmpeg`
+    returns. It decodes the PSP games' ATRAC3plus audio.
 - `games.json`: stable source-game selectors, aliases, serials, and CRCs.
 - `@pcsx2_files/`: the [input profile](docs/pcsx2.md#input-profiles) every
   game uses, and ignored default and test cards. Consuming projects own the
