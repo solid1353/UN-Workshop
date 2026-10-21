@@ -67,16 +67,29 @@ address	kind	name	type	comment
 0x006F5900	function	stage_wind_parse		0x51D; matches UN3 stage_wind_parse (UN3 0x518).
 0x006F5A30	function	stage_wind_update		UN3 phase/hold cycle; sound 0x3E at control volume 80 (UN3 64), same samples (NA2 program 0x27).
 0x006FA620	function	stage_rain_parse		0x579 rain (S0B2): 50 drop models (name at 0x008395C0) at opacity 0.75; update 0x006FAA10 keeps them falling 100 ahead of the camera, facing it, respawning below -35.
+0x006FA7D0	function	stage_rain_reset_drop		Drop local (R(50),R(40),30), fall 8+|R(2)|.
+0x006FAA10	function	stage_rain_update		100 ahead of the camera; opacity 0.2; respawn below -35; faces camera; scale 0x0081D220.
+0x006FAEE0	function	stage_rain_draw		Skipped while 0x002B0C90 reports battle context +0x288; environment 3.
 0x006FAFD0	function	stage_grass_spray_parse		0x57B: generators 0x0081FF70 rows 12..18 with field 0x00820950 at OBJ_sibuki_010..070, plus three of row 0x00820248 at 0x0081D250 points.
+0x006FB490	function	stage_grass_spray_update		Generator visibility for ten spray generators.
 0x006FB560	function	stage_memorial_spray_parse		0x57C: three generators 0x0081FF70 rows 0x13..0x15 at 0x0081D280 points, alpha 0.2.
+0x006FB780	function	stage_memorial_spray_update		Generator visibility; adds a zero vector to the first point.
 0x006FB890	function	stage_lightning_parse		0x57D cloud light: flash model (0x00839660) and three cloud models (0x00839670/80/90).
+0x006FBA90	function	stage_lightning_start_group		Group at (R(10000),40000,3000) scale (80,1,100) or none, single 2000 nearer 5000 higher, opacity 0.75.
+0x006FBD80	function	stage_lightning_update_single		Fades the single model; I(100): 0 single glow, 1 group without flash.
 0x006FBFD0	function	stage_lightning_update		Flash at rand(450)==0 after the minimum wait: flash alpha 0.1 falling 0.01 per update to -0.3, global flag gp-0x6568, clouds fade 0.05 per update.
+0x006FC200	function	stage_lightning_draw		Group while active, single always.
 0x006FC2B0	function	stage_puddle_ripples_parse		0x57E: six generators 0x0081FF70 rows 6..11 at OBJ_hamon_010..060, alpha 0.2.
+0x006FC480	function	stage_puddle_ripples_update		Generator visibility for six ripple generators.
 0x006FC590	function	stage_landing_tree_parse		0x50E new leaves; update 0x006FCB40 matches UN3 stage_landing_tree_update.
 0x006FCB40	function	stage_landing_tree_update		
 0x006FD300	function	stage_landing_tree_draw_leaves		
 0x006FE960	function	stage_moving_clouds_parse		0x57F: three cloud models (0x00839710, 0x00839720) with random angle and 0.001 rotation step.
+0x006FEBB0	function	stage_moving_clouds_update		Turn +0.0025,+0.0025,-0.0025; first opacity bounces 0.1..0.2, others clamp to 0.1.
+0x006FEEA0	function	stage_moving_clouds_draw		Environment 0; first cloud drawn again turned pi about component 1.
 0x006FF360	function	stage_cherry_petals_parse		0x539 cherry petals (S0A2): generators 0x00820440 with fields 0x00820970/0x008209B0 at OBJ_ha_010..070, alpha 0.25, plus one moving generator (0x00820478) and four force objects from 0x00820CD0.. .
+0x006FFB40	function	stage_cherry_petals_burst		Burst under the trees (x ranges by section): kind 1 0x00820C50, kind 0 0x00820D30, origin (x,y,50) second (x,y,150), scale 0.25, no distance fade.
+0x00700050	function	stage_cherry_petals_update		0x539: visibility; bursts on ACT_LIN_0/1 and ACT_DMG_BD; follower 250 ahead +100; wind q into rows 0x00820980/88/0x00820458; turns bursts after 16 updates.
 0x00700D20	function	stage_falling_leaves_parse		0x53B; matches UN3 stage_falling_leaves_parse (UN3 0x52B).
 0x00700F70	function	stage_falling_leaves_update		Rewrites shared force rows from wind; effective because UN2 fields read descriptors live.
 0x007011E0	function	stage_falling_leaves_draw		Empty.
@@ -87,6 +100,7 @@ address	kind	name	type	comment
 0x00705090	function	stage_flying_leaves_update		Camera-relative origin; force x follows -wind through the live descriptor; alpha 0 below 0.3.
 0x00705350	function	stage_flying_leaves_draw		Empty.
 0x00705370	function	stage_blur_parse		0x580: tokens 8 float, 9 and 10 integers into the resident filter object built by 0x002B2310.
+0x00705480	function	stage_blur_draw		Draws the 0x580 glare pass in environment 6 (owner +0x28, priority 16).
 0x007086A0	function	stage_cloth_parse		0x786 Ichiraku cloth simulation; update 0x00708AB0 resembles UN3 stage_flag_update.
 0x00708AB0	function	stage_cloth_update		UN3 stage_flag_update except gusts rng 0.8 in x, 0.01 in y/z (UN3 0.5, 0.02).
 0x00708E20	function	stage_shadowed_object_parse		0x88A: base parse, token10 '%ss1' shadow child loses fog flags 0x18; UN3 0x863.
@@ -121,6 +135,7 @@ address	kind	name	type	comment
 0x007F40E0	function	sealed_orochimaru_jutsu1_select_camera		Camera index for 2forcha1 (Giant Snake: Underworld Dash); scene 0 section 1: shot 7 at 500<x<1000, 8 at -1000<x<-500, height 300..800.
 0x00807510	function	actor_landing_burst		State 6; generator row 0x0082BAE0 byte +0x0E = 0x15 on scenes 4/10, 0x5C on 6, 0x5F on 15; burst at position and sound 9.
 0x00818EF0	function	actor_ground_landing		Ground probe 0x20000001; on E0E000 or 202020 ground: splash variant 2 on scene 10, 4 on 6, 3 on 15 (0x0021D940), speed x0.2.
+0x0081BAC0	function	stage_leaf_surface_variant_thunk		Calls stage_leaf_surface_variant with the stage and a fighter position when the stage exists, else 1.
 0x0081BFA0	function	stage_event_feedback_thunk		Calls 0x002E9970 when +0x60 is set; callers not established.
 0x0081BFE0	function	field_player_placement		Start position, facing and section; returns section 1 on scenes 5, 6, 10, otherwise 0.
 0x0081C6A0	data	stage_select_thumbnail_origins	unsigned short[19][2]	Top-origin pixel x, y of each scene's 64x48 thumbnail in haipure_s01.
