@@ -186,7 +186,7 @@ function Resolve-UnWorkshopMemoryCardPath {
         return [IO.Path]::GetFullPath($fileName)
     }
     $candidate = Join-Path $MemoryCardsRoot $fileName
-    if ((Test-Path -LiteralPath $candidate -PathType Leaf) -or
+    if ((Test-Path -LiteralPath $candidate) -or
         [IO.Path]::GetFileName($fileName) -cne $fileName) {
         return [IO.Path]::GetFullPath($candidate)
     }

@@ -168,7 +168,7 @@ if ($MemoryCard -ieq 'none') {
 }
 elseif (-not [string]::IsNullOrWhiteSpace($MemoryCard)) {
     $resolvedMemoryCard = [IO.Path]::GetFullPath($MemoryCard)
-    if (-not (Test-Path -LiteralPath $resolvedMemoryCard -PathType Leaf)) {
+    if (-not (Test-Path -LiteralPath $resolvedMemoryCard)) {
         throw "Memory card does not exist: $resolvedMemoryCard"
     }
 }

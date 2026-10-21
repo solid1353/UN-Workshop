@@ -16,4 +16,3 @@ pcsx2/*
 /pcsx2_files/PCSX2.ini
 *.ps2
 !/pcsx2_files/memory_cards/templates/*.ps2
-/pcsx2_files/memory_cards/default/

@@ -363,12 +363,6 @@ $requiredFiles += @(
         Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
 )
 $requiredFiles += @(
-    $selectedGames.MemoryCardPath |
-        Where-Object {
-            -not [string]::IsNullOrWhiteSpace($_) -and $_ -ine 'none'
-        }
-)
-$requiredFiles += @(
     foreach ($game in $selectedGames) {
         foreach ($pnachPath in @($game.Pnach)) {
             if (-not [string]::IsNullOrWhiteSpace($pnachPath)) {
@@ -380,6 +374,13 @@ $requiredFiles += @(
 foreach ($requiredFile in $requiredFiles) {
     if (-not (Test-Path -LiteralPath $requiredFile -PathType Leaf)) {
         throw "Required file does not exist: $requiredFile"
+    }
+}
+foreach ($memoryCardPath in @($selectedGames.MemoryCardPath)) {
+    if (-not [string]::IsNullOrWhiteSpace($memoryCardPath) -and
+        $memoryCardPath -ine 'none' -and
+        -not (Test-Path -LiteralPath $memoryCardPath)) {
+        throw "Memory card does not exist: $memoryCardPath"
     }
 }
 
