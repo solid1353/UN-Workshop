@@ -47,6 +47,7 @@ address	kind	name	type	comment
 0x006DCC00	function	stage_transparent_draw		Draw environment 1 from blend 0.4 (UN3 1.0) unless restriction 4; draws unless restriction 2.
 0x006DCEA0	function	stage_water_surface_parse		0x334 water surface; adds its object to stage control +0x14 list.
 0x006E5450	function	stage_wire_destroy		
+0x006EC0A0	function	stage_generator_visibility		Live generator: alpha scale +0x10C 0 under stage_effect_allowed(2) or while 0x002B0C90 is true, else 1; stops it once stage_owner_flag_b1 is set.
 0x006F0DB0	function	stage_swing_grass_parse		Token 5+1 models, token 3 origin, token 7 stem ('%sa%d').
 0x006F1200	function	stage_swing_grass_update		1-in-10 start of 20-update push of -2*wind (|wind|>=0.3), damping 0.98 to zero below 0.01; UN3 differs.
 0x006F14E0	function	stage_swing_grass_draw		Skipped while stage_effect_allowed(2) is nonzero.
@@ -60,7 +61,7 @@ address	kind	name	type	comment
 0x006F2860	function	stage_sway_needles_update		Phase +3..5 deg; all axes 0.02*|sin|; ignores wind and token 10.
 0x006F29D0	function	stage_sway_needles_draw		
 0x006F2A50	function	stage_snow_parse		0x59E: generator 0x00821D60 with field 0x00821DA0 at (150, 400, 200), material EFF_s3aefe01, scale 7.5.
-0x006F2BB0	function	stage_snow_update		Raises gp-0x70C0 toward 3500 by 10 per update into generator +0x108; hides the snow under a battle restriction.
+0x006F2BB0	function	stage_snow_update		Raises gp-0x70C0 (0x0055F6B0, 200 at boot, never reset) toward 3500 by 10 into the origin height; alpha +0x108 0 under stage_effect_allowed(2), stop on stage_owner_flag_b1.
 0x006F2E20	function	stage_footprints_parse		0x59F: 30 token-6 composition prints per foot per fighter.
 0x006F3050	function	stage_footprints_update		On 0xF0F0F0 ground within 20 below a foot, places a print 4 above the last contact when the foot leaves; puff effect for three updates after a trigger.
 0x006F5900	function	stage_wind_parse		0x51D; matches UN3 stage_wind_parse (UN3 0x518).
@@ -92,7 +93,9 @@ address	kind	name	type	comment
 0x00708EC0	function	stage_shadowed_object_trigger		Base hit; re-clears shadow child fog flags after damage animation.
 0x00709540	function	stage_trail_lanterns_parse		0x58D pseudo-blur lanterns: token 5 count at token-3 node siblings, token 6 model, token 7 glow, 32-position trail, random swing phase.
 0x0070B9D0	function	stage_diamond_dust_parse		0x59B: generator 0x00821B80 with fields 0x00821BC0/0x00821BE0, alpha 0.5; update 0x0070BAC0 keeps it 400 toward the camera target, 200 lower.
+0x0070BAC0	function	stage_diamond_dust_update		Generator visibility, then origin = eye + 400 x normalize(target - eye), 200 lower.
 0x0070BC80	function	stage_ice_wall_effect_parse		0x59C: 11 looping generators from rows at 0x0081DCB0 (origin, second point, generator and fields, scale).
+0x0070BE30	function	stage_ice_wall_effect_update		Generator visibility for each of the eleven generators.
 0x00712860	function	stage_intruder_parse		0x990: loads ojmgmk/ojmgmt/ojmpkn/ojmnkm.ccs characters by selector.
 0x007238E0	function	stage_flying_leaves_destroy		Requests generator shutdown.
 0x00723BA0	function	stage_rising_leaves_destroy		Releases the four field objects.
@@ -118,6 +121,7 @@ address	kind	name	type	comment
 0x007F40E0	function	sealed_orochimaru_jutsu1_select_camera		Camera index for 2forcha1 (Giant Snake: Underworld Dash); scene 0 section 1: shot 7 at 500<x<1000, 8 at -1000<x<-500, height 300..800.
 0x00807510	function	actor_landing_burst		State 6; generator row 0x0082BAE0 byte +0x0E = 0x15 on scenes 4/10, 0x5C on 6, 0x5F on 15; burst at position and sound 9.
 0x00818EF0	function	actor_ground_landing		Ground probe 0x20000001; on E0E000 or 202020 ground: splash variant 2 on scene 10, 4 on 6, 3 on 15 (0x0021D940), speed x0.2.
+0x0081BFA0	function	stage_event_feedback_thunk		Calls 0x002E9970 when +0x60 is set; callers not established.
 0x0081BFE0	function	field_player_placement		Start position, facing and section; returns section 1 on scenes 5, 6, 10, otherwise 0.
 0x0081C6A0	data	stage_select_thumbnail_origins	unsigned short[19][2]	Top-origin pixel x, y of each scene's 64x48 thumbnail in haipure_s01.
 0x0081C700	data	stage_select_preview_texture_names	char *[4]	haipure01..04 name pointers, indexed by scene / 8.

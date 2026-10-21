@@ -11,8 +11,8 @@ render, music and auxiliary tables, US/JP differences, Stage Select choices,
 previews and names, the surface effects and sounds, stage sounds, the
 scene-keyed code census, every UN3-matched type's differences from UN3, and
 the fighter-pair placement's scene rules. Open: the role of the battle
-context's `+0x260` object that `0x00770BE0` resets, and the other twelve
-scenes' records.
+context's `+0x260` object that `0x00770BE0` resets, the event that names
+`0x59F`'s puff fighter, and the other twelve scenes' records.
 Names come from `@annotations/UN2`; UN3 and NA2 comparison names come from
 `@annotations/UN3` and `@annotations/NA2`.
 
@@ -182,7 +182,7 @@ establishes correspondence, not identical tokens or constants.
 | `0x301` | far animation | all | category 3 | `0x301` |
 | `0x334` | 水面 (water surface) | 10 | `stage_water_surface_parse` (`0x006DCEA0`) | a category-3 helper (0.93) |
 | `0x36F` | 演習場水底 (riverbed) | 10 | plain object, vtable `0x00553F20` | — |
-| `0x501` | — | 16 | plain object | `0x501` |
+| `0x501` | — | 16 | plain object; scene 16's names no animation | `0x501` |
 | `0x502` | 電線 (wire) | 0 | `stage_wire_parse` (`0x006D9780`) | `stage_wire_parse` (0.77) |
 | `0x506`, `0x507` | のれん (noren) | 0 | `stage_sway_animation_parse` (`0x006B9510`) | `stage_sway_animation_parse` |
 | `0x50E` | 新葉っぱ (new leaves) | 11 | `stage_landing_tree_parse` (`0x006FC590`) | landing tree (update 0.76) |
@@ -234,10 +234,10 @@ Behavior of the types without a UN3 counterpart:
 | `0x57F` | Three cloud models (`0x00839710`, then twice `0x00839720`) at the point in `0x0081D3A0`, from random angles; the update (`0x006FEBB0`) turns the first two by +0.0025 and the third by -0.0025 radians per update, and bounces each opacity between 0.1 and 0.2. |
 | `0x580` | A glare-filter pass (`0x002B2310`, matching UN3's `pause_auxiliary_refresh` initializer at 0.73, the class NA2's factory 11 builds) with token 8 (`-0.019`) at `+0x88`, token 9 (`0x808080`) at `+0x8C` and token 10 (`0x3A808080`) at `+0x84`. |
 | `0x58D` | Token-5 lanterns at the token-3 node and its siblings (`%s_%d`), each the token-7 composition with a token-6 glow effect. The update (`0x00709890`) swings each lantern by 0.65 × sin(phase) about the rotation in `0x0081D890`, the phase starting at random and stepping 4° per update, and stores the glow's position, (0, -10, token 9) from the swinging pivot, in a ring of 32 per lantern. The draw (`0x00709A80`) shows the first token-10 lanterns' glows at four ring positions, 0, 8, 16 and 24 updates back, at alpha 1, 0.6, 0.36 and 0.216 and size 0.6, 0.525, 0.45 and 0.375, and each other lantern's glow once. The scene's tokens 9 and 10 are -30 and 2. |
-| `0x59B` | One generator (`0x00821B80`, fields `0x00821BC0`/`0x00821BE0`) at alpha 0.5, kept 400 units from the camera toward its target and 200 lower. |
-| `0x59C` | Eleven looping generators from 0x40-byte rows at `0x0081DCB0`: origin `+0x00`, second point `+0x10`, generator descriptor `+0x20`, four field descriptors `+0x24..+0x30` (null when absent), scale `+0x34`. Rows 0 and 1 have origin (0, 2950, 230), generators `0x00821C00`/`0x00821C38` with one field each, and scales 1 and 3. Their resources are `EFF_e0xpar00` and `EFF_x002` from `CMN/PARTICLE.CCS`. |
-| `0x59E` | One generator (`0x00821D60`, field `0x00821DA0`) at (150, 400, 200) with material `EFF_s3aefe01` and scale 7.5; its update raises a shared value toward 3500 by 10 per update and hides the snow under a battle restriction. |
-| `0x59F` | 30 footprint models of the token-6 composition per foot per fighter, at opacity 0.5 fading by 0.01. On a `0xF0F0F0` surface within 20 below a foot, a print is placed 4 above the last contact when the foot lifts: NA2's `ccBgFootMarkBattle` (factory 93) with the same pools and constants, which selects surfaces by a mask where UN2 tests snow alone. UN2 also starts a puff effect for three updates at the fighter that `0x002E9970` names in `gp-0x70BC`. |
+| `0x59B` | One generator (`0x00821B80`, fields `0x00821BC0`/`0x00821BE0`) at alpha 0.5, which the generator visibility sets to 1 from the first update, kept 400 units from the camera toward its target and 200 lower (`stage_diamond_dust_update`, `0x0070BAC0`), fading in from 100 to 500 and out from 6,000 to 8,000 units (the `0x524` squares). |
+| `0x59C` | Eleven looping generators from 0x40-byte rows at `0x0081DCB0`: origin `+0x00`, second point `+0x10`, generator descriptor `+0x20`, four field descriptors `+0x24..+0x30` (null when absent), scale `+0x34`. Rows 0 and 1 have origin (0, 2950, 230), generators `0x00821C00`/`0x00821C38` with one field each, and scales 1 and 3. Their resources are `EFF_e0xpar00` and `EFF_x002` from `CMN/PARTICLE.CCS`. The parser turns off each generator's distance fade; the update (`0x0070BE30`) applies the generator visibility. |
+| `0x59E` | One generator (`0x00821D60`, field `0x00821DA0`) at (150, 400, 200) with material `EFF_s3aefe01` and scale 7.5, fading as `0x59B`'s. Its update (`0x006F2BB0`) raises global `gp-0x70C0` (`0x0055F6B0`, 200 at boot) toward 3500 by 10 per update and copies it to the origin's height; nothing resets it, so only the first scene-16 battle after boot starts the snow low. It sets alpha `+0x108` to 0 under `stage_effect_allowed(2)`, otherwise 1, and stops the generator as the visibility does. |
+| `0x59F` | 30 footprint models of the token-6 composition per foot per fighter, at opacity 0.5 fading by 0.01. On a `0xF0F0F0` surface within 20 below a foot, a print is placed 4 above the last contact when the foot lifts: NA2's `ccBgFootMarkBattle` (factory 93) with the same pools and constants, which selects surfaces by a mask where UN2 tests snow alone. UN2 also starts a puff effect for three updates at the fighter that `0x002E9970` names in `gp-0x70BC`, a stage event handler that on scene 16 stores the event's side; it is reached through `0x0081BFA0`, whose callers are not established. |
 | `0x660` | Token-5 copies of the token-6 effect (`EFF_efe_000_`) at the token-3 node and its `_N` siblings, at opacity 0.75 from random frames; the update (`0x006D94D0`) loops each through frames 0..14, or, for a copy whose flag at `+0x3C` is set, flickers through frames 15..29 after random delays of up to 60 updates. |
 | `0x990` | Loads `ojmgmk`, `ojmgmt`, `ojmpkn` or `ojmnkm` and their characters, only when the battle-mode object exists, its mode is not 1 or 6, and `battle_mode_intruders_enabled` (`0x0023C3D0`) is set. |
 | `0xC0A` | Stores the positions of `OBJ_ps_010` and its siblings (token 5, four in every scene) and token 0 in the stage control. |
@@ -245,6 +245,16 @@ Behavior of the types without a UN3 counterpart:
 The generator rows use NA2's layouts: 0x38-byte generator descriptors and
 0x20-byte force descriptors whose keys are NA2's
 ([force keys](../../runtime/rendering/particle_runtime.md#force-field-consumer-table)).
+UN2's generator (`particle_generator_construct`, `SLUS_215.75`
+`0x002A46B0`, 0x130 bytes) sets bit 0 of `+0x04`, which turns on each
+particle's distance fade (`particle_distance_fade`, `0x002A7C60`): alpha 0
+outside the squared distances at `+0x118` and `+0x120`, ramping in to
+`+0x114` and out from `+0x11C`, by default 50, 400, 4,000 and 5,000 units.
+`+0x30` is its scale, `+0x108` and `+0x10C` its two alphas. The generator
+visibility (`stage_generator_visibility`, `0x006EC0A0`) sets a live
+generator's `+0x10C` to 0 under `stage_effect_allowed(2)` or while
+`0x002B0C90` reports true and otherwise to 1, and stops it once byte
+`+0xB1` of the object at `gp-0x6560` is set.
 
 UN3's `S01` records are scene 0's renumbered: the 忍看板 sign is a plain
 `0x801`, the shadowed objects `0x863`, and the sound pairs are the same
