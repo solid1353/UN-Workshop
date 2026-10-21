@@ -1,5 +1,43 @@
 Set-StrictMode -Version Latest
 
+$GhidraVersion = '12.1.3'
+# Processor extension release zips, kept in @tools/ghidra beside the installation.
+$GhidraProcessorExtensions = @(
+    'ghidra_12.1.3_PUBLIC_20261004_ghidra-emotionengine-reloaded.zip'
+    'ghidra_12.1.3_PUBLIC_20260825_ghidra-allegrex.zip'
+)
+
+# Unpacks each processor extension that is not installed yet; -Replace unpacks all of them again.
+function Install-GhidraProcessorExtensions {
+    param(
+        [Parameter(Mandatory)]
+        [string]$GhidraRoot,
+        [switch]$Replace
+    )
+
+    $extensionsRoot = Join-Path $GhidraRoot 'Ghidra\Extensions'
+    New-Item -ItemType Directory -Force -Path $extensionsRoot | Out-Null
+    foreach ($zipName in $GhidraProcessorExtensions) {
+        $zip = Join-Path $GhidraRoot $zipName
+        if (-not (Test-Path -LiteralPath $zip -PathType Leaf)) {
+            throw "Ghidra processor extension was not found: $zip"
+        }
+        $name = [regex]::Match($zipName, '^ghidra_[^_]+_PUBLIC_\d+_(?<name>.+)\.zip$').Groups['name'].Value
+        $directory = Join-Path $extensionsRoot $name
+        if ($Replace -and (Test-Path -LiteralPath $directory)) {
+            Remove-Item -LiteralPath $directory -Recurse -Force
+        }
+        if (-not (Test-Path -LiteralPath $directory -PathType Container)) {
+            Expand-Archive -LiteralPath $zip -DestinationPath $extensionsRoot
+        }
+        $properties = Join-Path $directory 'extension.properties'
+        if (-not (Test-Path -LiteralPath $properties -PathType Leaf) -or
+            (Get-Content -LiteralPath $properties) -notcontains "version=$GhidraVersion") {
+            throw "Ghidra processor extension is not built for Ghidra ${GhidraVersion}: $name"
+        }
+    }
+}
+
 function Find-GhidraJavaHome {
     $java = Get-Command java.exe -ErrorAction SilentlyContinue
     if ($java) {
@@ -28,29 +66,17 @@ function Initialize-GhidraRuntime {
         [Parameter(Mandatory)]
         [string]$RuntimeRoot,
         [string]$ToolsRoot = (Join-Path $PSScriptRoot '..\..\tools'),
-        [string]$Version = '12.1.2_PUBLIC',
         [string]$MaximumMemory = '2G'
     )
 
     $runtime = [IO.Path]::GetFullPath($RuntimeRoot)
     $tools = [IO.Path]::GetFullPath($ToolsRoot)
-    $extensionsRoot = Join-Path $tools 'ghidra\Ghidra\Extensions'
-    $extensionDirectory = Join-Path $extensionsRoot 'ghidra-emotionengine-reloaded'
-    $extensionZip = Join-Path $tools (
-        "ghidra\ghidra_${Version}_20260607_ghidra-emotionengine-reloaded.zip"
-    )
     $headless = Join-Path $tools 'ghidra\support\analyzeHeadless.bat'
     if (-not (Test-Path -LiteralPath $headless -PathType Leaf)) {
         throw "Ghidra headless launcher was not found: $headless"
     }
-    if (-not (Test-Path -LiteralPath $extensionZip -PathType Leaf)) {
-        throw "Ghidra EmotionEngine extension was not found: $extensionZip"
-    }
-
-    New-Item -ItemType Directory -Force -Path $runtime, $extensionsRoot | Out-Null
-    if (-not (Test-Path -LiteralPath $extensionDirectory -PathType Container)) {
-        Expand-Archive -LiteralPath $extensionZip -DestinationPath $extensionsRoot
-    }
+    Install-GhidraProcessorExtensions -GhidraRoot (Join-Path $tools 'ghidra')
+    New-Item -ItemType Directory -Force -Path $runtime | Out-Null
 
     $javaHome = Find-GhidraJavaHome
     $env:USERPROFILE = $runtime

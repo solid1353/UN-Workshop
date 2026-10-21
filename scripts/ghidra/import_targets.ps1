@@ -19,19 +19,23 @@ function Resolve-SourceAlias([string]$Alias) {
     return Resolve-UnWorkshopSourceAlias -Alias $Alias -Paths $paths
 }
 
+# PSP executables are relocatable; 0x08804000 is where the PSP usually loads a game's main module.
+$pspImageBase = 0x08804000
+
 # Zero-filled regions the loaders do not map, as start:length arguments for MapZeroFill.java:
-# the tail of each EE ELF load segment beyond its file bytes and an MWo3 overlay's bss_size.
+# the tail of each ELF load segment beyond its file bytes and an MWo3 overlay's bss_size.
 function Get-ZeroFillRanges([psobject]$Item, [byte[]]$bytes) {
     $ranges = @()
     switch ($Item.format) {
-        { $_ -in 'ee_elf', 'iop_elf' } {
+        { $_ -in 'ee_elf', 'iop_elf', 'psp_elf' } {
+            $base = if ($Item.format -eq 'psp_elf') { $pspImageBase } else { 0 }
             $headerOffset = [BitConverter]::ToUInt32($bytes, 0x1C)
             $headerSize = [BitConverter]::ToUInt16($bytes, 0x2A)
             $headerCount = [BitConverter]::ToUInt16($bytes, 0x2C)
             for ($index = 0; $index -lt $headerCount; $index++) {
                 $entry = $headerOffset + $index * $headerSize
                 if ([BitConverter]::ToUInt32($bytes, $entry) -ne 1) { continue }
-                $address = [BitConverter]::ToUInt32($bytes, $entry + 8)
+                $address = $base + [BitConverter]::ToUInt32($bytes, $entry + 8)
                 $fileSize = [BitConverter]::ToUInt32($bytes, $entry + 16)
                 $memorySize = [BitConverter]::ToUInt32($bytes, $entry + 20)
                 # Segments without file bytes reserve overlay windows, which belong to the overlays.
@@ -105,10 +109,21 @@ try {
             $inputPath = Join-Path $runtimeRoot $item.program
             [IO.File]::WriteAllBytes($inputPath, $image)
         }
-        if ($ReanalyzeExisting) {
-            if (-not (Test-Path -LiteralPath $projectRoot -PathType Container)) {
-                throw "Ghidra project is missing: $($item.target)"
+        if (-not $ReanalyzeExisting -and -not $Reimport -and (Test-Path -LiteralPath $summaryPath)) {
+            Write-Host "Skip existing:" "$($item.target)/$($item.program)"
+            continue
+        }
+        if ($ReanalyzeExisting -and -not (Test-Path -LiteralPath $projectRoot -PathType Container)) {
+            throw "Ghidra project is missing: $($item.target)"
+        }
+        New-Item -ItemType Directory -Force -Path $projectRoot, (Split-Path $summaryPath -Parent) | Out-Null
+        if (-not $changedProjects.ContainsKey($analysisRoot)) {
+            $changedProjects[$analysisRoot] = $true
+            Get-ChildItem -LiteralPath $analysisRoot -Force -Recurse -File | ForEach-Object {
+                $_.Attributes = $_.Attributes -band (-bnot [IO.FileAttributes]::ReadOnly)
             }
+        }
+        if ($ReanalyzeExisting) {
             $loadBase = '-'
             if ($item.format -eq 'mwo3') {
                 $stream = [IO.File]::OpenRead($inputPath)
@@ -134,23 +149,18 @@ try {
             if ($LASTEXITCODE -ne 0) { throw "Ghidra reanalysis failed: $($item.target)/$($item.program)" }
             continue
         }
-        if (-not $Reimport -and (Test-Path -LiteralPath $summaryPath)) {
-            Write-Host "Skip existing:" "$($item.target)/$($item.program)"
-            continue
-        }
-        New-Item -ItemType Directory -Force -Path $projectRoot, (Split-Path $summaryPath -Parent) | Out-Null
-        if (-not $changedProjects.ContainsKey($analysisRoot)) {
-            $changedProjects[$analysisRoot] = $true
-            Get-ChildItem -LiteralPath $projectRoot -Force -Recurse -File | ForEach-Object {
-                $_.Attributes = $_.Attributes -band (-bnot [IO.FileAttributes]::ReadOnly)
-            }
-        }
         $arguments = @($projectRoot, $item.target, '-import', $inputPath)
         if ($Reimport) { $arguments += '-overwrite' }
         $loadBase = '-'
         switch ($item.format) {
             'ee_elf' { $arguments += @('-processor', 'r5900:LE:32:default', '-cspec', 'default', '-loader', 'ElfLoader') }
             'iop_elf' { $arguments += @('-processor', 'MIPS:LE:32:default', '-cspec', 'default', '-loader', 'ElfLoader') }
+            'psp_elf' {
+                $arguments += @(
+                    '-processor', 'Allegrex:LE:32:default', '-cspec', 'default',
+                    '-loader', 'PspElfLoader', '-loader-imagebase', ('{0:X8}' -f $pspImageBase)
+                )
+            }
             'mwo3' {
                 $stream = [IO.File]::OpenRead($inputPath)
                 try {

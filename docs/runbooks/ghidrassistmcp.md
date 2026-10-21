@@ -17,7 +17,7 @@ The release asset is used only as a hash-verified dependency bundle and
 extension skeleton. It is not installed directly: it contains generated
 databases, a Lucene lock, and stale duplicate library versions that are absent
 from the pinned source. The installer removes those files, compiles every Java
-source file from the pinned commit against the installed Ghidra 12.1.2, and
+source file from the pinned commit against the installed Ghidra, and
 applies
 [`ghidrassistmcp-2.11.0-hardening.patch`](../../scripts/ghidra/ghidrassistmcp-2.11.0-hardening.patch).
 
@@ -112,9 +112,11 @@ Run the installer with a disposable directory inside the active task's own
     -WorkRoot <resolved-task-work-directory>
 ```
 
-The installer verifies Ghidra 12.1.2 PUBLIC, the upstream commit, the release
-asset hash, the patch, the JDK, and the .NET SDK. It installs the hardened
-extension and the existing pinned EmotionEngine processor extension below
+The installer verifies the Ghidra PUBLIC version pinned in
+[`runtime.ps1`](../../scripts/ghidra/runtime.ps1), the upstream commit, the
+release asset hash, the patch, the JDK, and the .NET SDK. It installs the
+hardened extension and the processor extensions pinned there, EmotionEngine
+(PS2) and Allegrex (PSP), from their release zips in `@tools/ghidra` below
 `@tools/ghidra/Ghidra/Extensions`. It also publishes the windowless MCP router
 below `@tools/ghidra/GhidrAssistMcpRouter`. Its disposable checkout, build, and
 packaging files are removed after a successful install.
