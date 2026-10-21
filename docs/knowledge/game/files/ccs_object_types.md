@@ -4,7 +4,8 @@
 
 Established: the 34 resident file routes, 29 resource identities or block roles,
 texture/CLUT transfer groups and file layouts with their VRAM placement, projection/composite controller behavior, the
-packet-ring producer contract and their resident BSS globals. Open: legacy file
+packet-ring producer contract, their resident BSS globals and the older-version
+branches of `0x0100`, `0x0200`, `0x0800` and `0x0E00`. Open: legacy file
 tags `0x1000..0x1200`, `0x1F00` semantics, the projection algorithm/units, and ring activation,
 read-side consumer and packet language. Names and per-routine facts come from
 `@annotations/NA2`, with comparisons in `@annotations/UN3` and
@@ -416,6 +417,18 @@ PSMT8 textures at `0x3C0, 0`, pages 480..511, its 512×512 PSMT4 texture at
 `0x380, 0x120`, pages 456 and 457. Any texture with at most 262,144
 pixels fits the same pages at either depth; a larger one runs past the
 end of VRAM or into the other depth's pages.
+
+### Older-version parser branches
+
+A container's version (see [version gates](ccs_runtime.md#version-gates-in-the-na2-parsers))
+selects these branches for every section it holds:
+
+| Tag / parser | Below the gate |
+| --- | --- |
+| `0x0100` `ccs_parse_scene_object` | Below `0x122`: one word fewer is read and the descriptor's selector bits are 3. Below `0x96`: no nullable shadow-model reference. |
+| `0x0200` `ccs_parse_material` | Below `0x120`: two coordinate halfwords fewer; the descriptor keeps zero there. |
+| `0x0800` `ccs_parse_model` | Below `0x121`: one byte instead of two after the header, no palette count, mode masked to its low nibble. Below `0x122`: the scale halfword is not divided by 256, and an ordinary model without flags `0x8181` gets runtime flag `0x10000`. Below `0x111`: the word and float after the header are not read, and descriptor `+0x54` is 1.0. |
+| `0x0E00` `ccs_parse_effect` | Below `0x122`: the scale halfword is not divided by 256 and bit `0x40` of descriptor byte `+0x14` is set. |
 
 ## Negative results and labels not promoted
 
