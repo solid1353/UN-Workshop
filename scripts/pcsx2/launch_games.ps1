@@ -270,7 +270,6 @@ foreach ($requestedGame in $Games) {
             throw "ISO does not exist: $isoPath"
         }
         $selector = [IO.Path]::GetFileNameWithoutExtension($isoPath)
-        $resolvedMemoryCardPath = $memoryCardOverridePath
     }
     else {
         $selector = $target.ToLowerInvariant()
@@ -278,12 +277,6 @@ foreach ($requestedGame in $Games) {
             -Game $selector `
             -ProjectRoot $paths.Project
         $isoPath = [IO.Path]::GetFullPath([string]$resolved.iso)
-        $resolvedMemoryCardPath = if ($null -ne $memoryCardOverridePath) {
-            $memoryCardOverridePath
-        }
-        else {
-            [IO.Path]::GetFullPath([string]$resolved.memory_card)
-        }
         $gameSettingsPath = [IO.Path]::GetFullPath(
             [string]$resolved.game_settings
         )
@@ -332,7 +325,7 @@ foreach ($requestedGame in $Games) {
     $selectedGames.Add([pscustomobject]@{
         Selector = $selector
         IsoPath = $isoPath
-        MemoryCardPath = $resolvedMemoryCardPath
+        MemoryCardPath = $memoryCardOverridePath
         MemoryCardMode = $memoryCardMode
         GameSettingsPath = $gameSettingsPath
         Pnach = $pnach

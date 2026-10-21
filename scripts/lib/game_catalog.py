@@ -153,7 +153,6 @@ def derive_game_paths(
         "iso": source / f"{canonical_name}.iso",
         "extracted": source / f"{canonical_name}.iso.files",
         "cheats": bundle / f"{canonical_name}.pnach",
-        "memory_card": bundle / f"{canonical_name}.ps2",
         "game_settings": bundle / f"{canonical_name}.ini",
         "input_profile": input_profile_path,
     }

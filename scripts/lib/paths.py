@@ -451,7 +451,6 @@ def load_project_paths(
                 "input_profile_overrides",
                 "cheats",
                 "game_settings",
-                "memory_card",
             ):
                 if name in derived:
                     config[name] = derived[name]
@@ -462,7 +461,6 @@ def load_project_paths(
             for kind, mapping, name, value in (
                 ("root", roots, f"source_{game_key}", extracted_path),
                 ("file", files, f"{game_key}_iso", derived["iso"]),
-                ("file", files, f"{game_key}_memory_card", derived["memory_card"]),
             ):
                 if name in mapping:
                     raise ValueError(
