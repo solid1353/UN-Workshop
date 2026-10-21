@@ -89,7 +89,7 @@ numbered backups to the Windows Recycle Bin.
 ## Memory cards
 
 Without `-mc`, every launch uses PCSX2's configured memory cards. `-mc <card>`
-selects one memory-card file for every launched game. A relative
+selects one memory card, a file or folder card, for every launched game. A relative
 value resolves below `@pcsx2_memory_cards/`; an absolute path is also accepted.
 Workshop adds the `.ps2` extension automatically when omitted. A bare name
 falls back to `@pcsx2_memory_cards/templates/` when no root-level card exists.
