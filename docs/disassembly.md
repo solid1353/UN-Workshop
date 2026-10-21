@@ -33,6 +33,10 @@ addresses only. Relocatable IOP ELFs are imported at module-relative base zero;
 that base does not establish their live IOP placement. Cite their qualified
 program/symbol names until a live relocation base is established.
 
+PSP executables are relocatable too. The import places them at `0x08804000`,
+where the PSP usually loads a game's main module; that the games load there
+has not been checked.
+
 ## Rebuilding
 
 Run every command with `UN_TASK_WORK_ROOT` set to the task's work directory:

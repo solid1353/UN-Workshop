@@ -31,7 +31,7 @@ foreach ($name in @(
 }
 
 try {
-    Get-ChildItem -LiteralPath $projectRoot -Force -Recurse -File | ForEach-Object {
+    Get-ChildItem -LiteralPath $analysisRoot -Force -Recurse -File | ForEach-Object {
         $_.Attributes = $_.Attributes -band (-bnot [IO.FileAttributes]::ReadOnly)
     }
     $ghidra = Initialize-GhidraRuntime `

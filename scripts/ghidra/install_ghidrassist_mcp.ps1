@@ -8,6 +8,7 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'runtime.ps1')
 
 $upstreamUrl = 'https://github.com/symgraph/GhidrAssistMCP.git'
 $upstreamCommit = '0d412d1fe3203e98a32f7dc70df21dc8f6f57131'
@@ -116,18 +117,12 @@ $headless = Join-Path $resolvedGhidraRoot 'support\analyzeHeadless.bat'
 $installedExtensions = Assert-ChildPath `
     -Path (Join-Path $resolvedGhidraRoot 'Ghidra\Extensions') `
     -Root $resolvedGhidraRoot
-$emotionEngineZip = Join-Path $resolvedGhidraRoot (
-    'ghidra_12.1.2_PUBLIC_20260607_ghidra-emotionengine-reloaded.zip'
-)
 
 if (-not (Test-Path -LiteralPath $applicationProperties -PathType Leaf)) {
     throw "Ghidra application properties were not found: $applicationProperties"
 }
 if (-not (Test-Path -LiteralPath $headless -PathType Leaf)) {
     throw "Ghidra headless launcher was not found: $headless"
-}
-if (-not (Test-Path -LiteralPath $emotionEngineZip -PathType Leaf)) {
-    throw "EmotionEngine extension was not found: $emotionEngineZip"
 }
 if (-not (Test-Path -LiteralPath $patchPath -PathType Leaf)) {
     throw "GhidrAssistMCP hardening patch was not found: $patchPath"
@@ -137,13 +132,12 @@ if (-not (Test-Path -LiteralPath $routerProject -PathType Leaf)) {
 }
 
 $properties = Get-Content -LiteralPath $applicationProperties
-if ($properties -notcontains 'application.version=12.1.2' -or
+if ($properties -notcontains "application.version=$GhidraVersion" -or
     $properties -notcontains 'application.release.name=PUBLIC') {
-    throw "The configured Ghidra installation is not 12.1.2 PUBLIC: $resolvedGhidraRoot"
+    throw "The configured Ghidra installation is not $GhidraVersion PUBLIC: $resolvedGhidraRoot"
 }
 
 if (-not $JavaHome) {
-    . (Join-Path $PSScriptRoot 'runtime.ps1')
     $JavaHome = Find-GhidraJavaHome
 }
 $resolvedJavaHome = [IO.Path]::GetFullPath($JavaHome)
@@ -297,7 +291,7 @@ try {
     $extensionText = [Text.RegularExpressions.Regex]::Replace(
         $extensionText,
         '(?m)^version=.*$',
-        'version=12.1.2'
+        "version=$GhidraVersion"
     )
     [IO.File]::WriteAllText(
         $extensionProperties,
@@ -335,17 +329,7 @@ try {
     Remove-ExactChild -Path $installedMcp -Root $installedExtensions
     Copy-Item -LiteralPath $extensionRoot -Destination $installedMcp -Recurse
 
-    $installedEmotionEngine = Assert-ChildPath `
-        -Path (Join-Path $installedExtensions 'ghidra-emotionengine-reloaded') `
-        -Root $installedExtensions
-    if (-not (Test-Path -LiteralPath $installedEmotionEngine -PathType Container)) {
-        Expand-Archive -LiteralPath $emotionEngineZip -DestinationPath $installedExtensions
-    }
-    $emotionProperties = Join-Path $installedEmotionEngine 'extension.properties'
-    if (-not (Test-Path -LiteralPath $emotionProperties -PathType Leaf) -or
-        (Get-Content -LiteralPath $emotionProperties) -notcontains 'version=12.1.2') {
-        throw 'The installed EmotionEngine extension is not compatible with Ghidra 12.1.2.'
-    }
+    Install-GhidraProcessorExtensions -GhidraRoot $resolvedGhidraRoot -Replace
 
     Remove-ExactChild -Path $installedRouter -Root $resolvedGhidraRoot
     Copy-Item -LiteralPath $routerStage -Destination $installedRouter -Recurse
@@ -365,7 +349,7 @@ try {
             Get-FileHash -LiteralPath $installedJar -Algorithm SHA256
         ).Hash
         ExtensionPath = $installedMcp
-        EmotionEnginePath = $installedEmotionEngine
+        ProcessorExtensions = $GhidraProcessorExtensions
         BridgePath = $installedRouterExecutable
         Transport = 'stdio'
     }
