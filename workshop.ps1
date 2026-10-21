@@ -161,18 +161,6 @@ switch ($normalizedCommand) {
         }
         $property[0].Value | Write-Output
     }
-    'input' {
-        $argumentList = @($Arguments)
-        if ($argumentList.Count -gt 1) {
-            throw 'Usage: workshop input [profile]'
-        }
-        if ($argumentList.Count -eq 0) {
-            & (Join-Path $scripts 'input.ps1')
-        }
-        else {
-            & (Join-Path $scripts 'input.ps1') -Profile $argumentList[0]
-        }
-    }
     'pcsx2' {
         $argumentList = @(
             $Arguments |

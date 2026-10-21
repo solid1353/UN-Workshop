@@ -116,6 +116,8 @@ discarded writes for all cards; explicit `-vmc` selects volatile mode.
 
 ## PNACH overlays
 
+A game's default PNACH is `games/<game>.pnach` in the project's or Workshop's
+`pcsx2_files/`, when one exists; the same file in both is an error.
 `-pnach <file>` appends one PNACH file to every launched game after its selected
 default or caller-supplied per-game PNACH set. The option is repeatable and
 preserves command-line order.
@@ -128,22 +130,11 @@ options.
 
 ## Input profiles
 
-`workshop input` regenerates every complete PCSX2 input profile from the tracked
-base and partial overrides and removes generated profiles whose override no
-longer exists, without changing GameSettings assignments.
-`workshop input <profile>` also assigns the selected profile variants in the
-GameSettings file of every game folder in the project's and Workshop's
-`pcsx2_files/games/`.
-
-Every generated profile at the root of `@pcsx2_input_profiles/` is tracked by
-Git. Base outputs use `<profile>_Base.ini`; game-specific outputs use
-`<profile>_<game>.ini`. Profile selectors are case-insensitive and ignore `_`
-or `-`, so `Cap_ture` selects canonical `Capture`.
-
-Generation first merges all selected overrides by section, action, and input
-family. It then removes conflicting bindings, replaces existing actions in
-place, and appends only new actions. Multiple assignments declared by the
-effective override may still deliberately share one binding.
+Every game uses the tracked `@pcsx2_input_profiles/Default.ini`, which holds
+all controller bindings, hotkeys and input-source settings. PCSX2.ini names it
+as the fork's
+[default input profile](../../../PCSX2/docs/README.md), so it replaces PCSX2's
+shared input settings. Edit it through Controller Settings.
 
 ## PINE client
 

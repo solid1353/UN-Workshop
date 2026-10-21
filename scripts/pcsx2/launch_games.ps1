@@ -263,7 +263,6 @@ foreach ($requestedGame in $Games) {
         [StringComparison]::OrdinalIgnoreCase
     )
     $defaultPnach = [string[]]@()
-    $gameSettingsPath = $null
     if ($isIsoPath) {
         $isoPath = [IO.Path]::GetFullPath($target)
         if (-not (Test-Path -LiteralPath $isoPath -PathType Leaf)) {
@@ -277,12 +276,10 @@ foreach ($requestedGame in $Games) {
             -Game $selector `
             -ProjectRoot $paths.Project
         $isoPath = [IO.Path]::GetFullPath([string]$resolved.iso)
-        $gameSettingsPath = [IO.Path]::GetFullPath(
-            [string]$resolved.game_settings
-        )
-        $defaultPnach = [string[]]@(
-            [IO.Path]::GetFullPath([string]$resolved.cheats)
-        )
+        $cheatsPath = [IO.Path]::GetFullPath([string]$resolved.cheats)
+        if (Test-Path -LiteralPath $cheatsPath -PathType Leaf) {
+            $defaultPnach = [string[]]@($cheatsPath)
+        }
     }
     if (-not $seenImages.Add($isoPath)) {
         throw "Each resolved game image may be launched only once: $selector"
@@ -327,7 +324,6 @@ foreach ($requestedGame in $Games) {
         IsoPath = $isoPath
         MemoryCardPath = $memoryCardOverridePath
         MemoryCardMode = $memoryCardMode
-        GameSettingsPath = $gameSettingsPath
         Pnach = $pnach
         PnachLines = $pnachLines
         UnlimitedForFrames = $gameUnlimitedForFrames
@@ -358,10 +354,6 @@ $pcsx2Launcher = [IO.Path]::GetFullPath(
 )
 $requiredFiles = @($pcsx2Launcher)
 $requiredFiles += @($selectedGames.IsoPath)
-$requiredFiles += @(
-    $selectedGames.GameSettingsPath |
-        Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
-)
 $requiredFiles += @(
     foreach ($game in $selectedGames) {
         foreach ($pnachPath in @($game.Pnach)) {
