@@ -1151,6 +1151,8 @@ This is full destruction after borrowed lookups.
 
 ## Other retail games compared with NA2
 
+[UN2 battle stages](un2_stages.md) owns UN2's `0x111` archives, compiled
+scene records, per-scene tables and Stage Select assets.
 [UN3 battle stages](un3_stages.md) owns retail archives, compiled scene
 records, summon scenes and comparison.
 [Stage content shared with NA2](un3_stages.md#stage-content-already-shared-with-na2)

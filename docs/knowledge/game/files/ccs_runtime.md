@@ -592,6 +592,7 @@ Chunk-1 versions of every extracted retail `.CCS`:
 | Game | Files | Versions |
 | --- | ---: | --- |
 | NA2 | 2,310 | `0x123` except `STR/ATTENTION.CCS` (`0x120`) |
+| UN2 (US / JP) | 1,357 / 1,387 | all `0x111` |
 | UN3 | 2,400 | 2,348 `0x123`; 41 `0x111` (card images and `XLANGUAGE.CCS`); 10 `0x120` (`1CMNBOD1.CCS`, eight `RPGF/FRPG*.CCS`, `STR/ATTENTION.CCS`); 1 `0x122` (`RPGF/FRPGPKN.CCS`) |
 | UN4 | 4,031 | 4,029 `0x123`, 2 `0x120` |
 | UN5 | 3,552 | 3,551 `0x123`, 1 `0x120` |

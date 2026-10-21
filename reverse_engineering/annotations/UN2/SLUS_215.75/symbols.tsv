@@ -1,0 +1,63 @@
+address	kind	name	type	comment
+0x001974B0	function	fighter_has_chakra		True when fighter +0x5C >= the given amount, unless 0x001EC4E0 reports a block.
+0x001E0BB0	function	effect_stage_intensity_tint_update		Reads stage_effect_intensity[scene byte +0x41] and passes it to the mode-2 tint packet 0x001E04E0; UN3's effect_4a_secondary_update reads its table the same way but defaults out-of-range scenes.
+0x001ED930	function	camera_bind_stage_record		Save camera +0x17C and bind stage_camera_records_by_scene[scene] there without a range check; UN3 counterpart 0x00234D80 (+0x18C).
+0x001F15A0	function	fighter_event_dispatch		Event 0x8002 publishes the masked ground code; the tail writes manager +0x2B68 = 0xF0F0F0.
+0x0021C370	function	effect_emit_surface_puffs		Smoke variant 0x95 for snow/ice, else 0x93; scenes 16/17 add three particles of the stage's EFF_e0x_ice.
+0x0021E8B0	function	fighter_periodic_surface_effects		By fighter +0x8C0 & 0xF0F0F0 and cursor: 0xE0A000 splash 0x0021F9F0 every 10 (state 4) or 2 updates after 6; 0xF0D0D0/0xF0F0F0/0x5000/0x606060/0x80D0F0/0x90B0C0/0x3060 puff 0x0021C370 at scale 4 below 8, then 2.5 every 10 (state 4) or 4; 0x90B0C0 also 0x00224010 at the lower foot; 0xD000, 0x60C0, 0x202020, 0xE0E000 nothing.
+0x0021EF30	function	effect_emit_periodic_water_code		Every 15 cursor units: 0xE0A000 splash 0x0021F9F0; 0xE0E000 0x0021F7E0 (effect 0x2E, ANM_e0x_move_02).
+0x00220230	function	effect_emit_manager_ground_code		Manager +0x2B68: snow/ice effect 0x40, other ground codes 0x28, then shared feedback and common sound 0x23; 0x60C0 returns.
+0x0022F6B0	function	stage_break_debris_parse		Equals UN3 stage_break_debris_parse: four token-7 pieces ('%s_a%d'), 20 particles, gravity 9.8, bounce 0.6, damping 0.8.
+0x00233760	function	stage_emit_feedback		Numeric stage feedback dispatch, then a nonnegative common sound.
+0x0023C3D0	function	battle_mode_intruders_enabled		Returns bit 3 of byte +0x5D of the mode object's +4 record; gates the 0x990 intruding characters.
+0x0025CE90	function	audio_request_common_position		Read an audio_common_controls row and emit positional synth commands; event 0xCE suppressed here.
+0x0025D0D0	function	audio_request_common_position_key		Common positional request with a supplied key.
+0x0025F330	function	audio_load_common_bank		Load DATA/SNDDATA.BIN per audio_common_bank_descriptor and bind it through RPC 0x9050.
+0x0026EE10	function	jutsu_camera_apply_preset_record		Installs a 0xB0-byte camera preset's tracking sources, positions, offsets and controls.
+0x002A2BA0	function	particle_field_apply		Reads the field's original descriptor (+4) when override +0xC is zero; UN3 copies descriptors instead.
+0x002A8480	function	generator_resolve_resources		Resolve each generator_resource_rows row's container and resource into the pool lookup array.
+0x002B8090	function	audio_apply_music_preset		Preset 5 plays the context +0x1AC override, or stage_music_tracks[scene] from SOUND.AFS partition 0 through 0x0025DA30.
+0x002B8F70	function	fighter_request_periodic_surface_audio		Mask fighter +0x8C0: F0F0F0->0xB8, F0D0D0->3, E0E000->5, 3060/5000->1, 60C0->6, 606060/E000E0->3, 80D0F0->0, else 0x25; identity 0x15 extra 0xB9.
+0x002B9230	function	audio_request_surface_word		Mask a supplied polygon word and use the periodic surface event map.
+0x002D5C10	function	stage_build_doll_ai_targets		Training dolls (subtype 0x25) into scene +0x40C/+0x410, without the +0x148 check.
+0x002D5FC0	function	stage_build_breakable_ai_targets		Section COM prop-target lists (scene +0x404/+0x408) from category-8 objects with +0x148 == 1.
+0x002D63A0	function	stage_prepare_doll_nodes		Runs after each category-3 record, as UN3's does.
+0x002D6FA0	function	stage_scene_construct		Walk scene_index's 32-byte records from BATTLE stage_scene_tables (0x0081C760), switching on category (type bits 8..15) 0..14, then fixed setup. UN3 counterpart 0x007C26C0; unlike UN3, category 12 has a handler (0x002DB450).
+0x002D7720	function	stage_construct_training_dolls		Category 8 subtype 0x25 (training dolls).
+0x002D8AD0	function	stage_leaf_surface_variant		Leaf variant by stage +0x9C: 1->1, 6->3, 2: within 200 of x -700/700 -> 3/6 else 0 (4 without position), 11: within 200 of -825/825 -> 5/4.
+0x002DAA30	function	stage_apply_render_coefficients		Copy stage_render_coefficients[scene] to 0x0056DB18/0x0056DB14 (UN3 keeps its table in BATTLE.BIN).
+0x002DAAE0	function	stage_parse_player_nodes		Category 10 handler of stage_scene_construct.
+0x002DAB80	function	stage_parse_line_nodes		Category 11 handler of stage_scene_construct.
+0x002DB220	function	stage_parse_fog		Category 1 handler of stage_scene_construct.
+0x002DB390	function	stage_parse_category2		Category 2 handler of stage_scene_construct.
+0x002DB450	function	stage_parse_point_nodes		Category 12 subtype 0x0A: token 5 positions of the token-3 node and its _N siblings into stage control +0x214 (count +0x20C, token 0 at +0x210). UN3 skips category 12.
+0x002DB600	function	stage_parse_lighting		Category 13 handler of stage_scene_construct.
+0x002DBBD0	function	stage_parse_cl_lines		Category 14 handler of stage_scene_construct.
+0x002DBF90	function	stage_parse_far_objects		Category 3: subtypes 0x01 plain, 0x34 water surface (0x006DCEA0), 0x35, 0x48, 0x49, 0x4C, 0x6F plain object (vtable 0x00553F20), 0x94, 0xA1.
+0x002DC850	function	stage_parse_base_animation		Category 4 handler of stage_scene_construct.
+0x002DC960	function	stage_parse_animation_props		Category 5: one allocation, vtable and BATTLE.BIN constructor/parser per subtype.
+0x002E0ED0	function	stage_parse_creature_props		Category 7: 0x86 cloth simulation (parser 0x007086A0) among others.
+0x002E2920	function	stage_parse_reactive_props		Category 8: 0x01/0x98 breakables (0x006B7A20), 0x03 lantern, 0x25 training dolls (0x002D7720), 0x26 monkey doll, 0x46 cargo, 0x62 vending machine, 0x8A shadowed object.
+0x002E48D0	function	stage_parse_category9		Category 9: 0x90 intruding characters (ojmgmk/ojmgmt/ojmpkn/ojmnkm), built only when the battle-mode object exists, its mode is not 1 or 6 and 0x0023C3D0 is set.
+0x002E77C0	function	stage_parse_transparent_objects		Category 6: 0x01 transparent pillar (parser 0x006DC650), 0x60 lamp light (0x006D9120), others.
+0x002EB2A0	function	stage_bind_ice_resources		Scenes 16/17 resolve the archive's EFF_e0x_ice to stage +0x2F0; scene 17 also binds rock compositions.
+0x003307C0	function	jutsu_camera_apply_stage_adjusted_preset		Applies a jutsu camera preset; on scene 0, kinds 3,8,9,10,0x10,0x13,0x21,0x27,0x2A,0x2E,0x34,0x37 with a section-1 participant at 730<|x|<1000, height 300..700 use presets 0x8D..0x90.
+0x00410390	data	stage_camera_records_by_scene	void *[18]	Pointers to 0x60-byte, 24-float camera records by scene index, UN3's record size.
+0x00410FD0	data	effect_resource_rows		150 rows of 24 bytes: container, resource, kind and alias of each numeric effect.
+0x004128A0	data	generator_resource_rows		102 rows of 16 bytes: common container/resource and palette alias per generator resource selector.
+0x00418E90	data	audio_common_controls		Common sound event rows, 8 bytes each; byte 0 the common-bank program.
+0x00419768	data	audio_common_bank_descriptor	unsigned int[3]	SNDDATA.BIN offset 0, header 0x57E0, samples 0xE02D0.
+0x00419B50	data	stage_music_tracks	unsigned int[18]	Default battle track per scene: zero-based member of SOUND.AFS/000.afs.
+0x0043EFA0	data	stage_scene_rectangle_lists	void *[18]	Per-scene lists of 32-byte line-endpoint rectangles ending at -1, read by 0x0027C9E0; purpose open.
+0x00440070	data	stage_scene_auxiliary_filenames	char *[18]	Archive file names formatted into 3eye/3eye%s by 0x002ED240.
+0x00442470	data	stage_scene_variants	int[18]	Per-scene 0/1 copied to stage control +0x94 by 0x002D8D10; stage_scene_construct appends suffix _a/_b (0x004423D0) to BLT_bg/BLT_obj, the names each archive holds.
+0x004424C0	data	stage_render_coefficients	float[18][2]	Two render coefficients per scene; NA2 factory 17 tokens 0/1.
+0x004425D0	data	stage_scene_effect_defaults		18 x 16-byte rows (byte, word, float, word); 0x002EB5F0 overrides some on its stack copy before indexing.
+0x00450970	data	jutsu_camera_ichiraku_platform_presets		Camera records 0x8D..0x90 of table 0x0044A880, 0xB0 bytes each.
+0x004AD2D0	data	stage_effect_intensity	unsigned char[18]	Tint intensity byte per scene, read by 0x001E0BB0 with no range check or default.
+0x005002F0	data	jutsu_camera_ichiraku_platform_rectangles	float[4][4]	x -1000..-730 and 730..1000, height 300..700.
+0x0055F79C	data	ai_water_chakra_threshold	float	2.5: COM water reaction threshold (as UN3).
+0x005601F4	data	stage_wind_strength	float	Published by stage_wind_update (gp-0x657C).
+0x00560344	data	stage_sway_coarse_sine	float *	
+0x00560348	data	stage_sway_sine	float *	
+0x0056034C	data	stage_sway_cosine	float *	

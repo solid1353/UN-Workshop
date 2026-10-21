@@ -450,7 +450,7 @@ controller construction belong to the routine annotations.
 | `0x502` | `stage_wire_parse` | Second/third resources are endpoints ordered by component 0; texture token 6; 15 interior nodes, three arrays and segment/controller storage. |
 | `0x507`, `0x506` | `stage_sway_animation_parse` (`0x007E58A0`) | Token 5 pieces: the record's animation and `_1`.. siblings, at the token-3 node and its `_1`.. siblings, each with a random phase and amplitude 0.1 + rng(0.3) (mode 0), or 0.025 + rng(0.01) when the label holds the lantern string (mode 1); `0x506` is mode 5. |
 | `0x518` | `stage_wind_parse` | One wind per scene: after a hold of 10 × 60 / frame divisor updates (300 at 30 updates per second) the phase advances a degree per update with `stage_wind_strength` = sin(phase); it holds at +1 (phase 90), 0 (180) and -1 (270), and after 360 rests 25 × 60 / divisor updates. `stage_wind_update` starts common sound `0x3E` (velocity `0x40`) on its first update and, outside holds, places it at the camera eye plus (550 w − 600, 6000 \|w\| − 6000), or 6000 below while `battle_restriction_check` reports a restriction. `audio_position_velocity` gives volume × max(0, 5500 − distance) / 50 / 100 and `audio_position_direction` always centres it. The sound plays the same sample, split and sample record as NA2's common sound `0x27`. |
-| `0x51B` | `stage_flying_leaves_parse` | A generator from `stage_flying_leaves_generator_parameters` and `stage_flying_leaves_force` with token 8 as lifetime, token 7's composition as its material, token 4 scale and distance fade 100/22000/500/20000. `stage_flying_leaves_update` puts its origin token 3 ahead of the camera along the view, offset upwind by token 10, sets the force's x to token 9 × -wind and the alpha scale to the wind's magnitude, or 0 below 0.3. |
+| `0x51B` | `stage_flying_leaves_parse` | A generator from `stage_flying_leaves_generator_parameters` and `stage_flying_leaves_force` with token 8 as its emission rate (`+0x18`; the particles keep the row's lifetime of 30), token 7's composition as its material, token 4 scale and distance fade 100/22000/500/20000. `stage_flying_leaves_update` puts its origin token 3 ahead of the camera along the view, offset upwind by token 10, sets the force's x to token 9 × -wind and the alpha scale to the wind's magnitude, or 0 below 0.3. |
 | `0x52D` | `stage_rising_leaves_parse` | Token 7 composition, token 0 section, tokens 1/2 x range and 3/4 height range. `stage_rising_leaves_update` starts leaf generators at a fighter in states (1, 0x15/0x16) or (5, 0x42/0x43/0x45) inside them, up to six per kind. |
 | `0x601` | `stage_transparent_parse` | Token 3 hit/position node; token 8 plus 150 contact divisor; a radius-150 receiver with mask `0x108` at the node. `stage_transparent_update` takes the nearer fighter's contact distance / divisor, 1 without contact, raises the fade by a tenth of that when it would rise more than 0.1, and sets opacity to fade × `bg_animation_limit(700)`. |
 | `0x79B` | `stage_flag_parse` | Token 7 texture at the token-3 node, tokens 8/9 width and height × 4, token 10 solver selector; a 4 × 6 cloth with `stage_flag_constants` on the cloth solver NA2's factory 6 also uses. `stage_flag_update` blows it with w = −`stage_wind_strength`, at least ±0.005: force 5000 w along the normalized (0.5 w + rng(0.5), rng(0.02), rng(0.02)), then one solver step of 0.064. `stage_flag_draw` widens the render context's clip bounds by a tenth while the cloth draws. |
@@ -499,6 +499,13 @@ pending reaction and animation completion re-register both receivers.
 Broken objects can select their later animation and seek to the configured
 pose; this seek is not a periodic increment. Types `0x801/0x871` share
 `stage_breakable_vtable` and this update.
+
+`stage_breakable_parse` also sets word `+0x138` to 1, and one branch of
+`stage_parse_reactive_props` (`0x007CDFC8`) clears it again. Only props
+holding 1 join the COM's prop-target lists
+(`stage_build_breakable_ai_targets`, `0x007C3680`) and count for
+`stage_condition_all_props_broken_update` (`0x007D85B0`); the field does not
+affect breaking. The restricted-update opt-in is the separate byte `+0x28`.
 
 `model_advance_animation` uses 256 units per frame, clamps at
 `(frame_count-1)*256` and returns completion; a loop flag can reset it to

@@ -1,0 +1,135 @@
+address	kind	name	type	comment
+0x006AEB10	function	stage_select_bind_resources		Resolve mapsel1, TEX_haipure_s01 and menu animations; bind the thumbnail sprite at selector +0x0C and the preview model.
+0x006AF200	function	stage_select_initialize_choices		selector +0x7D[i] = scene i for i < 16 (JP 18); with a battle context keeps scene pairs (i, i+1) whose availability bytes at *(context+4)+0x3A70+i allow either.
+0x006AF310	function	stage_select_choose_scene		Find a requested scene byte in selector +0x7D and refresh the big preview.
+0x006AF380	function	stage_select_confirm_scene		Resolve random (16) and next (17), check availability, write the scene to battle context +0x41.
+0x006AF520	function	stage_select_draw_sprite_rect		Draw a top-origin x, y, width, height sprite rectangle (1/16 units for x/y).
+0x006AF930	function	stage_select_handle_input		Move through choice positions; confirmation passes the stored scene byte to stage_select_confirm_scene.
+0x006B0760	function	stage_select_draw_thumbnails		Draw each choice's 64x48 thumbnail from haipure_s01 at stage_select_thumbnail_origins[scene].
+0x006B0F40	function	stage_select_bind_preview		Big preview of scene s: haipure(s/8+1), column (s%8)/4 at U 0/0.5, row s%4 of 128 pixels, on MDL_gamen (U 40..214, V 2..128 per cell); entry 16 uses the random preview.
+0x006B5A50	function	stage_effect_allowed		True unless the kind's battle/cinematic states block it (kinds 1..13: context +0x260 state 1, 0x006B6A70, gp-0x63AC, fighter and ultimate-owner states); the snow passes kind 2.
+0x006B6290	function	stage_sway_tables_init		72-entry sine/cosine and 18-entry coarse sine; sample 36 = 3.14.
+0x006B6950	function	stage_increment_side_counter		Increments halfword +0x30 + 2*side of the object at gp-0x6560; called on scenes 11 and 17 by 0x00286110.
+0x006B6E40	function	stage_item_select		Random item by category tables 0x0081C9A0..0x0081CA9C and chance.
+0x006B77D0	function	stage_owner_flag_b1		Byte +0xB1 of the object at gp-0x6560 (the one holding per-side counters at +0x30), or 0; snow and petals test it.
+0x006B7A20	function	stage_breakable_parse		Category-8 base parser; matches UN3 stage_breakable_parse (0.73). Sets +0x148 = 1: COM prop target and mission eligibility.
+0x006B7FD0	function	stage_breakable_update		Base breakable update; equals UN3 stage_breakable_update.
+0x006B8160	function	stage_breakable_react		Non-final hit plays the record's first trailing word (object +0x84) as a common sound; destruction the second (+0x88), through stage_emit_feedback.
+0x006B83E0	function	stage_breakable_break_drop		Base break item drop: mode 0 for subtype 0x5E, 1 for 0x18, otherwise 2.
+0x006B85D0	function	stage_breakable_prepass		Pulse from gp-0x6960 +0x19C, contact resolve, render-contact latch; UN3 stage_breakable_prepass.
+0x006B86D0	function	stage_breakable_draw		Equals UN3 stage_breakable_draw; flash colors stage_breakable_flash_colors.
+0x006B8890	function	stage_lantern_break_drop		Item drop with mode from token 1 (+0x168); UN3 stage_lantern_contact_effect.
+0x006B89A0	function	stage_lantern_trigger		Base hit plus hitter side kept on non-final hits; equals UN3 stage_lantern_trigger.
+0x006B8C80	function	stage_lantern_update		0x803 update: prepass, trigger, debris, stage_lantern_motion, model advance.
+0x006B8E30	function	stage_lantern_motion		Equals UN3 stage_lantern_motion: phase +2, decay 0.6 floor 0.05, rotation (s, 0.3s).
+0x006B9510	function	stage_sway_animation_parse		0x506/0x507 noren; counterpart of UN3 stage_sway_animation_parse.
+0x006B9B20	function	stage_sway_animation_update		Noren equations equal UN3's.
+0x006B9F00	function	stage_sway_animation_draw		
+0x006C0E30	function	stage_monkey_doll_parse		0x826; matches UN3 stage_monkey_doll_parse (0.92).
+0x006C0F10	function	stage_monkey_doll_update		Equals UN3 stage_monkey_doll_update.
+0x006C1160	function	stage_training_doll_parse		0x825: reappearance base 30*token1 (UN3 10*); attack sphere token9*2 at doll node+(0,-100,100); +0x150 scene index.
+0x006C17C0	function	stage_training_doll_break_drop		Item drop mode 0.
+0x006C1880	function	stage_training_doll_update		UN3 stage_training_doll_update; broken doll counts side at gp-0x6560+0x30 on scenes 10/16 only.
+0x006C5F20	function	stage_cargo_piece_parse		UN3 stage_cargo_piece_parse: sphere token9 at (0,-150,50), fall 0.12, 9.8.
+0x006C6700	function	stage_cargo_parse		0x846 Kazekage cargo; draw matches UN3 stage_cargo_stack_draw.
+0x006C8740	function	stage_vending_machine_trigger		Counts hits per side gp-0x6560+0x30; drop 5% when a side's count is exactly 10 (scene 9) or 8 (scene 14), else 20%.
+0x006C8A50	function	stage_vending_machine_parse		0x862; matches UN3 stage_vending_machine_parse (0.88).
+0x006D9120	function	stage_lamp_light_parse		0x660 lamp light.
+0x006D9780	function	stage_wire_parse		0x502; matches UN3 stage_wire_parse (0.77 normalized-instruction similarity).
+0x006DA230	function	stage_wire_update		
+0x006DA320	function	stage_wire_draw		16 segments while background state < 2.
+0x006DAA30	function	stage_wire_react_to_fighter		Clears the remembered fighter position on a major-state change; height < 150 (UN3 <= 150).
+0x006DBA60	function	stage_landing_tree_reaction		Queues -50 sway, ten leaves, sound 7; leaf variant from 0x002D8AD0.
+0x006DC160	function	stage_landing_tree_landing_extra		Item from kinds 5/1/0 weights 60/40/0 (0x0081CE10) before the 1-in-5 check.
+0x006DC650	function	stage_transparent_parse		0x601; matches UN3 stage_transparent_parse.
+0x006DC790	function	stage_transparent_update		Skipped while gp-0x6560 +0xB1 set; no contact: opacity=min(1,(d+1)/700) camera fade.
+0x006DC8D0	function	stage_transparent_contact_fade		Equals UN3 stage_transparent_update: nearer fighter distance / (token8+150), rise by tenth.
+0x006DCC00	function	stage_transparent_draw		Draw environment 1 from blend 0.4 (UN3 1.0) unless restriction 4; draws unless restriction 2.
+0x006DCEA0	function	stage_water_surface_parse		0x334 water surface; adds its object to stage control +0x14 list.
+0x006E5450	function	stage_wire_destroy		
+0x006F0DB0	function	stage_swing_grass_parse		Token 5+1 models, token 3 origin, token 7 stem ('%sa%d').
+0x006F1200	function	stage_swing_grass_update		1-in-10 start of 20-update push of -2*wind (|wind|>=0.3), damping 0.98 to zero below 0.01; UN3 differs.
+0x006F14E0	function	stage_swing_grass_draw		Skipped while stage_effect_allowed(2) is nonzero.
+0x006F16A0	function	stage_sway_leaf_shadows_parse		Tokens 6/7 paired compositions with a shared random opacity.
+0x006F1AD0	function	stage_sway_leaf_shadows_update		Wind sway in components 0/1; opacity random walk 0.01 within 0.3..0.6.
+0x006F1F10	function	stage_sway_leaf_shadows_draw		
+0x006F1FC0	function	stage_sway_leaves_parse		0x538 swaying leaves; update 0x006F2250 matches UN3 stage_sway_leaves_update (0.94).
+0x006F2250	function	stage_sway_leaves_update		Equals UN3: 0.3 minimum wind, 1.3/0.5 ellipse.
+0x006F2550	function	stage_sway_leaves_draw		
+0x006F25E0	function	stage_sway_needles_parse		0x59D swaying pine needles (S3A); parser resembles stage_sway_leaves_parse.
+0x006F2860	function	stage_sway_needles_update		Phase +3..5 deg; all axes 0.02*|sin|; ignores wind and token 10.
+0x006F29D0	function	stage_sway_needles_draw		
+0x006F2A50	function	stage_snow_parse		0x59E: generator 0x00821D60 with field 0x00821DA0 at (150, 400, 200), material EFF_s3aefe01, scale 7.5.
+0x006F2BB0	function	stage_snow_update		Raises gp-0x70C0 toward 3500 by 10 per update into generator +0x108; hides the snow under a battle restriction.
+0x006F2E20	function	stage_footprints_parse		0x59F: 30 token-6 composition prints per foot per fighter.
+0x006F3050	function	stage_footprints_update		On 0xF0F0F0 ground within 20 below a foot, places a print 4 above the last contact when the foot leaves; puff effect for three updates after a trigger.
+0x006F5900	function	stage_wind_parse		0x51D; matches UN3 stage_wind_parse (UN3 0x518).
+0x006F5A30	function	stage_wind_update		UN3 phase/hold cycle; sound 0x3E at control volume 80 (UN3 64), same samples (NA2 program 0x27).
+0x006FA620	function	stage_rain_parse		0x579 rain (S0B2): 50 drop models (name at 0x008395C0) at opacity 0.75; update 0x006FAA10 keeps them falling 100 ahead of the camera, facing it, respawning below -35.
+0x006FAFD0	function	stage_grass_spray_parse		0x57B: generators 0x0081FF70 rows 12..18 with field 0x00820950 at OBJ_sibuki_010..070, plus three of row 0x00820248 at 0x0081D250 points.
+0x006FB560	function	stage_memorial_spray_parse		0x57C: three generators 0x0081FF70 rows 0x13..0x15 at 0x0081D280 points, alpha 0.2.
+0x006FB890	function	stage_lightning_parse		0x57D cloud light: flash model (0x00839660) and three cloud models (0x00839670/80/90).
+0x006FBFD0	function	stage_lightning_update		Flash at rand(450)==0 after the minimum wait: flash alpha 0.1 falling 0.01 per update to -0.3, global flag gp-0x6568, clouds fade 0.05 per update.
+0x006FC2B0	function	stage_puddle_ripples_parse		0x57E: six generators 0x0081FF70 rows 6..11 at OBJ_hamon_010..060, alpha 0.2.
+0x006FC590	function	stage_landing_tree_parse		0x50E new leaves; update 0x006FCB40 matches UN3 stage_landing_tree_update.
+0x006FCB40	function	stage_landing_tree_update		
+0x006FD300	function	stage_landing_tree_draw_leaves		
+0x006FE960	function	stage_moving_clouds_parse		0x57F: three cloud models (0x00839710, 0x00839720) with random angle and 0.001 rotation step.
+0x006FF360	function	stage_cherry_petals_parse		0x539 cherry petals (S0A2): generators 0x00820440 with fields 0x00820970/0x008209B0 at OBJ_ha_010..070, alpha 0.25, plus one moving generator (0x00820478) and four force objects from 0x00820CD0.. .
+0x00700D20	function	stage_falling_leaves_parse		0x53B; matches UN3 stage_falling_leaves_parse (UN3 0x52B).
+0x00700F70	function	stage_falling_leaves_update		Rewrites shared force rows from wind; effective because UN2 fields read descriptors live.
+0x007011E0	function	stage_falling_leaves_draw		Empty.
+0x007017D0	function	stage_rising_leaves_parse		Tokens 7 material, 0 section, 1/2 x bounds, 3/4 height bounds; owns four field objects.
+0x00701C10	function	stage_rising_leaves_spawn		Six slots per kind; scale 0.5; second point 100 above the fighter.
+0x00702100	function	stage_rising_leaves_update		Triggers on states 1:0x15/0x16 and 5:0x41/0x42 (UN3 5:0x42/0x43/0x45); retunes after 16 updates.
+0x00704E30	function	stage_flying_leaves_parse		0x524; matches UN3 stage_flying_leaves_parse (UN3 0x51B).
+0x00705090	function	stage_flying_leaves_update		Camera-relative origin; force x follows -wind through the live descriptor; alpha 0 below 0.3.
+0x00705350	function	stage_flying_leaves_draw		Empty.
+0x00705370	function	stage_blur_parse		0x580: tokens 8 float, 9 and 10 integers into the resident filter object built by 0x002B2310.
+0x007086A0	function	stage_cloth_parse		0x786 Ichiraku cloth simulation; update 0x00708AB0 resembles UN3 stage_flag_update.
+0x00708AB0	function	stage_cloth_update		UN3 stage_flag_update except gusts rng 0.8 in x, 0.01 in y/z (UN3 0.5, 0.02).
+0x00708E20	function	stage_shadowed_object_parse		0x88A: base parse, token10 '%ss1' shadow child loses fog flags 0x18; UN3 0x863.
+0x00708EC0	function	stage_shadowed_object_trigger		Base hit; re-clears shadow child fog flags after damage animation.
+0x00709540	function	stage_trail_lanterns_parse		0x58D pseudo-blur lanterns: token 5 count at token-3 node siblings, token 6 model, token 7 glow, 32-position trail, random swing phase.
+0x0070B9D0	function	stage_diamond_dust_parse		0x59B: generator 0x00821B80 with fields 0x00821BC0/0x00821BE0, alpha 0.5; update 0x0070BAC0 keeps it 400 toward the camera target, 200 lower.
+0x0070BC80	function	stage_ice_wall_effect_parse		0x59C: 11 looping generators from rows at 0x0081DCB0 (origin, second point, generator and fields, scale).
+0x00712860	function	stage_intruder_parse		0x990: loads ojmgmk/ojmgmt/ojmpkn/ojmnkm.ccs characters by selector.
+0x007238E0	function	stage_flying_leaves_destroy		Requests generator shutdown.
+0x00723BA0	function	stage_rising_leaves_destroy		Releases the four field objects.
+0x00723E10	function	stage_falling_leaves_destroy		Retires particles, restores the saved generator parameter.
+0x00724F50	function	stage_wind_destroy		Stops event 0x3E and destroys the base object.
+0x007255C0	function	stage_sway_leaf_shadows_destroy		
+0x00725640	function	stage_swing_grass_destroy		
+0x00728240	function	stage_mission_preserve_props_update		Condition 0x2C: a prop with +0x148 == 1 broken (remaining -1) clears the mission flag.
+0x00728680	function	stage_mission_destroy_props_update		Condition 0x2E (destroy all placed objects within 30 s): counts broken +0x148 == 1 props, setting them to 2.
+0x007325D0	function	ai_point_route_update		UN3 ai_point_route_update counterpart (0.67): near distance 40 instead of 10 on scenes 0, 12, 13; scene 13 special case.
+0x00734A20	function	ai_route_section_gate		Scenes 10/6 with fighter +0x7A6 == 0 (scene 15 == 1): route kinds 0x25/0x37 replan.
+0x0073DF60	function	ai_route_reactions		Scenes 10/6: COM below 2.5 chakra in route states 3..5, 9, 0x18, 0x1A, 0x1C, 0x1D (or 2 at step 5) replans and picks a random reaction (UN3 ai_water_chakra_gate).
+0x00757820	function	jutsu_get_camera_index		Active participant controller +0x344, or -1.
+0x0075DC60	function	jutsu_participant_get_stage_section		Fighter +0x7A6, alternate participant +0x130, or 0.
+0x0076B8B0	function	jutsu_participant_set_stage_section		Set fighter +0x7A6 and the other fighter's opponent-section cache +0x264.
+0x00770BE0	function	ai_water_fall_check		Scenes 6/10: battle-context +0x260 object in state 1 and fighter height <= -10 -> 0x00331EA0(obj, 0).
+0x007BA710	function	fighter_pair_scene_rectangles		Per scene and fighter +0x7A6: rows of fighter_pair_rectangles; inside x/height moves to target row point by partner side; -1 drops placement. Scene 0 nonzero: rows 14/15.
+0x007BB190	function	fighter_pair_scene_heights		Pair heights: scene 11 -> 50; scene 10 with +0x7A6 nonzero -> 60; scene 8 in two rectangles -> 365.
+0x007BB410	function	fighter_pair_place		Places fighter and partner (+0x2A0) for states 3,0x15,0x32,0x3D..0x40,0x42 by ground probes at per-state distances; scene rectangles first (fighter_pair_scene_rectangles), heights after (fighter_pair_scene_heights).
+0x007BEDE0	function	fighter_pair_place_method		Vtable method in ten SLUS fighter vtables; calls fighter_pair_place.
+0x007F1620	function	sealed_orochimaru_jutsu1_setup_participants		Giant Snake: Underworld Dash: participants +0x90/+0x1D0, placed through 0x007F2210.
+0x007F2210	function	sealed_orochimaru_jutsu1_place_participants		field_player_placement starts, or on scene 17 the fixed point (0,750,220) of 0x00829640 in section 1 (0x007F2990).
+0x007F40E0	function	sealed_orochimaru_jutsu1_select_camera		Camera index for 2forcha1 (Giant Snake: Underworld Dash); scene 0 section 1: shot 7 at 500<x<1000, 8 at -1000<x<-500, height 300..800.
+0x00807510	function	actor_landing_burst		State 6; generator row 0x0082BAE0 byte +0x0E = 0x15 on scenes 4/10, 0x5C on 6, 0x5F on 15; burst at position and sound 9.
+0x00818EF0	function	actor_ground_landing		Ground probe 0x20000001; on E0E000 or 202020 ground: splash variant 2 on scene 10, 4 on 6, 3 on 15 (0x0021D940), speed x0.2.
+0x0081BFE0	function	field_player_placement		Start position, facing and section; returns section 1 on scenes 5, 6, 10, otherwise 0.
+0x0081C6A0	data	stage_select_thumbnail_origins	unsigned short[19][2]	Top-origin pixel x, y of each scene's 64x48 thumbnail in haipure_s01.
+0x0081C700	data	stage_select_preview_texture_names	char *[4]	haipure01..04 name pointers, indexed by scene / 8.
+0x0081C760	data	stage_scene_tables	void *[19]	18 pointers to zero-terminated 32-byte stage record lists, by scene index, then null; first record type 1 names the stage and its stage/*.ccs archive. JP SLPS-25398 BATTLE.BIN has the same table at 0x00884870.
+0x0081CAC0	data	stage_breakable_flash_colors		Hit-flash colors FFFFFF, FFFF7B, FF4444; equal to UN3 0x00913740.
+0x0081D780	data	stage_cloth_flags		Five (node, texture, solver selector) rows: hata_010/s1aart18/6 .. hata_050/s1aart15/5.
+0x0081D800	data	stage_cloth_rotations		Per-flag rotation about y: -5, -10, 5, 10, 0 degrees.
+0x0081D850	data	stage_cloth_constants		Equal to UN3 stage_flag_constants: 700, 7000, 0.0015, -100, 1000, 50, ..., 1.
+0x00820DF0	data	stage_falling_leaves_generators		Two 0x38-byte rows equal to UN3 0x00917810: radius 300, lifetime 100, speed 3, +0x18 0.5.
+0x00820E60	data	stage_falling_leaves_forces		Spin (0.1,0,0.1), fall -7, fall -2; equal to UN3 0x00917880.
+0x00821690	data	stage_flying_leaves_generator		0x38-byte row; token 8 -> +0x18; lifetime +0xC 30.
+0x008216D0	data	stage_flying_leaves_force		0x20-byte force row (0,0,-10,1); x rewritten from wind.
+0x00826AB0	data	fighter_pair_rectangles		32-byte rows: two points; rectangle rows test x and height, target rows hold the two placements.
+0x00829670	data	sealed_orochimaru_jutsu1_ichiraku_camera_rectangles	float[4][4]	Two corner pairs: x 500..1000 / -1000..-500, height 300..800; strict bounds.
+0x0083C150	data	fighter_pair_rectangle_targets		Halfword target row per rectangle row; -1 drops the placement.
