@@ -1,4 +1,5 @@
 address	kind	name	type	comment
+0x00100230	function	game_arena_initialize	void game_arena_initialize(void)	Allocates one block of 0x01FFE000 minus the 0x00847000 heap start plus 0xA000, less 0x100; the arena ends at (block end - 0x20) aligned down to 16, where it writes the end node.
 0x0017D760	function	game_main_task		Main loop on the state object gp-0x68C0: 1 soft reset, 2 logos 0x0017E4F0, 3 0x0017E8A0, 4 title menu 0x0017E9D0 (builds the fade object gp-0x68EC), 5 0x0017F8C0, 6 new_game_start, 7 load 0x00241480, 8 game_scene_update. Enters state 2 at 0x0017D9A4.
 0x001974B0	function	fighter_has_chakra		True when fighter +0x5C >= the given amount, unless 0x001EC4E0 reports a block.
 0x001E0BB0	function	effect_stage_intensity_tint_update		Reads stage_effect_intensity[scene byte +0x41] and passes it to the mode-2 tint packet 0x001E04E0; UN3's effect_4a_secondary_update reads its table the same way but defaults out-of-range scenes.
@@ -80,6 +81,7 @@ address	kind	name	type	comment
 0x004AD2D0	data	stage_effect_intensity	unsigned char[18]	Tint intensity byte per scene, read by 0x001E0BB0 with no range check or default.
 0x005002F0	data	jutsu_camera_ichiraku_platform_rectangles	float[4][4]	x -1000..-730 and 730..1000, height 300..700.
 0x0055F79C	data	ai_water_chakra_threshold	float	2.5: COM water reaction threshold (as UN3).
+0x0055FD84	data	arena_end	void *	Arena end node (gp-0x69EC) stored by game_arena_initialize; also copied to gp-0x69E0.
 0x0055FF54	data	battle_manager		gp-0x681C: +4 profile, +0x38 scene, +0x3C mode, +0x40 control mode, +0x41 stage scene index, +0x42/+0x43 P1/P2 character, +0x46/+0x47 P1/P2 COM flag, +0x26C active side.
 0x005601F4	data	stage_wind_strength	float	Published by stage_wind_update (gp-0x657C).
 0x00560344	data	stage_sway_coarse_sine	float *	
