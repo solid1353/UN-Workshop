@@ -1,0 +1,38 @@
+address	kind	name	type	comment
+0x0887CBC8	function	random_inclusive		Random integer 0..maximum inclusive.
+0x088889E0	function	projectile_context_begin		Clamps the percentage 0..100 into context +0xE8 and the low 24 colour bits into +0xEC, as NA2's 0x0010D220.
+0x08888A28	function	projectile_context_end		Clears context +0xE8, as NA2's 0x0010D200.
+0x088DEFE8	function	mission_apply_battle_record		Reads a 0x52-byte eventBattle.ccbpm record; scene halfword at +0x2A.
+0x088E69D8	function	stage_format_archive_path		Formats the stage folder prefix and the scene's archive name.
+0x088E6D60	function	bg_control_load_scene		Loads the scene archive and BIN_bgdata, builds player positions, safe position, change lines and section lines from markers, constructs the scenes, loads DMY_cpmin/cpmax/cvmin/cvmax camera bounds.
+0x088E7F5C	function	bg_build_change_lines		Reads DMY_<f|b>[n]_cl_<k>_nor/end/mov pairs as typed lines per section, as NA2's first-family lines.
+0x088E816C	function	bg_build_section_lines		For sections 1..4 reads DMY_line_0n0 marker pairs (stem, stem_1, stem_2..; up to 32 pairs; variants stem1..3) as floor segments and walkable lines; DMY_linemin/max0n bound each section.
+0x088E8850	function	bg_load_player_positions		DMY_pp1_010..DMY_pp9_010 into bg +0x600, zero when absent.
+0x088E88F4	function	bg_control_load_safe_position		DMY_safe_pos into bg +0x6A0, (0,0,0,1) when absent.
+0x088F8790	function	bg_crash_break_reborn_parse		Factory 134: bomb, second object or 0, spot stem (<stem>_a<n>, up to 8), blast radius, away updates (90), fuse updates (150).
+0x088F8B4C	function	bg_crash_break_reborn_update		States: 1 fuse (red pulse, last 15% blink and swell to 2), 2 blast (16 updates of hits within the radius), 3 away hidden 200 below a random spot, 4 rise over 30; holds while stage updates are restricted.
+0x088F900C	function	bg_crash_break_reborn_draw		Rising: plain; fuse: tinted red by sin(angle) x 50 percent through projectile_context_begin.
+0x088F90D0	function	bg_crash_break_reborn_blast		Plays effect0x ANM_e0x_bom0 jittered +-10 and turned on z, a type-6 screen effect (0x08B39190), and sound 0x1011.
+0x088F9408	function	bg_flicker_object_update		Every 30 updates starts a flicker with chance/3001; toggles opacity 0/1 each update for 2..4 updates, then 1.
+0x088F954C	function	bg_flicker_object_parse		Factory 135: object, marker or 0, flicker chance in 3001.
+0x0890695C	function	bg_factory_fog		Factory 10: RGB, near/far percentages, near/far distances, NA2's tokens.
+0x08907160	function	bg_factory_render_coefficients		Factory 17: first token to 0x08CDDA48, second to 0x08CDDA44.
+0x089409B0	function	stage_select_build_available_list		Scans the 13 Stage Select rows in order, keeping scenes whose availability bit is set.
+0x08958724	function	camera_track_stage		Normal-stage camera: frames the fighters by mode, clamps to the stage markers (0x089599F0), eases eye and target by 0.3 per update.
+0x08958F6C	function	camera_frame_fighter_box		Mode 0: target = fighters' bounding-box centre + (0,0,75); eye = target - (0,d,-0.22d), d = max(800, 2 x box diagonal).
+0x089592C4	function	mission_top_level_camera_track		Scene 35 (r023) camera with fixed bounds 0x08B47AF0.
+0x089599F0	function	camera_clamp_to_stage_bounds		Clamps the eye per axis to bg +0x6B0/+0x6C0 (DMY_cpmin/cpmax), moving it back by any lateral overshoot, and the target to +0x6D0/+0x6E0 (DMY_cvmin/cvmax).
+0x08959B74	function	mission_camera_track		Mission camera from six scene-minus-13 vector tables at 0x08B47B90..0x08B484A0; eases 0.2.
+0x08959E84	function	battle_camera_update_by_scene_kind		Normal scenes 0x08958724; mission scene 35 0x089592C4; other missions 0x08959B74.
+0x0895E268	function	stage_get_name_text		Resolves the scene's name text entry.
+0x08974000	function	stage_is_mission_scene		1 for scenes 13..41 (r001..r029, Master Road missions), 0 below 13; -1 argument reads the active scene.
+0x08984960	function	mission_stage_load_auxiliary_archives		For mission scenes loads gim.ccs and 13adv e000/e007/e300 and the mission's object resources.
+0x089CA408	function	fighter_place_pair_at_safe_position		Places a paired action's two fighters side by side at DMY_safe_pos on section 0.
+0x08A8E670	function	stage_get_default_bgm_member		Scene's default track for scenes 0..41, else -1.
+0x08B38960	data	stage_camera_marker_defaults	float[4][4]	Eye min/max and target min/max used when the archive lacks DMY_cpmin/cpmax/cvmin/cvmax.
+0x08B39160	data	crash_break_reborn_responses	int[8]	Time-bomb hit responses 0x12,0x14,0x10,0x11,0x0B,0x0C,0x0D,0x0E, chosen by random(7).
+0x08B44FC8	data	stage_select_records	int[13][4]	Stage Select rows: scene, name frame, big and small picture objects; order 0,6,7,8,1,4,5,3,12,11,2,10,9.
+0x08B48B14	data	stage_name_text_ids	int[42]	Scene name text entries in 01text/text_*.bin: 160..199, then 181/182 again for r028/r029.
+0x08B83DD8	data	stage_archive_names	char *[42]	Scene-indexed stage archive names: s01..s10,s13,s21,s22 (scenes 0..12), then r001..r029 (Master Road missions 13..41).
+0x08B845A0	data	bg_record_factories	void *[]	BIN_bgdata factory table; NA2's numbering plus 134 ccBgCrashBreakRebornBattle, 135 flicker object, 139 ccBgFogCtrl, 151.
+0x08C71D74	data	stage_default_bgm_members	int[42]	Default sound/bgm.afs member per scene.

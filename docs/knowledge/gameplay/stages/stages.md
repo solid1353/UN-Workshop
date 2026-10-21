@@ -1162,6 +1162,10 @@ formats, stage data, soundtrack and Stage Select assets.
 [UNH2 battle stages](unh2_stages.md) owns UNH2's PSP archives, which run
 UN2's stage engine, its scene records and per-scene tables, battle music
 and Stage Select assets.
+[UNH3 battle stages](unh3_stages.md) owns UNH3's PSP archives, which run
+NA2's stage engine, the marker-built lines, placement and camera that
+replace NA2's per-slot tables there, its own factories and its Master Road
+mission scenes.
 
 ## Address index
 
