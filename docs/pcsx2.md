@@ -42,6 +42,20 @@ frame count. See the
 [speed options](../../../PCSX2/docs/launch_options.md#speed). Snapshot replay
 explicitly selects permanent Unlimited.
 
+## Deploying a PCSX2 build
+
+After building and validating the fork, run `workshop pcsx2 deploy`. The command
+uses the configured build output and development installation paths and waits
+in the foreground until the installed files become available. Close PCSX2 when
+convenient; deployment continues automatically, and the command returns when
+it finishes or fails.
+
+Deployment reads the completed build directly without staging another copy.
+If its source files change while waiting, deployment is cancelled. Results are
+appended to Workshop's `@logs/pcsx2-deploy.log`. The
+[deployment script](../scripts/pcsx2/deploy.ps1) owns the deployed file selection
+and hash verification.
+
 ## Input recordings and captures
 
 `-rp <recording>` replays one shared input recording in every launched instance
