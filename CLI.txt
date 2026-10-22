@@ -1,9 +1,10 @@
 UN Workshop
 
-  ws <game|iso-path>... [options]               Launch or replay one to three games
-  ws resolve [source] [property]                Resolve sources and their properties
-  ws pcsx2                                      Launch development PCSX2
-  ws help                                       Show this help
+  workshop <game|iso-path>... [options]               Launch or replay one to three games
+  workshop resolve [source] [property]                Resolve sources and their properties
+  workshop pcsx2 deploy                               Wait and deploy the completed PCSX2 build
+  workshop pcsx2                                      Launch development PCSX2
+  workshop help                                       Show this help
 
   Launch modes:
     -r <name>        Create an input recording

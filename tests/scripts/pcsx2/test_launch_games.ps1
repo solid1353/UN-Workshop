@@ -19,7 +19,7 @@ $sourceRepository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
 $help = (& (Join-Path $sourceRepository 'workshop.ps1') help) -join "`n"
 Assert-WorkshopLaunchTest `
     -Condition (
-        $help.Contains('ws <game|iso-path> [game|iso-path] [options]')
+        $help.Contains('workshop <game|iso-path>... [options]')
     ) `
     -Message 'Workshop help did not present one unified launch command.'
 Assert-WorkshopLaunchTest `

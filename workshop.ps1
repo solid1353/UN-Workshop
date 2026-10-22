@@ -166,10 +166,15 @@ switch ($normalizedCommand) {
             $Arguments |
                 Where-Object { -not [string]::IsNullOrEmpty($_) }
         )
-        if ($argumentList.Count -gt 0) {
-            throw 'workshop pcsx2 accepts no arguments.'
+        if ($argumentList.Count -eq 1 -and $argumentList[0] -ieq 'deploy') {
+            & (Join-Path $scripts 'deploy.ps1')
         }
-        & $paths.Files.pcsx2_launch_command -Turbo
+        elseif ($argumentList.Count -eq 0) {
+            & $paths.Files.pcsx2_launch_command -Turbo
+        }
+        else {
+            throw 'Usage: workshop pcsx2 [deploy]'
+        }
     }
     default {
         $launch = ConvertFrom-UnWorkshopLaunchArguments -Tokens @(
