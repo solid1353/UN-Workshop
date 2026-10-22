@@ -1,6 +1,6 @@
 UN Workshop
 
-  ws <game|iso-path> [game|iso-path] [options]  Launch or replay one or two games
+  ws <game|iso-path>... [options]               Launch or replay one to three games
   ws resolve [source] [property]                Resolve sources and their properties
   ws pcsx2                                      Launch development PCSX2
   ws help                                       Show this help

@@ -1,7 +1,7 @@
 [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName = 'Normal')]
 param(
     [Parameter(Mandatory, Position = 0)]
-    [ValidateCount(1, 2)]
+    [ValidateCount(1, 3)]
     [string[]]$Games,
 
     [Parameter(ParameterSetName = 'Play')]
@@ -425,7 +425,7 @@ if ($Snapshots) {
     }
 
     $snapshotPinePorts = @()
-    if ($selectedGames.Count -eq 2) {
+    if ($selectedGames.Count -gt 1) {
         $nextPinePort = Get-UnWorkshopConfiguredPinePort -Pcsx2Root $pcsx2Root
         $usedPinePorts = [Collections.Generic.HashSet[int]]::new()
         foreach ($endpoint in [Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().GetActiveTcpListeners()) {
@@ -554,7 +554,7 @@ $gameList = $selectedGames.Selector -join ', '
 $action = if ($AgentReplay) {
     "launch surfaceless agent replay for $gameList"
 }
-elseif ($selectedGames.Count -eq 2) {
+elseif ($selectedGames.Count -gt 1) {
     "close configured user PCSX2 instances, launch $gameList, and tile their windows"
 }
 else {
@@ -564,7 +564,7 @@ if (-not $PSCmdlet.ShouldProcess($pcsx2Root, $action)) {
     return
 }
 
-if (($selectedGames.Count -eq 2 -and -not $AgentReplay) -or $ClosePcsx2) {
+if (($selectedGames.Count -gt 1 -and -not $AgentReplay) -or $ClosePcsx2) {
     Close-UnWorkshopUserPcsx2Processes -Roots @($paths.Pcsx2Dev)
 }
 
@@ -589,7 +589,7 @@ try {
         $nextPinePort++
 
         $pcsx2Arguments = @('-pine-port', [string]$pinePort)
-        if ($selectedGames.Count -eq 2) {
+        if ($selectedGames.Count -gt 1) {
             $pcsx2Arguments += '-mute'
         }
         $launchParameters = @{
@@ -666,7 +666,7 @@ try {
     }
 
     $gameCount = $launchedGames.Count
-    if ($gameCount -eq 2 -and -not $AgentReplay) {
+    if ($gameCount -gt 1 -and -not $AgentReplay) {
         foreach ($launch in $launchedGames) {
             [UnWorkshopLaunchWindow]::ShowWindowAsync(
                 $launch.Process.MainWindowHandle,
@@ -678,7 +678,7 @@ try {
 
     for ($index = 0; $index -lt $gameCount; $index++) {
         $launch = $launchedGames[$index]
-        if ($gameCount -eq 2 -and -not $AgentReplay) {
+        if ($gameCount -gt 1 -and -not $AgentReplay) {
             $left = $workingArea.X + [Math]::Floor(
                 $workingArea.Width * $index / $gameCount
             )
@@ -712,8 +712,11 @@ try {
             elseif ($index -eq 0) {
                 'left'
             }
-            else {
+            elseif ($index -eq $gameCount - 1) {
                 'right'
+            }
+            else {
+                'middle'
             }
         }
         if ($AgentReplay) {
