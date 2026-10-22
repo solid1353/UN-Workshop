@@ -957,7 +957,10 @@ Other classes have separate local behavior:
   Mode bit 1 accepts major state 5/substates `0x42/0x43/0x48`,
   animation predicate and configured planar proximity; bit 2 accepts
   `0x45/0x46/0x49` with vertical separation above half configured height.
-  The first accepted fighter triggers the break. At threshold,
+  The first accepted fighter triggers the break through `bg_break_trigger`,
+  as factory 50's contact does: its type-0 hit effect at the object on each
+  crash, and at threshold common effect `0x33` (`effect_spawn_common_33`)
+  and common sound `0x22` without a position. At threshold,
   `resource_unregister_environment` removes every model's environment
   registration and metric 19 is credited to the opposite side. Playback
   continues through the separate scene-factor update.
