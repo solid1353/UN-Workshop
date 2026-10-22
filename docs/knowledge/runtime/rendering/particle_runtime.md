@@ -377,13 +377,8 @@ Inside them, element alpha is multiplied by:
 | Otherwise | 1 |
 
 Reset values are minimum 50, maximum 5000, inner 400 and outer 4000.
-Inside either ramp the multiplier is zero or less; this routine does not
-clamp it, and it rescales the stored element alpha on every update.
-`particle_emitter_reset` clears `distance_enabled`, and every
-immediate-offset byte store to it in the ELF and `BTL.BIN` writes zero, so
-no established path turns it on. The battle manager's reference is the
-current camera's eye, which `battle_auxiliary_second_pass` publishes.
-Live counting follows and compares visual alpha times
+The default near/far intervals can produce negative multipliers; this routine
+does not clamp them. Live counting follows and compares visual alpha times
 element alpha with the positive threshold encoded as `0x01800000`.
 Suppression is checked later by `particle_element_draw`. Descriptor
 producers belong to [Effect-generator commands](../effect_generator_commands.md).

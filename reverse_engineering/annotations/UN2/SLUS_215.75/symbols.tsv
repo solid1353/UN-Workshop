@@ -2,14 +2,9 @@ address	kind	name	type	comment
 0x00100230	function	game_arena_initialize	void game_arena_initialize(void)	Allocates one block of 0x01FFE000 minus the 0x00847000 heap start plus 0xA000, less 0x100; the arena ends at (block end - 0x20) aligned down to 16, where it writes the end node.
 0x0017D760	function	game_main_task		Main loop on the state object gp-0x68C0: 1 soft reset, 2 logos 0x0017E4F0, 3 0x0017E8A0, 4 title menu 0x0017E9D0 (builds the fade object gp-0x68EC), 5 0x0017F8C0, 6 new_game_start, 7 load 0x00241480, 8 game_scene_update. Enters state 2 at 0x0017D9A4.
 0x001974B0	function	fighter_has_chakra		True when fighter +0x5C >= the given amount, unless 0x001EC4E0 reports a block.
-0x001BEEA0	function	battle_director_clash		Event 1: places both fighters at x -75/75 on their line, both in (5, 0x53) ACT_DMG_XB, with a common sound; done after 25 updates.
-0x001BF230	function	battle_director_knockout		Event 2: when a fighter's +0x58 is not above 0, a screen effect, both fighters' time scale +0x168 at 0.01 easing back over 120 updates, then the first fighter's action 0x1C.
-0x001C0AE0	function	battle_director_update		Runs the battle director's event +0x10 on fighters +0x20/+0x24: 1 battle_director_clash, 2 battle_director_knockout, 3 and 4 the stage owner's sequences (through 0x0081BEF0, 0x0081BF30), 5 0x001BFA40; then the fighters' update.
 0x001E0BB0	function	effect_stage_intensity_tint_update		Reads stage_effect_intensity[scene byte +0x41] and passes it to the mode-2 tint packet 0x001E04E0; UN3's effect_4a_secondary_update reads its table the same way but defaults out-of-range scenes.
 0x001ED930	function	camera_bind_stage_record		Save camera +0x17C and bind stage_camera_records_by_scene[scene] there without a range check; UN3 counterpart 0x00234D80 (+0x18C).
 0x001F15A0	function	fighter_event_dispatch		Event 0x8002 publishes the masked ground code; the tail writes manager +0x2B68 = 0xF0F0F0.
-0x001F19F0	function	battle_effects_draw		Copies the battle camera's eye (+0x10) to particle_distance_reference and sets gp-0x65DC, draws the effect pools, then particle_pools_draw, which draws each particle and advances its fade and restores the default reference.
-0x0021A9E0	function	effect_emit_leaf_burst		Spawns count leaf effect objects (0x330 bytes, vtable 0x00552C60) around the point, each spinning 12 degrees per update either way; the landing trees' burst. Effect objects, not particles.
 0x0021C370	function	effect_emit_surface_puffs		Smoke variant 0x95 for snow/ice, else 0x93; scenes 16/17 add three particles of the stage's EFF_e0x_ice.
 0x0021E8B0	function	fighter_periodic_surface_effects		By fighter +0x8C0 & 0xF0F0F0 and cursor: 0xE0A000 splash 0x0021F9F0 every 10 (state 4) or 2 updates after 6; 0xF0D0D0/0xF0F0F0/0x5000/0x606060/0x80D0F0/0x90B0C0/0x3060 puff 0x0021C370 at scale 4 below 8, then 2.5 every 10 (state 4) or 4; 0x90B0C0 also 0x00224010 at the lower foot; 0xD000, 0x60C0, 0x202020, 0xE0E000 nothing.
 0x0021EF30	function	effect_emit_periodic_water_code		Every 15 cursor units: 0xE0A000 splash 0x0021F9F0; 0xE0E000 0x0021F7E0 (effect 0x2E, ANM_e0x_move_02).
@@ -35,42 +30,29 @@ address	kind	name	type	comment
 0x0025F330	function	audio_load_common_bank		Load DATA/SNDDATA.BIN per audio_common_bank_descriptor and bind it through RPC 0x9050.
 0x0026EE10	function	jutsu_camera_apply_preset_record		Installs a 0xB0-byte camera preset's tracking sources, positions, offsets and controls.
 0x00296000	function	mode_select_menu_confirm		Confirm (1) queues the item's mode files through mode_queue_files with the mode from 0x004F2C50 unless +0xBB is set; cancel (-1) stores 0xFFFF.
-0x002A2A90	function	particle_pools_draw		particle_pool_draw for each pool on the list at gp-0x65D8, then restores the default particle_distance_reference and clears gp-0x65DC.
 0x002A2BA0	function	particle_field_apply		Reads the field's original descriptor (+4) when override +0xC is zero; UN3 copies descriptors instead.
 0x002A46B0	function	particle_generator_construct		Builds a 0x130 generator from a 0x38 descriptor and up to four fields (default fields from descriptor +0x30 rows); sets +4 bit 0 (per-particle distance fade), +0x30 scale 1, alpha +0x108/+0x10C 1, fade squares 400^2 +0x114, 50^2 +0x118, 4000^2 +0x11C, 5000^2 +0x120.
-0x002A4E40	function	particle_generator_spawn		Takes a free particle, initializes it (particle_initialize), places it by the descriptor's emission geometry and velocity, and sets its alpha +0x80 to generator +0x10C less up to +0x110 of it at random, clamped to 0..1; a later change of +0x10C reaches only later particles.
 0x002A6710	function	particle_generator_start		Sets +0x100 to 1.
-0x002A6770	function	particle_generator_kill		Sets a live generator's state +0x100 to 3, which ends its particles on their next update; nothing restarts it.
-0x002A67C0	function	particle_initialize		Binds the descriptor's resource (0 sprite, 1 composition, 2 animation), resets the particle and takes the generator's scale +0x30 and fade-in/fade-out rows; +0x80 alpha 1 until spawn sets it.
-0x002A74D0	function	particle_update		Applies generator stop states (2 fade out, 3 end now), the fields, velocity and resource playback; frees an ended particle.
-0x002A79A0	function	particle_fade_update		Fade +0x90 (0x800 full): state 0 adds fade-in +0x92 up to full (then 1), lifetime end (+0x98 age vs +0x96) turns to state 2, which subtracts fade-out +0x94 down to 1 (then 3).
 0x002A7C60	function	particle_distance_fade		Particle alpha by squared camera distance when its +4 bit 3 (the generator's +4 bit 0) is set: 0 outside +0x118..+0x120, ramps in to +0x114 and out from +0x11C.
-0x002A7E40	function	particle_draw		Draw alpha = particle_distance_fade x generator +0x108 x particle +0x80 x fade/2048, the fade applied once; skips a particle without bit 4 of +4 (outside the distance limits).
 0x002A8480	function	generator_resolve_resources		Resolve each generator_resource_rows row's container and resource into the pool lookup array.
-0x002A8C30	function	particle_pool_draw		For each live particle (+0x1A != -1): particle_draw, then particle_fade_update, in the particle's draw environment +0x10 when set.
 0x002A9650	function	random_int_inclusive		Unsigned random modulo maximum+1.
 0x002A96A0	function	random_float_signed		Signed random32 / 2^31 times the amplitude: -a..a.
 0x002B0C90	function	battle_control_mask_active		True when mask +0x64 and latch +0x60 are both nonzero.
 0x002B2310	function	glare_pass_initialize		Mode 1, colour 0xA0808080, second colour 0xFFFFFF, amount -0.1 (NA2 pause_auxiliary_refresh).
-0x002B78C0	function	audio_position_scalar_stub		Returns 127: UN2's positional sounds take no distance attenuation (NA2's audio_position_scalar counterpart).
-0x002B7A80	function	audio_position_direction_stub		Returns 0x003F0000, the centre: UN2's positional sounds take no direction (NA2's audio_position_direction counterpart).
 0x002B8090	function	audio_apply_music_preset		Preset 5 plays the context +0x1AC override, or stage_music_tracks[scene] from SOUND.AFS partition 0 through 0x0025DA30.
 0x002B8F70	function	fighter_request_periodic_surface_audio		Mask fighter +0x8C0: F0F0F0->0xB8, F0D0D0->3, E0E000->5, 3060/5000->1, 60C0->6, 606060/E000E0->3, 80D0F0->0, else 0x25; identity 0x15 extra 0xB9.
 0x002B9230	function	audio_request_surface_word		Mask a supplied polygon word and use the periodic surface event map.
-0x002D4CB0	function	stage_owner_construct		Builds the stage owner (stored at gp-0x6560): its draw environments, the glare pass at +0x270, the book overlay players +0x2D8/+0x2DC and the curve +0x1F0.
 0x002D5C10	function	stage_build_doll_ai_targets		Training dolls (subtype 0x25) into scene +0x40C/+0x410, without the +0x148 check.
 0x002D5FC0	function	stage_build_breakable_ai_targets		Section COM prop-target lists (scene +0x404/+0x408) from category-8 objects with +0x148 == 1.
 0x002D63A0	function	stage_prepare_doll_nodes		Runs after each category-3 record, as UN3's does.
 0x002D6FA0	function	stage_scene_construct		Walk scene_index's 32-byte records from BATTLE stage_scene_tables (0x0081C760), switching on category (type bits 8..15) 0..14, then fixed setup. UN3 counterpart 0x007C26C0; unlike UN3, category 12 has a handler (0x002DB450).
 0x002D7720	function	stage_construct_training_dolls		Category 8 subtype 0x25 (training dolls).
-0x002D7910	function	stage_owner_load_book_overlay		Attaches ANM_book00_a and ANM_coma00_a (texture TEX_book00, camera ANM_camera00) to the overlay players at opacity 0.
 0x002D8AD0	function	stage_leaf_surface_variant		Leaf variant by stage +0x9C: 1->1, 6->3, 2: within 200 of x -700/700 -> 3/6 else 0 (4 without position), 11: within 200 of -825/825 -> 5/4.
-0x002D9150	function	stage_owner_reset		Clears the stage owner's state, including the side counters +0x30/+0x32 and the event flag +0xB1.
 0x002DAA30	function	stage_apply_render_coefficients		Copy stage_render_coefficients[scene] to 0x0056DB18/0x0056DB14 (UN3 keeps its table in BATTLE.BIN).
 0x002DAAE0	function	stage_parse_player_nodes		Category 10 handler of stage_scene_construct.
 0x002DAB80	function	stage_parse_line_nodes		Category 11 handler of stage_scene_construct.
 0x002DB220	function	stage_parse_fog		Category 1 handler of stage_scene_construct.
-0x002DB390	function	stage_parse_book_event_point		Category 2: tokens 0..2 to the stage owner's +0x140, the point toward which battle director event 3 (stage_owner_book_event_update) sends its first fighter; (0, -2750, 800) in scenes 0, 9, 10, 11, 16 and 17.
+0x002DB390	function	stage_parse_category2		Category 2 handler of stage_scene_construct.
 0x002DB450	function	stage_parse_point_nodes		Category 12 subtype 0x0A: token 5 positions of the token-3 node and its _N siblings into stage control +0x214 (count +0x20C, token 0 at +0x210). UN3 skips category 12.
 0x002DB600	function	stage_parse_lighting		Category 13 handler of stage_scene_construct.
 0x002DBBD0	function	stage_parse_cl_lines		Category 14 handler of stage_scene_construct.
@@ -81,13 +63,6 @@ address	kind	name	type	comment
 0x002E2920	function	stage_parse_reactive_props		Category 8: 0x01/0x98 breakables (0x006B7A20), 0x03 lantern, 0x25 training dolls (0x002D7720), 0x26 monkey doll, 0x46 cargo, 0x62 vending machine, 0x8A shadowed object.
 0x002E48D0	function	stage_parse_category9		Category 9: 0x90 intruding characters (ojmgmk/ojmgmt/ojmpkn/ojmnkm), built only when the battle-mode object exists, its mode is not 1 or 6 and 0x0023C3D0 is set.
 0x002E77C0	function	stage_parse_transparent_objects		Category 6: 0x01 transparent pillar (parser 0x006DC650), 0x60 lamp light (0x006D9120), others.
-0x002E91D0	function	stage_owner_place_book_overlay		Places the overlay players +0x2D8/+0x2DC 94 units before the camera, facing it, at scale (1, 1.05, 1).
-0x002E9400	function	stage_owner_fade_book_overlay		Places the book overlay before the camera and fades it in by 0.16 per update, or out by 0.12 once its animation ends.
-0x002E9B00	function	stage_owner_event4_update		Battle director event 4 on two fighters: counts once for the second's side at battle context +0x12/+0x14, slows both, waits on the object at 0x00560218 and the character callback 3.
-0x002EA260	function	stage_owner_book_event_update		Battle director event 3 on two fighters (+0x3DC, +0x3E0): on start counts once for the second's side at battle context +0x12/+0x14, then runs steps 0..5 by +0x3D0; returns 1 when done.
-0x002EA3D0	function	stage_owner_book_event_start		Event 3 step 0: sets the stage owner's +0xB1, then moves the first fighter along the curve +0x1F0 with the camera's shot.
-0x002EAB90	function	stage_owner_book_event_impact		Event 3 step 4: places the first fighter, rebinds the scene camera, plays sound 0x56, shows the book overlay, emits feedback 0x22 and leaves the first fighter in ACT_DMG_XD (5, 0x52) with a camera shake.
-0x002EB0C0	function	stage_owner_book_event_end		Event 3 step 5: restores both fighters once their character callback 3 reports done, clears the event state and the stage owner's +0xB1.
 0x002EB2A0	function	stage_bind_ice_resources		Scenes 16/17 resolve the archive's EFF_e0x_ice to stage +0x2F0; scene 17 also binds rock compositions.
 0x0032D390	function	practice_toggle_com		Targets the side opposite +0x26C (P2 when 0): stores COM flag +0x47/+0x46; MANUAL clears the fighter's +0x50 behavior bits, otherwise sets them to 1 when zero or when requested.
 0x003307C0	function	jutsu_camera_apply_stage_adjusted_preset		Applies a jutsu camera preset; on scene 0, kinds 3,8,9,10,0x10,0x13,0x21,0x27,0x2A,0x2E,0x34,0x37 with a section-1 participant at 730<|x|<1000, height 300..700 use presets 0x8D..0x90.
@@ -99,7 +74,6 @@ address	kind	name	type	comment
 0x00419B50	data	stage_music_tracks	unsigned int[18]	Default battle track per scene: zero-based member of SOUND.AFS/000.afs.
 0x0043EFA0	data	stage_scene_rectangle_lists	void *[18]	Per-scene lists of 32-byte line-endpoint rectangles ending at -1, read by 0x0027C9E0; purpose open.
 0x00440070	data	stage_scene_auxiliary_filenames	char *[18]	Archive file names formatted into 3eye/3eye%s by 0x002ED240.
-0x00440D10	data	particle_distance_reference	float[4]	Point particle_distance_fade measures from: the battle camera's eye while a battle camera exists.
 0x00442470	data	stage_scene_variants	int[18]	Per-scene 0/1 copied to stage control +0x94 by 0x002D8D10; stage_scene_construct appends suffix _a/_b (0x004423D0) to BLT_bg/BLT_obj, the names each archive holds.
 0x004424C0	data	stage_render_coefficients	float[18][2]	Two render coefficients per scene; NA2 factory 17 tokens 0/1.
 0x004425D0	data	stage_scene_effect_defaults		18 x 16-byte rows (byte, word, float, word); 0x002EB5F0 overrides some on its stack copy before indexing.
