@@ -2,6 +2,8 @@ address	kind	name	type	comment
 0x00100230	function	game_arena_initialize	void game_arena_initialize(void)	Allocates one block of 0x01FFE000 minus the 0x00847000 heap start plus 0xA000, less 0x100; the arena ends at (block end - 0x20) aligned down to 16, where it writes the end node.
 0x0017D760	function	game_main_task		Main loop on the state object gp-0x68C0: 1 soft reset, 2 logos 0x0017E4F0, 3 0x0017E8A0, 4 title menu 0x0017E9D0 (builds the fade object gp-0x68EC), 5 0x0017F8C0, 6 new_game_start, 7 load 0x00241480, 8 game_scene_update. Enters state 2 at 0x0017D9A4.
 0x001974B0	function	fighter_has_chakra		True when fighter +0x5C >= the given amount, unless 0x001EC4E0 reports a block.
+0x0019E1F0	function	fighter_movement_speed_update		Movement actions by +0x15A: 0x11/0x10/0x0F ease speed +0x754; 0x0E (ACT_RUN_0) also runs fighter_periodic_surface_effects with the run's frame (+0x174).
+0x001A45E0	function	fighter_knockdown_landing		Damage states 0x3A..0x3D landing transitions; a contact word with bit 0x400 doubles the landing damage and calls the stage event 0x002E9970 through 0x0081BFA0.
 0x001E0BB0	function	effect_stage_intensity_tint_update		Reads stage_effect_intensity[scene byte +0x41] and passes it to the mode-2 tint packet 0x001E04E0; UN3's effect_4a_secondary_update reads its table the same way but defaults out-of-range scenes.
 0x001ED930	function	camera_bind_stage_record		Save camera +0x17C and bind stage_camera_records_by_scene[scene] there without a range check; UN3 counterpart 0x00234D80 (+0x18C).
 0x001F15A0	function	fighter_event_dispatch		Event 0x8002 publishes the masked ground code; the tail writes manager +0x2B68 = 0xF0F0F0.
@@ -13,6 +15,7 @@ address	kind	name	type	comment
 0x00233760	function	stage_emit_feedback		Numeric stage feedback dispatch, then a nonnegative common sound.
 0x002372D0	function	battle_manager_construct		Builds the manager; battle_manager_defaults sets its fields.
 0x00237760	function	battle_manager_defaults		Scene index +0x41 0, P1/P2 character +0x42/+0x43 1/2, COM flags +0x46/+0x47 0, active side +0x26C 0 (constructor); profile +0x58 Practice Behavior 1, +0x5D bits 0..4 set.
+0x0023BE30	function	battle_mode_support_gate		1 except mode 6 (context +0x287 bit 0) and modes 1/4 (bit 0 of mode record +0x5D); gates the support points.
 0x0023BE90	function	battle_setting_flag1_set		Bit 1 of profile byte +0x5D (mode 6: +0x287). Not Command Display: fighter setup 0x00188F60 sets fighter +0x140 while it is clear, and a BATTLE.BIN COM routine (0x00739A60 area) acts only while it is set.
 0x0023BEF0	function	battle_setting_flag1_get		Bit 1 of profile byte +0x5D in modes 1 and 4, +0x287 in mode 6, 0 in modes 5 and 8, else 1.
 0x0023BFF0	function	practice_behavior_set		Behavior (MANUAL 0): mode 1 stores profile byte +0x58, mode 6 +0x282. The Practice Settings commit applies it through practice_toggle_com.
@@ -29,6 +32,9 @@ address	kind	name	type	comment
 0x0025D0D0	function	audio_request_common_position_key		Common positional request with a supplied key.
 0x0025F330	function	audio_load_common_bank		Load DATA/SNDDATA.BIN per audio_common_bank_descriptor and bind it through RPC 0x9050.
 0x0026EE10	function	jutsu_camera_apply_preset_record		Installs a 0xB0-byte camera preset's tracking sources, positions, offsets and controls.
+0x002825F0	function	support_points_assign		Gives the stage control's 0xC0A points (+0x214, count +0x20C, token 0 +0x210) to the two per-side support actors when 0x0023BE30 passes and battle mode +0x3C is not 1.
+0x00282850	function	support_set_points		Copies the points 2 higher to +0x268 with types at +0x290 (first token-0 type 1, rest type 2), count +0x298, token 0 +0x29C.
+0x00285BF0	function	support_appear_at_point		Stands the support at a random 0xC0A point other than the other side's (+0x294), on section type - 1 (+0x130), and picks its attack (0x00283430).
 0x00296000	function	mode_select_menu_confirm		Confirm (1) queues the item's mode files through mode_queue_files with the mode from 0x004F2C50 unless +0xBB is set; cancel (-1) stores 0xFFFF.
 0x002A2BA0	function	particle_field_apply		Reads the field's original descriptor (+4) when override +0xC is zero; UN3 copies descriptors instead.
 0x002A46B0	function	particle_generator_construct		Builds a 0x130 generator from a 0x38 descriptor and up to four fields (default fields from descriptor +0x30 rows); sets +4 bit 0 (per-particle distance fade), +0x30 scale 1, alpha +0x108/+0x10C 1, fade squares 400^2 +0x114, 50^2 +0x118, 4000^2 +0x11C, 5000^2 +0x120.
@@ -63,6 +69,7 @@ address	kind	name	type	comment
 0x002E2920	function	stage_parse_reactive_props		Category 8: 0x01/0x98 breakables (0x006B7A20), 0x03 lantern, 0x25 training dolls (0x002D7720), 0x26 monkey doll, 0x46 cargo, 0x62 vending machine, 0x8A shadowed object.
 0x002E48D0	function	stage_parse_category9		Category 9: 0x90 intruding characters (ojmgmk/ojmgmt/ojmpkn/ojmnkm), built only when the battle-mode object exists, its mode is not 1 or 6 and 0x0023C3D0 is set.
 0x002E77C0	function	stage_parse_transparent_objects		Category 6: 0x01 transparent pillar (parser 0x006DC650), 0x60 lamp light (0x006D9120), others.
+0x002E9970	function	stage_owner_knockdown_contact		Stage event from a knockdown landing on a bit-0x400 surface: scene 16 stores the fighter's side in gp-0x70BC (the 0x59F puff), scene 3 emits stage feedback 0x11 at the fighter.
 0x002EB2A0	function	stage_bind_ice_resources		Scenes 16/17 resolve the archive's EFF_e0x_ice to stage +0x2F0; scene 17 also binds rock compositions.
 0x0032D390	function	practice_toggle_com		Targets the side opposite +0x26C (P2 when 0): stores COM flag +0x47/+0x46; MANUAL clears the fighter's +0x50 behavior bits, otherwise sets them to 1 when zero or when requested.
 0x003307C0	function	jutsu_camera_apply_stage_adjusted_preset		Applies a jutsu camera preset; on scene 0, kinds 3,8,9,10,0x10,0x13,0x21,0x27,0x2A,0x2E,0x34,0x37 with a section-1 participant at 730<|x|<1000, height 300..700 use presets 0x8D..0x90.

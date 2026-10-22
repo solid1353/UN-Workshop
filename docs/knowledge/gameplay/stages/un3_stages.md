@@ -15,10 +15,12 @@ field, S05's directional wind, flying debris, bells and torches, S08's cargo,
 vending machine and desert eagle, S19's wall, dappled/root sunlight, canopy
 and bed, S06's crash boundaries and steam, S11's sandstorm, their shared
 jutsu-resource particle gates and NA2 factory correspondence, S12's dome,
-the giant and hanging spiders, the water ripples, and every scene
-comparison outside the records. Open: other prop
-states/teardown, full scene binding, mode/effect meanings, texture-pixel
-sharing, complete NA2 equivalence and Stage Select name-sprite rectangles.
+the giant and hanging spiders, the water ripples, the breakables' and
+training dolls' hit and break effects, sounds and item drops, the rising
+leaves' actions, and every scene comparison outside the records. Open:
+other prop states/teardown, full scene binding, mode/effect meanings,
+texture-pixel sharing, complete NA2 equivalence and Stage Select
+name-sprite rectangles.
 Names and layouts come from
 `@annotations/UN3`; NA2 comparison names come from `@annotations/NA2`.
 
@@ -252,7 +254,10 @@ different shots from the big previews.
 | Small preview (`MDL_sam04` UV u 225..255, v 233..255 in 1/256 units) | `haipure04` `(450, 2, 60, 44)` |
 
 `TEX_mapname` holds the English names; S04's is "Hero's Memorial Monument"
-on two lines. Which code selects each name's rectangle was not traced.
+on two lines, and S03's "No.44 Exercise Ground" over "The Forest of
+Death". Which code selects each name's rectangle was not traced. For
+scenes 0..5, 7, 10, 11, 13, 16, 18 and 19, the grid's cell at column
+`s % 4` and row `s / 4` shows the same stage as the big preview.
 
 ## UN3 summon selection and archive lifetime
 
@@ -451,7 +456,7 @@ controller construction belong to the routine annotations.
 | `0x507`, `0x506` | `stage_sway_animation_parse` (`0x007E58A0`) | Token 5 pieces: the record's animation and `_1`.. siblings, at the token-3 node and its `_1`.. siblings, each with a random phase and amplitude 0.1 + rng(0.3) (mode 0), or 0.025 + rng(0.01) when the label holds the lantern string (mode 1); `0x506` is mode 5. |
 | `0x518` | `stage_wind_parse` | One wind per scene: after a hold of 10 × 60 / frame divisor updates (300 at 30 updates per second) the phase advances a degree per update with `stage_wind_strength` = sin(phase); it holds at +1 (phase 90), 0 (180) and -1 (270), and after 360 rests 25 × 60 / divisor updates. `stage_wind_update` starts common sound `0x3E` (velocity `0x40`) on its first update and, outside holds, places it at the camera eye plus (550 w − 600, 6000 \|w\| − 6000), or 6000 below while `battle_restriction_check` reports a restriction. `audio_position_velocity` gives volume × max(0, 5500 − distance) / 50 / 100 and `audio_position_direction` always centres it. The sound plays the same sample, split and sample record as NA2's common sound `0x27`. |
 | `0x51B` | `stage_flying_leaves_parse` | A generator from `stage_flying_leaves_generator_parameters` and `stage_flying_leaves_force` with token 8 as its emission rate (`+0x18`; the particles keep the row's lifetime of 30), token 7's composition as its material, token 4 scale and distance fade 100/22000/500/20000. `stage_flying_leaves_update` puts its origin token 3 ahead of the camera along the view, offset upwind by token 10, sets the force's x to token 9 × -wind and the alpha scale to the wind's magnitude, or 0 below 0.3. |
-| `0x52D` | `stage_rising_leaves_parse` | Token 7 composition, token 0 section, tokens 1/2 x range and 3/4 height range. `stage_rising_leaves_update` starts leaf generators at a fighter in states (1, 0x15/0x16) or (5, 0x42/0x43/0x45) inside them, up to six per kind. The hit reactions are `ACT_DMG_SD`, `ACT_DMG_SD2` and `ACT_DMG_SBD` (BATTLE action table `0x0091ACC0`), NA2's `0x45`, `0x46` and `0x49`. |
+| `0x52D` | `stage_rising_leaves_parse` | Token 7 composition, token 0 section, tokens 1/2 x range and 3/4 height range. `stage_rising_leaves_update` starts leaf generators at a fighter in states (1, 0x15/0x16) or (5, 0x42/0x43/0x45) inside them, up to six per kind. The section transfers are `ACT_LIN_0`/`_1`, which NA2 numbers the same; the hit reactions are `ACT_DMG_SD`, `ACT_DMG_SD2` and `ACT_DMG_SBD` (BATTLE action table `0x0091ACC0`), NA2's `0x45`, `0x46` and `0x49`. Every update first passes each burst to `stage_generator_restriction_visibility` (`0x00310440`), which zeroes its alpha scale while `battle_scene_restriction_active` or `battle_restriction_check` holds. |
 | `0x601` | `stage_transparent_parse` | Token 3 hit/position node; token 8 plus 150 contact divisor; a radius-150 receiver with mask `0x108` at the node. `stage_transparent_update` takes the nearer fighter's contact distance / divisor, 1 without contact, raises the fade by a tenth of that when it would rise more than 0.1, and sets opacity to fade × `bg_animation_limit(700)`. |
 | `0x79B` | `stage_flag_parse` | Token 7 texture at the token-3 node, tokens 8/9 width and height × 4, token 10 solver selector; a 4 × 6 cloth with `stage_flag_constants` on the cloth solver NA2's factory 6 also uses. `stage_flag_update` blows it with w = −`stage_wind_strength`, at least ±0.005: force 5000 w along the normalized (0.5 w + rng(0.5), rng(0.02), rng(0.02)), then one solver step of 0.064. `stage_flag_draw` widens the render context's clip bounds by a tenth while the cloth draws. |
 | `0x50C` | `stage_gondola_parse` | Token 3 node, token 1 wait × 30 updates, token 10 `line,list,amplitude,doll node`; list 2 is the back `cl` lines. `stage_gondola_update` stops while the battle director's state is 2 (`battle_state_is_2`); otherwise it steps its `curve_step` curve and moves the model, the selected line's two endpoints and the prepared doll node by their offsets. Each move (`stage_gondola_next_move`) rises `rand % amplitude`, or falls that far when the rise would pass the node's height + amplitude, through points at 1/2, 3/4 and 7/8 of it, at `curve_restart`'s random 0.03..0.045 speed with a 90-update end hold, then waits. S02's two gondolas carry back lines 1/2, the `DMY_b_cl_N_mov` pairs, and doll nodes 3/4. |
@@ -494,11 +499,41 @@ contact. The predicate's full mode meaning remains open.
 Count below 2 becomes -1, selects the broken animation if present, enables
 optional debris and unregisters the attack receiver. Larger counts lose one,
 select the damaged animation if present and dispatch a stage effect.
+`stage_dispatch_prop_effect` then plays the record's hit sound (`+0x84`,
+the record's first value) on a hit and its break sound (`+0x88`, the
+second) on the last. The hit is kind 2, `battle_hit_effect_with_composite`
+with type 0 and its composite. The break is kind 7, 8 or 9 for token 8 up
+to 100, up to 150 or above: `stage_prop_break_burst` of size 1, 2 and 2
+(common effect 2, `ANM_e0x_hit_98a`, at scale 1.5, or effects 3 and 0x32,
+`ANM_e0x_hit_97` and `ANM_e0x_hit_98b`, at scale 2, from
+`common_effect_rows`) with the resident particle burst `0x004794C0`, and
+a particle burst from generator rows `0x00916430`, `0x00916468` or
+`0x009164A0`, kind 9 adding a second burst and the kind-2 hit effect. The
+training dolls (`0x81C`, a one-hit `stage_breakable_trigger`) and lanterns
+break the same way. The faces (`stage_face_rock_trigger`) use kind 5, the
+hit effect of type 2, on each hit and kind `0xB` on the last, which adds
+common sound `0x1F` at the face. NA2's factory 50 (`bg_break_trigger`)
+plays its type-0 hit effect without the composite on every hit and common
+effect `0x33`, `ANM_e0x_smok_05` at scale 1 (`effect_spawn_common_33`),
+on the last; factory 41's dolls do the same when they break.
+
 `stage_breakable_update` updates debris and animation. Positive count,
 pending reaction and animation completion re-register both receivers.
 Broken objects can select their later animation and seek to the configured
 pose; this seek is not a periodic increment. Types `0x801/0x871` share
 `stage_breakable_vtable` and this update.
+
+A broken prop drops an item (`stage_breakable_drop_item`, vtable `+0x20`):
+one from `stage_breakable_item_distribution` (pool 3 at 20, pool 1 at 20,
+pool 2 at 60) through `field_item_amount_apply`, with two extra code-9
+items, one on the bells (subtype `0x13`) and none on subtype `0x3F`;
+code 9 is `field_item_random_select`'s fallback, as NA2's 4 is NA2's.
+`item_metadata` makes codes 1 to 3 health of 5, 10 and 15%, 6 to 8
+chakra of 5, 10 and 15 and 9 chakra of 0.75. A broken doll
+(`stage_training_doll_drop_item`) drops one from
+`stage_doll_item_distribution` (pool 0 at 10, 1 at 20, 2 at 50, 3 at 20)
+and one time in five a second. NA2's factories 50 and 41 drop one item
+from NA2's General A distribution, with no extras.
 
 `stage_breakable_parse` also sets word `+0x138` to 1, and one branch of
 `stage_parse_reactive_props` (`0x007CDFC8`) clears it again. Only props
@@ -884,7 +919,7 @@ counterpart compares its raw slot where one exists
 | `ai_water_chakra_gate`, `ai_water_section_gate` | 9, 16 | COM water handling | `ai_predict_environment_reaction`, `stage_navigation_s13`, slot 12 |
 | `ai_point_route_update` | 0/5/6; 6 | Near gate 40; input `0x1000` | Slot 7 at both |
 | `stage_navigation_response` | 19/14/4/1 | Planar endpoint clamp before recovery | Slots 5/22 |
-| `ai_route_region_gate` | 14/4 | Region 0 rejected | `ai_construct_point_route`, slot 22 |
+| `ai_route_region_gate` | 14/4 | Region 0 rejected, only among secondary navigation points (the per-section lists the navigation owner's `+0x70` holds at `+0x344`) | `ai_construct_point_route`, slot 22, on the secondary path, which NA2 never fills |
 | `stage_execute_route` | 2 | COM in section 0 on `E0E000`/`E0A000` past route step 1 jumps on rand100 < 5 | None |
 | `fanged_pursuit_hide_stage_objects`, `interaction_hide_stage_objects` | 0 | Hide swaying trees (subtype `0x82`); other scenes hide subtypes `0x26`/`0x86` | None |
 | `interaction_scene13_reflection` | 13 | Second effect copy 400 below | None |
@@ -913,7 +948,16 @@ through `effect_create_ground_21`. NA2's effect0x has neither UN3 animation.
 A foot enters water when, in the walk/run state (major 1, substate `0xE`),
 `fighter_foot_surface_effects` casts ±15 around the lower of the fighter's
 `OBJ_2cmn00t0 l foot`/`r foot` nodes and hits the surface for the first time
-for that side since a miss; NA2's `FUN_0033A2D0` does the same.
+for that side since a miss; NA2's `fighter_foot_surface_effects`
+(`0x0033A2D0`) does the same. Both also
+raise the same running dust on `0x606060`, `0x80D0F0`, `0x003060`,
+`0x005000`, `0x90B0C0`, `0xF0D0D0` and `0xF0F0F0`: a burst in the first 8
+updates, then one every 4 (every 10 for character 4). On `0x90B0C0`, which
+of S01–S06, S08, S11, S12, S14, S17, S19 and S20 only S11 has, UN3 alone
+also calls `water_ripple_spawn` every n running updates, n by character
+from `0x004789F0` (1: 4, 2: 6, 3: 5, 4: 11, 5: 8, 6: 6, 8: 6, others
+never), which there plays common effect 0, `ANM_e0x_flsh_00`, at scale 3
+at the lower foot; NA2's `EFFECT0X.CCS` has no such effect.
 
 UN3's ring grows from 0.01 to 1 over 37 frames and fades from frame 29.
 UN3's fish rings (`stage_fish_spawn_ring`) play the same ring at scale 1.
@@ -931,7 +975,9 @@ limits and distinct crash substate sets. The wall excludes section 1. The
 final wall transition lowers the section's first pair and linked navigation
 and collision endpoints to height 40. The bamboo extends its last projection
 pair to x1260, moves the last collision endpoint to x1300, changes its separate
-`ANM_s6atake00` backdrop to `ANM_s6atake01` and rebuilds navigation. After the
+`ANM_s6atake00` backdrop to `ANM_s6atake01` and rebuilds navigation. Each
+final transition plays common sound `0x3B` at the crashing fighter, whose
+samples are NA2's program `0x25`; the earlier hit plays none. After the
 wall opens, `stage_navigation_initialize` detects equal heights at the first
 two collision-line starts and changes work route 1 to fraction 0/action 3.
 
@@ -972,7 +1018,8 @@ camera-relative `ANM_s5astom` overlay by -0.1 per update, moves a common
 particle generator and positional sound71, then repeats after another calm.
 Two spheres of radius250 at offsets200/600 from the moving origin raised500
 are registered per fighter side. Contact reaches the stage-object hit path
-with damage0.03, response selector11 and one hit per descriptor. The two
+with damage0.03, response selector11 and one hit per descriptor, and plays
+common sound `0x15` without a position, a sample NA2's common bank lacks. The two
 carried breakable objects choose among fly00/01/02 animations with matching
 debris each pass and orbit at offsets(0,300,1000)/(0,-300,1200), with randomized
 rotation rates and height sway. Their proximity depth snaps to1000 near the

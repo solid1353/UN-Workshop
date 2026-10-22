@@ -20,9 +20,24 @@ address	kind	name	type	comment
 0x088497F4	function	random_signed_scaled		scale x signed Mersenne-twister output / 2^31, in -scale..scale.
 0x0887A914	function	music_request		Requests music row param_1 with its loop and fade arguments.
 0x08880220	function	stage_scene_construct		Walks a scene's records by category (type bits 8..15) to UN2's handlers; publishes the scene at battle context +0x3D.
+0x088807E8	function	stage_construct_training_dolls		0x825: token-5 training dolls at the doll node and its siblings.
 0x08882E78	function	stage_parse_fog		Category 1: tokens 0..2 colour, 3 near, 4 far, 5 far percentage.
 0x08883040	function	stage_parse_lighting		Category 13: light animation, token 5 light count; token 10 R,G,B (not "0") sets the render environment colour, else the light's.
 0x08884018	function	stage_parse_animation_props		Category 5: constructs a subtype per record, including UNH2's 0x5A9 lantern lights, 0x5AA mist and 0x5AB translucent layers.
+0x08896714	function	stage_dispatch_prop_effect		Prop effects by type, then the sound at the position: 2 hit spark, 7/8/9 the break effects of stage_break_effect_construct with particle bursts, as UN3's.
+0x08899BF8	function	stage_item_draw		Draws an item kind by cumulative percentage weights, then one of the kind's item codes at random (lists from 0x08B52150).
+0x0889A04C	function	stage_item_drop		Spawns the drawn item; by the items setting 2 a second one at 80% and the given count of extra 0xC chakra items, none at 0 or 1.
+0x0889A4B8	function	stage_far_animation_parse		0x301: token 10 as a Boolean fog mode for the animation's objects.
+0x0889AD34	function	stage_breakable_react		A hit before the last takes the second resource's animation and prop effect 2 with the hit sound; the last the third's, a side's break count and effect 7, 8 or 9 by token 8 (<=100, <=150) with the break sound.
+0x0889AF40	function	stage_breakable_drop_items		Breakable break drop: kinds 5/7/9 at 20/60/20%, two extra chakra items (one on 0x818 bells, none on 0x85E).
+0x0889BA4C	function	stage_wind_bell_sway		0x818: a hit restarts the swing at its amplitude; angle = amplitude x sine step + 0.3 x wind; each completed swing scales the amplitude by 0.6, at least 0.05.
+0x088A2010	function	stage_monkey_doll_drop_items		0x826 break drop: kind 2 (items 1, 4, 5, 9, 0xA, 0xB), two extra chakra items.
+0x088A21D4	function	stage_training_doll_parse		0x825: reappearance base 30 x token 1, record words 6/7 as hit and break sounds, the doll at token 3's node; on scene 10 a broken doll counts for its side.
+0x088A26B0	function	stage_training_doll_schedule		Next reappearance: base - random % (0.4 x base), 181..300 updates for base 300.
+0x088A271C	function	stage_training_doll_drop_items		0x825 break drop: kinds 1/4/7/9 at 10/20/50/20%, no extra chakra items.
+0x088C3F84	function	stage_torches_parse		0x51C: token-5 copies of the token-6 flame at the token-3 node and %s_%d siblings from random frames, an EFF_efe_020_ glow sprite and a spark generator per node, as UN3's 0x517.
+0x088C42D8	function	stage_torches_update		0x51C: unless restricted, each glow opacity walks by 0.05 within 0.2..0.5 and each flame loops.
+0x088C4458	function	stage_torches_draw		0x51C: flames at opacity 0.5, then the EFF_efe_020_ glow at each node at its opacity in draw environment 3, as UN3's.
 0x088C4590	function	stage_lantern_lights_construct		0x5A9 constructor: clears the effect, positions, count and opacities.
 0x088C4618	function	stage_lantern_lights_parse		0x5A9: token 5 count, token 3 node and its %s_%d siblings, token 6 effect; one effect sprite drawn at each node.
 0x088C477C	function	stage_lantern_lights_update		0x5A9: unless stage effects are restricted (0x08898EA4(2)), each opacity walks by random_signed_scaled(0.05) within 0.2..0.5.
@@ -30,15 +45,49 @@ address	kind	name	type	comment
 0x088C4920	function	stage_translucent_construct		0x5AB constructor: clears the composition player.
 0x088C4960	function	stage_translucent_parse		0x5AB: token 10 composition in a player, its models' TEST set by composition_set_model_test(1, 0) to 0x1001, no depth writes.
 0x088C49F0	function	stage_translucent_draw		0x5AB: composition_draw of its player; its update (0x088C49E8) is empty.
+0x088D67B8	function	stage_wind_debris_parse		0x584: 17 pieces from ANM_s1cgim00..06_n1, the first four with CMP_bre_010/020/030 by animation, as UN3's; s1c2 holds only CMP_bre_000 and _010.
+0x088D71C4	function	stage_wind_debris_update		0x584: launches pieces only while 0.9 < |wind| < 1 at UN3's odds.
+0x088D7548	function	stage_directional_wind_parse		0x585: token 10 x -2 push, five-second initial hold, holds at phases 90/180/270, a 30-second rest at 360, random fixed sign, as UN3's 0x55E.
+0x088D7648	function	stage_directional_wind_update		0x585: pushes both fighters (+0x410) by the half-sine strength and places common sound 0x3E, as UN3's.
 0x088ECF40	function	camera_bind_stage_record		Saves the previous stage camera record (+0x180) and binds stage_camera_records_by_scene[scene] at +0x17C.
 0x088ECF64	function	camera_stage_track		Lowers the desired elevation by record +0x4C when sections differ and by +0x50 when either is nonzero, as UN2's 0x001ED960.
+0x088F8AB4	function	stage_navigation_response		Scenes 1 and 5: a COM in state 5 whose point ahead lies outside its section's endpoints resets, as UN3's on its scenes 1 and 4.
+0x08900834	function	ai_route_region_gate		Scene 5 rejects section 0 among secondary navigation points, as UN3's on its scenes 14 and 4.
 0x08905738	function	stage_navigation_initialize		Collects line extents, then copies the scene's routes until source 0xFF or 64 rows, so a zero-row end is copied with the following rows.
+0x0890E234	function	stage_break_effect_construct		Break effect variant 1: common effect 1 at scale 1.5; 2: effect 2 at scale 2 and effect 0x44 at scale 2 turned at random; 3: effect 0x3D at scale 2.
+0x0892EAD8	function	field_player_placement		Start position and facing from the side's player node raised 200; returns section 1 on scenes 5 and 10, otherwise 0.
+0x0893EEA8	function	item_class		Item code class: 1..7 one, 8..0xC and 0x21 two, 0xD..0x16, 0x23, 0x24, 0x26..0x2B, 0x35..0x3A three, 0x17..0x1B and 0x2C..0x2E four, 0x1C five, 0x1D..0x20 and 0x31..0x34 six, 0x30 seven.
+0x089FD6FC	function	stage_scene4_resource_select		Scene 4 takes resource +0x24A0 and environment index 4, other scenes 5, as UN3's stage_scene2_resource_select.
+0x08A09BCC	function	point_in_rectangle_x_height		True when the point's x lies strictly between corner A's and B's and its height between B's and A's.
+0x08A16A24	function	skill_request_director_mode6		Jutsu base method: sets the battle director's (+0x1FC) mode 6, except on scene 5 for kind 5 with the target off section 0 and kinds 0x46 and 0xF above height 500.
+0x08A359C8	function	skill_pair_place_rectangles		Scenes 0, 1, 2, 5 and 13: a participant inside a skill_pair_rectangles row of its scene and section moves to its target row's point by the partner's side; on scene 5's section 0 both move, then the probes place them.
+0x08A35DA8	function	skill_pair_scene10_heights		Scene 10 sets both participants' heights to 60.
+0x08A35DFC	function	skill_pair_place		Places a jutsu's pair through skill_pair_place_rectangles, else by ground probes at distances per jutsu kind, as UN2's 0x007BEDE0.
+0x08A3E4CC	function	audio_position_velocity		Returns 0x7F whatever the position: UNH2's positional sounds do not fade with distance.
+0x08A3E4D4	function	audio_position_direction		Returns 0x3F0000, centred, whatever the position.
 0x08A3E7EC	function	audio_play_mode_music		Case 5: the scene's stage_music_tracks entry unless the override at 0x08BD06F4 is set.
+0x08A3ED50	function	fighter_request_periodic_surface_audio		Footstep event by masked ground: F0F0F0 0xB8, 202020 0xB7, 80D0F0 0, 10C0/5000/3060 1, E0A000/E0E000 5, D000 2, 60C0 6, 90B0C0 4, F0D0D0/606060/8080F0/E000E0 3, else 0x25; every 5 updates (8, 12, 11 for characters 0x15, 0xE, 4).
+0x08A3F230	function	audio_play_common		Plays common event 0..0xD5 through its audio_common_controls row: program, key and velocity.
+0x08A3F4EC	function	audio_play_common_at		Common event at a position: velocity from audio_position_velocity, always 0x7F, capped by the row's; direction from audio_position_direction, always centred.
+0x08A3F6A0	function	audio_loop_start		Starts a common event in one of eight loop slots at its row's program, key and velocity; returns the slot handle.
+0x08A3F780	function	audio_loop_stop		Stops a loop slot's sound.
+0x08A3F820	function	audio_loop_place		Empty: a loop's position update changes nothing, so the wind loop keeps its starting level.
+0x08A403B0	function	stage_end_side		1 when x lies within the distance of the stage's lower end, 2 of its upper end, else 0.
+0x08A408D0	function	skill_camera_bind_preset		Binds a jutsu camera preset (0xB0-byte rows from 0x08BD0840), substituting presets for some jutsu kinds on scenes 12 and 0.
+0x08A44488	function	skill_camera_kind13		Jutsu kind 0x13's camera; on scene 5 within 150 of a stage end it takes the scene's own presets.
+0x08A44F10	function	skill_camera_kind1b		Jutsu kind 0x1B's camera; on scene 5 near a stage end it takes the scene's own preset list.
+0x08A47734	function	skill_camera_scene5_high		Scene 5 with both fighters in section 1 and either above height 600: kind 3's camera takes its high presets.
+0x08A5BECC	function	stage_choose_combo_anchor		Copies the strictly nearest stage_combo_anchors vector of the requested side to the point; returns side 0 on scenes 1/2/7/8/10, 1 on 3/4/5/12, else the requested side.
+0x08A5C7A4	function	skill_combo_choose_anchor		Chooses the anchor nearest the first fighter on its section, gives both participants the returned side and places both there, as NA2's skill_combo_choose_anchor.
 0x08AF1C08	data	model_blend_alpha_table		PS2 ALPHA values kept as blend identifiers: 0x44, 0x48, 0x42, 0x09, 0x54.
 0x08AF5F88	data	music_rows		12-byte rows: disc path, loop flag, volume; stage00..10, then the other tracks.
 0x08B25E68	data	stage_effect_intensity		A byte per scene 0..19; UN2's 18 then 0xFF, 0xFF.
+0x08B2B7AC	data	skill_pair_rectangle_targets		Halfword target row per rectangle row; -1 drops the placement.
+0x08B31ED0	data	stage_combo_anchors		20 0x10-byte records by scene: side 0/1 vector pointers at +0/+4, counts at +8/+9; scenes 16 and 17 share arrays, 18 and 19 have their own.
 0x08B51D50	data	stage_render_coefficients		Two floats per scene 0..19; UN2's 18 then (0.32, 0.3) and (0.45, 0.3).
 0x08B51FB0	data	stage_scene_tables		20 pointers (scenes 0..19: UN2's 18, then s8a Outside and s8b Inside the Mugenjo) to UN2-layout 32-byte scene records.
 0x08B57B60	data	stage_camera_records_by_scene		20 pointers to 22-float camera records: UN2's fields 0..21.
 0x08B58E30	data	stage_navigation_authored_routes		20 pointers to UN2-layout route rows; lists end with a zero row, scenes 18 and 19 reuse scenes 16's and 17's.
+0x08BCDE00	data	audio_common_controls		8-byte rows per common event, UN2's layout: program (-1 none), two bytes, key, velocity, maximum, 0, 1; events 0..0x64 play programs of their own number but 0x61/0x62.
+0x08BCEB10	data	skill_pair_rectangles		32-byte rows of two corner points (x, height ranges), then target rows of two points by side.
 0x08BD071C	data	stage_music_tracks		A word per scene: the music_rows track (stageNN.at3), 0x0F where the disc has no archive.

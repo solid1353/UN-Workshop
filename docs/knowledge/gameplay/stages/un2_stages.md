@@ -9,10 +9,11 @@ behavior, stage node placement, collision attribute words, content
 comparison with UN3's same places, the per-scene camera, route, intensity,
 render, music and auxiliary tables, US/JP differences, Stage Select choices,
 previews and names, the surface effects and sounds, stage sounds, the
-scene-keyed code census, every UN3-matched type's differences from UN3, and
-the fighter-pair placement's scene rules. Open: the role of the battle
-context's `+0x260` object that `0x00770BE0` resets, the event that names
-`0x59F`'s puff fighter, and the other twelve scenes' records.
+scene-keyed code census, every UN3-matched type's differences from UN3, the
+fighter-pair placement's scene rules, the pest characters' and support
+points' records, and the event that names `0x59F`'s puff fighter. Open:
+the role of the battle context's `+0x260` object that `0x00770BE0` resets,
+and the other twelve scenes' records.
 Names come from `@annotations/UN2`; UN3 and NA2 comparison names come from
 `@annotations/UN3` and `@annotations/NA2`.
 
@@ -217,7 +218,7 @@ establishes correspondence, not identical tokens or constants.
 | `0x846` | 風影の積荷 (cargo) | 9 | `stage_cargo_parse` (`0x006C6700`) | cargo (draw 0.83) |
 | `0x862` | 自動販売機 (vending machine) | 9 | `stage_vending_machine_parse` (`0x006C8A50`) | `stage_vending_machine_parse` (0.88) |
 | `0x88A` | 影付きオブジェクト (shadowed object) | 0 | `stage_shadowed_object_parse` (`0x00708E20`) | `0x863` |
-| `0x990` | お邪魔キャラ (intruders) | all | `stage_intruder_parse` (`0x00712860`) | — |
+| `0x990` | お邪魔キャラ (pest characters) | all | `stage_intruder_parse` (`0x00712860`) | — |
 | `0xA08`/`0xA09`, `0xB01`, `0xD01`, `0xE0A`/`0xE0B` | players, line nodes, lighting, `cl` lines | all | categories 10, 11, 13, 14 | same |
 | `0xC0A` | 前 | all | `stage_parse_point_nodes` | — |
 
@@ -237,10 +238,10 @@ Behavior of the types without a UN3 counterpart:
 | `0x59B` | One generator (`0x00821B80`, fields `0x00821BC0`/`0x00821BE0`) at alpha 0.5, which the generator visibility sets to 1 from the first update, kept 400 units from the camera toward its target and 200 lower (`stage_diamond_dust_update`, `0x0070BAC0`), fading in from 100 to 500 and out from 6,000 to 8,000 units (the `0x524` squares). |
 | `0x59C` | Eleven looping generators from 0x40-byte rows at `0x0081DCB0`: origin `+0x00`, second point `+0x10`, generator descriptor `+0x20`, four field descriptors `+0x24..+0x30` (null when absent), scale `+0x34`. Rows 0 and 1 have origin (0, 2950, 230), generators `0x00821C00`/`0x00821C38` with one field each, and scales 1 and 3. Their resources are `EFF_e0xpar00` and `EFF_x002` from `CMN/PARTICLE.CCS`. The parser turns off each generator's distance fade; the update (`0x0070BE30`) applies the generator visibility. |
 | `0x59E` | One generator (`0x00821D60`, field `0x00821DA0`) at (150, 400, 200) with material `EFF_s3aefe01` and scale 7.5, fading as `0x59B`'s. Its update (`0x006F2BB0`) raises global `gp-0x70C0` (`0x0055F6B0`, 200 at boot) toward 3500 by 10 per update and copies it to the origin's height; nothing resets it, so only the first scene-16 battle after boot starts the snow low. It sets alpha `+0x108` to 0 under `stage_effect_allowed(2)`, otherwise 1, and stops the generator as the visibility does. |
-| `0x59F` | 30 footprint models of the token-6 composition per foot per fighter, at opacity 0.5 fading by 0.01. On a `0xF0F0F0` surface within 20 below a foot, a print is placed 4 above the last contact when the foot lifts: NA2's `ccBgFootMarkBattle` (factory 93) with the same pools and constants, which selects surfaces by a mask where UN2 tests snow alone. UN2 also starts a puff effect for three updates at the fighter that `0x002E9970` names in `gp-0x70BC`, a stage event handler that on scene 16 stores the event's side; it is reached through `0x0081BFA0`, whose callers are not established. |
+| `0x59F` | 30 footprint models of the token-6 composition per foot per fighter, at opacity 0.5 fading by 0.01. On a `0xF0F0F0` surface within 20 below a foot, a print is placed 4 above the last contact when the foot lifts: NA2's `ccBgFootMarkBattle` (factory 93) with the same pools and constants, which selects surfaces by a mask where UN2 tests snow alone. UN2 also starts a puff effect for three updates at the fighter that `stage_owner_knockdown_contact` (`0x002E9970`) names in `gp-0x70BC`: on scene 16 it stores the side of a fighter whose knockdown landing (`fighter_knockdown_landing`, `0x001A45E0`, damage states `0x3A`..`0x3D`) meets a contact word with bit `0x400`, which also doubles that landing's damage, through `0x0081BFA0`. In S3A only the `0xE004EF` batch (4 triangles) has that bit. |
 | `0x660` | Token-5 copies of the token-6 effect (`EFF_efe_000_`, 31 frames, 0..15 at full alpha, then fading to 0 at 30) at the token-3 node and its `_N` siblings (`%s_%d`). The parse writes 0.75 to each copy's relative opacity (`+0x88`), which, with no parent, the resolver (`SLUS_215.75` `0x0014694C`) does not read, and starts each on a random frame of -1..29, -1 drawing nothing. It flags copies 5 and 6 (`+0x41`, `+0x42`); the constructor (`0x006D90C0`) clears the flags of copies 0..6 only. Each update (`0x006D94D0`) a steady copy shows a random frame of 0..13; a flagged one counts its hold down, then shows a random frame of 14..28 and holds 0..59 updates on 14..16, otherwise 0..1. The draw (`0x006D96D0`) skips while `stage_effect_allowed(2)` reports nonzero. |
-| `0x990` | Loads `ojmgmk`, `ojmgmt`, `ojmpkn` or `ojmnkm` and their characters, only when the battle-mode object exists, its mode is not 1 or 6, and `battle_mode_intruders_enabled` (`0x0023C3D0`) is set. |
-| `0xC0A` | Stores the positions of `OBJ_ps_010` and its siblings (token 5, four in every scene) and token 0 in the stage control. |
+| `0x990` | Loads `ojmgmk`, `ojmgmt`, `ojmpkn` or `ojmnkm` and their characters, only when the battle-mode object exists, its mode is not 1 or 6, and `battle_mode_intruders_enabled` (`0x0023C3D0`) is set: the pest characters, which UN2's battle settings can allow (help text `SLUS_215.75` `0x0053F170`). NA2's executables name none of these files. |
+| `0xC0A` | Stores the positions of `OBJ_ps_010` and its siblings (token 5, four in every scene) and token 0 in the stage control (`+0x214`, count `+0x20C`, token 0 `+0x210`): the points where the support characters appear. `0x002825F0` gives them, 2 higher, to the two per-side support actors (`0x00282850`), the first token-0 as type 1 and the rest as type 2, when `0x0023BE30` passes and the battle mode (context `+0x3C`) is not 1. Each appearance (`0x00285BF0`) stands the support at a random point other than the other side's, on section type - 1, section 1 in the six scenes, whose token 0 is 0. NA2's supports enter through its support owner and read no stage point ([Battle support mechanics](../characters/support_mechanics.md)). |
 
 The generator rows use NA2's layouts: 0x38-byte generator descriptors and
 0x20-byte force descriptors whose keys are NA2's
@@ -294,11 +295,11 @@ the rest of their parse, hit, update and draw is UN3's.
 | `0x53B` | None in its tokens or its generator and force rows (from `0x00820DF0`, byte for byte UN3's). Its wind rewrite (q = -wind, at least 0.2; horizontal force 4q, vertical base - 2\|q\|, emission × (1 + \|q\|)) moves live leaves in UN2 only (below). |
 | `0x53D` | The second kind starts when a fighter's action timeline crosses its start (`0x00702100`) in major state 5, minor `0x41` `ACT_DMG_SD` or `0x42` `ACT_DMG_SD2` (action table `0x00410CB0`); UN3's starts on its `0x42` `ACT_DMG_SD`, `0x43` `ACT_DMG_SD2` or `0x45` `ACT_DMG_SBD`. NA2 numbers these `0x45`, `0x46` and `0x49` (`action_descriptor_table`, BTL `0x0089AEB0`). |
 | `0x59D` | Ignores wind and token 10: each needle turns by 0.02 × \|sin(phase)\| about all three axes, the phase starting at random and stepping 3..5° per update (`0x006F2860`). |
-| `0x601` | The draw (`0x006DCC00`) moves the pillar to draw environment 1 from blend 0.4 (UN3 1.0); the update (`0x006DC790`) is skipped while byte `+0xB1` of the object at `gp-0x6560` is set. |
+| `0x601` | The draw (`0x006DCC00`) would move the pillar to draw environment 1 from blend 0.4 (UN3 1.0), but only when `stage_effect_allowed(4)` reports false, which it never does, so the pillar draws in the stage's pass at every blend; the update (`0x006DC790`) is skipped while byte `+0xB1` of the object at `gp-0x6560` is set. |
 | `0x786` | No tokens: five flags from `0x0081D780`, (node, texture, solver selector) `OBJ_hata_010`/`TEX_s1aart18`/6, `_020`/`_19`/6, `_030`/`_14`/5, `_040`/`_16`/5 and `_050`/`_15`/5, each 260 × 680 (UN3: tokens 8 and 9 × 4, 208 × 544 in `S01`) on UN3's 4 × 6 grid with UN3's `stage_flag_constants` (`0x0081D850`), turned about the vertical axis by -5°, -10°, 5°, 10° and 0° (`0x0081D800`). The update (`0x00708AB0`) gusts by a random 0.8 in x and 0.01 in y and z (UN3 0.5 and 0.02). |
 | `0x801`, `0x898` | The hit node is `OBJ_<stem>_hit` (`0x00838A78`; UN3 `DMY_`), and token 7 names a clump (`CMP_bre_*`) whose pieces are `_a1`..`_a3` (`0x0022F6B0`, with UN3's four pieces, 20 particles, gravity 9.8, bounce 0.6 and damping 0.8). `stage_breakable_react`, the update (`0x006B7FD0`), the draw (`0x006B86D0`) and its hit-flash colors (`0x0081CAC0`) equal UN3's. `0x898` only clears word `+0x148` after parsing, which the parser sets to 1 (UN3 `+0x138`): only props holding 1 join the COM's prop-target lists (`stage_build_breakable_ai_targets`, `SLUS_215.75` `0x002D5FC0`) and count for mission conditions `0x2C` and `0x2E` (`0x00728240`, `0x00728680`), so the sign stays breakable but the COM ignores it. UN3 records the same sign as a plain `0x801`. |
 | `0x803` | None: the hit (`0x006B89A0`) also keeps the hitter's side on hits before the last, as UN3's does; the swing (`0x006B8E30`) and the break's item drop (`0x006B8890`, mode token 1) match. UN2 does not read token 6 (`EFF_efe_*`). |
-| `0x825` | `stage_construct_training_dolls` builds token-5 dolls at the scene's doll nodes (`OBJ_dd_010` and siblings: six in scene 10, four in 16 and 17, two elsewhere). The parser (`0x006C1160`) sets the reappearance base to 30 × token 1 (UN3 10 ×), 300 updates in every scene, and needs no hit node: the attack sphere, radius token 9 × 2, follows the doll node at (0, -100, 100). A broken doll counts for its side (`gp-0x6560` `+0x30`) only on scenes 10 and 16 (UN3: scene 3). Dolls clear `+0x148` too; the COM targets them through their own list (`0x002D5C10`). |
+| `0x825` | `stage_construct_training_dolls` builds token-5 dolls at the scene's doll nodes (`OBJ_dd_010` and siblings: six in scene 10, four in 16 and 17, two elsewhere). The parser (`0x006C1160`) sets the reappearance base to 30 × token 1 (UN3 10 ×), 300 updates in every scene, and needs no hit node: the attack sphere, radius token 9 × 2, follows the doll node at (0, -100, 100). A broken doll counts for its side (`gp-0x6560` `+0x30`) only on scenes 10 and 16 (UN3: scene 3). Dolls clear `+0x148` too; the COM targets them through their own list (`0x002D5C10`). The first hit breaks a doll (token 0 is 1) through `stage_breakable_react`, which plays the record's break sound, 58. |
 | `0x826` | None (`stage_monkey_doll_parse`, update `0x006C0F10`). |
 | `0x846` | None: `stage_cargo_parse` and the piece parser (`0x006C5F20`) are UN3's `0x835` cargo stack, with token-10 pieces (0 → 3) 100 apart at the token-3 node, each one sphere of radius token 9 at (0, -150, 50), falling by 0.12 and 9.8. Scene 9 names `ANM_s4akiz00`. |
 | `0x862` | None: each hit counts for the hitter's side (`gp-0x6560` `+0x30`), and the drop chance (`0x006C8740`) is 5% when a side's count is exactly 10 on scene 9 (8 on scene 14), otherwise 20%. |
@@ -462,14 +463,25 @@ S0A2's `0xE0E00F` is NA2's class-1 water code.
 
 ## Surface effects, sounds and common visuals
 
-`fighter_periodic_surface_effects` (`0x0021E8B0`) emits ground effects from
-the fighter's masked word and a cursor. `0xE0A000` water splashes
-(`0x0021F9F0`) every 10 updates in state 4, otherwise every other update
-after the sixth. `0xF0D0D0`, `0xF0F0F0`, `0x005000`, `0x606060`, `0x80D0F0`,
-`0x90B0C0` and `0x003060` puff (`0x0021C370`) at scale 4 for the first eight
-updates, then at 2.5 every 10 updates in state 4 or every 4 otherwise;
+`fighter_periodic_surface_effects` (`0x0021E8B0`) emits ground effects while
+a fighter runs (`ACT_RUN_0`, `0x0E` in both games; `0x0019E1F0`), from its
+masked word and the run's frame. `0xE0A000` water splashes (`0x0021F9F0`)
+every 10 updates for character 4 (fighter `+0x54`), otherwise every other
+update after the sixth. `0xF0D0D0`, `0xF0F0F0`, `0x005000`, `0x606060`,
+`0x80D0F0`, `0x90B0C0` and `0x003060` puff (`effect_emit_surface_puffs`,
+`0x0021C370`): two ground smokes, effect `0x93` (`EFF_e0xsmok20` with
+`CLT_e0xsmok20c1`) or, on snow and ice and on scene 16, `0x95`
+(`CLT_e0xsmok20c3`), at scale 4 for the first eight updates, then at 2.5
+every 10 updates for character 4 or every 4 otherwise; on
+snow and ice on scenes 16 and 17 three particles of the stage's own
+`EFF_e0x_ice` (`stage_bind_ice_resources`, `0x002EB2A0`) join them.
 `0x90B0C0` also places an effect at the lower foot (`0x00224010`).
 `0x00D000`, `0x0060C0`, `0x202020` and `0xE0E000` emit nothing there.
+NA2's `fighter_foot_surface_effects` (`0x0033A2D0`, from
+`entity_run_surface_effects` in `ACT_RUN_0`) raises the same puffs on the
+same codes at the same cadence, but its burst (`effect_spawn_debris_burst`)
+tints only snow and ice, and takes its three ice particles from a stage
+lookup (`0x006C2FF0`) that always returns none (`0x006C2EB0`).
 Water has its own periodic path, as in NA2
 ([NA2's periodic path](stage_surface_attributes.md#query-eligibility-and-contact-classes)):
 `effect_emit_periodic_water_code` (`0x0021EF30`) plays, every 15 updates,
@@ -484,36 +496,46 @@ last and the second on destruction. The six scenes use 18/55, 18/56, 18/58,
 18/60, 57/55 and 57/58. UN2's common bank (`DATA/SNDDATA.BIN`, descriptor
 `audio_common_bank_descriptor`, `0x00419768`; event rows
 `audio_common_controls`, `0x00418E90`, each naming its program) plays, for
-events 18, 55, 56, 57, 58, 60, `0x23`, `0xB8`, `0x1F`, 0, 1, 3, 5, 6 and
-`0x25`, samples no NA2 common program holds; event 9 plays NA2's program 9's.
-Of 18, 55..58, 60, `0xB8`, `0x23` and `0x1F`, only `0x1F` matches a UN3
-program's samples. Each of 18, 55..58 and 60 is a one-sample 8,000 Hz
-program with the common control row `00003C7F7F0001`; their samples take
+events 18, 55, 56, 57, 58, 60, `0x23`, `0xB8`, `0x1F` and `0x25`, samples
+that no NA2 common program holds byte for byte; event 9 plays NA2's program
+9's, and events 0, 1, 3, 5 and 6 play NA2's programs 0, 1, 3, 5 and 6's
+audio, 7 to 59 ms of faint tail shorter. Of 18, 55..58, 60, `0xB8`, `0x23`
+and `0x1F`, only `0x1F` matches a UN3 program's samples byte for byte. Each
+of 18, 55..58 and 60 is a one-sample 8,000 Hz program with the common
+control row `00003C7F7F0001`; their samples take
 18,512 bytes together, and `0xB8`'s (program `0x71`) 1,376.
 
 Surface sounds come from `fighter_request_periodic_surface_audio`
 (`0x002B8F70`), which maps `0xF0F0F0` snow to common event `0xB8` (program
 `0x71`), `0xF0D0D0` ice to 3, `0xE0E000` water to 5, `0x003060` and
 `0x005000` to 1, `0x0060C0` to 6, `0x606060` and `0xE000E0` to 3, `0x80D0F0`
-to 0 and anything else to `0x25`. NA2's periodic selector suppresses
-`0xF0F0F0`. On snow and ice, `effect_emit_surface_puffs` (`0x0021C370`) uses
-smoke variant `0x95` instead of `0x93` and, on scenes 16 and 17, adds three
-particles of the stage's own `EFF_e0x_ice` (`stage_bind_ice_resources`,
-`0x002EB2A0`). As in NA2, `fighter_event_dispatch` (`0x001F15A0`) writes
+to 0 and anything else to `0x25`, at velocity `0x7F` with program volume
+`0x7F`. NA2's `audio_surface_event` maps the same codes to the same events
+but suppresses `0xF0F0F0`, and its rows (`sfx_common_controls`,
+`0x003FC9A0`) cap velocity at `0x50` (`0x40` for event 1) and its programs
+0, 1, 3, 5 and 6 have volumes `0x50`, `0x50`, `0x64`, `0x7F` and `0x3C`;
+NA2's program-6 sample record has byte `+0x0B` `0x3E` where UN2's has
+`0x3C`. As in NA2, `fighter_event_dispatch` (`0x001F15A0`) writes
 `0xF0F0F0` to the manager's ground word after each event.
 
 The stage effects draw common resources through `generator_resource_rows`
 (`0x004128A0`) and `effect_resource_rows` (`0x00410FD0`) from UN2's
 `CMN/PARTICLE.CCS` and `CMN/EFFECT0X.CCS`, such as `EFF_x002`,
 `EFF_e0xpar00`, `EFF_e0xsmok06`, `CMP_e0xleaf01`, `EFF_e0xdrop01` and
-`ANM_e0x_ring_01`. NA2's files have the same names, but of the 97 particle
-textures and palettes both name, 73 differ from UN2's once their IDs and
-VRAM placement are set aside; 24 are identical. Among those that differ are
-the leaves and their seven colours, which the surface effects index the
-same way (`0x00411DE0`, NA2's `0x005A4B50`): colour 4 is a dark green
-where NA2's is khaki. The ground smoke's (`EFF_e0xsmok20`) texture and
-palettes equal UN3's. UN2's archives are CCS version `0x111`, UN3's and
-NA2's `0x123`.
+`ANM_e0x_ring_01`. NA2's files have the same names. Decoded with each of
+their palettes, 10 of the 25 textures both `PARTICLE.CCS` files hold and 4
+of the 16 both `EFFECT0X.CCS` files hold show the same colours in both
+games, among them `x002` and `e0xpar01` with all their palettes and
+`e0xpar00` with all but its sixth; `x002`'s sections differ only in IDs, a
+flag byte (texture `+0x08`, palette `+0x04`) and VRAM placement. Among
+those that differ are the leaves (`e0xleaf01`, `e0xleaf02`) in all seven
+colours, which the surface effects index the same way (`0x00411DE0`,
+NA2's `0x005A4B50`): colour 4 is a dark green where NA2's is khaki.
+Generator catalog row 1 is `CMP_e0xleaf01` in both games (NA2's
+`battle_particle_catalog_rows`, `0x005A6E20`), which the `0x524` flying
+leaves draw, as their record names no composition. The ground smoke's
+(`EFF_e0xsmok20`) texture and palettes equal UN3's. UN2's archives are CCS
+version `0x111`, UN3's and NA2's `0x123`.
 
 ## Comparison with UN3's same places
 

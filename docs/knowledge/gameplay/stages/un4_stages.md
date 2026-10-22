@@ -2,12 +2,17 @@
 
 ## Research coverage
 
-Established: stage identity, S01 camera/anchors/routes, authored scene formats,
-resource/scene allocation bounds, conditional load sufficiency,
+Established: stage identity, S01's and S11's camera/anchors/routes, effect
+intensities, battle tracks and records, the music override's writers, the
+raw-slot and logical-ID census for both stages, the S01 and S11 object
+classes, common sounds and particles compared with NA2's, authored scene
+formats, resource/scene allocation bounds, conditional load sufficiency,
 group-0 parallel-animation correspondence,
 decoded soundtrack comparison and localized previews.
-Open: indirect consumers, full prop equivalence, minimum available load-time capacity,
-musical title, alternate arrangements and the clash-camera selector's meaning.
+Open: indirect consumers, the methods of the remaining generic classes, what
+the dust probes' padding and the break statistic change in play, minimum
+available load-time capacity, musical title, alternate arrangements and the
+clash-camera selector's meaning.
 Names and types come from `@annotations/UN4`; NA2 comparison names come from
 `@annotations/NA2`.
 
@@ -202,6 +207,33 @@ The script configurations produce one front and two back first-family lines,
 and one front and two back second-family pairs. All named normal-line nodes,
 second-line endpoints and section boundary nodes are present in S01.
 
+## S11 tables and records
+
+S11 is raw slot 10, logical ID 11. Its `BIN_bgdata` has 55 records, which
+NA2's parsers read as UN4's do: the line and player records (`35:2`,
+`36:10`, `37:1`, `38:5`, 33 and 34), `BLT_bg` for scene list 0 and `BLT_obj`
+for list 2, 21 factory-0 objects (`OBJ_flo_100_` on list 4), 17 factory-2
+animations (the falls `ANM_s11fal00`, twelve `ANM_s11efe01` at
+`DMY_dmy_efe010..120`, `ANM_s11efe02/03` and the waves
+`ANM_s11wav00/01`), four crystals rebuilt indefinitely (factory 78,
+`ANM_s11gim00..03`, one hit, repeat -1), one break object (factory 50,
+`ANM_s11uki00`), glare, fog `120,180,255,0,32,0,30000`, light and render
+coefficients `0.30,0.30`. The archive also holds a training doll
+(`OBJ_obj_doll`, `ANM_anm_doll_a0..a2`) that no record builds.
+
+- Camera: slot 10's record (`0x00574DB0`) is byte-identical to NA2's
+  slot-5 (S06) record at `0x008916F0`.
+- Combo anchors: `stage_s11_combo_anchors_side0` (`0x0083A480`) holds 12
+  vectors, c0 = 500..-600 in steps of 100 at (c1,c2) = (0,0);
+  `stage_s11_combo_anchors_side1` (`0x0083A540`) holds one, (0,1000,0).
+  `stage_choose_combo_anchor` keeps the requested side for slot 10.
+- Routes: `stage_s11_navigation_routes` (`0x0083C430`) holds eight routes,
+  all type 3: 3→2 at 0, 3→4 at 1, 4→5 at 1, 2→1 at 0, 1→2 at 1, 5→4 at 0,
+  4→3 at 0 and 2→3 at 1.
+- Effect intensity: `effect_4a_secondary_update` (`0x002BC2D0`) reads
+  `effect_4a_stage_intensity` (`0x005BDC90`) by raw slot as NA2's does:
+  `0xCF` for S01 and `0x5F` for S11.
+
 ## Fixed `n_rash` archive
 
 Resident `battle_load_ccs` (`0x00317130`) checks and loads the fixed
@@ -327,12 +359,21 @@ angle/section/segment correction and logical-5 bias. The UN4 alternative
 record selector's broader context remains unassigned.
 
 The 27 direct calls to `stage_slot_logical_id` were traced. Their explicit
-special IDs are 2,3,5,6,7,8,9,10,12,13,18; none tests ID 1 as a special
-case. The annotation labels `stage_logical_id_call_<address>` retain each
-call's scoped branch result. Likewise, the inspected direct reads of manager
-+FC in the battle overlay contain no S01-only numeric branch. These bounded
-negative results do not establish absence through every indirect call,
-alternative accessor, or unidentified memory alias.
+special IDs are 2,3,5,6,7,8,9,10,12,13,18; none tests ID 1 or 11 as a
+special case. The annotation labels `stage_logical_id_call_<address>` retain
+each call's scoped branch result. Every byte load of manager +FC within five
+instructions of a manager load, in both `BATTLE.BIN` and `SLUS_218.62`, and
+every background +80 load after the background getter (`0x00322A90`) was
+classified. Raw slot 0 is included only by `bg_electric_wire_draw`
+(`0x006C9F00`), which draws wires only below background slot 2, and S01 has
+no wire; raw slot 10 is tested only by the three ground-dust probes under
+[Stage objects, sounds and common files](#stage-objects-sounds-and-common-files-compared-with-na2).
+No classified read searches a raw-slot table such as NA2's
+`stage_line_change_rules`, and UN4's resident image never calls
+`field_first_line_head` (`0x006EBB10`), which NA2's
+`fighter_stage_line_changed` uses. These bounded negative results do not
+establish absence through every indirect call, alternative accessor, or
+unidentified memory alias.
 
 ## S01 background archive and native factory parity
 
@@ -715,6 +756,42 @@ observation; it does not establish the required minimum load-time gap or
 an unrestricted all-battle peak. Available headroom under those concurrent
 conditions remains unestablished by the static evidence.
 
+## Stage objects, sounds and common files compared with NA2
+
+The compared classes behave as NA2's do, with these exceptions.
+
+- Break objects (factory 50 and, through its update, 78 and 80) and training
+  dolls (41): `bg_break_trigger` (`0x006C6E80`) and `bg_break_doll_update`
+  (`0x006C7F10`) place the type-0 impact effect at the current piece
+  model's position, which its transform node sets (token 3, such as
+  `DMY_pg_020`), where NA2 places it at the collision node (token 4, such as
+  `DMY_s01gim02_hit`); in S01 these lie 115 to 190 apart in depth and 0 to
+  100 in height. A break bursts `EFF_e0xsmok20` from `PARTICLE.CCS` at the
+  collision node through `effect_break_smoke_burst` (`0x003B7320`), its
+  sizes scaled by the radius token over 200, where NA2's spawn common effect
+  `0x33` at scale 1 (`effect_spawn_common_33`). NA2 keeps the same routine and
+  template (`0x003947D0`, `0x005D5610`) without a caller. Both games play
+  common sound `0x22` on the last hit, draw items from the same General A
+  distribution (`item_general_distribution_a`, `0x0083AD20`), each game from
+  its own item pools, and run the same rebirth (`bg_break_reborn_update`) and
+  fall (`bg_break_fall_update`). UN4 credits battle statistic `0xB` on every
+  accepted hit, where NA2 credits 12 at the break.
+- Escape birds, cloth flags, lanterns, curtains, proximity-faded objects
+  (factory 79), the glare pass and the background control's restriction
+  gating (`bg_control_update`, `0x006C3C60`) match NA2's.
+- Sounds: every common event `0..0x5B` plays the same program, records and
+  samples as in NA2's common bank (`sfx_common_controls`, `0x004342D0`;
+  `DATA/SNDDATA.BIN` at offset 0), and footsteps choose events by ground code
+  as NA2's do (`audio_request_periodic_surface`, `0x001D6E30`).
+- Common files: every palette and texture of `CMN/PARTICLE.CCS` matches
+  NA2's, including the ground smoke `EFF_e0xsmok20`. `CMN/EFFECT0X.CCS`
+  differs: NA2 resized or redrew several common effect textures, among them
+  `e0xsmok03`, `e0xsmok07`, `e0xsmok10` and `e0xsmok20`.
+- Raw slot 10 lengthens three ground probes for dust effects by 27
+  (`fighter_ground_dust_probe_update`, `skill_player_blow_watch_update`,
+  `skill_ground_dust_probe_update`), as NA2 does for its own slot 10;
+  slots 5 and 9 take 30 and 50 in both games.
+
 ## Battle music and S01 soundtrack
 
 The shared battle transition `battle_update_audio_transition`
@@ -735,8 +812,11 @@ manager's **signed raw-slot byte** at `+0xFC`, without an upper-bound check.
 Neither route selects by logical ID, fighter, random draw or a music-menu
 setting. `sound_task` (`0x001D3F30`) allocates and publishes the request
 context through `audio_request_context_initialize` (`0x001D3E70`), which
-sets its word0 override to -1. This establishes stage selection as the
-initial default. Complete override-writer reachability remains open.
+sets its word0 override to -1. The word's only direct writers are
+`audio_clear_music_override` (`0x001D5660`), which restores -1, and
+command 5 of `audio_dispatch_music_request` (`0x001D54E0`), whose only
+direct callers are in `RPG.BIN` (`0x00797B8C`, `0x007B04E8`). Outside that
+overlay every battle therefore plays its stage's member below.
 
 | Raw slots | SOUND descriptor0 members in slot order |
 | --- | --- |
@@ -746,9 +826,12 @@ initial default. Complete override-writer reachability remains open.
 | 18..24 | 24 for all seven summon slots |
 
 S01, raw slot 0 / logical ID 1, therefore defaults to **member 4 on stereo
-channel 0**. Summon raw slots 18..24 select channel 1 after requesting a
-fade/stop for channel 0. The descriptor 0 row at `0x00435E10` resolves
-archive handle 0; its start parameter is 2.
+channel 0**, and S11, raw slot 10, to **member 18**, `018.adx` (1,927,168
+bytes, SHA-256
+`594505163376c4097ce7c4c94e8fac20a07b0480f810a41a0fd6456671502a73`), which
+S13 also plays; no stage plays member 8. Summon raw slots 18..24 select
+channel 1 after requesting a fade/stop for channel 0. The descriptor 0 row
+at `0x00435E10` resolves archive handle 0; its start parameter is 2.
 `audio_select_music_track` (`0x001DA020`) forwards the archive/member
 through `audio_start_streamed_music` (`0x001536E0`) and retains the selection.
 
@@ -819,4 +902,7 @@ banks 2–4 duplicate the English rectangles. The draw crops one pixel from
 every edge and scales width/height by 1.3: English effective source rectangle
 `(1,1,198,26)`, French `(1,1,182,26)`. Decoding those first rectangles
 reads **Hidden Leaf Village** and **Village de Konoha**, respectively.
-These are UN4 S01's retail localized display names.
+These are UN4 S01's retail localized display names. The English slot-10
+rectangle `(368,84,144,28)` reads **Crystal Cave**; S11's big picture is
+`TEX_mappure02` cell 4, `(0,336,256,168)`, and its TV picture
+`(0,312,96,72)` in `TEX_mappure04`.

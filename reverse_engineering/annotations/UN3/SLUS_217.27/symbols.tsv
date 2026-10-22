@@ -299,6 +299,7 @@ address	kind	name	type	comment
 0x00185570	function	audio_consume_pending_streams	void audio_consume_pending_streams(void)	Own UN3 consumer scans four pending rows and stops the stored mono slot first. Alternate-family zero requests PLVOICE family 3 with bank=(character-1)+56*(voice_set==1), preserving member narrowed to short. Other rows request SOUND family 0 with alternate+14*(voice_set==1). Reads setting at consumption and clears pending regardless of admission.
 0x001856D0	function	audio_queue_player_voice	void audio_queue_player_voice(int character, int member, int slot)	Own UN3 queue checks only signed character<57, then writes character, unchanged sparse member, slot and alternate-family zero. No filename-number lookup. Character zero passes and writes bank -1. Compact SNDDATA commands use a separate path.
 0x00185720	function	audio_reference_vectors		Current camera eye (+0x30) and target (+0x70)
+0x001857C0	function	audio_position_gain		Always 0x7F: audio_emit_spatial_sfx_control and its keyed forms play every common sound at the control row's maximum, whatever the position.
 0x001857D0	function	audio_position_velocity		control volume x max(0, 5500 x scale/256 - distance)/50/100, 0x7F without a listener, -1 below 1
 0x00185920	function	audio_position_direction		Always 0x3F0000: centred, never behind
 0x00185A30	function	audio_character_bank_descriptor		Select SNDDATA bank triple00388290+character*12+2AC*audio_alternate_voice_set_enabled(); checked Guy ID20 offsets00970800/019E3000,header13B0,samples5B2B0/5DCE0.
@@ -337,6 +338,7 @@ address	kind	name	type	comment
 0x0019C0B0	function	fighter_request_voice_event		Admit event0..32;24/25 cooldown and major5/6 guards;lookup halfword event list;positionless route186810,actual fighter route186460.
 0x0019C1D0	function	fighter_request_voice		Translate pseudo-2/-3/-4 to random groups6/3/0;other-1 suppressed;dispatch selected event through fighter_request_voice_event. Green Beast action19 uses5/7, UJ startup uses-2.
 0x0019C380	function	fighter_request_sound_effect	void fighter_request_sound_effect(void *fighter, int event)	Request indexed fighter sound effect at fighter position+30; event0xC with characterID0x11 additionally requests0x36.
+0x0019DA40	function	fighter_present_action_effects		NA2's fighter_present_action_effects: action-event effects, then ACT_RUN_0 (1, 0xE) calls fighter_foot_surface_effects.
 0x0019EFA0	function	effect_select_polygon_code		E0E000 water: scene 9 variant 4 at height 0, scene 16 variant 2 at height 0 scale 0.55, else variant 0; NA2's keys only slot 12
 0x001A1D60	function	easy_display_show		Shows the fighter's Easy Display cues for events 0..2 only while profile byte +0x5F bit 6 is set; event 3 always shows.
 0x001A2F90	function	descriptor_copy_runtime_fields		Copies caller bytes10..13,halfwords14..1A,words1C/20 and30..4C to mutable construction descriptor; does not copy first character-record pointer.
@@ -545,6 +547,7 @@ address	kind	name	type	comment
 0x0023EA40	function	battle_effect_bind_direct_resource		Bind borrowed descriptor1A4;kind1/4 alloc120 model animation,optional sceneA0;kind0 compositionA0;kind2/3 effect60.
 0x0023EC90	function	battle_effect_update_draw_factors		Forward scene-effect virtual +0x0C to draw-factor update at battle_effect_advance_draw_factors.
 0x002402F0	function	battle_surface_drop_reserved		No-op reserved virtual method at moving scene-effect vtable +0x38; jr ra with nop.
+0x00240300	function	prop_break_burst_construct		Size 0/1: common effect 1/2 at scale 1.5; size 2: effect 3 at scale 2 plus effect 0x32 at scale 2, randomly turned; size 3: effect 0x2E at scale 2.
 0x00240BD0	function	battle_surface_drop_update		Advance common typed scene-effect player state, add +0x220 acceleration to +0x1C0 velocity, and optionally clamp motion-derived +0x230 scale to 1..3. Does not read raw selector +0x250.
 0x002416F0	function	surface_effect_construct		Picks effect row surface_effect_variants[bit][variant]: 0x89+v CLT_e0xleaf01(c v) on CMP_e0xleaf01, 0x90+v CLT_e0xleaf02(c v); NA2 rows 0x7B/0x82 name the same palettes.
 0x00243980	function	effect_scene13_burst_delay		Random start delay range 1 on scene 13, 30 elsewhere
@@ -554,6 +557,7 @@ address	kind	name	type	comment
 0x00257C60	function	battle_screen_fragment_initialize		Initialize two framebuffer draw/texture environments using manager24E0,32 fragment records484 stride2C via258860;optionalF8 secondary renderer and blend0.5.
 0x0025EDC0	function	battle_hit_effect_base		Type2 binds common resource3 ANM_e0x_hit_97;also creates particle descriptor479A70 with EFF_e0xpar00/par01 and c5 palette remaps through explicit descriptor array.
 0x0025F360	function	battle_hit_effect_with_composite		Base25EDC0;type2 argument selects randomcomposite ID37h or35h from478940[2/3],respectivelypaired resources57/58 or53/54;draw colorFF and movement.
+0x00260560	function	stage_prop_break_burst		Prop break burst for stage_dispatch_prop_effect kinds 6..9: prop_break_burst_construct object of size 1 or 2 at the position, then the 0x004794C0 particle burst there.
 0x002607F0	function	battle_dynamic_entry_initial_hit_effect		Bind common resource74h aliasbase8 ANM_e0x_gard_01,c1 palette plus sceneCMP_e0xfla12-00 atcacheindex44;particle descriptor4795A0/fieldindex4795D0,overridechoice29 CLT_e0xpar00c1.
 0x002621C0	function	surface_effect_spawn	void surface_effect_spawn(undefined4 arg1,undefined4 arg2)	Inferred from an exact code match with NA2 SLPS_258.37 0x00336630. Spawn requested count of surface/background effect variant; LandingTree passes count10.
 0x002621F0	function	surface_effect_spawn_one		NA2 surface_effect_spawn_one's counterpart.
@@ -988,7 +992,9 @@ address	kind	name	type	comment
 0x00476830	data	green_beast_definition	un3CharacterDefinition	Dedicated UN3 ID32 definition: green_beast_create and green_beast_character_record.
 0x00476900	data	camera_stage_tracking_gains	un3StageCameraRecord[27]	Per-scene camera records; NA2 StageCameraRecord layout. Records shared with NA2 stages are byte-identical.
 0x00477320	data	stage_camera_records_by_scene	un3StageCameraRecord *[28]	27 record pointers indexed by scene_index, null-terminated.
+0x004773C0	data	common_effect_rows		24-byte common-effect rows by effect id: container name, resource name, kind, flag. Id 2 ANM_e0x_hit_98a, 3 ANM_e0x_hit_97, 0x25 ANM_e0x_move_02, 0x26 ANM_e0x_down_04, 0x32 ANM_e0x_hit_98b.
 0x004783B0	data	surface_effect_variants		Effect rows 0x89..0x8F and 0x90..0x96 by variant column.
+0x004789F0	data	foot_flash_intervals		Running updates between 0x90B0C0 foot flashes by character id: 1:4, 2:6, 3:5, 4:11, 5:8, 6:6, 8:6, others 0 (none).
 0x00478E70	data	battle_particle_catalog_rows		16-byte particle catalog rows (archive, name, base row, palette-name row); rows0x34 CLT_x002c1 on6 EFF_x002 and0x4C CLT_e0xpar01c3 on0x12 EFF_e0xpar01 match NA2. S06 steam selects4 EFF_e0xsmok05 with playback selector2 and70 CLT_x001c7; S11 storm selects80 CLT_e0xsmok11c1 on19 EFF_e0xsmok11 with selector0. Names/indices match NA2, but smok05/11 visuals differ: UN3 flags40,64x64 8-bit/256-colour; NA2 flags60,64x64 4-bit/16-colour, different pixels/palettes. EFF_x001/TEX_x001/CLT_x001c7 content matches after refs/VRAM excluded.
 0x0047B400	data	kakashi_ultimate_jutsu_list	short[14]	ID8 counted13 records96..108;four distinct cinematic skills30/31/32/33.
 0x0047B580	data	guy_ultimate_jutsu_list	short[21]	Guy ID20 local list: count20, global Ultimate record indices237..256.
@@ -1029,7 +1035,7 @@ address	kind	name	type	comment
 0x00490868	data	item_random_pool3		Codes 6,7,8; pool 3.
 0x00490880	data	item_random_pool1		Codes 0C,0D,0E,0F,10,1F,20,21,17,19,1E; pool 1.
 0x004908B0	data	item_random_pool2		Codes 0B,0A,19,17,1E,1A,18,1B,1C,1D,1E,2C,2E,2F,30,33; pool 2.
-0x00490930	data	item_metadata		12-byte rows per item code; codes 1..3 life 5/10/15, 6..8 chakra 5/10/15, 9 chakra 0.75, 0x1B kind 3 flags 0180 effect 0A (Curse Tag: Chakra Points Seal).
+0x00490930	data	item_metadata		12-byte rows by item code (NA2 layout): codes 1-3 health 5/10/15 (kind 1, flags 0x20), 4-5 health 10/15, 6-8 chakra 5/10/15 (kind 2, flags 0x40), 9 chakra 0.75.
 0x004A7F14	data	cri_rpc_service_id	unsigned int	0x90000200, used by EE CRI RPC server worker and cri_bind_iop_rpc_service; matches checked UN3 CRI_ADXI.IRX service.
 0x004D7440	data	item_catalog_rows		12-byte rows: item code, price, English name pointer; e.g. 0A Demon Wind Shuriken, 1D Curse Tag: Steal, 1F Frog Pill, 30 Kunai Rain, 33 Random Ball.
 0x004D9160	data	kakashi_ultimate_jutsu_records	un3UltimateJutsuRecord[13]	Indices96..108;Origin/Double Charge/Single Slash each four variants plus Eternal Rivals;skills30/31/32/33,damage20/25/30/40,intro46/47/48/49,effect15 in all13;effect15 does not map to replacement fighter.
