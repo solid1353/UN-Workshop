@@ -1,7 +1,7 @@
 # PCSX2 tooling
 
 Workshop resolves game resources, prepares PCSX2 worker configurations, and
-launches or replays one or two games through the `workshop.ps1` entrypoint. The
+launches or replays one to three games through the `workshop.ps1` entrypoint. The
 user-facing syntax is available through `workshop help`.
 
 ## Game and path resolution
@@ -17,18 +17,20 @@ settings.
 
 ## Launching games
 
-Supplying one or two games or ISO paths launches them at normal speed. A single
+Supplying one to three games or ISO paths launches them at normal speed. A single
 launch opens a centered window through PCSX2's `-centered-window`
 [launch option](../../../PCSX2/docs/launch_options.md#process-overrides).
-Paired launches remain tiled in argument order through PCSX2's `-no-recenter`,
-which stops game starts from recentering the windows, and mute both PCSX2
-instances. `-t` selects Turbo, while `-u` selects Unlimited; these speed
-options are mutually exclusive. Each result reports the ordered game, process,
-PINE port, and window position.
+Launches of two or three games tile them left to right in argument order, each
+window an equal share of the screen width, and keep them there through PCSX2's
+`-no-recenter`, which stops game starts from recentering the windows; they also
+mute every PCSX2 instance. `-t` selects Turbo, while `-u` selects Unlimited;
+these speed options are mutually exclusive. Each result reports the ordered
+game, process, PINE port, and window position.
 
-`-k` closes every running development PCSX2 before launching. Paired launches do
-this automatically, except agent replays. Snapshot replays never close PCSX2 and
-reject `-k`. Each PCSX2 gets five seconds to close before it is force-stopped.
+`-k` closes every running development PCSX2 before launching. Launches of two or
+three games do this automatically, except agent replays. Snapshot replays never
+close PCSX2 and reject `-k`. Each PCSX2 gets five seconds to close before it is
+force-stopped.
 
 `workshop pcsx2` launches development PCSX2 without a game in Turbo.
 
@@ -49,13 +51,13 @@ through PCSX2's
 may be relative paths below `@pcsx2_input_recordings/`; Workshop adds the
 `.p2m2` extension automatically. Recording creates missing parent directories.
 
-`workshop <game|iso-path> [game|iso-path] -rps <recording> [-o <path>]`
-replays one or two configured games or explicit ISOs concurrently in PCSX2's
+`workshop <game|iso-path>... -rps <recording> [-o <path>]`
+replays one to three configured games or explicit ISOs concurrently in PCSX2's
 surfaceless no-GUI mode. It captures every recorded L3+R3 snapshot marker in
 PCSX2's `full`
 [capture mode](../../../PCSX2/docs/input_recording_capture.md#marker-capture)
 without creating a render window or taking focus. For one game, `-o` selects
-the exact capture directory. For two games, it selects a parent containing one
+the exact capture directory. For more games, it selects a parent containing one
 directory per game. Relative paths resolve from the invoking directory; without
 `-o`, captures go below `<capture root>/<recording>/<game>/`. The capture root
 is the launcher's `-CaptureRoot` parameter, or the project's `captures/`

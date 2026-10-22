@@ -64,8 +64,8 @@ function Invoke-UnWorkshopGameLaunch {
     )
 
     $games = @($Games | Where-Object { -not [string]::IsNullOrEmpty($_) })
-    if ($games.Count -eq 0 -or $games.Count -gt 2) {
-        throw 'Workshop launch accepts one or two games.'
+    if ($games.Count -eq 0 -or $games.Count -gt 3) {
+        throw 'Workshop launch accepts one to three games.'
     }
     $selectedModes = @(
         @($Play, $Record, $Snapshots) |
