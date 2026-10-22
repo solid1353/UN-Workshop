@@ -451,7 +451,7 @@ controller construction belong to the routine annotations.
 | `0x507`, `0x506` | `stage_sway_animation_parse` (`0x007E58A0`) | Token 5 pieces: the record's animation and `_1`.. siblings, at the token-3 node and its `_1`.. siblings, each with a random phase and amplitude 0.1 + rng(0.3) (mode 0), or 0.025 + rng(0.01) when the label holds the lantern string (mode 1); `0x506` is mode 5. |
 | `0x518` | `stage_wind_parse` | One wind per scene: after a hold of 10 × 60 / frame divisor updates (300 at 30 updates per second) the phase advances a degree per update with `stage_wind_strength` = sin(phase); it holds at +1 (phase 90), 0 (180) and -1 (270), and after 360 rests 25 × 60 / divisor updates. `stage_wind_update` starts common sound `0x3E` (velocity `0x40`) on its first update and, outside holds, places it at the camera eye plus (550 w − 600, 6000 \|w\| − 6000), or 6000 below while `battle_restriction_check` reports a restriction. `audio_position_velocity` gives volume × max(0, 5500 − distance) / 50 / 100 and `audio_position_direction` always centres it. The sound plays the same sample, split and sample record as NA2's common sound `0x27`. |
 | `0x51B` | `stage_flying_leaves_parse` | A generator from `stage_flying_leaves_generator_parameters` and `stage_flying_leaves_force` with token 8 as its emission rate (`+0x18`; the particles keep the row's lifetime of 30), token 7's composition as its material, token 4 scale and distance fade 100/22000/500/20000. `stage_flying_leaves_update` puts its origin token 3 ahead of the camera along the view, offset upwind by token 10, sets the force's x to token 9 × -wind and the alpha scale to the wind's magnitude, or 0 below 0.3. |
-| `0x52D` | `stage_rising_leaves_parse` | Token 7 composition, token 0 section, tokens 1/2 x range and 3/4 height range. `stage_rising_leaves_update` starts leaf generators at a fighter in states (1, 0x15/0x16) or (5, 0x42/0x43/0x45) inside them, up to six per kind. |
+| `0x52D` | `stage_rising_leaves_parse` | Token 7 composition, token 0 section, tokens 1/2 x range and 3/4 height range. `stage_rising_leaves_update` starts leaf generators at a fighter in states (1, 0x15/0x16) or (5, 0x42/0x43/0x45) inside them, up to six per kind. The hit reactions are `ACT_DMG_SD`, `ACT_DMG_SD2` and `ACT_DMG_SBD` (BATTLE action table `0x0091ACC0`), NA2's `0x45`, `0x46` and `0x49`. |
 | `0x601` | `stage_transparent_parse` | Token 3 hit/position node; token 8 plus 150 contact divisor; a radius-150 receiver with mask `0x108` at the node. `stage_transparent_update` takes the nearer fighter's contact distance / divisor, 1 without contact, raises the fade by a tenth of that when it would rise more than 0.1, and sets opacity to fade × `bg_animation_limit(700)`. |
 | `0x79B` | `stage_flag_parse` | Token 7 texture at the token-3 node, tokens 8/9 width and height × 4, token 10 solver selector; a 4 × 6 cloth with `stage_flag_constants` on the cloth solver NA2's factory 6 also uses. `stage_flag_update` blows it with w = −`stage_wind_strength`, at least ±0.005: force 5000 w along the normalized (0.5 w + rng(0.5), rng(0.02), rng(0.02)), then one solver step of 0.064. `stage_flag_draw` widens the render context's clip bounds by a tenth while the cloth draws. |
 | `0x50C` | `stage_gondola_parse` | Token 3 node, token 1 wait × 30 updates, token 10 `line,list,amplitude,doll node`; list 2 is the back `cl` lines. `stage_gondola_update` stops while the battle director's state is 2 (`battle_state_is_2`); otherwise it steps its `curve_step` curve and moves the model, the selected line's two endpoints and the prepared doll node by their offsets. Each move (`stage_gondola_next_move`) rises `rand % amplitude`, or falls that far when the rise would pass the node's height + amplitude, through points at 1/2, 3/4 and 7/8 of it, at `curve_restart`'s random 0.03..0.045 speed with a 90-update end hold, then waits. S02's two gondolas carry back lines 1/2, the `DMY_b_cl_N_mov` pairs, and doll nodes 3/4. |
@@ -661,11 +661,15 @@ converted the content:
   idle and broken poses, which end with the loop marker -2.
 - Nodes: break-object nodes `DMY_pg_*` move 50..100 lower in component 2 in
   S08, S13, S16, S23 and S24, and hit nodes are re-placed one by one (monkey
-  dolls 25..80 higher). In every pair the outer ends of the front and back
-  `cl` lines move 25..65 inward along component 0. NA2 adds
+  dolls 25..80 higher). NA2 adds
   `DMY_s??doll0N_hit` at each doll node + (0, -100, +100). S14 also stores
   every node 400 lower in component 2 than UN3 S16 (its monkey-doll hit node
   320 lower).
+- Line ends: UN3 ends each section's outermost front and back `cl` lines
+  25..65 beyond its `DMY_linemin`/`linemax` bounds (100 on S15's front
+  lines). NA2 moves them onto the bounds in S08, S13, S14, S15, S16, S24
+  and S10's front lines, but keeps UN3's in S09 (25 beyond) and S10's back
+  lines (25 beyond), and ends S23's front lines 75 beyond its bounds.
 - Village props (UN3 `S09` → NA2 `S24`): `0x863`/`0x805` breakables and
   `0x803`/`0x804` lanterns become factory-50 objects (pieces, threshold,
   piece node, `DMY_*_hit`, scale, receiver radius, debris, 4), dropping the
