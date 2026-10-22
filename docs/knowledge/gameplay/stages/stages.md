@@ -660,7 +660,16 @@ This covers direct encodings, not every computed call.
 Inspected consumers use endpoints, next links, identity or filter:
 nearest-line queries, planner/executor, AI proximity, `stage_navigation_initialize`,
 BTL's `stage_correct_position`, `stage_nearest_endpoint`,
-`fighter_stage_line_index` and `fighter_stage_line_changed`.
+`fighter_stage_line_index` and `fighter_stage_line_changed`. The outermost
+first-family ends set AI navigation's section ranges
+(`stage_navigation_section_min_x`/`_max_x`) and bound two skill routines'
+placements: `stage_correct_position` (`0x0082E850`, called by `0x00833670`) keeps
+a position 55 inside them (below the low end + 30 it moves to that end
++ 55), and `stage_nearest_endpoint` (`0x00849190`, called by
+`rng_pair_record_route`) returns the nearest end for a position outside the
+section's endpoints. Section endpoints and transfers come from the
+second-family bounds, so retail ends lying past them (S09, S10's back
+lines, S23's front lines, 25..75) change neither.
 `stage_navigation_second_head` uses the second-family midpoint to choose a side.
 No semantic cached-attribute reader was found; late-BTL clamp and
 nearest-endpoint paths do not copy the tail.
@@ -881,7 +890,21 @@ action/type. `stage_route_search`/`stage_route_search_branch` recursively search
 that route.
 
 `stage_execute_route` consumes route/type to write traversal input: yaw near
-`+/-pi/2`, flags `1,2,0x100000`, consulting fighter section.
+`+/-pi/2`, flags `1,2,0x100000`, consulting fighter section. Without
+authored routes, or with no route found, it calls `ai_move_to_target_point`,
+which on a section mismatch (target section `+0x80` of the slot against the
+fighter's `+0x9F6`) writes the section-transfer mask `0x100000` toward a
+lower section or `0x80000` toward a higher one (mask 8 while airborne), so
+fighters change sections with no route.
+
+`stage_navigation_initialize` also stores each section's lowest first-family
+line start x in `stage_navigation_section_min_x` (`0x008D6580`) and highest
+end x in `stage_navigation_section_max_x` (`0x008D6588`), two floats each,
+the second table directly after the first and `ai_states` (`0x008D6590`)
+after it. Thirteen BTL routines index them by a fighter's section `+0x9F6`,
+among them `ai_opponent_route_update`, which resets the slot when the
+opponent lies outside its section's range, and `ai_opening_plan`, which
+treats its own fighter outside its range as out of bounds.
 All 15 direct BTL planner calls are AI decisions/dispatch; no direct
 resident/ETC planner call exists. Ordinary AI ticks require a nonzero
 controller nibble. This proves AI traversal input without excluding indirect

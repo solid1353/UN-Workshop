@@ -266,6 +266,16 @@ Its draw alpha is that alpha / 2048 times the generator alpha `+0x10C`. A
 quarter. NA2's `particle_fade_update` instead completes the fade-in, then
 holds for the lifetime.
 
+UN2's model instances (`0x00149CA0`, TEST state at `+0x28`, setter
+`0x0014AD90`) start with the TEST state NA2's `model_instance_set_blend`
+gives
+([Material render modes](../../runtime/rendering/material_render_modes.md)):
+`0x100B` for blend selectors 0 and 4, otherwise `0x1001`, without depth
+writes. The `0x537` leaf shadows and `0x57D` lightning keep it and draw
+from the stage objects' pass through the ordinary composition and model
+submits (`0x00151C10`, `0x001518F0`), where the `0x579` rain draws in
+environment 3.
+
 UN3's `S01` records are scene 0's renumbered: the 忍看板 sign is a plain
 `0x801`, the shadowed objects `0x863`, and the sound pairs are the same
 numbers. The types with a UN3 counterpart differ from it only as follows;
@@ -282,7 +292,7 @@ the rest of their parse, hit, update and draw is UN3's.
 | `0x537` | Tokens 6 and 7 name paired compositions sharing one opacity, which random-walks by up to 0.01 within 0.3..0.6 (`0x006F1AD0`); the wind sway moves components 0 and 1, where UN3's leaves move 0 and 2. |
 | `0x538` | None (`0x006F2250`); UN2 binds compositions where UN3 binds models. |
 | `0x53B` | None in its tokens or its generator and force rows (from `0x00820DF0`, byte for byte UN3's). Its wind rewrite (q = -wind, at least 0.2; horizontal force 4q, vertical base - 2\|q\|, emission × (1 + \|q\|)) moves live leaves in UN2 only (below). |
-| `0x53D` | The second kind starts on major state 5, minor `0x41` or `0x42` (UN3 `0x42`, `0x43` or `0x45`). |
+| `0x53D` | The second kind starts when a fighter's action timeline crosses its start (`0x00702100`) in major state 5, minor `0x41` `ACT_DMG_SD` or `0x42` `ACT_DMG_SD2` (action table `0x00410CB0`); UN3's starts on its `0x42` `ACT_DMG_SD`, `0x43` `ACT_DMG_SD2` or `0x45` `ACT_DMG_SBD`. NA2 numbers these `0x45`, `0x46` and `0x49` (`action_descriptor_table`, BTL `0x0089AEB0`). |
 | `0x59D` | Ignores wind and token 10: each needle turns by 0.02 × \|sin(phase)\| about all three axes, the phase starting at random and stepping 3..5° per update (`0x006F2860`). |
 | `0x601` | The draw (`0x006DCC00`) moves the pillar to draw environment 1 from blend 0.4 (UN3 1.0); the update (`0x006DC790`) is skipped while byte `+0xB1` of the object at `gp-0x6560` is set. |
 | `0x786` | No tokens: five flags from `0x0081D780`, (node, texture, solver selector) `OBJ_hata_010`/`TEX_s1aart18`/6, `_020`/`_19`/6, `_030`/`_14`/5, `_040`/`_16`/5 and `_050`/`_15`/5, each 260 × 680 (UN3: tokens 8 and 9 × 4, 208 × 544 in `S01`) on UN3's 4 × 6 grid with UN3's `stage_flag_constants` (`0x0081D850`), turned about the vertical axis by -5°, -10°, 5°, 10° and 0° (`0x0081D800`). The update (`0x00708AB0`) gusts by a random 0.8 in x and 0.01 in y and z (UN3 0.5 and 0.02). |

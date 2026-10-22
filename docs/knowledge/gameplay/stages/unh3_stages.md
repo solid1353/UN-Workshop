@@ -6,11 +6,12 @@ Established: the archive set and its format, EBOOT.BIN's scene, name, track
 and Stage Select tables, how the 13 Stage Select scenes build their lines,
 player positions, camera bounds and paired placement from markers, the
 normal-stage camera, the fog, glare and render records, factories 134 and
-135, the scaled marker, and what the 29 mission scenes are. Open: whether UNH3's
-handlers for the factories it shares with NA2 behave as NA2's (its break
-object is a larger class than NA2's), the bombs' screen effect and sound,
-the effective render coefficients where no record gives them, and
-stage-specific code branches. Names are UNH3 `EBOOT.BIN` addresses; NA2
+135, the scaled marker, how its handlers for the factories it shares with
+NA2 and its renderer differ from NA2's, its scene-keyed code, and what the
+29 mission scenes are. Open: the mapping of its contact flags, crash
+actions and item numbers to NA2's, the effective render coefficients where
+no record gives them, and how UNH3's AI reads its sections' bounds. Names
+are UNH3 `EBOOT.BIN` addresses; NA2
 comparison names come from `@annotations/NA2`.
 
 This document owns retail UNH3 (*Naruto Shippuden: Ultimate Ninja Heroes
@@ -73,6 +74,25 @@ one line up to about 36,000 long built from `maptip` pieces, with an
 (`mission_camera_track`, `0x08959B74`), and scene 35 its own
 (`0x089592C4`).
 
+## Scene-keyed code
+
+The battle manager (`0x08CE0580`) holds the scene at `+0x90`, and the
+background control keeps a copy at `+0x10` (`bg_control_load_scene`) that
+no caller of its getter (`0x088E650C`) reads back. Of the manager's scene
+reads, most separate mission scenes from battle scenes
+(`stage_is_mission_scene`); three key Stage Select scenes:
+
+| Routine | Scenes | Behavior |
+| --- | --- | --- |
+| `0x0895BF0C`, from presentation camera mode 7 (`0x0895BF8C`) | 2, 8 | The side probe from a fighter on section 0 with `+0x9FE` 1 reaches 250 (scene 2) or 230 (scene 8) instead of 200, which decides the side of the camera's offsets. NA2's presentation cameras (`effect_adapt_camera_record`, BTL `0x00776610`) have no such probe. |
+| `0x088EBD18`, factory 102's break | 0 | Plays sound `0x38` before `0x3A`; only `s21` (scene 11) has factory-102 records. |
+| `0x08A8E144`, positional sound volume | 0..12 | Full volume within 2200, fading out over 4000 beyond it (also on mission 35; 1000 on other missions). NA2's `audio_position_scalar` (`0x001D2FD0`) fades from 700 to 2700. |
+
+UNH3 has none of the constants of NA2's stage-keyed exceptions, such as
+`stage_nearest_line_extended`'s 1100 or `stage_effect_height_override`'s
+387 ([Stages](stages.md#logical-id-equality-cases)), so NA2's slot and
+logical-ID branches have no UNH3 counterpart.
+
 ## Stage Select
 
 `stage_select_records` (`0x08B44FC8`, 13 rows of scene, name frame, big
@@ -129,8 +149,43 @@ untextured quad of colour tokens 5..7 at alpha `token4 × 255`. Factory 17
 (`0x08907160`) sets two render coefficients; every Stage Select archive
 but `s06` gives `0.30,0.30`. UNH3's factories 0, 2 and 29 take their
 object's scale from the placement marker and ignore the scale token,
-which is 1 in every Stage Select record. Its break object (factory 50) is
-a `0x770`-byte class against NA2's `0x190`.
+which is 1 in every Stage Select record.
+
+The factories the Stage Select archives share with NA2 read the same
+tokens as NA2's and differ as follows (UNH3 parse / update / draw; NA2's
+in `SLPS_258.37`, or `BTL.BIN` where marked):
+
+| Factory | Archives | UNH3 | Against NA2's |
+| ---: | --- | --- | --- |
+| 0 | all | `0x089040B8` / — / `0x08904094` | Draws without NA2's `model_classify_bounds` gate (`0x003957C0`). |
+| 2 | `s05`, `s10`, `s21` | `0x0890477C` / `0x089046D8` / `0x08904760` | Same playback: step × rate × scene factor in 1/256 frames; UNH3 keeps a 32-bit step, NA2 16 bits (`0x00396220`). |
+| 8 | `s02` | `0x0890662C` / `0x08906524` / `0x089065D4` | Rotates every update; NA2's (`0x00398510`) only while its bounds gate passes. Token 2 is opacity in both. |
+| 10, 18 | all | `0x0890695C`; `0x08907230` | Same fog and distant-light setup (RGB / 255). |
+| 17 | all but `s06` | `0x08907160` | Same two floats; UNH3's pass scales the colour coefficient by 255 where NA2's packet uses 128. |
+| 29 | all but `s21` | `0x08909484` / `0x08909320` / `0x0890941C` | Advances its UV while the model has geometry; NA2's (`0x0039B910`) only while its bounds gate passes. |
+| 41 | all but `s01`, `s21` | `0x088ECDB0` / `0x088ECAF8` / `0x088ECD54` | Same doll cycle (BTL `0x006C6940`), with factory 50's differences. |
+| 48 | `s01`, `s06`, `s07` | `0x088EF2CC` / `0x088EF584` / `0x088EF718` | Same displacement (BTL `0x006C9FB0`); reacts to four fighters, and a fresh grounded reaction plays sound `0x50` (`0x088EF7B8`) where NA2's emits its surface particles (BTL `0x006CA310`). |
+| 50 | all but `s21` | `0x088EB5BC` / `0x088EB2D0` / `0x088EB4F4` | Same hit progression and drops (BTL `0x006C47B0`). One receiver of 32 `0x30`-byte entries (`0x770`-byte class) against NA2's attack and proximity receivers (BTL `0x006C55B0`, `0x190`); rejects record flag `0x04000000` where NA2 rejects `0x02000000`, a mapping not established; flashes for any flagged actor within radius + 50 where NA2 tests the two fighters against its enlarged receiver; breaks with sound `0x3A` at volume `0x40` (`0x38`/`0x42` for `ANM_s03gim00`) where NA2 plays `0x22`; draws its broken model without NA2's `+0xCC` context clear (BTL `0x006C5040`). |
+| 55 | `s04`, `s13` | `0x088F0098` / `0x088EFDC4` / `0x088F0058` | Reacts to four fighters, on crash actions `0x44`/`0x45`/`0x4A` and `0x47`/`0x48`/`0x4B` (NA2 `0x42`/`0x43`/`0x48`, `0x45`/`0x46`/`0x49`), a mapping not established. Its final break advances its section's line variant (section `+0xF0` = (`+0xF0` + 1) % `+0xF4`), which section remapping (`0x088E73B0`) reads: `s13`'s section 2 then starts at `DMY_line_0201`'s (-1550, 1000, 520) instead of `DMY_line_020`'s (-1010, 1000, 520); `s04` has no variant markers. NA2's (BTL `0x006CA8A0`) changes no line. |
+| 57 | `s07` | `0x0890B568` / — / `0x0890B4EC` | Keeps a scale per placement and draws each without NA2's per-placement bounds gate (`0x0039E710`). |
+| 78, 102 | `s08`; `s21` | `0x088F2690` / `0x088F2530`; `0x088EC5FC` / `0x088EC214` | Same rebirth (wait over 120 updates, frame 1, alpha +0.05) with factory 50's differences; factory 102's token 5 is the initial frame, and it plays `0x38` then `0x3A` where NA2 plays `0x26` then `0x22`. |
+
+Their debris and drop weights (21/60/19 over pools 1..3) are NA2's, but
+pools 1 and 2 hold other item numbers (UNH3 `0x08B8483C`, `0x08B84880`;
+NA2 `0x005B3C10`, `0x005B3C40`), whose correspondence is not established.
+
+UNH3's renderer differs where the archives depend on it. It expands palette
+alpha to `2A - 1` (`0x088B4870`) yet compares texels against each
+texture's stored alpha cutoff unchanged (`0x0888AF30`), as NA2 compares its
+unexpanded alpha (`0x00192740`), so a cutoff `r` keeps on the PSP what
+`(r + 1) / 2` keeps on NA2's scale. Every Stage Select archive has cutoff
+112, and `s01`, `s04`, `s06`..`s10` and `s22` also cutoffs above 128, which
+no unmodulated NA2 texel reaches (`s01`'s `TEX_s01obj105`: 165). It also
+expands vertex colour channels to `2c - 1` without an upper clamp
+(`0x088A6874`), so a channel above `0x80` overflows into the next:
+`83 83 83 80` packs as `0xFF050505`. `s05`, `s09`, `s10`, `s21` and `s22`
+have such vertices. Texture flag `0x08`, the models' blend selectors (0
+and 1), animation tracks and hit meshes read as NA2's.
 
 Two factories the Stage Select archives use have no NA2 counterpart:
 
@@ -148,10 +203,23 @@ Each bomb:
    `0.1 + 0.9t²` per update tints it toward red (`0x0000FF`) by
    `sin(angle) × 50` percent; past 85% of the fuse it blinks at 50% every
    other update and swells toward scale 2 by `((t - 0.85) / 0.15)²`.
-2. Blasts: plays `04cmn/effect0x.ccs` `ANM_e0x_bom0` at a point jittered
-   ±10, turned at random about z; starts a screen effect of type 6 (20
-   updates, value 1.1, angle π/16, `0x08B39190`); plays sound `0x1011`; and
-   for 16 updates hits each fighter within the radius with the record
+2. Blasts (unless the record names a second object; `s10`'s give `0`):
+   plays `04cmn/effect0x.ccs` `ANM_e0x_bom0` at a point jittered ±10,
+   turned at random about z; starts a `ccEffectBlur` of type 6 from
+   `0x08B39190`, a copy of the screen at scale 1.1, turned π/16, colour
+   `0x50808080`, easing back to scale 1, no turn and no alpha over 20
+   updates (NA2's `ccEffBlur`, `effect_blur_create` `0x00333700` and
+   `effect_blur_configure` `0x0030DAA0`, takes the same values but eases
+   its alpha to `0x80`); plays sound `0x1011`, whose high digit selects
+   bank 1 of `0x08C72188` (`sound/se/battleSE`), program `0x11`, an 8000 Hz
+   sample (VAG `0x1D`) whose data no bank of NA2's `DATA/SNDDATA.BIN`
+   contains; and for 16 updates hits each of the manager's four fighters
+   (`+0x32C`; NA2's manager has two) whose hit-rejection count `+0x25C` is
+   zero and that lies within the radius (the count is `current` of the
+   fighter's `TimelineBlock` at `+0x250`, NA2's `Fighter.hit_rejection`:
+   negative while an assigned rejection waits to start, positive while hits
+   are refused; NA2's `hit_enter_stage_object` skips only a positive count)
+   with the record
    時限爆弾: category 1, flag `0x100000`, attack 0.1, knockback 1, repeat 1,
    rejection 10 and a response chosen at random from `0x12, 0x14, 0x10,
    0x11, 0x0B, 0x0C, 0x0D, 0x0E` (`0x08B39160`), NA2's InteractionRecord
