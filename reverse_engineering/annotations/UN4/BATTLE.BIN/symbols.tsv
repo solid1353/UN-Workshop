@@ -5,6 +5,7 @@ address	kind	name	type	comment
 0x006BBEB0	function	battle_command_strip_destroy	long battle_command_strip_destroy(long param_1,short param_2)	Inferred from an exact code match with NA2 BTL.BIN 0x006B75D0. Destroy three embeddedF8 sprites beginning8;positive flag frees element. Presentation role established by root resource bindings in battle_hud.md.
 0x006BE6F0	function	hud_gameplay_icons_update		Inferred from an exact code match with NA2 BTL.BIN 0x006B9CC0. First callback runs native gameplay-node display enumeration then child presentation updates.
 0x006C3760	function	stage_choose_combo_anchor	unsigned char stage_choose_combo_anchor(float *out, float *subject, unsigned char side)	Raw manager+FC selects array before side rewrite; nearest 3D vector with first-on-tie. Slots 13/3 force 0; 15/9/8/2 force 1; S01 preserves side.
+0x006C3C60	function	bg_control_update		NA2 bg_control_update homolog: on scene_update_restricted transitions disables/restores factory types 2 and 0x30, then updates the scene.
 0x006C3EB0	function	bg_control_load_stage	void bg_control_load_stage(void *control, int slot)	Publish raw slot to global manager+FC,pause owner+0E,control+80;require path stage_archive_paths[slot],store container+1D4/+0;construct scene from BIN_bgdata. No logical-ID conversion or bounds check.
 0x006C4320	function	stage_resolve_boundary		Resolve position using source/destination section containers +B80; interpolate normalized c0 span and clamp/project to line endpoints. No raw-slot/logical-ID branch.
 0x006C4920	function	stage_clamp_section_endpoints		Section min/max vec4 at background+B40/B50, stride20h; outside c0 copies full boundary and returns0; inclusive endpoints return1. No S01-specific branch.
@@ -26,19 +27,27 @@ address	kind	name	type	comment
 0x006C6C80	function	bg_back_second_lines_create		Factory36. Factory36 consumes integer count token0,masked0xFF,builds back second-line pairs. Configuration-only handler; no constructed class/vtable.
 0x006C6CF0	function	bg_front_first_lines_create		Factory37. Factory37 consumes integer count token0 and builds front first-line pairs. Configuration-only handler; no constructed class/vtable.
 0x006C6D60	function	bg_back_first_lines_create		Factory38. Factory38 consumes integer count token0 and builds back first-line pairs. Configuration-only handler; no constructed class/vtable.
+0x006C6E80	function	bg_break_trigger		Impact type 0 at the current piece model's local translation (+0x70), where NA2 uses the hit node +0x160; last hit emits common 0x22, effect_break_smoke_burst(radius +0x88, hit node) where NA2 spawns effect 0x33, and the General A item draw.
+0x006C7080	function	item_field_random_spawn_a		NA2 homolog: General A (mode not 1) or Recovery A distribution, then field_item_random_select and the shared spawn.
+0x006C7150	function	bg_break_update		NA2 bg_break_update homolog; credits statistic 0xB on every accepted contact (NA2 credits 12 only at the break).
 0x006C7840	function	bg_break_object_parse		Tokens0 animation stem,1 integer animation count,2 integer threshold,3 transform dummy,4 collision dummy,5 float scale,6 float radius,7 debris stem,8 integer debris count. Secondary receiver constant+0x150 becomes0x108 versus NA2 0x110;not token-layout difference.
 0x006C7CB0	function	bg_break_object_create		Factory50. Tokens0 animation stem,1 integer animation count,2 integer threshold,3 transform dummy,4 collision dummy,5 float scale,6 float radius,7 debris stem,8 integer debris count. ccBgBreakObjectBattle vtable0x5ee750 ->RTTI0x8535b8 ->name0x853590. Receiver setup stores0x210 at+0xC0/+0x150 versus NA2 0x224;compiled difference outside token parsing.
 0x006C7E80	function	bg_attack_hit_reset	long bg_attack_hit_reset(long arg1,short arg2)	Inferred from an exact code match with NA2 BTL.BIN 0x006C5770. Destructor/reset thunk of ccBgAttackHit; no damage/update virtual slots; receiver defaults+0x 24=0,+0x 48=0x 43020000,+0x 4C=0,+0x 80=0x 224,+0x 84=2.
+0x006C7F10	function	bg_break_doll_update		NA2 homolog; accepted hit: impact type 0 at the current model (+0x70) and effect_break_smoke_burst at the hit node, where NA2 uses the hit node and effect 0x33; General A item.
 0x006C8770	function	bg_break_doll_parse		Uses shared break-object nine-token parser; no further configuration tokens.
 0x006C87D0	function	bg_break_doll_create		Factory41. Uses shared break-object nine-token parser; no further configuration tokens. ccBgBreakDollBattle vtable0x5ee710 ->RTTI0x8538a8 ->name0x853870.
+0x006C9F00	function	bg_electric_wire_draw		ccElectricWire draw (vtable 0x005EE6B0): draws the segments only without a manager or while the background's raw slot (+0x80) is below 2.
 0x006CE560	function	bg_suspension_bridge_create	void bg_suspension_bridge_create(undefined8 arg1,undefined8 arg2)	Inferred from an exact code match with NA2 BTL.BIN 0x006CD120. Factory 68 allocates 0xA0-byte ccBgSuspensionBridge, used once by S10.
 0x006CE610	function	bg_escape_bird_parse		Tokens0 starting dummy,1/2 floats,3 ending dummy,4 container filename,5/6 animation names.
 0x006CE9D0	function	bg_escape_bird_create		Factory75. Tokens0 starting dummy,1/2 floats,3 ending dummy,4 container filename,5/6 animation names. ccBgEscapeBirdBattle vtable0x5ee5b0 ->RTTI0x853748 ->name0x853720.
 0x006CF160	function	bg_tumble_grass_create	void bg_tumble_grass_create(undefined8 arg1,undefined8 arg2)	Inferred from an exact code match with NA2 BTL.BIN 0x006CDCB0. Factory 77 allocates 0x34-byte ccTumbleGrass, used once by S16.
+0x006CF230	function	bg_break_reborn_update		Same rebirth cycle as NA2's: >120 updates after the break, model 0, finite repeat decrement, fade 0.05.
+0x006CF3C0	function	bg_break_reborn_draw		Tint pulse by remaining hits from 0x0083AD58 (NA2's colours); unlike NA2 it also pulses while the final break animation plays.
 0x006CF510	function	bg_break_reborn_parse	void bg_break_reborn_parse(int arg1)	Inferred from an exact code match with NA2 BTL.BIN 0x006CE060. Run base parser; descriptor token9 sets repeat count +0x194.
 0x006CF560	function	bg_break_reborn_create	void bg_break_reborn_create(undefined8 arg1,undefined8 arg2)	Inferred from an exact code match with NA2 BTL.BIN 0x006CE0B0. Factory 78 allocates 0x1A0-byte ccBgBreakObjectRebornBattle derived from base break object; only S01/S08 instances, all authored repeat -1.
 0x006CF700	function	bg_trans_object2_parse		Shared base tokens0 visual,1 dummy,2 float scale,3 position dummy,4 float radius,then token5 float blend target.
 0x006CF910	function	bg_trans_object2_create		Factory79. Shared base tokens0 visual,1 dummy,2 float scale,3 position dummy,4 float radius,then token5 float blend target. ccBgTransObject2 vtable0x5ee510 ->RTTI0x853688 ->name0x853620.
+0x006CFB10	function	bg_break_fall_update		Same as NA2 bg_break_fall_update over UN4's base update.
 0x006CFF60	function	bg_break_fall_parse		Uses shared break-object nine-token parser; no further configuration tokens.
 0x006CFFD0	function	bg_break_fall_create		Factory80. Uses shared break-object nine-token parser; no further configuration tokens. ccBgBreakObjectFallBattle vtable0x5ee4e0 ->RTTI0x853618 ->name0x8535e0.
 0x006D0AC0	function	bg_break_move_create	void bg_break_move_create(undefined8 arg1,undefined8 arg2)	Inferred from an exact code match with NA2 BTL.BIN 0x006CF430. Factory 81 constructs ccBgBreakObjectMoveBattle derived from base break object.
@@ -60,6 +69,7 @@ address	kind	name	type	comment
 0x006EAAA0	function	stage_navigation_initialize		Raw manager+FC indexes 18 authored pointers at 0083C620 unchecked; copies 12-byte entries until source -1 to 64-entry work area 00863990.
 0x006EACF0	function	ai_initialize		UN4 own AI initializer resets both static1A0 side slots, installs selected-side31-halfword profile, optional percentage modifiers, then actual-ID byte flags8538D0; bits1/4/8 multiply parameters17/8/19 by1.2 and normalizes negatives. OrochimaruID9 flags10 sets none of these modifiers. Not the per-tick halfword values table.
 0x006EBA00	function	field_surface_variant	undefined8 field_surface_variant(int arg1)	Inferred from an exact code match with NA2 BTL.BIN 0x00708C70. Return 1 if no background control, otherwise classify stage/position surface effect variant.
+0x006EBB10	function	field_first_line_head		First-family line head by section, called by stage_navigation_initialize; SLUS_218.62 has no direct call to it, where NA2's resident fighter_stage_line_index/changed call their homolog.
 0x006EBC50	function	field_ground_particle_composition		Return0 if field+70 background absent;otherwise call background_ground_particle_composition. Own-game selected callee returns0.
 0x006EBDA0	function	field_player_placement		Copy player node +BB0/+BC0, add c2=200, set c3=1, yaw ±pi/2; returns section 1 only for slot 12, otherwise 0.
 0x006EBEF0	function	stage_placement_section		Reject section<0 or>=field+7C; with background resolve via6C4320 then copy position and return1. Section-index path, not raw slot.
@@ -404,6 +414,7 @@ address	kind	name	type	comment
 0x007BBD50	function	naruto_jutsu1_construct		Resource117 branch0074DA98 allocates0x8B0;calls Rasengan-class base00772E00,installs vtable005FA710.
 0x007BBE70	function	naruto_jutsu1_refresh_body		Resource1179C;commonrefresh and Rasengan helper,find OBJ_2nrw00t0 body,copy player's chosen texture/palette via material85B148.
 0x007BE84C	label	stage_logical_id_call_007be84c		IDs6/3 section-zero path; ID1 defaults.
+0x007C6AC0	function	skill_ground_dust_probe_update		Ground probe below the object by +0x434 plus raw-slot padding (slot 5: 30, 10: 27, 9: 50); a hit spawns the surface ground effect.
 0x007C97B0	label	stage_logical_id_call_007c97b0		ID8 special; ID1 defaults.
 0x007C9884	label	stage_logical_id_call_007c9884		ID8 special; ID1 defaults.
 0x007CC2E0	function	naruto_second_stage_jutsu0_construct		Resource148 branch0074DD68 allocates0x840;calls shared projectile-jutsu base00798CD0 and installs vtable005F7CC0.
@@ -514,8 +525,14 @@ address	kind	name	type	comment
 0x00838C60	function	hud_clock_reset		Inferred from an exact code match with NA2 BTL.BIN 0x0087E650. Initialize digit bytes0/scales0.8,offset0,show velocity20,hide5,visibility0,hide/show states0,selector3.
 0x00839F80	data	stage_s01_combo_anchors_side0	float[15][4]	c0 700 to -700 by -100; c1/c2=0, c3=1.
 0x0083A070	data	stage_s01_combo_anchors_side1	float[6][4]	c0 200,100,0,-100,-200,-300; c1=1000,c2=749,c3=1.
+0x0083A480	data	stage_s11_combo_anchors_side0		S11 (raw slot 10) side-0 anchors: c0 500..-600 step 100, c1=0, c2=0; 12 vectors.
+0x0083A540	data	stage_s11_combo_anchors_side1		S11 side-1 anchor: (0,1000,0); one vector.
 0x0083ABE0	data	stage_archive_paths	char *[25]	Raw stage index table: slots0..17 stage/s01.ccs..s18.ccs;18..24 ktys_skk,str,bnt,kty,mnd,skr,tyo. Direct path consumers have no bounds check;next word0083AC44 is zero.
+0x0083AD20	data	item_general_distribution_a		General A rows (1,20),(2,60),(3,20),(0,0), equal to NA2's.
+0x0083AD40	data	item_recovery_distribution_a		Recovery A rows (0,50),(3,50),(0,0), equal to NA2's.
+0x0083AD58	data	bg_break_tint_colours		Break-object hit tint colours by remaining hits: FFFFFF, FF4444, FFFF7B; equal to NA2's 0x00890CF8.
 0x0083BEB0	data	stage_s01_navigation_routes	un4StageRouteRecord[3]	(source,destination,fraction,type): (2,1,0,3),(1,2,1,3), then (-1,-1,0,0).
+0x0083C430	data	stage_s11_navigation_routes		S11 authored routes: 3>2 0, 3>4 1, 4>5 1, 2>1 0, 1>2 1, 5>4 0, 4>3 0, 2>3 1, all type 3; then the terminator.
 0x0083C620	data	stage_navigation_authored_routes	un4StageRouteRecord *[18]	18 raw battle-slot pointers; S01 points to 0083BEB0.
 0x0083C810	data	item_layout_side0	un4ItemLayoutPoint[7]	Seven16-byte records;observed live(x,y)=(-85,-25),(-60,-25),(-42,-9),(0,0),(43,8),(70,7),(100,7);imported x keys are0;observed values are one battle state.
 0x0083C880	data	item_layout_side1	un4ItemLayoutPoint[7]	Seven16-byte records;observed live(x,y)=(-100,7),(-70,7),(-43,8),(0,0),(42,-9),(60,-25),(85,-50);imported x keys are0.

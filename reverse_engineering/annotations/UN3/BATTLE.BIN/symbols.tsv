@@ -64,6 +64,7 @@ address	kind	name	type	comment
 0x007D93E0	function	stage_breakable_update_pulse	void stage_breakable_update_pulse(int arg1)	Read system/pulse context gp-5CEC counter198; pacing byte1==1 keeps count,otherwise double;mod100,reflect values>49 with100-count;write object float80 only when nonzero.
 0x007D9470	function	stage_breakable_update	void stage_breakable_update(unsigned long long arg1)	Run prepass,virtual contact callback,debris update,model advance;positive count plus nonzero halfword3A and completion re-registerC0 andA0;broken count with completion/config94 reselect later animation and seek94<<8;finalize transform,clear contact; selected pose not periodic increment;801/871 share base vtable68C6E0.
 0x007D9700	function	stage_breakable_trigger	unsigned long long stage_breakable_trigger(unsigned long long arg1)	With contact byte38 nonzero and remaining78!=-1:count<2=>-1,select later record10 animation if present,enable debris90,unregisterA0;larger count decrement,select record0C animation if present,dispatch stage effect.
+0x007D9970	function	stage_breakable_drop_item		Breakable vtable +0x20: field_item_random_select over stage_breakable_item_distribution, then field_item_amount_apply with 2 extra code-9 items (1 for subtype 0x13, 0 for 0x3F).
 0x007D9A30	function	stage_breakable_clear_contact	void stage_breakable_clear_contact(int arg1)	Clear contact byte38 at update completion.
 0x007D9A40	function	stage_breakable_resolve_contact	void stage_breakable_resolve_contact(int arg1)	Reject fighter-like contact descriptor flags10&00F00000,10&2 or14&02000000;accept sets contact byte38 and unregisters receiverC0.
 0x007D9B40	function	stage_breakable_prepass	void stage_breakable_prepass(unsigned long long arg1)	Call triangular-scalar producer; only when global mode predicate0 and contact receiverC8 nonzero resolve contact; receiverA8 nonzero latches render byte134.
@@ -82,6 +83,7 @@ address	kind	name	type	comment
 0x007DADD0	function	stage_monkey_doll_update	void stage_monkey_doll_update(unsigned long long arg1)	81D shared count/animation/contact sequence;no randomized training-doll respawn delay in this method.
 0x007DAFA0	function	stage_training_doll_parse	void stage_training_doll_parse(unsigned long long arg1,unsigned long long arg2,unsigned long long arg3)	81C token1 D=10*integer=>168,token10 sequence94 copied164; borrowed node170; initial contact offset-150/+100 then prepared-node offset-100/+100; hardcode a1/n1/v1 animation resources; object does not own prepared node.
 0x007DB5A0	function	stage_training_doll_reset	void stage_training_doll_reset(int arg1)	Set elapsed15C=0,delay160=D-(R%trunc(0.4*D)) with D168;restore sequence94 from164;requires nonzero divisor;example token1=10 givesD100.
+0x007DB620	function	stage_training_doll_drop_item		Training-doll vtable +0x20: one item from stage_doll_item_distribution, no extras, and a second draw when rand100 < 20.
 0x007DB720	function	stage_training_doll_update	void stage_training_doll_update(unsigned long long arg1)	elapsed<delay=>count-1,elapsed++ and skip contact/animation;equal=>a1,advance,restore configured count,elapsed++;later completion n1 for positive sequence,v1 for0,decrement and selected receiver disable/re-enable;negative step or broken contact/debris conditions schedule delay;scene140==3 retained broken contact calls resident side counter/value helpers;follow borrowed node170 into model,shapes,debris with contact-100/+100;elapsed counts invocations,not seconds.
 0x007DBD30	function	stage_kite_parse		0x81E: token 3 start node, its _1 center, token 1 absence x30; one hit
 0x007DC140	function	stage_kite_first_approach		Approach curve start->center through points 500 out, turned by rng(0.01) about x, y, z; speed 0.015
@@ -312,11 +314,14 @@ address	kind	name	type	comment
 0x008185A0	function	ai_point_route_update		Scenes 0/5/6 widen the near distance gate to 40, scene 6 alone queues input 0x1000; NA2's keys slot 7 at both
 0x0081AAC0	function	stage_execute_route		After steering, on scene 2 a COM in section 0 on E0E000/E0A000 past route step 1 jumps (0x10000) on rand100<5; NA2's has no such case
 0x0081FE70	function	ai_route_region_gate		Scenes 14/4 reject argument 0; NA2 ai_construct_point_route keys slot 22
+0x0081FEC0	function	ai_construct_point_route		NA2's ai_construct_point_route: scans both providers' points; ai_route_region_gate filters only the secondary ones.
 0x008204C0	function	ai_predict_environment_reaction		Predict movement and edge retreat; when cooldown0 scan section danger circles, if distance<radius+fighterradius choose escape with rand100<60, otherwise cooldown150; also water and chakra branches.
 0x00825260	function	ai_tick		Own UN3 shared per-side AI tick selects side, refreshes actors then indexes93ADF0/93ADF4 at actual characterID*8; Green Beast virtual1C calls this routine.
 0x008257F0	function	stage_navigation_initialize	void stage_navigation_initialize(void)	Initialize line pointers/extrema; copy stage_navigation_authored_routes[scene_index] until source -1 into stage_navigation_routes and fill the rest with -1. Scene 15 widens line index 3 to -415/420; scene 5 conditionally sets work record 1 to fraction 0/type 3.
 0x008268C0	function	field_surface_variant	undefined8 field_surface_variant(int arg1)	Inferred from an exact code match with NA2 BTL.BIN 0x00708C70. Return 1 if no background control, otherwise classify stage/position surface effect variant.
 0x00826A50	function	field_ai_danger_head		Get section AI danger list from background+334; null background returns0.
+0x00826A80	function	stage_navigation_points_get		A section's COM prop-target list, stage control +0x33C + 4 x section, which stage_build_breakable_ai_targets builds.
+0x00826AB0	function	stage_secondary_navigation_points_get		A section's secondary navigation-point list, stage control +0x344 + 4 x section; each record copies a live position from its +0x20 pointer.
 0x00826CC0	function	field_player_placement		Scenes 16/9 return section 1; NA2's keys slot 12
 0x00826EA0	function	field_ctrl_construct	undefined8 field_ctrl_construct(undefined8 arg1)	Inferred from an exact code match with NA2 BTL.BIN 0x00709150. Construct standalone 0x10-byte ccFieldCtrl derived from ccGameObjCtrl; retained by battle owner, distinct from field's embedded controller. Construct 0x10-byte ccFieldCtrl generic registry. | Construct primary index3/bit4 ccFieldCtrl,0x10 bytes,vtable005DDD60; phase callbacks006D67E0/006D67A0/006D67C0.
 0x008294C0	function	item_panel_construct	un3ItemPanel * item_panel_construct(un3ItemPanel *panel, int side)	Forward panel and side to item_panel_init without changing side; return the supplied panel.
@@ -526,6 +531,8 @@ address	kind	name	type	comment
 0x00913370	data	stage_hideout_wall_light_rows		Three un3StageRecord rows: 0x73B ANM_s4bmoo20/21,30/31,40/41, all-zero tokens; wall constructs them and supplies fade plus third draw environment.
 0x009133D0	label	stage_auxiliary_archive_names		Four30-byte archive names ojmgmk,ojmgmt,ojmpkn,ojmnkm consumed by stage_release_archives.
 0x00913450	label	stage_scene_tables		27 scene-record pointers plus null terminator; first record type1,label is stage name,primary resource archive path.
+0x00913720	data	stage_breakable_item_distribution		(kind, increment) rows: pool 3 at 20, pool 1 at 20, pool 2 at 60.
+0x009137A0	data	stage_doll_item_distribution		(kind, increment) rows: pool 0 at 10, pool 1 at 20, pool 2 at 50, pool 3 at 20.
 0x009137D0	data	stage_kite_legs	int[10][4]	Waypoints each leg's curve runs through
 0x009139C0	data	landing_extra_item_distribution		field_item_random_select rows (2,40),(1,30),(3,20),(0,10),(0,0); the kind-0 row is never reached.
 0x00913AE0	data	stage_fish_items		field_item_random_select rows (kind 2, 40), (kind 1, 60), end.

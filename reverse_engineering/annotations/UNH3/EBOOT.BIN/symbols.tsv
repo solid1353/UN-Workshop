@@ -1,14 +1,29 @@
 address	kind	name	type	comment
+0x08809FD4	function	sceGuAlphaFunc		Emits GE command 0xDB (alpha test): function | reference << 8 | mask << 16.
 0x0887CBC8	function	random_inclusive		Random integer 0..maximum inclusive.
 0x088889E0	function	projectile_context_begin		Clamps the percentage 0..100 into context +0xE8 and the low 24 colour bits into +0xEC, as NA2's 0x0010D220.
 0x08888A28	function	projectile_context_end		Clears context +0xE8, as NA2's 0x0010D200.
+0x0888AF30	function	material_set_alpha_test		Alpha test greater than the texture's cutoff (runtime texture +0x10, the archive's +0x17) times the material alpha; failing texels are discarded.
+0x0888DEC8	function	material_apply_draw_state		Per material: colour with material alpha; untextured: alpha test greater than 0; textured: binds texture and palette, alpha test always when model flag +0x180 bit 3, else material_set_alpha_test.
+0x08895DD8	function	scene_object_unregister_environments		For each child: objects (0x100) recurse through 0x0889021C; models (0x800) with collision (+0x38) unregister it (0x088C3EF0).
+0x088A6304	function	gu_alpha_func_mapped		sceGuAlphaFunc with the function mapped through 0x08B35DCC (identity: 1 always, 6 greater).
 0x088DEFE8	function	mission_apply_battle_record		Reads a 0x52-byte eventBattle.ccbpm record; scene halfword at +0x2A.
+0x088E650C	function	bg_control_get_active		The active background control (sections of 0x150 bytes; +0x14 section count; +0x600 player positions).
 0x088E69D8	function	stage_format_archive_path		Formats the stage folder prefix and the scene's archive name.
 0x088E6D60	function	bg_control_load_scene		Loads the scene archive and BIN_bgdata, builds player positions, safe position, change lines and section lines from markers, constructs the scenes, loads DMY_cpmin/cpmax/cvmin/cvmax camera bounds.
+0x088E73B0	function	bg_resolve_section_transfer		NA2's stage_resolve_boundary: maps x over variant 0's first and last nodes (+0xC0/+0xD0), then projects onto the target section's active-variant lines (+0xF8 + 0x10 x variant +0xF0); the only reader of the variant.
+0x088E7704	function	bg_clamp_to_section_extremes		Clamps x to the section's +0x90/+0xA0, the x extremes of every variant's DMY_line nodes; returns 0 when clamped. NA2's stage_clamp_section_endpoints uses DMY_linemin/max.
+0x088E7780	function	bg_floor_profile		Lowest height over the section's selected floor-segment list (+0x180, selector byte +0x17C, never changed) and its change-line list (+0x13C, selector +0x138); -32768 without one.
 0x088E7F5C	function	bg_build_change_lines		Reads DMY_<f|b>[n]_cl_<k>_nor/end/mov pairs as typed lines per section, as NA2's first-family lines.
 0x088E816C	function	bg_build_section_lines		For sections 1..4 reads DMY_line_0n0 marker pairs (stem, stem_1, stem_2..; up to 32 pairs; variants stem1..3) as floor segments and walkable lines; DMY_linemin/max0n bound each section.
 0x088E8850	function	bg_load_player_positions		DMY_pp1_010..DMY_pp9_010 into bg +0x600, zero when absent.
 0x088E88F4	function	bg_control_load_safe_position		DMY_safe_pos into bg +0x6A0, (0,0,0,1) when absent.
+0x088EAB10	function	bg_break_initialize		Clears the break state; break sound 0x3A at note 0x40.
+0x088EAC70	function	bg_break_trigger		Factory 50 hit: removes the current piece's collision, advances; on the final hit plays its sound (+0x75C, default 0x3A) at its note (+0x760, default 0x40) at the hit node and drops items.
+0x088EBD18	function	bg_break_anm_trigger		Factory 102 hit; the final one plays sound 0x38 on scene 0 only, then 0x3A, centred, and drops items.
+0x088ECAF8	function	bg_break_doll_update		Factory 41: each hit resets the doll's cycle and drops items; no sound.
+0x088EF7B8	function	bg_landing_tree_reaction		Factory 48, four fighters: starts the displacement as NA2's; on a grounded reaction (majors 0/1, also after 8 grounded updates) plays sound 0x50 at the fighter; no surface effect.
+0x088EFDC4	function	bg_crash_break_update		Factory 55: fighters on its section (+0x754) trigger it; the final break hides its models, calls 0x0893AA70(fighter +0x33C4, 0x1B, 1) and advances the section's line variant (+0xF0 = (+0xF0 + 1) % +0xF4).
 0x088F8790	function	bg_crash_break_reborn_parse		Factory 134: bomb, second object or 0, spot stem (<stem>_a<n>, up to 8), blast radius, away updates (90), fuse updates (150).
 0x088F8B4C	function	bg_crash_break_reborn_update		States: 1 fuse (red pulse, last 15% blink and swell to 2), 2 blast (16 updates of hits within the radius), 3 away hidden 200 below a random spot, 4 rise over 30; holds while stage updates are restricted.
 0x088F900C	function	bg_crash_break_reborn_draw		Rising: plain; fuse: tinted red by sin(angle) x 50 percent through projectile_context_begin.
@@ -19,20 +34,59 @@ address	kind	name	type	comment
 0x08907160	function	bg_factory_render_coefficients		Factory 17: first token to 0x08CDDA48, second to 0x08CDDA44.
 0x089409B0	function	stage_select_build_available_list		Scans the 13 Stage Select rows in order, keeping scenes whose availability bit is set.
 0x08958724	function	camera_track_stage		Normal-stage camera: frames the fighters by mode, clamps to the stage markers (0x089599F0), eases eye and target by 0.3 per update.
-0x08958F6C	function	camera_frame_fighter_box		Mode 0: target = fighters' bounding-box centre + (0,0,75); eye = target - (0,d,-0.22d), d = max(800, 2 x box diagonal).
+0x089589DC	function	camera_follow_behind_fighter		Mode 1: eye behind the tracked fighter on the line to its opponent, (2 + 0.001 d) of the half-span out, raised by a fifth of its depth and 100, at least 50 above the fighter.
+0x08958C34	function	camera_frame_fighter_box_same_section		Mode 3: target = active fighters' box centre + (0,0,100); eye = target - (0,d,-0.11d), d = max(600, 1.44 x box diagonal).
+0x08958F6C	function	camera_frame_fighter_box		Mode 0: target = active fighters' box centre + (0,0,75); eye = target - (0,d,-0.22d), d = max(800, 2 x box diagonal).
 0x089592C4	function	mission_top_level_camera_track		Scene 35 (r023) camera with fixed bounds 0x08B47AF0.
+0x0895978C	function	camera_select_stage_mode		Per update, by the opponents on the tracked fighter's section: none 0; several, or one while it is not in major state 8, 3; in major 8 within 1000 of its one opponent, or that opponent in major 5, 1.
 0x089599F0	function	camera_clamp_to_stage_bounds		Clamps the eye per axis to bg +0x6B0/+0x6C0 (DMY_cpmin/cpmax), moving it back by any lateral overshoot, and the target to +0x6D0/+0x6E0 (DMY_cvmin/cvmax).
 0x08959B74	function	mission_camera_track		Mission camera from six scene-minus-13 vector tables at 0x08B47B90..0x08B484A0; eases 0.2.
 0x08959E84	function	battle_camera_update_by_scene_kind		Normal scenes 0x08958724; mission scene 35 0x089592C4; other missions 0x08959B74.
 0x0895E268	function	stage_get_name_text		Resolves the scene's name text entry.
+0x0895FF8C	function	ai_controller_bind		Binds a controller to its fighter: sorts the other fighters into allies and enemies by team (+0x70 & 3), a random 0..30 timer, and on mission scenes the archive's BIN_cpucooproutetbl.
+0x0896110C	function	ai_controller_update		Per tick: targets the manager's first fighter among its allies or enemies, faces it on the same section, chooses the next state, switches to it when the timer runs out and runs the current state.
+0x08961E3C	function	ai_choose_state_alternate		ai_choose_state's choices for fighters 0x089C18E4 selects; like it, steps toward the target's section, and may change to a random one of the stage's sections (background +0x14): 0xD when below the fighter's, else 0xC.
+0x08962554	function	ai_choose_close_state		Close-range choices; may change to a random one of the stage's sections (background +0x14) as ai_choose_state_section_aware does.
+0x08962B00	function	ai_choose_state		On another section than its target's: attack, or step toward the target's section (state 0xC up, 0xD down); on the same section, choices by distance. No section x range is read.
+0x08963638	function	ai_enter_state		Sets the controller's current state (+0x1C4) and clears the next (+0x1C8).
+0x08963678	function	ai_set_next_state		Sets the controller's next state (+0x1C8).
+0x08963FDC	function	ai_state_approach_target		On the target's section, moves toward it by x (output bits 1 right, 2 left); otherwise sets state 0xC or 0xD toward the target's section, then 9.
+0x08964D08	function	ai_controllers_bind_all		ai_controller_bind for each of the four controllers and the manager's fighters.
+0x08970A88	function	fighter_surface_run_effects		Running dust (0x0897125C, effect catalog entry 0x3F) on 90B0C0/3060/606060/5000; on water a splash and ripples.
+0x08973BF8	function	field_clamp_section_extremes		bg_clamp_to_section_extremes through the field's background (+0x70); 1 without one.
+0x08973CBC	function	field_floor_profile		bg_floor_profile through the field's background.
+0x08973D40	function	field_player_placement		Slot n starts at DMY_pp(n+1)_010 (background +0x600 + 0x10 n), in the section holding it (0x088E7864); on battle scenes even slots face +pi/2, odd -pi/2.
+0x08973EA8	function	field_project_position		NA2's stage_project_position: rejects a section outside 0..count-1 (+0x74), else bg_resolve_section_transfer.
 0x08974000	function	stage_is_mission_scene		1 for scenes 13..41 (r001..r029, Master Road missions), 0 below 13; -1 argument reads the active scene.
 0x08984960	function	mission_stage_load_auxiliary_archives		For mission scenes loads gim.ccs and 13adv e000/e007/e300 and the mission's object resources.
+0x089BC67C	function	fighter_surface_thud		Knockdown thud by surface: 202020 0x48 at note 0x32; water 0x48; 60C0 0x3B; 8080F0/5000/80D0F0/606060/90B0C0/3060 0x45, or 0x47 when the third argument is 0.
+0x089BCEA0	function	fighter_play_action_sfx		Plays action_sfx_map[index] at the fighter; index 0xC on character 0x11 adds 0x1008.
+0x089BCF18	function	fighter_footstep_tick		Every n timeline updates (n by character, 0x089BC56C) plays the footstep for the fighter's surface.
+0x089BCF84	function	fighter_schedule_action_audio		NA2's fighter_schedule_action_audio: guard, jump, response and action sounds by major state; walk/run (major 1, 0x0E/0x12) footsteps every character period.
+0x089BE340	function	fighter_present_action_effects		NA2's fighter_present_action_effects with knockdown, bounce and damage-state landing effects and surface thuds; run dust and landings.
 0x089CA408	function	fighter_place_pair_at_safe_position		Places a paired action's two fighters side by side at DMY_safe_pos on section 0.
+0x089D01A0	function	fighter_correct_position		NA2's stage_correct_position: mask 0x10 clamps x by field_clamp_section_extremes; mask 0x20 lifts to the floor profile as NA2's.
 0x08A8E670	function	stage_get_default_bgm_member		Scene's default track for scenes 0..41, else -1.
+0x08A8F2A0	function	footstep_sound_for_surface		Masked F0F0F0: 202020 0x32; 80D0F0 and 60C0 0x2D; 10C0/5000/3060 0x2E; water 0x35; D000 0x31; 90B0C0 0x34; F0D0D0/606060/8080F0/E000E0 0x33; 0, D0D0, F0F0F0 none; others 0x4B.
+0x08A8F3BC	function	footstep_note_for_character		0x3A for characters 4/0x0E/0x15/0x51, 0x3B for 0x18, 0x39 for 0x32, else 0x3C, as NA2's.
+0x08A8F410	function	fighter_play_footstep		Plays footstep_sound_for_surface at the character's note; characters 0x15 and 0x53 add sound 0x2F.
+0x08A90EBC	function	sound_row		A sound's six-byte row: bank 0 rows at 0x08C714A0 (0..0x77), bank 1 at 0x08C71770 (0x1000..0x1028), bank 2 at 0x08C71868 (0x2000..0x2064); null otherwise.
+0x08A90F9C	function	sound_play		Plays a sound centred at its row's maximum volume and note.
+0x08A91390	function	sound_play_at		Plays a sound at a position: distance volume (0x08A8E144) capped at the row's maximum, pan by direction, the row's note.
+0x08A91460	function	sound_play_at_note		sound_play_at with the given note instead of the row's (0..0x7F).
+0x08A9262C	function	sound_queue_note		Queues a note-on: bank, program, volume, pan, note, sound id; up to seven per update.
+0x08A92760	function	sound_queue_flush		Plays the queued note-ons through 0x08826358 (each tone of the program whose key range holds the note).
 0x08B38960	data	stage_camera_marker_defaults	float[4][4]	Eye min/max and target min/max used when the archive lacks DMY_cpmin/cpmax/cvmin/cvmax.
 0x08B39160	data	crash_break_reborn_responses	int[8]	Time-bomb hit responses 0x12,0x14,0x10,0x11,0x0B,0x0C,0x0D,0x0E, chosen by random(7).
 0x08B44FC8	data	stage_select_records	int[13][4]	Stage Select rows: scene, name frame, big and small picture objects; order 0,6,7,8,1,4,5,3,12,11,2,10,9.
 0x08B48B14	data	stage_name_text_ids	int[42]	Scene name text entries in 01text/text_*.bin: 160..199, then 181/182 again for r028/r029.
 0x08B83DD8	data	stage_archive_names	char *[42]	Scene-indexed stage archive names: s01..s10,s13,s21,s22 (scenes 0..12), then r001..r029 (Master Road missions 13..41).
 0x08B845A0	data	bg_record_factories	void *[]	BIN_bgdata factory table; NA2's numbering plus 134 ccBgCrashBreakRebornBattle, 135 flicker object, 139 ccBgFogCtrl, 151.
+0x08B8DAC8	data	action_descriptor_table		Eight-byte rows by substate: action name, descriptor; ACT_NUT_0 first; ACT_DMG_NSH 0x29 and ACT_DMG_SSF 0x44, two above NA2's (BTL 0x0089AEB0).
+0x08B8E450	data	action_sfx_map	short[]	UNH3's action sound numbers by NA2's action_sfx_map index.
+0x08C714A0	data	sound_rows_commse0		Six-byte rows of bank 0's sounds 0..0x77: program, note (0x40), maximum volume, three flags.
 0x08C71D74	data	stage_default_bgm_members	int[42]	Default sound/bgm.afs member per scene.
+0x08C72188	data	sound_banks		Sound bank files, 16 bytes each (kind, name, .phd size, .pbd size): 0 sound/se/commse0, 1 battleSE, 2 eventSE, then PL57.. character banks; a sound's high hex digit picks the bank.
+0x08CDDA44	data	stage_render_packet_coefficient	float	Factory 17's second token; bss, set by no battle setup, so a stage without the record keeps the last one's (0 before any).
+0x08CDDA48	data	stage_render_colour_coefficient	float	Factory 17's first token; bss, set by no battle setup, so a stage without the record keeps the last one's (0 before any). Draw passes override it only around their draw.
+0x08CDFB90	data	ai_controllers		Four computer-fighter controllers of 0x240 bytes, one per manager fighter slot (+0x32C); +0x1C4 state, +0x1C8 next state, +0x1CC state timer, +0x1C0 target entry.
