@@ -975,9 +975,14 @@ limits and distinct crash substate sets. The wall excludes section 1. The
 final wall transition lowers the section's first pair and linked navigation
 and collision endpoints to height 40. The bamboo extends its last projection
 pair to x1260, moves the last collision endpoint to x1300, changes its separate
-`ANM_s6atake00` backdrop to `ANM_s6atake01` and rebuilds navigation. Each
-final transition plays common sound `0x3B` at the crashing fighter, whose
-samples are NA2's program `0x25`; the earlier hit plays none. After the
+`ANM_s6atake00` backdrop to `ANM_s6atake01` and rebuilds navigation. The
+wall launches its debris on each crash, the bamboo on its final one and,
+under a global flag not identified, on its first. The bamboo's final
+transition, and the wall's on a forward crash (substates 3F/40/44), play
+common sound `0x3B` at the crashing fighter, whose samples are NA2's
+program `0x25`; the wall's final transition on a backward crash (42/43/45)
+and the earlier hits play none (`hot_spring_wall_check_crash`,
+`hot_spring_bamboo_check_crash`). After the
 wall opens, `stage_navigation_initialize` detects equal heights at the first
 two collision-line starts and changes work route 1 to fraction 0/action 3.
 
@@ -1083,8 +1088,10 @@ section, major 5 and timeline event 0. Substates 3F/40/44 require x500..800
 and height at most500; substates42/43/45 allow x500..1100 and height600.
 `earth_dome_crash` (`0x0080A5C0`) selects the damaged then broken animation.
 The final hit selects front CL and DMY variant1 and rebuilds navigation;
-the variant nodes are `DMY_f2_cl_*` and `DMY_line_0101*`. It scatters15 item9
-and three random items3..5. `earth_dome_update` eases opacity by0.1 toward0.3
+the variant nodes are `DMY_f2_cl_*` and `DMY_line_0101*`. It launches the
+dome's debris, plays common sound `0x3B` without a position and scatters15
+item9 and three random items3..5; the first crash plays and launches
+nothing. `earth_dome_update` eases opacity by0.1 toward0.3
 when a back-section fighter is beyond x600, otherwise toward1; its draw
 uses the third environment while faded.
 
