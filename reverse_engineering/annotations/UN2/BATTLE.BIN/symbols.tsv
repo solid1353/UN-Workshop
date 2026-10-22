@@ -11,7 +11,7 @@ address	kind	name	type	comment
 0x006B6290	function	stage_sway_tables_init		72-entry sine/cosine and 18-entry coarse sine; sample 36 = 3.14.
 0x006B6950	function	stage_increment_side_counter		Increments halfword +0x30 + 2*side of the object at gp-0x6560; called on scenes 11 and 17 by 0x00286110.
 0x006B6E40	function	stage_item_select		Random item by category tables 0x0081C9A0..0x0081CA9C and chance.
-0x006B77D0	function	stage_owner_flag_b1		The stage owner's (gp-0x6560) +0xB1, set during battle director event 3 (stage_owner_book_event_start..end), or 0 without an owner; generator visibility, snow, flying, falling and rising leaves and petals test it.
+0x006B77D0	function	stage_owner_flag_b1		Byte +0xB1 of the object at gp-0x6560 (the one holding per-side counters at +0x30), or 0; snow and petals test it.
 0x006B7A20	function	stage_breakable_parse		Category-8 base parser; matches UN3 stage_breakable_parse (0.73). Sets +0x148 = 1: COM prop target and mission eligibility.
 0x006B7FD0	function	stage_breakable_update		Base breakable update; equals UN3 stage_breakable_update.
 0x006B8160	function	stage_breakable_react		Non-final hit plays the record's first trailing word (object +0x84) as a common sound; destruction the second (+0x88), through stage_emit_feedback.
@@ -136,8 +136,6 @@ address	kind	name	type	comment
 0x00807510	function	actor_landing_burst		State 6; generator row 0x0082BAE0 byte +0x0E = 0x15 on scenes 4/10, 0x5C on 6, 0x5F on 15; burst at position and sound 9.
 0x00818EF0	function	actor_ground_landing		Ground probe 0x20000001; on E0E000 or 202020 ground: splash variant 2 on scene 10, 4 on 6, 3 on 15 (0x0021D940), speed x0.2.
 0x0081BAC0	function	stage_leaf_surface_variant_thunk		Calls stage_leaf_surface_variant with the stage and a fighter position when the stage exists, else 1.
-0x0081BEF0	function	stage_owner_book_event_thunk		Battle director event 3: stage_owner_book_event_update on the stage owner at the character object's +0x60, or 0 without one.
-0x0081BF30	function	stage_owner_event4_thunk		Battle director event 4: stage_owner_event4_update on the stage owner at the character object's +0x60, or 0 without one.
 0x0081BFA0	function	stage_event_feedback_thunk		Calls 0x002E9970 when +0x60 is set; callers not established.
 0x0081BFE0	function	field_player_placement		Start position, facing and section; returns section 1 on scenes 5, 6, 10, otherwise 0.
 0x0081C6A0	data	stage_select_thumbnail_origins	unsigned short[19][2]	Top-origin pixel x, y of each scene's 64x48 thumbnail in haipure_s01.
