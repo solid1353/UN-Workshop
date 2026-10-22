@@ -472,7 +472,9 @@ sequencer tick prerequisite for these fighter packets.
 `audio_reference_vectors` supplies references to `audio_position_scalar`
 and `audio_position_direction`. The former uses full three-dimensional
 distance; the latter uses the first two coordinates. The coordinate convention
-remains unresolved.
+remains unresolved. While `battle_session` is set, as through a battle,
+`audio_reference_vectors` supplies none, so the scalar is 127 (then the
+control's cap) and the direction `0x003F0000` at any distance.
 
 **Inference:** these provide attenuation and stereo parameters. Command
 placement is established; IOP units/mixing are not. Helper annotations preserve
