@@ -954,9 +954,11 @@ raise the same running dust on `0x606060`, `0x80D0F0`, `0x003060`,
 `0x005000`, `0x90B0C0`, `0xF0D0D0` and `0xF0F0F0`: a burst in the first 8
 updates, then one every 4 (every 10 for character 4). On `0x90B0C0`, which
 of S01–S06, S08, S11, S12, S14, S17, S19 and S20 only S11 has, UN3 alone
-also calls `water_ripple_spawn` every n running updates, n by character
-from `0x004789F0` (1: 4, 2: 6, 3: 5, 4: 11, 5: 8, 6: 6, 8: 6, others
-never), which there plays common effect 0, `ANM_e0x_flsh_00`, at scale 3
+also calls `water_ripple_spawn` every n running updates, n by the
+fighter's character ID (`+0x64`, NA2's `+0x68`, which both games' dust
+interval also reads) from `0x004789F0`: Naruto (1) 4, Sasuke (2) 6, Rock Lee
+(3) 5, Gaara (4) 11, Shikamaru (5) 8, Neji (6) 6, Kakashi (8) 6, others
+never, which there plays common effect 0, `ANM_e0x_flsh_00`, at scale 3
 at the lower foot; NA2's `EFFECT0X.CCS` has no such effect.
 
 UN3's ring grows from 0.01 to 1 over 37 frames and fades from frame 29.
