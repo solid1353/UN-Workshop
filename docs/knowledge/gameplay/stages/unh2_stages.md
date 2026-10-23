@@ -244,6 +244,14 @@ eight it darkens (mean pixel luminance against UN2's in brackets):
 the night has neither. UNH2's models are UN2's with fewer vertices, its
 `MDL_bac_050_` taking the narrower shape UN3 S05's has.
 
+Its night also lives in vertex colours, which UNH2 repaints where UN2's
+are mostly neutral (`808080`): the far forest (`MDL_bac_020_`..`_022_`)
+all `323E43`, the hills (`MDL_bac_030_`) mostly `3C464B`, the near forest
+(`MDL_bac_050_`, rows of upright cutouts) `3C464B` at each row's base and
+neutral at its top, the sky dome (`MDL_bac_000_`) black at its top through
+grey to neutral, and the castle's `MDL_obj_060_` and `_070_` darker in
+places.
+
 Its props behave as UN3 S05's counterparts:
 
 - The one-way wind (`0x585`, `0x088D7548`/`0x088D7648`) pushes as UN3's
