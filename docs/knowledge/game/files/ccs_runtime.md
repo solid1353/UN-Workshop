@@ -3,7 +3,7 @@
 ## Research coverage
 
 Established: retail NA2's container/object lookup, parsing and publication,
-cross-container references, reader and caller ownership, load/queue/residency
+texture and palette storage, cross-container references, reader and caller ownership, load/queue/residency
 lifetimes, stream playback, version gates and retail version census, and the
 bounded UN3 reader, wrapper-binding and cross-container resolver comparisons,
 plus UN4's selected unresolved animation-wrapper/evaluator path.
@@ -136,6 +136,10 @@ The 16-bit namespace index is also unchecked, and record count zero is not
 rejected even though record zero is unconditionally cleared and the count
 later becomes a hash modulus. These are format contracts, not validations.
 
+`type_tag` is the unsigned halfword at `+0x2A` and `runtime` the word at
+`+0x2C`. The texture and CLUT parsers treat a runtime of exactly 4 as not
+built, like zero.
+
 `ccs_record_from_index_unchecked` computes the indexed 0x38-byte record.
 `ccs_container_owns_record_allocation_address` accepts any address in the
 half-open allocation interval, without requiring record alignment.
@@ -158,6 +162,39 @@ can publish that node as a record runtime, so ownership traversal and unload
 invalidation are unproved for this case. Its partial-name and same-name
 attachment contracts are owned by
 [CCS object types](ccs_object_types.md#runtime-tag-0x1000-from-texture-and-clut-construction-image-transfer-group).
+
+### Texture and palette storage
+
+A loaded container keeps no file buffer: the file streams through 0x10000-byte
+rings into `ccs_parse_container`, and only the parsed objects stay.
+
+- A texture (`0x0300`) runtime is a 0x48-byte `CcsTextureChunk`: `levels` at
+  `+0x28` points at `extra_levels + 1` contiguous 0x20-byte
+  `CcsTransferDescriptor`s, `extra_levels` the byte at `+0x38`
+  (`texture_submit_levels_now`). `image_level_initialize` allocates each
+  level's pixels on the heap from format and size, not from the file.
+- A CLUT (`0x0400`) runtime is a 0x28-byte `CcsClut` whose `transfer` at
+  `+0x10` is the same descriptor kind (`clut_pixels`). Its storage is 16×16
+  for an 8-bit texture's palette and 8×2 otherwise, in CSM1 order.
+- A descriptor's `pixels` is the word at `+4` and `pixel_qwords` the word at
+  `+8`; the buffer holds `pixel_qwords * 16` bytes.
+- With the file's texture flag bit `0x01` set, the pixels stay in EE memory
+  and every draw uploads them: `sprite_submit_texture` reaches
+  `texture_chunk_submit_levels`, and `image_transfer_build_packet` emits a DMA
+  REF tag pointing at the level's pixels, read when the chain runs. With it
+  clear, the texture uploads once and `texture_release_levels` frees the
+  pixels and clears `levels`; retail OUGI's `TEX_comline` and `TEX_compaper`
+  are such textures.
+
+Sprites resolve a texture by name once and keep its texture and palette
+pointers and composed TEX0; materials bind theirs at container finalization
+(`ccs_material_bind_texture`). Destroying a container therefore leaves every
+such object dangling, while rewriting its pixel and palette buffers in place
+keeps them valid. The previous frame's VIF1 chain may still read those
+buffers during the update: `engine_root_finish_update` waits with
+`graphics_synchronize(0)` while the byte `vif1_transfer_active` (`0x00607400`)
+is 1, and the frame start's `FlushCache(0)` writes CPU stores back before the
+next upload.
 
 ## Container-name lookup
 

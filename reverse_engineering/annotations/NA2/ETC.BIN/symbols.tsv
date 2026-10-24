@@ -153,6 +153,7 @@ address	kind	name	type	comment
 0x006E2C10	data	etc_animation_descriptor_pointer_8	char *	Descriptor-name table row2,selector2 points to ANM_home_vcr03c; nine pointers form3x3 rows selected by index%3,selector0 is endpoint request.
 0x006E2C20	data	body_common_ccs_path	char[15]	pl/1cmnbod1.ccs at live 0x006E2C20 (raw file offset 0x0002ed20); the mixed ownership loader stores only a newly loaded container in its body_common field.
 0x006E2C30	data	stream_common_ccs_path	char[12]	strmcmn.ccs at live 0x006E2C30 (raw file offset 0x0002ed30); the mixed ownership loader stores only a newly loaded container in its stream_common field.
+0x006E2D50	data	collection_skill_opponent_label	char[28]	Ruby-tagged Opponent label with no pointer word; collection_skill_present builds it with lui s2,0x6e at 0x006C124C and addiu s2,s2,0x2d50 at 0x006C1250, then passes s2 to ui_draw_centered_text at 0x006C1774 and 0x006C1AF8.
 0x006E2F10	data	collection_footer_positions	float[4]	Cross/Triangle nominal positions (380,360),(460,360),root state footer; ETC file0x2F010; no regional adjustment.
 0x006E2F20	data	collection_category_positions	CollectionSpritePosition[3]	Category title positions match UN5:(305,13,0,0),(340,13,0,0),(345,23,0,0); ETC live table0x006E2F20.
 0x006E2F90	data	collection_music_type_name	char[15]	Original ccHomeIspMusic.

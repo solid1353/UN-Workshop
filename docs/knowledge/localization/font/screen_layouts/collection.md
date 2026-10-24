@@ -11,7 +11,7 @@ their comments carry code-level details, and cited addresses are live.
 Glyph metrics belong to [Renderer metrics](../renderer_metrics.md); graphics
 and prompts to [Collection UI draw-path analysis](../../ui/collection.md);
 string ownership to
-[NA2 and UN5 text correspondence](../../translation_importer.md).
+[NA2 and UN5 text correspondence](../../text_correspondence.md).
 
 ## Collection fixed-cadence list wrapping
 

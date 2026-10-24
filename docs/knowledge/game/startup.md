@@ -7,7 +7,8 @@ initialization in retail NA2 (`SLPS-25837`).
 
 The resident bootstrap, initial task handoff, card check, splash, readiness
 barrier, Continue controller, loading presentation, and eager audio loading
-have direct static coverage and existing sampled observations.
+have direct static coverage and existing sampled observations. UN5's boot
+language selector has static coverage only.
 Names come from `@annotations/NA2` and `@annotations/UN5`.
 SDK handler semantics, most sound commands, task timing, initializer-failure
 reachability, physical card failures, and indirect voice consumers remain open.
@@ -302,6 +303,16 @@ through `save_dialog_reset`, starts the global card worker through
 | 1 | Record load success, destroy the controller, and start the main-menu loader. |
 | 2 | Record no-load completion and destroy the controller. |
 
+The MOTHER task (`resident_flow_dispatch`) calls `manager_allocate`
+(`0x001E9980`) once per loop while its outer state is 4, which in its phase 3
+calls `startup_load_profile` (`0x001E9EB0`) and then `front_end_present_services`.
+Continue's update and draw are `startup_load_profile`'s phase 1 calls to
+`save_dialog_update` (`0x001E9F84`) and `save_dialog_draw` (`0x001E9FD0`).
+Its phase 2 destroys the gate and requests the loading artwork, and phases 3
+to 5 queue the main-menu CCS files and apply the profile settings, after
+`ccs_load_queue_worker_active` reports no running queue; on this path the
+main-menu files load there, not in `new_game_prepare`.
+
 `front_end_gate_destroy` stops the worker, frees the child, resets the parent,
 and frees it. Success retains the save-dependent `display_set_position`,
 `profile_apply_audio`, and `profile_bindings_to_global` setup.
@@ -410,6 +421,44 @@ invalid. `loading_progress_read` returns `-1.0` until valid. Presentation can
 therefore retain 100 after queue exit clears the raw total. Only drawing
 converts the cached float to an integer. Completion depends on the inactive
 file queue and idle presentation, independently of the displayed percentage.
+
+## UN5 boot language selector
+
+UN5 (`SLES-55605`) asks for the language on every boot. Its
+`frontend_slideshow_update` (`0x001E6500`), which MOTHER calls each frame in the
+startup-barrier loop, waits for `LOGO.CCS`, builds the selector through
+`language_selector_initialize` (`0x003D09D0`), runs
+`language_selector_update` (`0x003D0C60`, its only call at `0x001E65D0`) until
+it returns 1, then reloads `TEXT<lang>.BIN` when the language changed, runs the
+card check again and starts the logos. NA2 goes from that phase straight to
+the logos.
+
+- **Art:** `LOGO.CCS`'s `TEX_xlanguage`, 512×512 8-bit, holds the 512×384
+  background with the UN5 logo and Naruto at `(1, 0)`, each highlighted label
+  in orange with a green outline, 150×38 at `(1, 385)`, `(1, 425)`,
+  `(1, 465)`, `(153, 385)` and `(153, 425)`, and the cursor brush, 216×40 at
+  `(152, 464)`. `TEX_xlanguage2`, 256×256 4-bit, holds each label in grey with
+  a dark outline at `(1, 1 + 40 × row)`. Both palettes are stored linear.
+- **Drawing:** a draw environment of its own registered at priority `0x180`
+  holds four sprites; each frame draws the background at `(0, 0)`, each other
+  row's grey label at `(50, 126 + 40 × row)`, the highlighted label there and
+  the brush at `x = 30`, and resets the sprites background, brush, highlighted,
+  grey, so the brush sits behind the labels. Its fade gates drawing only, so
+  nothing visibly fades or animates.
+- **Input:** pad 0's new presses: Up and Down move the highlight over the five
+  rows English, French, German, Spanish and Italian, wrapping, and Cross
+  confirms; there is no cancel. The OSD language picks the first row. Confirm
+  stores the row's locale through `frontend_locale_set`. The row count is
+  immediate in the code (`0x003D0F9C`, `0x003D0FBC`, `0x003D0E88`).
+- **Teardown:** `language_selector_destroy` (`0x003D09C0`) is empty: the
+  environment and sprites stay registered.
+
+NA2 has the same sprite and draw-environment routines: an environment is
+`heap_allocate(0x40)`, `ordered_controller_list_initialize` on `+8`, its words
+`+0x28` and `+0x2C` cleared and `ordered_controller_register(environment,
+priority, 0)`, as `loading_child_initialize` does at priority `0xE0`;
+`sprite_allocate_from_container` binds a sprite to it, and
+`ordered_controller_destroy(environment, 1)` unregisters and frees it.
 
 ## Audio initialization bottleneck
 

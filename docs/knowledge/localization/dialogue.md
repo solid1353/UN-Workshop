@@ -8,7 +8,7 @@ homologs, current correspondence, screen context, reachability and the complete
 structural family. Names come from `@annotations/NA2`; addresses are live.
 
 Established source and donor relationships belong to
-[NA2 and UN5 text correspondence](translation_importer.md).
+[NA2 and UN5 text correspondence](text_correspondence.md).
 
 ## Unresolved executable targets
 

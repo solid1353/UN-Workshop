@@ -3,8 +3,8 @@
 ## Research coverage
 
 Established for retail NA2's resident executable, BTL and ETC: header and
-placement, synchronous loader/cache ordering, fixed-address linkage,
-constructor initialization, bounded Collection and BTL cleanup, and returned
+placement, synchronous loader/cache ordering, fixed-address linkage, the
+shared small-data area, constructor initialization, bounded Collection and BTL cleanup, and returned
 data lifetime. Open: other MWo3 variants, complete typed interfaces and payload
 semantics, indirect workers and cleanup beyond the traced owners.
 Names come from `@annotations/NA2`; all addresses here are live.
@@ -58,6 +58,14 @@ branches use the same addresses. Initialized-data examples are
 `collection_base_type_info_pointer` → `collection_base_type_info` →
 `collection_base_type_name` (`ccHomeIspBase`). These are absolute data links,
 not relocation or switch records.
+
+Both images share the resident executable's small-data area: they keep no
+`gp` of their own, and their code reads it through the `gp` the ELF's entry
+code sets at `0x001001C0`, `0x0060A9F0`. So a resident word can be an overlay's
+own data pointer, as `0x00606EC0` is ETC's pointer to the Collection quit
+prompt, and an overlay can read a resident string through `gp`, as BTL's
+`practice_damage_draw` reads `practice_damage_max_label` (`0x00604870`) with
+`addiu a1, gp, -0x6180`.
 
 The imported overlay programs omit the headers; their established live
 locations remain explicit below, and the layout types and consuming routines

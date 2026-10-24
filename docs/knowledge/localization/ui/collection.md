@@ -18,7 +18,7 @@ Retail file identities, sizes and load mappings belong to
 [Standard game file identities](../../game/files/file_identities.md).
 
 Related owners are [Collection Font layouts](../font/screen_layouts/collection.md),
-[NA2 and UN5 text correspondence](../translation_importer.md), and
+[NA2 and UN5 text correspondence](../text_correspondence.md), and
 [Shared frontend prompt layout](options.md).
 
 ## Homologous class and draw methods
