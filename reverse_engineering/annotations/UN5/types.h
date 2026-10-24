@@ -193,3 +193,7 @@ typedef struct MoveChartView {
 typedef struct un5StageRecord { int stage_id; int preview_index; } un5StageRecord;
 
 typedef struct StageSelectView { int state; unsigned char _unknown_0004[12]; int choice_count; int choices[24]; int choice_index; float carousel_displacement; unsigned char _unknown_007c[24]; float random_phase; unsigned char _unknown_0098[16]; void *settings; void *mapsel_container; void *scene_draw_list; void *sprite_draw_list; void *legend_sprite; void *name_sprite; void *prompt_sprite; void *digit_sprite; void *camera_animation; void *selection_animation; void *ring_animation1; void *ring_animation2; unsigned char _unknown_00d8[4]; void *tv_animation; void *titlebox; void *carousel; void *owned_objects[24]; } StageSelectView;
+
+typedef struct LanguageSelectorRect { short u; short v; short source_width; short source_height; float local_x; float local_y; float width; float height; } LanguageSelectorRect;
+
+typedef struct LanguageSelector { void *render_list; ProjectedTextGeometryView *background_sprite; ProjectedTextGeometryView *selected_sprite; ProjectedTextGeometryView *unselected_sprite; ProjectedTextGeometryView *cursor_sprite; int _unknown_14; short idle_angle; short fade_level; short fade_velocity; short row; short _unknown_20; unsigned char _pad_22[2]; float _unknown_24; float _unknown_28; float _unknown_2c; float _unknown_30; float _unknown_34; } LanguageSelector;

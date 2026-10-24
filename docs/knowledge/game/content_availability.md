@@ -227,10 +227,10 @@ Eligibility is evaluated before saved availability.
 Boot initialization installs these entries from
 `auxiliary_1a_character_record` and `auxiliary_1a_actions`:
 
-| Mapping | Selector | Table entry | Action record | Metadata owner | CCS resource |
+| Jutsu | Selector | Table entry | Action record | Metadata owner | CCS resource |
 | --- | ---: | --- | --- | ---: | --- |
-| T2210 `Ninja Hound Summoning` | `0x34` | `hound_selector_entry` | `hound_selector_action` (index 1) | `0x1A` | `hound_jutsu_archive_name` (`2kkvcha1.ccs`) |
-| T2211 `Demon Wind Bomb` | `0x35` | `demon_wind_selector_entry` | `demon_wind_selector_action` (index 3) | `0x1A` | `demon_wind_jutsu_archive_name` (`2nrocha1.ccs`) |
+| `Ninja Hound Summoning` | `0x34` | `hound_selector_entry` | `hound_selector_action` (index 1) | `0x1A` | `hound_jutsu_archive_name` (`2kkvcha1.ccs`) |
+| `Demon Wind Bomb` | `0x35` | `demon_wind_selector_entry` | `demon_wind_selector_action` (index 3) | `0x1A` | `demon_wind_jutsu_archive_name` (`2nrocha1.ccs`) |
 
 The metadata owner `0x1A` is not a playable entry in the 74-character
 reference. Classic Naruto's character ID is `0x01`.

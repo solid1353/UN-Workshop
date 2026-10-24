@@ -13,7 +13,7 @@ Names come from `@annotations/NA2` and `@annotations/UN5`;
 their comments hold per-routine details. All addresses below are live.
 
 Related owners: [Renderer metrics](renderer_metrics.md) owns glyph metrics;
-[NA2 and UN5 text correspondence](../translation_importer.md) owns translation
+[NA2 and UN5 text correspondence](../text_correspondence.md) owns translation
 wording; [Battle Results presentation](../ui/battle/battle_results.md) owns the
 result screens and their lifecycle.
 

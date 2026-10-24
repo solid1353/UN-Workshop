@@ -32,7 +32,7 @@ image has no identified executable routines; its pointer tables and strings
 form a structured localization payload.
 
 Individual string relationships belong to
-[NA2 and UN5 text correspondence](translation_importer.md).
+[NA2 and UN5 text correspondence](text_correspondence.md).
 
 ## Evidence
 

@@ -11,7 +11,7 @@ per-routine details are in their comments. All addresses below are live.
 
 Glyph metrics belong to [Renderer metrics](../renderer_metrics.md);
 memory-card text and storage belong to
-[NA2 and UN5 text correspondence](../../translation_importer.md#memory-card-failure-messages).
+[NA2 and UN5 text correspondence](../../text_correspondence.md#memory-card-failure-messages).
 
 ## Battle quit-confirmation callers
 

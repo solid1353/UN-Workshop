@@ -13,7 +13,7 @@ belong to [Shared frontend prompt layout](options.md#native-controls-lifecycle).
 Queue movement and extent belong to [Running help](running_help.md), and
 1P/2P Commands relationship geometry to [Controls Font layouts](../font/screen_layouts/controls.md).
 Established source and donor relationships belong to
-[NA2 and UN5 text correspondence](../translation_importer.md).
+[NA2 and UN5 text correspondence](../text_correspondence.md).
 
 ## Unresolved executable targets
 
