@@ -2,7 +2,9 @@
   "sources": {
     "NA2": {
       "serial": "SLPS-25837",
-      "crc": "C0659AD1"
+      "crc": "C0659AD1",
+      "iso_size": 1928429568,
+      "iso_sha256": "CA105F7BDBEEAA3275F871C9702B9C77ED985CE140FAE8EAC28CB153E263D0C3"
     },
     "UN2": {
       "serial": "SLUS-21575",

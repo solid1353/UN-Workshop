@@ -373,6 +373,8 @@ def load_project_paths(
         )
 
         def resolve_catalog_value(label: str, raw_value: object) -> object:
+            if isinstance(raw_value, int) and not isinstance(raw_value, bool):
+                return raw_value
             if not isinstance(raw_value, str) or not raw_value:
                 raise ValueError(f"{label} has an invalid value: {raw_value!r}")
             if not raw_value.startswith("@"):
