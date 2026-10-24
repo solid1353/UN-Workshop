@@ -183,7 +183,7 @@ are separated into [Resident CCS object-type identities](ccs_object_types.md).
 | --- | --- | --- |
 | `*.CCS` (2,310 files) | CC2 resource containers | **Confirmed.** CCS containers hold named objects such as textures/palettes, models, and animations. Individual containers can combine several resource kinds. Use structural CCS parsing rather than treating them as flat images or text files. |
 | `GZLIST.TXT` | Directory-capacity and gzip-size manifest | **Confirmed.** Its first section sizes the resident ROFS directory tree. In each file row, the first numeric value is discarded and the second is retained as the decompressed output size and compression marker; actual compressed read length comes from ROFS. It is metadata, not a semantic asset index. |
-| `ICON.BIN` | PS2 save icon payload | **Confirmed.** The resident save path sector-reads the 61,440-byte member, writes its first `0xE920` bytes as `icon00.icn`, and names that file in all three `icon.sys` icon slots. The remaining `0x6E0` bytes are `0xFF` sector padding; internal ICN visual/animation fields remain undecoded. |
+| `ICON.BIN` | PS2 save icon payload | **Confirmed.** The resident save path sector-reads the 61,440-byte member, writes its first `0xE920` bytes as `icon00.icn`, and names that file in all three `icon.sys` icon slots. The remaining `0x6E0` bytes are `0xFF` sector padding. The [icon format](save_icon.md) covers its scroll geometry, constant shape key, sheet UVs and compressed texture. |
 
 ### CCS directory map
 

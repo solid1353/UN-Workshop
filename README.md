@@ -50,7 +50,8 @@ paths; it never checks that they exist.
     calls into a retail game needs that alignment.
   - `ffmpeg`: gyan.dev's essentials build, whose bin folder `Get-UnFfmpeg`
     returns. It decodes the PSP games' ATRAC3plus audio.
-- `games.json`: stable source-game selectors, aliases, serials, and CRCs.
+- `games.json`: stable source-game selectors, aliases, serials, and CRCs, and
+  NA2's clean ISO size and SHA-256.
 - `@pcsx2_files/`: the [input profile](docs/pcsx2.md#input-profiles) every
   game uses, and ignored default and test cards. Consuming projects own the
   games' [content alias](../../PCSX2/docs/content_folders.md#content-aliases)
@@ -63,7 +64,9 @@ paths; it never checks that they exist.
   [GhidrAssistMCP integration](docs/runbooks/ghidrassistmcp.md).
 - `@media_scripts/`: ISO, AFS, and encrypted-CVM extractors, recursive source
   extraction and verification, and source read-only tooling; see the
-  [source extraction runbook](docs/runbooks/source-extraction.md).
+  [source extraction runbook](docs/runbooks/source-extraction.md). The internal
+  `ps2_icon.py` reader decodes memory-card icon geometry, shape keys and textures;
+  [NA2's icon](docs/knowledge/game/files/save_icon.md) records its measured layout.
 - `scripts/lib/`: Workshop and project path loading, the pinned Python,
   source-game resolution, the task work-folder context, and console help.
 - `@annotations/`: names, types, and comments for the disassembly trees,

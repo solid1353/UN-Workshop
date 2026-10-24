@@ -73,6 +73,8 @@ corroborate this interpretation.
 and a disc read rounded to `0xF000`; card length remains `0xE920`.
 The remainder of disc `icon.bin` is not written; its identity is owned by
 [Retail game file identities](files/file_identities.md#na2-supporting-files).
+The scroll geometry, constant shape key, sheet UVs, compressed texture and
+resident lighting inputs are documented in [Memory-card icon](files/save_icon.md).
 `card_write_icon_sys` clears/rebuilds all `0x3C4` bytes from fixed
 `PS2D`, title, settings and icon tables. `CardIconSystem.first_icon_name`,
 `second_icon_name`, and `third_icon_name` each receive the eleven-byte
