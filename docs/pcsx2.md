@@ -166,6 +166,12 @@ out after three seconds, so clients follow these rules:
 - Release agent overrides explicitly when done; a failed non-agent request does
   not clear them.
 
+## Savestates
+
+A savestate folder holds the game's memory at the moment it was saved
+(`eeMemory.bin`, the 32 MiB EE RAM) and a GS dump of its frame
+(`GS.gs.zst`), which [`gs_dump.py`](#gs-dumps) lists and diffs.
+
 ## GS dumps
 
 `@pcsx2_scripts/gs_dump.py` reads PCSX2 GS dumps (`.gs` or `.gs.zst`, from
