@@ -250,7 +250,13 @@ all `323E43`, the hills (`MDL_bac_030_`) mostly `3C464B`, the near forest
 (`MDL_bac_050_`, rows of upright cutouts) `3C464B` at each row's base and
 neutral at its top, the sky dome (`MDL_bac_000_`) black at its top through
 grey to neutral, and the castle's `MDL_obj_060_` and `_070_` darker in
-places.
+places. UN2 bakes the sun into the vertex colours of the roof
+(`MDL_obj_000_`), where the fish statues' shadows fall diagonally across
+it, and of `MDL_obj_050_`, lit from one side; UNH2 shades both evenly and
+symmetrically, at the same mean. Its base animation (`ANM_s1care00`) keys
+UN2's subtracting roof overlay `OBJ_obj_003_` (`s1cobj04`, blend 2) with
+rotation (180, 0, 0) and scale (-1, -1, -1), mirroring it and turning it
+inside out, where UN2's key gives it opacity 0.8.
 
 Its props behave as UN3 S05's counterparts:
 
