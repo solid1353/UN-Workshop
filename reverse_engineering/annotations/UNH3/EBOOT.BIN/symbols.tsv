@@ -1,12 +1,17 @@
 address	kind	name	type	comment
 0x08809FD4	function	sceGuAlphaFunc		Emits GE command 0xDB (alpha test): function | reference << 8 | mask << 16.
+0x0887C3EC	function	scalar_approach	void scalar_approach(float target, float rate, float *value)	Proportional approach value += (target-value)*rate when different; effect_screen_blur_update type6 uses gain1/lifetime to approach scale1,turn0,RGB128 and alpha0. Alpha is converted to integer and repacked after every update.
 0x0887CBC8	function	random_inclusive		Random integer 0..maximum inclusive.
 0x088889E0	function	projectile_context_begin		Clamps the percentage 0..100 into context +0xE8 and the low 24 colour bits into +0xEC, as NA2's 0x0010D220.
 0x08888A28	function	projectile_context_end		Clears context +0xE8, as NA2's 0x0010D200.
 0x0888AF30	function	material_set_alpha_test		Alpha test greater than the texture's cutoff (runtime texture +0x10, the archive's +0x17) times the material alpha; failing texels are discarded.
+0x0888CD3C	function	model_submit_ordinary		Ordinary model submission. Iterate part table at model+18 forward by50 bytes through u16 part_count+26, compile each draw into current PSP list; direct/ordered selection uses material*context alpha below127/128, model draw-state bit3 or texture flags+4 bit8. Both lists retain forward material-part order. Unlike NA2 model_dispatch_geometry, no head-prepending/reversal of material parts; partial-alpha floor decals can therefore depend on earlier opaque ground parts.
 0x0888DEC8	function	material_apply_draw_state		Per material: colour with material alpha; untextured: alpha test greater than 0; textured: binds texture and palette, alpha test always when model flag +0x180 bit 3, else material_set_alpha_test.
 0x08895DD8	function	scene_object_unregister_environments		For each child: objects (0x100) recurse through 0x0889021C; models (0x800) with collision (+0x38) unregister it (0x088C3EF0).
 0x088A6304	function	gu_alpha_func_mapped		sceGuAlphaFunc with the function mapped through 0x08B35DCC (identity: 1 always, 6 greater).
+0x088A6874	function	ccs_expand_vertex_colour		Expand each packed RGBA byte c to max(2*c-1,0), with no upper clamp before packed OR. Used by ordinary geometry list compilation; RGB above128 spills into adjacent channels.
+0x088A7330	function	model_compile_ordinary_mesh		Compile retained ordinary arrays into PSP vertex layouts based on model flags, signed short XYZ*position scale, optional normal bytes, expanded RGBA through ccs_expand_vertex_colour and UV/256. Split triangle-strip runs using normal/control fourth byte, recording sceGuDrawArray lists. This preserves vertex/strip order inside a material part.
+0x088B4870	function	ccs_parse_palette		Read CLUT section, retaining RGB bytes and expanding every alpha a to max(2*a-1,0). 16 entries use palette format14, larger13. Palette data does not brighten RGB; partial-alpha rock shadow TEX_s10obj19 in s10 has RGB101319, alpha up to4A authored (147 expanded).
 0x088DEFE8	function	mission_apply_battle_record		Reads a 0x52-byte eventBattle.ccbpm record; scene halfword at +0x2A.
 0x088E650C	function	bg_control_get_active		The active background control (sections of 0x150 bytes; +0x14 section count; +0x600 player positions).
 0x088E69D8	function	stage_format_archive_path		Formats the stage folder prefix and the scene's archive name.
@@ -22,12 +27,13 @@ address	kind	name	type	comment
 0x088EAC70	function	bg_break_trigger		Factory 50 hit: removes the current piece's collision, advances; on the final hit plays its sound (+0x75C, default 0x3A) at its note (+0x760, default 0x40) at the hit node and drops items.
 0x088EBD18	function	bg_break_anm_trigger		Factory 102 hit; the final one plays sound 0x38 on scene 0 only, then 0x3A, centred, and drops items.
 0x088ECAF8	function	bg_break_doll_update		Factory 41: each hit resets the doll's cycle and drops items; no sound.
+0x088EF780	function	bg_landing_tree_queue_impulse	void bg_landing_tree_queue_impulse(void *tree)	Factory-48 reaction helper: queue -50 at +0x60; when current impulse +0x64 is zero, start it and clear the queue; copy tree height +0x58 to displacement height +0x78. Spawns no surface effects or sound.
 0x088EF7B8	function	bg_landing_tree_reaction		Factory 48, four fighters: starts the displacement as NA2's; on a grounded reaction (majors 0/1, also after 8 grounded updates) plays sound 0x50 at the fighter; no surface effect.
 0x088EFDC4	function	bg_crash_break_update		Factory 55: fighters on its section (+0x754) trigger it; the final break hides its models, calls 0x0893AA70(fighter +0x33C4, 0x1B, 1) and advances the section's line variant (+0xF0 = (+0xF0 + 1) % +0xF4).
 0x088F8790	function	bg_crash_break_reborn_parse		Factory 134: bomb, second object or 0, spot stem (<stem>_a<n>, up to 8), blast radius, away updates (90), fuse updates (150).
 0x088F8B4C	function	bg_crash_break_reborn_update		States: 1 fuse (red pulse, last 15% blink and swell to 2), 2 blast (16 updates of hits within the radius), 3 away hidden 200 below a random spot, 4 rise over 30; holds while stage updates are restricted.
 0x088F900C	function	bg_crash_break_reborn_draw		Rising: plain; fuse: tinted red by sin(angle) x 50 percent through projectile_context_begin.
-0x088F90D0	function	bg_crash_break_reborn_blast		Plays effect0x ANM_e0x_bom0 jittered +-10 and turned on z, a type-6 screen effect (0x08B39190), and sound 0x1011.
+0x088F90D0	function	bg_crash_break_reborn_blast		Play effect0x ANM_e0x_bom0 jittered +-10 and turned randomly on z; set effect flags byte+20 bit0 for camera-facing animation. Type6 screen blur from time_bomb_blur_parameters08B39190:scale1.1,turn0,colour50808080,lifetime20,alpha toward0;record+1C pi/16 is phase increment unused bykind0. Play positional sound1011 at bomb+30 from battleSE program11/VAG20.
 0x088F9408	function	bg_flicker_object_update		Every 30 updates starts a flicker with chance/3001; toggles opacity 0/1 each update for 2..4 updates, then 1.
 0x088F954C	function	bg_flicker_object_parse		Factory 135: object, marker or 0, flicker chance in 3001.
 0x0890695C	function	bg_factory_fog		Factory 10: RGB, near/far percentages, near/far distances, NA2's tokens.
@@ -52,6 +58,10 @@ address	kind	name	type	comment
 0x08963678	function	ai_set_next_state		Sets the controller's next state (+0x1C8).
 0x08963FDC	function	ai_state_approach_target		On the target's section, moves toward it by x (output bits 1 right, 2 left); otherwise sets state 0xC or 0xD toward the target's section, then 9.
 0x08964D08	function	ai_controllers_bind_all		ai_controller_bind for each of the four controllers and the manager's fighters.
+0x089688E8	function	effect_scene_update	int effect_scene_update(void *effect)	Effect scene movement,scale,fade,lifetime and bound-player update. Flags byte+20 bit0 chooses camera-facing matrix: scale,local Z/Y/X rotation,active camera renderer+10 matrix then transpose,restore world translation+30; clearbit uses world transform. Bind via embedded interface+100,update and publish opacity; return completion.
+0x089692B0	function	effect_screen_blur_configure	void effect_screen_blur_configure(void *effect, unsigned int *parameters)	Copy type+0,kind+4,scale+8,turn+C,colour+10,duration+14,phase+18,phase_increment+1C into runtime48/4C/60/64/68/50-52/58/5C. Type6 initial scale1.1,turn0,colour50808080,gain1/20; +1C is phase increment, not turn.
+0x08969750	function	effect_screen_blur_update	int effect_screen_blur_update(void *effect)	Lifetime short+52; return1 once zero,otherwise dispatch type+48 then decrement positive lifetime. Type6 scalar_approach scale+60 toward1 and turn+64 toward0 with gain+54; RGB toward128 and alpha toward0. Kind+4C selects optional extra position/scale behavior.
+0x08969F84	function	effect_screen_blur_draw	void effect_screen_blur_draw(void *effect)	While lifetime+52 nonzero bind own render environment+44,initialize transform from scale+60/turn+64 and packedcolour+68 with alpha doubled and capped255,draw and restore previous context.
 0x08970A88	function	fighter_surface_run_effects		Running dust (0x0897125C, effect catalog entry 0x3F) on 90B0C0/3060/606060/5000; on water a splash and ripples.
 0x08973BF8	function	field_clamp_section_extremes		bg_clamp_to_section_extremes through the field's background (+0x70); 1 without one.
 0x08973CBC	function	field_floor_profile		bg_floor_profile through the field's background.
@@ -59,11 +69,14 @@ address	kind	name	type	comment
 0x08973EA8	function	field_project_position		NA2's stage_project_position: rejects a section outside 0..count-1 (+0x74), else bg_resolve_section_transfer.
 0x08974000	function	stage_is_mission_scene		1 for scenes 13..41 (r001..r029, Master Road missions), 0 below 13; -1 argument reads the active scene.
 0x08984960	function	mission_stage_load_auxiliary_archives		For mission scenes loads gim.ccs and 13adv e000/e007/e300 and the mission's object resources.
-0x089BC67C	function	fighter_surface_thud		Knockdown thud by surface: 202020 0x48 at note 0x32; water 0x48; 60C0 0x3B; 8080F0/5000/80D0F0/606060/90B0C0/3060 0x45, or 0x47 when the third argument is 0.
+0x089BC67C	function	fighter_surface_thud	void fighter_surface_thud(unsigned int surface, float *position, int hard)	Mask F0F0F0. 202020 plays48 note32; water E0E090/E0A000/E0E000 plays48;60C0 plays3B;8080F0/5000/80D0F0/606060/90B0C0/3060 plays45 if hard,47 otherwise; other codes silent. Called at primary presentation event0 for damage actions44/45/4A(side surface C50,position+half height),46(ceiling C5C,position+height), and damage feedback helpers.
 0x089BCEA0	function	fighter_play_action_sfx		Plays action_sfx_map[index] at the fighter; index 0xC on character 0x11 adds 0x1008.
 0x089BCF18	function	fighter_footstep_tick		Every n timeline updates (n by character, 0x089BC56C) plays the footstep for the fighter's surface.
 0x089BCF84	function	fighter_schedule_action_audio		NA2's fighter_schedule_action_audio: guard, jump, response and action sounds by major state; walk/run (major 1, 0x0E/0x12) footsteps every character period.
+0x089BE06C	function	fighter_damage_surface_feedback	void fighter_damage_surface_feedback(void *fighter, int kind, int with_sound)	Spawn ground feedback at fighter+40 from surface+C54, kind -1 selects basic feedback, otherwise scaled feedback(kind,1); with_sound calls fighter_surface_thud(surface,position,kind!=-1). fighter_present_action_effects uses secondary event0: animation slot1D/20 kind-1, slot21 kind2. Also called by character-specific presentation.
+0x089BE0F0	function	fighter_damage_surface_feedback_alternate	void fighter_damage_surface_feedback_alternate(void *fighter, int kind, int with_sound)	Same surface feedback and optional thud as fighter_damage_surface_feedback; sole caller at089F2340.
 0x089BE340	function	fighter_present_action_effects		NA2's fighter_present_action_effects with knockdown, bounce and damage-state landing effects and surface thuds; run dust and landings.
+0x089C18E4	function	fighter_damage_feedback_suppressed	int fighter_damage_feedback_suppressed(void *fighter)	For identities3B/40 return flag byte74 bit1. For identity64(hex) return that flag except major6/action60 and major5/actions38..3B,3E..4B,53..5A,5C, which return0. Other identities return0. Common fighter presenter suppresses secondary damage-surface feedback when true.
 0x089CA408	function	fighter_place_pair_at_safe_position		Places a paired action's two fighters side by side at DMY_safe_pos on section 0.
 0x089D01A0	function	fighter_correct_position		NA2's stage_correct_position: mask 0x10 clamps x by field_clamp_section_extremes; mask 0x20 lifts to the floor profile as NA2's.
 0x08A8E670	function	stage_get_default_bgm_member		Scene's default track for scenes 0..41, else -1.
@@ -78,6 +91,7 @@ address	kind	name	type	comment
 0x08A92760	function	sound_queue_flush		Plays the queued note-ons through 0x08826358 (each tone of the program whose key range holds the note).
 0x08B38960	data	stage_camera_marker_defaults	float[4][4]	Eye min/max and target min/max used when the archive lacks DMY_cpmin/cpmax/cvmin/cvmax.
 0x08B39160	data	crash_break_reborn_responses	int[8]	Time-bomb hit responses 0x12,0x14,0x10,0x11,0x0B,0x0C,0x0D,0x0E, chosen by random(7).
+0x08B39190	data	time_bomb_blur_parameters	unsigned int[10]	ccEffectBlur parameter record used by bg_crash_break_reborn_blast: type6,kind0,scale1.1,turn0,colour50808080,duration20,phase0,phase_increment pi/16,follow values1/1. Configure copies record+1C to runtime+5C; runtime+64 rotation comes from record+0C (zero), not record+1C. Kind0 does not use the phase increment.
 0x08B44FC8	data	stage_select_records	int[13][4]	Stage Select rows: scene, name frame, big and small picture objects; order 0,6,7,8,1,4,5,3,12,11,2,10,9.
 0x08B48B14	data	stage_name_text_ids	int[42]	Scene name text entries in 01text/text_*.bin: 160..199, then 181/182 again for r028/r029.
 0x08B83DD8	data	stage_archive_names	char *[42]	Scene-indexed stage archive names: s01..s10,s13,s21,s22 (scenes 0..12), then r001..r029 (Master Road missions 13..41).

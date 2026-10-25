@@ -7,7 +7,7 @@ and Stage Select tables, how the 13 Stage Select scenes build their lines,
 player positions, camera bounds and paired placement from markers, the
 normal-stage camera, the fog, glare and render records, factories 134 and
 135, the scaled marker, how its handlers for the factories it shares with
-NA2 and its renderer differ from NA2's, its scene-keyed code, how its
+NA2 and its renderer differ from NA2's, material-part drawing order, its scene-keyed code, how its
 computer fighters choose sections, its sound banks, its item records, and
 what the 29 mission scenes are. Open: the NA2 codes of some of its item
 numbers, its camera's field of view and its running dust's art. Names
@@ -227,10 +227,21 @@ Every Stage Select archive has cutoff 112, and `s01`, `s04`, `s06`..`s10`
 and `s22` also cutoffs above 128, which no unmodulated NA2 texel reaches
 (`s01`'s `TEX_s01obj105`: 165), on trees, floors and scenery. It also
 expands vertex colour channels to `2c - 1` without an upper clamp
-(`0x088A6874`), so a channel above `0x80` overflows into the next:
+(`ccs_expand_vertex_colour`, `0x088A6874`), so a channel above `0x80` overflows into the next:
 `83 83 83 80` packs as `0xFF050505`. `s05`, `s09`, `s10`, `s21` and `s22`
 have such vertices. Texture flag `0x08`, the models' blend selectors (0
 and 1), animation tracks and hit meshes read as NA2's.
+
+`model_submit_ordinary` (`0x0888CD3C`) draws a model's material parts in
+forward table order within its direct and ordered lists. NA2's
+`model_dispatch_geometry` prepends each part's packets to the corresponding
+chain, reversing that order. `s10`'s floor depends on the forward order:
+its translucent rock-shadow material `MAT_s10flo00_10` must draw over
+earlier ground parts. Its `TEX_s10obj19` has flags 5 (not ordered),
+palette RGB `10,13,19` hex and alpha up to `0x4A`; `ccs_parse_palette`
+(`0x088B4870`) expands alpha to 147 but leaves RGB unchanged. Drawing
+the shadow before its ground blends it against earlier scenery and writes
+depth that prevents the later ground from filling beneath it.
 
 Two factories the Stage Select archives use have no NA2 counterpart:
 
@@ -250,12 +261,23 @@ Each bomb:
    other update and swells toward scale 2 by `((t - 0.85) / 0.15)²`.
 2. Blasts (unless the record names a second object; `s10`'s give `0`):
    plays `04cmn/effect0x.ccs` `ANM_e0x_bom0` at a point jittered ±10,
-   turned at random about z; starts a `ccEffectBlur` of type 6 from
-   `0x08B39190`, a copy of the screen at scale 1.1, turned π/16, colour
+   facing the camera and turned at random about local z. The blast sets
+   effect flags `+0x20` bit 0; `effect_scene_update` (`0x089688E8`) then
+   composes its scale and local rotation with the active camera matrix,
+   retaining its world position. NA2's `wrapped_resource_transform`
+   (`0x00311690`) gives animation kind 4 this camera-facing transform,
+   with local z rotation at `+0x1F0`; kind 1 uses a world-space transform.
+   Starts a `ccEffectBlur` of type 6 from
+   `time_bomb_blur_parameters` (`0x08B39190`), a copy of the screen at
+   scale 1.1, no turn, colour
    `0x50808080`, easing back to scale 1, no turn and no alpha over 20
    updates (NA2's `ccEffBlur`, `effect_blur_create` `0x00333700` and
    `effect_blur_configure` `0x0030DAA0`, takes the same values but eases
-   its alpha to `0x80`); plays sound `0x1011` at the bomb
+   its alpha to `0x80`). The record's π/16 word at `+0x1C` is the phase
+   increment copied to runtime `+0x5C`, not turn; kind 0 does not use it.
+   `effect_screen_blur_configure` reads turn at record `+0x0C` (zero),
+   and `effect_screen_blur_update` type 6 eases alpha toward zero;
+   its draw doubles alpha to the PSP's range. Plays sound `0x1011` at the bomb
    (`sound_play_at`), `battleSE`'s program `0x11`, whose tone plays VAG
    `0x20` (8000 Hz, `.pbd` `0x31AB0`, `0x1C30` bytes), with the envelope
    of `commse0`'s tones, which no bank of NA2's `DATA/SNDDATA.BIN`
@@ -285,16 +307,23 @@ with the row's note, `sound_play_at_note` with another. A bank is a PSP
 `PPHD` header (`.phd`) over its samples (`.pbd`): `PPPG` programs, each a
 tone count and tone indexes; `PPTN` tones of `0x60` bytes, a VAG index
 first and the key range at `+0x10`..`+0x14`; `PPVA` VAGs of 16 bytes: the
-`.pbd` offset, the rate and the size. Each VAG's data is NA2's ADPCM
-followed by one more 16-byte frame (`00 07 77`..). `commse0` holds NA2's
+`.pbd` offset, the rate and the size. Each VAG's data ends with one more
+16-byte padding frame (`00 07 77`..). `commse0` holds NA2's
 common samples (tones 3, 5, 9 and `0x34` at the index of the NA2 VAG
 records holding them), so most of its sounds are NA2's under other
 numbers: `0x38` NA2's program `0x26`, `0x3A` `0x22`,
-`0x42` `0x30`, `0x50` `0x07`, `0x3B` `0x23`, `0x48` `0x09`, and the
+`0x42` `0x30`, `0x50` `0x07`, `0x48` `0x09`, and the
 footsteps below. Those tones carry the same envelope words (`0x800F`,
 `0x9FE0` at `+0x50`) where NA2's records give program volume `0x7F`,
 sample parameters `80D0` and VAG flags `00FF`. `0x45` and `0x47`, and
 `battleSE`'s `0x11` (sound `0x1011`), are none of NA2's.
+
+Full ADPCM comparison establishes all the mappings above and the footstep
+mappings below, excluding PSP's padding frame. `0x3B` is a shorter variant
+of NA2 program `0x23`, not the same sample: both are 8000 Hz, but UNH3's
+1488 bytes differ from byte 1355 of NA2's 1856-byte sample. No exact copy
+of UNH3's sample occurs anywhere in NA2's `SNDDATA.BIN`. A matching short
+probe of a VAG therefore establishes only a candidate, not equality.
 
 Footsteps (`fighter_play_footstep`, from the walk and run states of
 `fighter_schedule_action_audio`) follow NA2's surface map at NA2's
@@ -312,3 +341,18 @@ NA2's ground smoke. Knockdowns, bounces and falls in damage states
 two damage-state landings, on `0x8080F0`, `0x5000`, `0x80D0F0`,
 `0x606060`, `0x90B0C0` and `0x3060`; `0x48` on water and, at note `0x32`,
 on `0x202020`; `0x3B` on `0x60C0`.
+
+The common fighter presenter plays the hard thud at its primary
+presentation event 0 for damage actions `0x44/0x45/0x4A` against the side
+surface at `+0xC50`, positioned half a fighter-height above its origin,
+and action `0x46` against the ceiling surface at `+0xC5C`, one height up.
+These actions are NA2's `0x42/0x43/0x48` and `0x44`. In major state 5,
+secondary animation event 0 plays the soft thud for slots `0x1D` (`htn3`)
+and `0x20` (`col1`), and the hard thud for `0x21` (`col2`), through
+`fighter_damage_surface_feedback`; these slots match NA2's animation names.
+It skips the secondary feedback while `fighter_damage_feedback_suppressed`
+returns true. For identities `0x3B/0x40` that is byte `+0x74` bit 1;
+NA2's corresponding special-mode admission in `fighter_apply_movement`
+(`0x0024A6C8`) reads byte `+0x63` bit 5 for those same identities. Additional
+calls in character-specific presentation and a special contact helper are
+separate from these common damage events.

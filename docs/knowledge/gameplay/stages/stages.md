@@ -901,7 +901,7 @@ fighters change sections with no route.
 line start x in `stage_navigation_section_min_x` (`0x008D6580`) and highest
 end x in `stage_navigation_section_max_x` (`0x008D6588`), two floats each,
 the second table directly after the first and `ai_states` (`0x008D6590`)
-after it. Thirteen BTL routines index them by a fighter's section `+0x9F6`,
+after it. Twelve BTL read sites index them by a fighter's section `+0x9F6`,
 among them `ai_opponent_route_update`, which resets the slot when the
 opponent lies outside its section's range, and `ai_opening_plan`, which
 treats its own fighter outside its range as out of bounds.
