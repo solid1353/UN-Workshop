@@ -2,9 +2,9 @@
 
 ## Research coverage
 
-Established: retail NA2 binding icons, Command Chart rows, 1P/2P Commands filtering,
-side, input and header, command-token derivation, texture selection and the
-native labels below.
+Established: retail NA2 binding icons; Command Chart rows, input and footer;
+1P/2P Commands filtering, side, input and header; command-token derivation,
+texture selection and the native labels below.
 Open: complete chart sequences for every named action and the rear-direction
 label's relation to every object-relative selector; no visible result was captured.
 Evidence is static code and data; displayed rows do not establish executability.
@@ -99,6 +99,25 @@ Row 8's `command_list_substitution_name` (`0x008BD620`),
 「変わり身の術（チャクラ消費）」, includes the chakra-consumption suffix.
 The input-condition wording does not establish that the rear-direction label
 matches every object-relative direction selector in the input interpreter.
+
+### Input, badge and footer
+
+`command_list_update` (`0x00878520`) admits input while the text panel is
+ready and the signed halfword at `+0x34` is `20`. The word at `+0x04` is the
+input pad; with input source `+0x00 == 2`, pressed buttons are combined from
+both pads and scrolling also accepts the other pad's held directions. Cross
+closes the panel, and Up/Down scroll when there are more than three rows.
+Square is not read. Scroll direction is the signed halfword at `+0x32`;
+scrolling moves the row Y at `+0x34` away from `20` until it finishes.
+The Command Chart update callback is `start_menu_basic_command_vtable+0x10`
+in SLPS (`0x005FBA70`).
+
+`command_list_draw` uses the same `+0x04` word to select the 1P/2P badge.
+`command_list_badge_draw_call` (`0x00879000`) draws it at `(84,26)` through
+`sprite_rectangle_top_left_draw` (`0x0037BB40`). `command_list_back_draw_call`
+(`0x008791A4`) draws the native Back prompt at `(408,352)` through
+`button_icon_submit` (`0x0037C980`), using the layer-2 sprite. The call is
+followed by `sprite_reset` (`0x001CC070`).
 
 ## 1P/2P Commands
 
