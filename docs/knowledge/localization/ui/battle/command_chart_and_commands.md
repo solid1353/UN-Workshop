@@ -146,6 +146,11 @@ Up/Down scroll from `pad`, or from the other controller when `input_source` is
 `(201,1,46,26)` the screen never uses. The name plate follows from layer 4,
 `TEX_xgauge5`, selected by `character_index`.
 
+`move_chart_back_draw_call` (`0x0087B064`) draws the native Back prompt at
+`(360,352)` through `button_icon_submit`, using the layer-2 sprite, icon 1
+and backing 1, then calls `sprite_reset`. The Command Chart's native Back
+anchor is 48 units farther right, matching its wider panel.
+
 ### Row construction
 
 `move_chart_build_rows` (`0x008794B0`) scans `Fighter.action_count` and resolves
