@@ -491,9 +491,12 @@ wins; stage `0x16` excludes region 0 from one traversal path. Success selects
 30/210; no candidate imposes a 60-count retry interval.
 
 The constructor and `ai_navigation_point_get` contain traversal paths for
-two providers. `stage_navigation_points_get` supplies records;
-`stage_secondary_navigation_points_get` returns zero unconditionally in the
-recovered retail implementation. The second path exposes no records there.
+two providers, and neither exposes records in retail.
+`stage_navigation_points_get` returns the section's list at `BgControl`
+`+0x108`/`+0x10C`, which only `bg_control_init` writes, with zero, so the
+point route never finds a candidate. UN3's routine reads its stage
+control's lists, which it fills with its props ([UN3 battle stages](../stages/un3_stages.md#un3-reactive-object-states-and-derived-cleanup)).
+`stage_secondary_navigation_points_get` returns zero unconditionally.
 Producer and lookup share region-first flattened ordering, so later lookup
 can refresh the selected live point.
 

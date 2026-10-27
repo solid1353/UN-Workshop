@@ -9,8 +9,8 @@ normal-stage camera, the fog, glare and render records, factories 134 and
 135, the scaled marker, how its handlers for the factories it shares with
 NA2 and its renderer differ from NA2's, material-part drawing order, its scene-keyed code, how its
 computer fighters choose sections, its sound banks, its item records, and
-what the 29 mission scenes are. Open: the NA2 codes of some of its item
-numbers, its camera's field of view and its running dust's art. Names
+what the 29 mission scenes are, and its running dust's art. Open: the NA2
+codes of some of its item numbers and its camera's field of view. Names
 are UNH3 `EBOOT.BIN` addresses; NA2
 comparison names come from `@annotations/NA2`.
 
@@ -333,9 +333,12 @@ program 0, `0x2E` 1, `0x31` 2, `0x33` 3, `0x34` 4, `0x35` 5, `0x32`
 and `0x53`), except that `0x60C0` takes the `0x80D0F0` step, program 0,
 where NA2 plays its event 6. Running dust (`fighter_surface_run_effects`)
 rises only on `0x90B0C0`, `0x3060`, `0x606060` and `0x5000`, where NA2
-also raises it on `0x80D0F0`, `0xF0D0D0` and `0xF0F0F0`, and comes from
-UNH3's own effect catalog (entry `0x3F`), whose art is not compared with
-NA2's ground smoke. Knockdowns, bounces and falls in damage states
+also raises it on `0x80D0F0`, `0xF0D0D0` and `0xF0F0F0`. It is
+`fighter_running_dust_spawn`'s particles of effect catalog entry `0x3F`
+(`effect_catalog_rows`), `CMP_e0x_mok02` from `effect0x` with its own
+32×32 `TEX_e0x_mok02`, a different model and texture from NA2's
+`EFF_e0xsmok20` (64×64), which NA2 draws as effect `0x99`.
+Knockdowns, bounces and falls in damage states
 (`fighter_present_action_effects`) add a surface thud
 (`fighter_surface_thud`) NA2 has no counterpart of: `0x45`, or `0x47` on
 two damage-state landings, on `0x8080F0`, `0x5000`, `0x80D0F0`,

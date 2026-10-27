@@ -62,7 +62,11 @@ address	kind	name	type	comment
 0x089692B0	function	effect_screen_blur_configure	void effect_screen_blur_configure(void *effect, unsigned int *parameters)	Copy type+0,kind+4,scale+8,turn+C,colour+10,duration+14,phase+18,phase_increment+1C into runtime48/4C/60/64/68/50-52/58/5C. Type6 initial scale1.1,turn0,colour50808080,gain1/20; +1C is phase increment, not turn.
 0x08969750	function	effect_screen_blur_update	int effect_screen_blur_update(void *effect)	Lifetime short+52; return1 once zero,otherwise dispatch type+48 then decrement positive lifetime. Type6 scalar_approach scale+60 toward1 and turn+64 toward0 with gain+54; RGB toward128 and alpha toward0. Kind+4C selects optional extra position/scale behavior.
 0x08969F84	function	effect_screen_blur_draw	void effect_screen_blur_draw(void *effect)	While lifetime+52 nonzero bind own render environment+44,initialize transform from scale+60/turn+64 and packedcolour+68 with alpha doubled and capped255,draw and restore previous context.
+0x0896A0B4	function	effect_catalog_row		effect_catalog_rows + 0x1C x index; row +4 is the resource name.
+0x0896EAE8	function	effect_catalog_load		Resolves the 0x4A effect_catalog_rows names in effect0x into catalog +0x78.
+0x0896EDA0	function	effect_catalog_resource		Catalog +0x78 + 4 x entry: the resource effect_catalog_load resolved from effect0x for that entry.
 0x08970A88	function	fighter_surface_run_effects		Running dust (0x0897125C, effect catalog entry 0x3F) on 90B0C0/3060/606060/5000; on water a splash and ripples.
+0x0897125C	function	fighter_running_dust_spawn		Running dust: count particles of effect catalog entry 0x3F (CMP_e0x_mok02, TEX_e0x_mok02 32x32) at scale 0.8 x arg, random offsets and lifetimes from 0x08B4B730..0x08B4B768.
 0x08973BF8	function	field_clamp_section_extremes		bg_clamp_to_section_extremes through the field's background (+0x70); 1 without one.
 0x08973CBC	function	field_floor_profile		bg_floor_profile through the field's background.
 0x08973D40	function	field_player_placement		Slot n starts at DMY_pp(n+1)_010 (background +0x600 + 0x10 n), in the section holding it (0x088E7864); on battle scenes even slots face +pi/2, odd -pi/2.
@@ -94,6 +98,7 @@ address	kind	name	type	comment
 0x08B39190	data	time_bomb_blur_parameters	unsigned int[10]	ccEffectBlur parameter record used by bg_crash_break_reborn_blast: type6,kind0,scale1.1,turn0,colour50808080,duration20,phase0,phase_increment pi/16,follow values1/1. Configure copies record+1C to runtime+5C; runtime+64 rotation comes from record+0C (zero), not record+1C. Kind0 does not use the phase increment.
 0x08B44FC8	data	stage_select_records	int[13][4]	Stage Select rows: scene, name frame, big and small picture objects; order 0,6,7,8,1,4,5,3,12,11,2,10,9.
 0x08B48B14	data	stage_name_text_ids	int[42]	Scene name text entries in 01text/text_*.bin: 160..199, then 181/182 again for r028/r029.
+0x08B4A3F8	data	effect_catalog_rows		0x4A rows of 0x1C bytes; +4 name pointer (entry 0x3F CMP_e0x_mok02).
 0x08B83DD8	data	stage_archive_names	char *[42]	Scene-indexed stage archive names: s01..s10,s13,s21,s22 (scenes 0..12), then r001..r029 (Master Road missions 13..41).
 0x08B845A0	data	bg_record_factories	void *[]	BIN_bgdata factory table; NA2's numbering plus 134 ccBgCrashBreakRebornBattle, 135 flicker object, 139 ccBgFogCtrl, 151.
 0x08B8DAC8	data	action_descriptor_table		Eight-byte rows by substate: action name, descriptor; ACT_NUT_0 first; ACT_DMG_NSH 0x29 and ACT_DMG_SSF 0x44, two above NA2's (BTL 0x0089AEB0).

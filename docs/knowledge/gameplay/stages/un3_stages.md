@@ -542,6 +542,17 @@ holding 1 join the COM's prop-target lists
 `stage_condition_all_props_broken_update` (`0x007D85B0`); the field does not
 affect breaking. The restricted-update opt-in is the separate byte `+0x28`.
 
+The prop-target lists, one per section at stage control `+0x33C`/`+0x340`
+by the prop's section byte `+0x70`, are the points
+`ai_construct_point_route` scans through `stage_navigation_points_get`, the
+same routine NA2 keeps ([Battle AI](../session/battle_ai.md#alternate-target-position-sources-and-path-states)).
+Each `0x30`-byte point holds the prop's `+0x50` position at `+0x00`
+(`stage_object_copy_position`), the next point at `+0x10` and, at `+0x14`,
+a pointer to the prop's remaining hits `+0x78`
+(`stage_breakable_remaining_hits_ref`), which `stage_breakable_trigger`
+sets to -1 on the breaking hit. The route skips a point whose word is -1,
+so a COM heads only for unbroken props nearer to it than to its opponent.
+
 `model_advance_animation` uses 256 units per frame, clamps at
 `(frame_count-1)*256` and returns completion; a loop flag can reset it to
 zero and return false. Scoped methods normally pass `playback_step`.
