@@ -228,7 +228,15 @@ strings or the jutsu selector.
 
 `fighter_copy_input_outputs` copies the logical mask and stick outputs to the
 fighter; if both `0x00001000` and `0x01000000` are present it drops
-`0x01000000`. `fighter_consume_logical_input` then runs, in order:
+`0x01000000`. Its three resident callers are the ordinary `fighters_update`
+pass, `fighter_update_movement_slot` during a positive update pause, and
+`fighter_end_charge_on_action_exit`. Logical output suppression alone does
+not suppress every input route: the fighter's stored logical-history ring
+feeds `input_history_has`, a queued AI chain bypasses the supplied mask in
+`action_select_from_signature`, and substitution reads physical history
+separately ([Substitution](../characters/substitution.md#input-path-and-history)).
+
+`fighter_consume_logical_input` first calls `item_input_dispatch`, then runs:
 
 1. `guard_update_input`, which consumes `0x10000000`
    ([Chakra and guard](chakra_and_guard.md#guard-input-and-action-lifecycle));
