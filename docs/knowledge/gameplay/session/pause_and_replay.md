@@ -3,7 +3,8 @@
 ## Research coverage
 
 Established: persistent suppression masks, selective scheduling and its
-exceptions, controller ownership and cleanup, cut-in gating, menu admission,
+exceptions, controller ownership and cleanup, cut-in gating, menu admission
+(including during a Cinematic Jutsu),
 command/result routing, Simple Display selection, and session reconstruction.
 Open: nothing.
 
@@ -379,6 +380,20 @@ both participants input-locked until `0x00708F40`/`0x00708F50` returns
 nonzero, and both always return 0. The admission byte is written only by
 `battle_state_reset_settings`, `battle_state_wait_graph` and
 `manager_update_substate_four`.
+
+A Cinematic Jutsu sets none of these blockers, so Start during its cutscene
+opens the menu. The cutscene is the skill actor's own CCS animation, not a
+streamed film ([SP Skill Play](../../game/files/ccs_runtime.md#who-plays-ccs-files)).
+BTL has no call to `fighter_coordinator_set_state`, `battle_route_set` or
+`manager_menu_state_set`, which only resident code calls, and never loads
+the loading controller's pointer, which only resident front-end and
+selection-transition code uses. A coordinator change to any state but 0 or
+3 retires every skill actor on its first pass (`interaction_manager_remove_update`), and so does
+the timeout marker. States 1 and 2 are the round opening, before the
+fighters are released, so a playing CJ sees coordinator state 0, or 3 once
+the round is over. The menu then stops the first and third phases as in
+any pause; result 1 only refreshes the fighters' settings and retires no
+skill.
 
 Every nonzero child result closes and frees the menu, clears its globals, and
 restores `menu_state` to zero before routing:

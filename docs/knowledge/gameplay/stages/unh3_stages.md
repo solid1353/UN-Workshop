@@ -10,7 +10,8 @@ normal-stage camera, the fog, glare and render records, factories 134 and
 NA2 and its renderer differ from NA2's, material-part drawing order, its scene-keyed code, how its
 computer fighters choose sections, its sound banks, its item records, and
 what the 29 mission scenes are, its running dust's art, its camera's
-field of view, and its collision lids, ropes, branch words and skies. Names are UNH3 `EBOOT.BIN` addresses; NA2
+field of view, and its collision lids, ropes, branch words and skies,
+including their scroll speeds and precision. Names are UNH3 `EBOOT.BIN` addresses; NA2
 comparison names come from `@annotations/NA2`.
 Open: nothing.
 
@@ -324,9 +325,24 @@ The skies (`MDL_bac_000`/`_000_`) are half domes behind the stage: they
 start at y 0 on s01, s06, s07, s09, s13 and s22 and only a little in
 front on s02, s04, s05 and s10, where NA2's wrap round the stage. The
 camera, clamped to `DMY_cpmin..cpmax`, always faces them. Factory-29 skies
-and mist scroll at 0.0003..0.002 per update (s01 0.0003; s07, s08, s10
-0.0006; s09, s06 and s13 0.001; s02, s22 0.002), below NA2's slowest
-0.003.
+and mist scroll at 0.0003..0.002 per update (U speed, token 6: s01
+`OBJ_bac_000` 0.0003; s07, s10 `OBJ_bac_000` and s08 `OBJ_flo_002`
+-0.0006; s06, s13 `OBJ_cld_001_` and s09 `OBJ_bac_000_` 0.001; s02
+`OBJ_cld_000_` 0.002; s22 `OBJ_bac_000_` and `OBJ_cld_001_` -0.002), and
+s03's `OBJ_riv_000` at 0.002 on both axes, below NA2's slowest 0.003. Their
+other factory-29 records scroll at 0.004..0.025. Those slow models are
+rigid, one part each, with UVs from 0 to at most 6.32 texture widths in U
+(s01, s07 `MDL_bac_000`; s10 3.56, s22 3.63, the rest below 2.7) and 1.83
+in V. Every material in these archives has offsets and scales of 0.
+
+UNH3 scrolls them in steps of 1/4096 of the texture. Factory 29's draw
+(`bg_uv_animation_draw`, `0x0890941C`) converts its U/V floats to fixed12
+offsets (`scene_model_set_uv_offset_float`, `0x08890520`: times 4096,
+truncated), as NA2's does, and `material_apply_draw_state` (`0x0888DEC8`)
+sends each material's offset minus its descriptor's, divided by 4096, to
+the GE as floats (`gu_tex_offset`, `0x08809EE8`, sceGuTexOffset), with no
+further rounding. NA2's ordinary model packet keeps only 1/256
+([Model UV consumption](../../runtime/rendering/texture_material_runtime.md#model-uv-consumption)).
 
 ## Sounds and surface effects
 

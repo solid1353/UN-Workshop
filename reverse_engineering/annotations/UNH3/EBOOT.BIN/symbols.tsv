@@ -1,4 +1,5 @@
 address	kind	name	type	comment
+0x08809EE8	function	gu_tex_offset		sceGuTexOffset: writes GE 0x4A/0x4B (UOFFSET/VOFFSET) from float args f12/f13 as float24.
 0x08809FD4	function	sceGuAlphaFunc		Emits GE command 0xDB (alpha test): function | reference << 8 | mask << 16.
 0x0887C3EC	function	scalar_approach	void scalar_approach(float target, float rate, float *value)	Proportional approach value += (target-value)*rate when different; effect_screen_blur_update type6 uses gain1/lifetime to approach scale1,turn0,RGB128 and alpha0. Alpha is converted to integer and repacked after every update.
 0x0887CBC8	function	random_inclusive		Random integer 0..maximum inclusive.
@@ -8,7 +9,11 @@ address	kind	name	type	comment
 0x08888A28	function	projectile_context_end		Clears context +0xE8, as NA2's 0x0010D200.
 0x0888AF30	function	material_set_alpha_test		Alpha test greater than the texture's cutoff (runtime texture +0x10, the archive's +0x17) times the material alpha; failing texels are discarded.
 0x0888CD3C	function	model_submit_ordinary		Ordinary model submission. Iterate part table at model+18 forward by50 bytes through u16 part_count+26, compile each draw into current PSP list; direct/ordered selection uses material*context alpha below127/128, model draw-state bit3 or texture flags+4 bit8. Both lists retain forward material-part order. Unlike NA2 model_dispatch_geometry, no head-prepending/reversal of material parts; partial-alpha floor decals can therefore depend on earlier opaque ground parts.
-0x0888DEC8	function	material_apply_draw_state		Per material: colour with material alpha; untextured: alpha test greater than 0; textured: binds texture and palette, alpha test always when model flag +0x180 bit 3, else material_set_alpha_test.
+0x0888DD00	function	model_set_uv_offset		Same as NA2 model_set_uv_offset: store fixed12 u/v halfwords at material +0x14/+0x16 for every material (filter 0) or matching descriptor; flags bit1/bit2 keep U/V.
+0x0888DEC8	function	material_apply_draw_state		Per material: colour with material alpha; untextured: alpha test greater than 0, tex offset 0; textured: binds texture and palette; at unit U/V scale ratio sends gu_tex_offset((material - descriptor offset) / 4096) at full fixed12 precision; alpha test always when model flag +0x180 bit 3, else material_set_alpha_test.
+0x088904DC	function	scene_model_set_uv_offset_float_all		scene_model_set_uv_offset_float with filter 0 (all materials).
+0x088904F8	function	scene_model_set_uv_offset		Calls model_set_uv_offset on the object's model at +0xA4 when present.
+0x08890520	function	scene_model_set_uv_offset_float		u,v floats times 4096, truncated to fixed12 halfwords, then scene_model_set_uv_offset with the given filter.
 0x08895DD8	function	scene_object_unregister_environments		For each child: objects (0x100) recurse through 0x0889021C; models (0x800) with collision (+0x38) unregister it (0x088C3EF0).
 0x0889DCA8	function	view_camera_init		Field of view +0x0C = 45 degrees; clears the view matrix at +0x10.
 0x088A6304	function	gu_alpha_func_mapped		sceGuAlphaFunc with the function mapped through 0x08B35DCC (identity: 1 always, 6 greater).
@@ -41,6 +46,7 @@ address	kind	name	type	comment
 0x088F954C	function	bg_flicker_object_parse		Factory 135: object, marker or 0, flicker chance in 3001.
 0x0890695C	function	bg_factory_fog		Factory 10: RGB, near/far percentages, near/far distances, NA2's tokens.
 0x08907160	function	bg_factory_render_coefficients		Factory 17: first token to 0x08CDDA48, second to 0x08CDDA44.
+0x0890941C	function	bg_uv_animation_draw		Factory 29 (ccBgUVAnm) draw: sets the model's UV offset from U/V floats +0x2C/+0x30 (fixed12) and draws it.
 0x089409B0	function	stage_select_build_available_list		Scans the 13 Stage Select rows in order, keeping scenes whose availability bit is set.
 0x08957988	function	battle_camera_create_view		Allocates the 0x50-byte view camera at +0xB4 (45 degree field of view).
 0x08958724	function	camera_track_stage		Normal-stage camera: frames the fighters by mode, clamps to the stage markers (0x089599F0), eases eye and target by 0.3 per update.

@@ -163,7 +163,16 @@ wrapped to 12 bits and shifted right by 4 (`diff << 20 >> 24`), so an
 offset reaches the packet in steps of 1/256 of the texture where the
 rewrite keeps 1/4096. A scroll slower than 1/256 per update, such as a
 factory-29 `bg_uv_animation_update` speed below 0.0039, therefore moves
-only every few updates.
+only every few updates. Factory 29's draw (`0x0039BA90`) converts its U/V
+to fixed12 with `vftoi12` and stores them through `model_set_uv_offset`.
+
+The rewrite runs only while the integer ratio differs from 4096. Binding
+copies the descriptor's scales into the render material, so a model takes
+it only after something changes the render material's scale at run time.
+Integer division truncates, so for a positive initial scale one unit less
+always changes the ratio, while an increase must be at least
+`initial_scale / 4096`. Its outputs are signed halfwords in
+1/4096 units, so a coordinate beyond about ±8 texture widths wraps.
 
 The flag-4 route, `model_submit_packed_geometry`, sends
 `(current_offset - initial_offset) & 0xFFF` for both axes to VU slot
