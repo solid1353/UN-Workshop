@@ -10,8 +10,7 @@ Jutsu records selecting six films, with their soundtracks, cue rows and
 Water Clone palettes; effect `0x25` consumers; typed provider and film
 closure, including the end-demo ring's unpublished definition and its
 empty animation binding; compact, PLVOICE, SOUND intro/end-demo and common
-SFX selections; AI values.
-Open: whether the doll catalog's own loads can stay published into a battle.
+SFX selections; AI values. No checked code loads `DOLL/IFKSM` at all.
 
 Names come from `@annotations/UN3` and `@annotations/NA2`; addresses are live. Shared format comparisons are in [UN3 and UN4 characters](../un3_un4_characters.md).
 
@@ -262,6 +261,14 @@ only the eye file, and `battle_request_selected_character_ccs`
 The five direct callers of `doll_figure_catalog_row` (`0x00372D70`) are
 the catalog list and unlock routines at `0x002D2780..0x002D3378`; none of
 the checked battle or end-demo requests loads the ring's only definition.
+Catalog rows are 12 bytes (`0x004BCEA0`, reached only through pointer
+`0x006A1914`): `+0` display name, `+4` file name (`ifksm.ccs` at
+`0x0060D5F8`), `+8` unlock count, `+9` character, `+10` value.
+`doll_figure_catalog_row` holds the only read of that pointer
+(`lw -0x735C(gp)`; no such read in `HOME.BIN`, `BATTLE.BIN` or `RPG.BIN`),
+and its two callers read `+0`, `+8`, `+9` and `+10`, never `+4`.
+No checked path therefore loads `IFKSM`, so it cannot be resident when
+the win animation binds.
 
 The ring is published only by name: eye records 74 (` c\3ksm\anm\3ksmwin00.max`)
 and 162 (` c\3ksm\anm\3ksmwin10.max`) wrap marked record 75, which
