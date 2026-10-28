@@ -84,6 +84,15 @@ With no intervening persistent16 calls, the two-reset state is retained tag
 `0x0F96266C`, next MT `0x0EADC242`, LCG seed `0x889C77E9`, and
 persistent16 `0x8CAF`. This is a conditional derived vector.
 
+Because each reset's selector is MT[n]&31 of the fixed bootstrap, repeated
+resets follow a fixed map of 32 selectors. Selector 4 maps to itself, and
+11, 27 and 29 reach it; every other selector enters the cycle
+9 -> 12 -> 5 -> 7 -> 2 -> 9. A run whose boot counter selects 4, 11, 27
+or 29 therefore restarts every battle from the same state; any other run
+cycles through five. UN3 (`rng_initialize`, `0x002B1C20`, seeded from its
+engine counter in `game_main_task`) and UNH2 (`0x088496AC`, whose tag
+starts at `0x1100`, selector 0, so it always cycles) reset the same way.
+
 ## MT19937 core
 
 `prng_next` produces canonical 32-bit MT19937 outputs from 624 words

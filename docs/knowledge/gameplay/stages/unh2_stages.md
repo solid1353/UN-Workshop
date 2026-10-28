@@ -215,7 +215,9 @@ pan: `audio_position_velocity` (`0x08A3E4CC`) always returns `0x7F`,
 capped by the row's velocity, and `audio_position_direction`
 (`0x08A3E4D4`) the centre. Scene 5's wind starts its loop on its first
 update (`audio_loop_start`, `0x08A3F6A0`) at the row's velocity and stops
-it in battle phase 2 (`audio_loop_stop`); its position update
+it for good (`audio_loop_stop`) while the fighter coordinator is in state
+2, which `0x08934C24` enters (through `0x089B8308`) when the battle ends at
+a KO or time-up; its position update
 (`audio_loop_place`, `0x08A3F820`) is empty, so the loop keeps that level
 through calm and gusts.
 
