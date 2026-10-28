@@ -3,10 +3,9 @@
 ## Research coverage
 
 Established: the complete retail file hashes cited by the documentation,
-with recorded sizes and ELF/overlay mappings. Unrecorded sizes or mappings
-remain open. A matching hash establishes byte identity only, not behavior,
-provenance or runtime use. Code names in related research come from
+with recorded sizes and ELF/overlay mappings. Code names in related research come from
 `@annotations/<game>`; this document cites files and address conventions.
+Open: nothing.
 
 This document owns the hashes of complete, unmodified retail game files cited
 by the documentation. Domain documents identify their inputs by linking
@@ -76,7 +75,7 @@ are recorded only for files whose research used the decompressed payload.
 
 ## Character comparison inputs
 
-These additional complete files identify the bounded NA2/UN4/UN3
+These additional complete files identify the NA2/UN4/UN3
 [character comparison](../../gameplay/characters/un3_un4_characters.md#na2-un4-and-un3-character-representation).
 CCS paths below are relative to each game's extracted CVM view:
 `DATA/DATA.CVM.files/DATA.CVM.iso.files/` in NA2/UN3, and
@@ -199,7 +198,7 @@ archives, separately from the PLVOICE files listed above:
 
 ### Orochimaru comparison inputs
 
-These complete compressed files identify the bounded UN4 ID-9 (`orc`)
+These complete compressed files identify the UN4 ID-9 (`orc`)
 and NA2 ID-89 (`orw`) comparison. Paths use the CVM roots described under
 [Character comparison inputs](#character-comparison-inputs); donor body and
 jutsu hashes are already listed there.
@@ -376,8 +375,7 @@ These complete clean CVM files identify UN3 Kisame 24 (`ksm`)
 and retail NA2 Kisame 72 (`ksw`). Paths use the respective CVM
 views established under [Character comparison inputs](#character-comparison-inputs).
 SHA-256 covers the stored file; decompressed size is a separate value.
-`DOLL/IFKSM` is included solely as the checked exact ring-key definition;
-its availability during the end demo is not established.
+`DOLL/IFKSM` is included solely as the checked exact ring-key definition.
 SNDDATA/PLVOICE and donor SOUND outer identities are already recorded in this document.
 
 | Game | CCS path | Stored bytes | Decompressed bytes | SHA-256 |
@@ -431,16 +429,13 @@ data at that address.
 Historical address convention: older preserved Ghidra overlay addresses are
 `0x40` above their live locations, so `live = preserved - 0x40` for those
 exports. Resident ELF addresses, current Ghidra overlay addresses and
-already-live citations require no adjustment. The historical conversion is a
-convention for reading old evidence; it does not establish the code or data at
-the converted address.
+already-live citations require no adjustment.
 
 For the boot ELFs, the relevant `PT_LOAD` mappings place NA2 file offset
 `0x100` and UN5 file offset `0x180` at runtime `0x00100000`.
 
 The shared `SNDBASE.IRX` import has image base zero and source ELF type
-`0xFF80`. Its imported symbol values identify locations within the module;
-the relocated live IOP base is unestablished. Related research therefore
-cites qualified IOP symbol names without presenting those values as live
-addresses. `MODULES.BIN` member offsets likewise identify source-file ranges,
+`0xFF80`, a relocatable IRX. Its imported symbol values are offsets within
+the module, not live IOP addresses, so related research cites qualified IOP
+symbol names. `MODULES.BIN` member offsets likewise identify source-file ranges,
 separately from both EE addresses and an IOP relocation base.

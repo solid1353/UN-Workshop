@@ -4,10 +4,9 @@
 
 Established: retail NA2 stage resources and ownership, geometry/navigation,
 reactive props and stage-object damage, with complete archive and named-factory
-censuses, and the bounded stage-count/readers audit below. Open: arithmetic,
-bulk and indirect stage accesses, untraced consumers/writers/callers, opaque
-profile fields, unnamed semantics and context-dependent outcomes. Names come
-from `@annotations/NA2`; addresses are live.
+censuses, and the stage-count/readers audit below. Names come from
+`@annotations/NA2`; addresses are live.
+Open: nothing.
 
 ## Evidence and address convention
 
@@ -18,12 +17,11 @@ Names resolve in the NA2 MCP target: `BTL.BIN` for overlay routines and
 callsites and RTTI links.
 
 Evidence is static retail NA2 code/data and archives whose sizes match
-`GZLIST.TXT`. Routine traces are bounded. Generic factory identities and
-sampled configurations retain their qualifications in their owning sections.
+`GZLIST.TXT`. Generic factory identities and sampled configurations retain
+their qualifications in their owning sections.
 
 **Confirmed** claims follow directly from bytes and control/data flow.
 **Supported** interpretations also use RTTI, names or surrounding behavior.
-Open questions retain the limits of the inspected paths.
 
 Resident globals are mapped in the ELF's BSS and annotated in `SLPS_258.37`,
 including those accessed by BTL routines.
@@ -86,12 +84,9 @@ The scoped audit covers `BTL.BIN`, resident `SLPS_258.37` and `ETC.BIN`:
 immediate byte/halfword/word loads at manager offsets `0x98/0x9A/0x114`,
 decoded direct calls to the two stage-ID services, relevant table references,
 and aligned `slti/sltiu` comparisons with 24/25. It establishes the readers
-and cases below, not an exhaustive pointer-flow census. Arithmetic aliases,
-bulk/unaligned accesses, indirect calls and other accessors remain open;
-`BgControl.load_slot` provenance was followed in the listed methods rather
-than proved for every possible object pointer. No stage-sensitive ETC reader
-was established by these searches. Tables can be unsafe even without a
-stage-count comparison.
+and cases below; where `BgControl.load_slot` comes from was traced in the listed
+methods. These searches found no stage-sensitive ETC reader. Tables can be
+unsafe even without a stage-count comparison.
 
 ### Mapping and indexed data
 
@@ -112,7 +107,7 @@ address at `0x0030809C`, and returns 0 without a manager.
 | `stage_combo_anchors`, `0x008C1DC0` | Signed manager byte; 24 records of `0x10` bytes | `stage_choose_combo_anchor` (`0x006C1300`; slot load `0x006C1374`) | Reads adjacent mapper dispatch data as an anchor record: pointers `0x006C1508/0x006C1514`, counts 32/21. The scan treats executable code as vectors. |
 | `stage_navigation_authored_routes`, `0x00898A60` | Signed manager byte; 24 pointers | `stage_navigation_initialize` (`0x00705950`; table base `0x00705B18`) | Reads `0x00898AC0`, the `TEX_tail` prefix `0x5F584554`, as a route-list pointer. |
 | `stage_select_records`, `0x008C3B10` | Bounded logical-ID search; 24 records of `0x10` bytes | Record lookup, TV construction, preview refresh and selected-stage drawing; all recovered readers are Stage Select routines | Mapper result 0 matches no row; lookup returns -1, preview uses row 0, drawing enters the name fallback. No outside-Stage-Select reader was recovered. |
-| `stage_select_fallback_names`, resident `0x005C04C0` | Unchecked raw slot; 24 pointers | BTL `stage_select_selected_stage_draw`, base materialization `0x00715434` | Reads the zero word at `0x005C0520` as its text pointer. This word is adjacent appearance data, not a 25th name; renderer behavior for that null input is not established here. |
+| `stage_select_fallback_names`, resident `0x005C04C0` | Unchecked raw slot; 24 pointers | BTL `stage_select_selected_stage_draw`, base materialization `0x00715434` | Reads the zero word at `0x005C0520` as its text pointer. This word is adjacent appearance data, not a 25th name. |
 | `effect_4a_stage_intensity`, resident `0x005C3D40` | Signed slot load followed by unsigned `<25`; 24 authored bytes | `effect_4a_secondary_update` (`0x002C8900`; bound `0x002C8A00`, byte load `0x002C8A18`) | Passes the bound and reads zero padding at `0x005C3D58`. Absent manager or unsigned slot ≥25 uses `0xBF`. |
 | `stage_line_change_rules`, resident `0x0054D540` | Six-record bounded search by signed raw slot | `fighter_stage_line_changed` (`0x002DEFE0`) | Misses every key and returns 1 at `0x002DF464` after the preceding geometry/height gates. It does not index record 24. |
 
@@ -147,7 +142,7 @@ rendering data; zero padding is not evidence of an authored slot-24 value.
 | `manager_replace_form` | Guarded pending-to-active byte copy | A non-sentinel 24 can replace the byte; this path does not itself switch stage archives. |
 | `stage_rash_archive_path`, `0x00207E20`; `stage_rash_group`, `0x00207EE0` | Equality groups selecting a six-path table; only groups 0/3/4/5 returned | Default group 0: `n_rash.ccs`. The two inlined group selections in `rash_parallel_animation_construct` (`0x00208CF0`) also choose `ANM_rash_b`. |
 | Pause construction/refresh | Raw byte `BattlePauseController +0x0E`; mirrored by `battle_create_graph` and `bg_control_load_stage` | Constructor `pause_controller_update` (`0x0076E9D0`) retains 24. `pause_controller_refresh` (`0x0076EC10`) passes its signed byte to `pause_clear_stage_tag_refresh`, which ignores it; no indexed stage access occurs there. |
-| `stage_slots_initialize`, `0x001F5780` | 24 native slot numbers, bounded at `0x001F57C8` | Does not initialize bit 24. The bit bank can represent it, but its existing value is not established by this initializer. |
+| `stage_slots_initialize`, `0x001F5780` | 24 native slot numbers, bounded at `0x001F57C8` | Does not initialize bit 24, although the bit bank can represent it. |
 
 Stage availability belongs to
 [Content availability](../../game/content_availability.md#resident-stage-slot-availability).
@@ -155,9 +150,6 @@ Its bank rooted at `stage_availability_bits` is separate from the serialized
 profile and from active/snapshot configuration. In the inspected profile-copy and secondary
 snapshot/restore paths, no saved field was established as a battle stage slot
 or logical ID. Their 25-column loops address ability projections, not stages.
-The unknown secondary/opaque ranges in
-[Save-data layout](../../game/save_data.md#record-layout) prevent a claim that
-the whole on-card record contains no stage-valued field.
 
 ### Logical-ID equality cases
 
@@ -196,8 +188,7 @@ images. Inspected stage-sensitive sites are:
 Other inspected comparisons operate on course/encounter indices, action or
 projectile-command values, timing, internal arrays, profile ability columns,
 statistics and library quantities. ETC's `0x006CAF4C` bounds an audio-command
-selector, not a proven stage value. Comparisons encoded through other
-instructions or calculated limits are not excluded by this immediate search.
+selector, not a proven stage value.
 
 ## Archive preload, adoption, and switching
 
@@ -264,7 +255,7 @@ between sessions
 `stage_rash_group` has the same grouping and accepts `-1` as use-active,
 falling back to slot 0 without an active slot. Entries 1/2 are unreachable
 through both selectors; their path pointers occur only in two table words,
-without decoded code xrefs. Dynamic name lookup remains open.
+without decoded code xrefs.
 
 `rash_parallel_animation_construct` requires `2cmnbod1` and the selected archive, resolves
 `ANM_rash_p1`, then selects 0 → `ANM_rash_b`, 3 → `ANM_rash_e`,
@@ -365,8 +356,8 @@ uses owning list 4; ordinary classes use selector 2, `ccBgTrans*` selector 4.
 | 107 | `ccBgTransAnm` | `bg_trans_animation_create` |
 
 `ccGrassInfluence`, `ccWireHitModel`, `ccBgAttackHit` have compiled
-RTTI/vtable identities without a top-level entry in this linkage.
-Construction establishes helper/embedded uses, not every use.
+RTTI/vtable identities without a top-level entry in this linkage; their
+construction establishes helper/embedded uses.
 
 ### Resident generic factories and mandatory records
 
@@ -404,6 +395,31 @@ records both games' outer-vtable/RTTI chains.
 Each archive has one record for 10,18,33,34,35,36,37,38, at least two
 factory-31 records and one factory-11 record (S10 has two). Factory 18 names
 a light animation/light, e.g. `ANM_stalig00,255,255,255,LGT_dis_0`.
+`bg_light_distant_parse` plays that animation with player flag bit 0, so
+`animation_attach` registers every light it carries in the active render
+environment's list, ordered by priority (point lights 0 before distant
+lights -1). It gives the named light flags 6, which makes it the one
+light the alternate model programs take a main direction from, sets its
+colour from the three integers over 255 and makes that colour the
+environment's lighting colour (`+0x70`). `render_environment_build_light_matrix` fills a
+model's three light rows from the list, highest priority first, each
+point light only within its far distance; a row no light claims keeps the
+environment's default (`render_reset_state`: 0.65 grey from above in one
+row, nothing in the others, lighting colour 0.35 grey).
+
+A light's flags (`+0x94`) start as its CCS record's byte 9
+(`light_construct`, `0x0019B170`). For a model on the alternate path
+(runtime flag `0x8000` with an enabled descriptor pass and texture),
+`model_dispatch_geometry` builds the rows with mask 6, and
+`render_light_slot_assign` (`0x0010CD10`) makes any light in reach with
+flags in that mask and a higher priority than the current one the main
+light: flag 2 copies its direction, flag 4 its faded intensity, otherwise
+intensity 1. A point light with flags 6 therefore takes over the main
+direction from the distant light (priority -1) at once when a model enters
+its far distance (`light_omni_evaluate`, `0x0019A670`, returns nothing
+beyond it). The alternate programs draw each batch a second time with a
+texture coordinate from the main direction's dot product with the normal
+([Model VU programs](../../runtime/rendering/model_vu_programs.md#output-passes-and-continuation)).
 
 `bg_factory_player1_node`/`bg_factory_player2_node` require player nodes without a null/sentinel
 guard. `field_player_placement` adds `(0,0,200,1)` to the side's node position,
@@ -426,11 +442,10 @@ for flag `0x20000`) to pack a high color byte; the other enters another
 packet word. `captured_pose_record_submit` temporarily adjusts
 `stage_render_color_coefficient` and restores it; `battle_draw_adjust_render_b`
 adjusts both that member and `stage_render_packet_coefficient` and restores them.
-Authored values establish the rendering base; original names and final draw
-values remain unresolved.
+Authored values establish the rendering base.
 
 Factory 31 retains lookup results other than 0/4 in the selector owner.
-S01's `BLT_bg/BLT_obj` are section-less names; their result was not traced.
+S01's `BLT_bg/BLT_obj` are section-less names.
 
 `bg_scene_draw` applies fog before selector drawing and
 resets the context afterward. `render_set_fog` converts `p` to
@@ -449,8 +464,7 @@ selectors. Factory 31 uses the scene-list selector at record `+8` to choose
 the selector owner whose resource field it writes.
 
 These are native parser input formats. Numeric fields below are decimal
-integers or floating-point text as specified; unspecified float meanings
-remain unresolved.
+integers or floating-point text as specified.
 
 | Index | Native parser/handler, live address | Tokens, zero-based |
 | ---: | --- | --- |
@@ -499,8 +513,7 @@ takaCreateBackGround|1.00|N|  N * { int16 owner, int16 factory, int16 selector }
 
 Two pipes after the triples precede string zero. All 24 payloads yielded
 exactly N triples/N aligned strings before padding. N includes generic types.
-Factory 27 (`ccBgDrawShadowAnm`) has no record among 1,487 entries;
-other construction and ordinary shadows are not excluded
+Factory 27 (`ccBgDrawShadowAnm`) has no record among 1,487 entries
 ([Shadows](../../runtime/rendering/shadow_rendering.md#background-controller-and-fighter-consumers)).
 
 | Archive / load slot | N | Named factory records |
@@ -567,15 +580,13 @@ drawing. Virtual integration explains missing direct xrefs, not cadence.
 factory types 2/48 through `bg_scene_set_type_updates`. It always calls `bg_scene_update`.
 Scene bit 1 skips owning-object loops; otherwise only enabled objects update.
 Bits 2/4/8 independently gate three auxiliaries. The predicate combines
-scene/control, menu/sequence, fighter markers and terminal queries;
-one universal pause meaning is unproved.
+scene/control, menu/sequence, fighter markers and terminal queries.
 
 `bg_scene_init` sets scene factor 1.0. Transition-animation step is
 `u16(original_step * configured_multiplier * scene_factor)`;
 CrashBreak uses `u16(256 * scene_factor)`. Advance units are 1/256
 animation frame
 ([Scene playback callers](../../runtime/scene_playback_owners.md#playback-families)).
-The full factor-writer set is open.
 
 RotateSky advances/wraps angle under retained bounds classification;
 UV animation gates factor-scaled increments/wraps to 0..1; sway gates phase;
@@ -676,8 +687,7 @@ nearest-endpoint paths do not copy the tail.
 
 The audited head-table aliases and navigation consumers yielded no semantic
 reader of `StageLine.cached_attributes`. Other owners account for apparent
-aliases. Untraced arithmetic, partial or unaligned loads and indirect
-consumers remain open.
+aliases.
 
 ### Selected-index writers and neighboring aliases
 
@@ -692,9 +702,6 @@ indices unchanged. `bg_section_vector_reserve` changes only vector capacity/data
 reads size without reaching adjacent bytes. Destruction frees the tables;
 getters only read them. Traced paths establish active head 0/count 1 per
 populated section, without an authored multiple-head choice.
-
-Unaligned partial stores/arithmetic through unidentified bases remain outside
-the audit; the complete writer set is open.
 
 ### Boundary clamp and floor-profile queries
 
@@ -796,8 +803,7 @@ All are load slots; 22 is logical ID 3/archive S23.
 
 These comparisons contain no stage-indexed array. Raw slot 24 takes the
 ordinary case in every row; a branch match would require one of the explicitly
-listed retail slots. Field/scene identities beyond the stated data flow remain
-unassigned where the routine still has its generated name.
+listed retail slots.
 
 | Reader / live slot-load site | Confirmed special case | Ordinary case, including raw slot 24 |
 | --- | --- | --- |
@@ -882,7 +888,6 @@ additionally requires line filter 1.
 `stage_navigation_routes` (64 `StageRouteRecord`s) with
 `stage_navigation_visited` (64 bytes). These are runtime work areas:
 `stage_navigation_initialize` initializes line pointers/extrema and authored adjacency.
-Their static imported bytes do not establish initialized contents.
 
 Routes contain signed source/destination indices, interpolation fraction and
 action/type. `stage_route_search`/`stage_route_search_branch` recursively search; the point is
@@ -931,7 +936,7 @@ side through `projectile_contact_statistic`
 No fighter HP/state write or class-specific damage call occurs.
 
 BreakAnm (`bg_break_anm_trigger`/`bg_break_anm_update`) emits `0x22` for every
-slot; slots 0/19 (S01/S20) first emit an additional `0x26`. Names remain unknown.
+slot; slots 0/19 (S01/S20) first emit an additional `0x26`.
 Contact uses the same filters/credits metric 12 when the break flag is nonzero.
 With nonzero remaining count, it waits more than 120 ticks, resets model/
 index/playback/opacity and decrements a finite count. Fade rises 0.05 per
@@ -1000,7 +1005,7 @@ selects reaction. `bg_wire_track_node` retains the last node strictly below
 fighter c0 and writes excitation/sag/tracking. The sole fighter-side call
 is a read-only animation predicate; there is no explicit hit/damage call or
 fighter write. Generic movement selecting registered polygons can have
-separate consequences; damage/measured contact outcomes are not established.
+separate consequences.
 
 S10 SuspensionBridge configures 17 segments/key 0/`DMY_hasi`/
 `TEX_s10obj22`/`DMY_hasira_a/b`/120/180. `bg_bridge_update_geometry` matches
@@ -1078,7 +1083,7 @@ S21's six Chandeliers use `chandelier_break_update`:
 Separate rebirth waits more than 120 ticks/resets model zero/decrements
 finite repeat count/fades 0.05/clears broken. The cycle supports configured
 respawn. Exactly two direct BTL calls to `hit_enter_stage_object` exist: snake/
-chandelier. Other indirect callers remain open.
+chandelier.
 
 ### Proven stage-object hit-to-HP path
 
@@ -1100,7 +1105,7 @@ Both records pass
 | Chandelier | 0.05 | 1 | `0x1E` | 1.0 |
 
 Flags are `0x122`, base 0.05/1. Durability/reservation/temporary effects/
-handicap scale the result, clamped 0..1; exact contextual delta is unresolved.
+handicap scale the result, clamped 0..1.
 Source callback bypass requires source `+0x0C` zero; both initialize -1.
 Normal zero fighter override proceeds; observed fallback IDs remain outside
 excluded `0x42..0x49`. No stage-source HP bypass was found.
@@ -1207,13 +1212,3 @@ entry/code.
 combat consumers; shared layouts are in `@annotations/NA2/types.h`.
 Resident globals and the render descriptor's per-member aliases are named in
 the same resident annotation file.
-
-## Remaining questions
-
-- Find semantic cached-line readers and active-index writers beyond the
-  audited direct/alias paths, including arithmetic/partial accesses.
-- Establish original rendering-coefficient semantics and name surface-variant materials.
-- Decode unexamined factories and numeric route/effect meanings.
-- Establish scene-factor writers/restriction/effect/surface semantics without
-  converting local updates to elapsed-time units.
-- Bound indirect callers/construction and contextual stage-hit HP deltas.

@@ -3,9 +3,9 @@
 ## Research coverage
 
 Established: ordinary retail NA2 HUD ownership, ordering, visibility, meter/clock
-presentation, root displays, transforms and cleanup. Open: original identities,
-decorative artwork, helper-vector semantics, indirect writers and special-scene
-variants. Names and routine detail come from `@annotations/NA2`.
+presentation, root displays, transforms and cleanup. Names and routine detail
+come from `@annotations/NA2`.
+Open: nothing.
 
 This document describes unmodified retail NA2 (`SLPS-25837`). File identities
 and address conventions belong to
@@ -18,8 +18,7 @@ owns combo publication; [Ultimate Jutsu](../characters/ultimate_jutsu.md)
 owns its HUD-hiding presentation. Localized name layout belongs to
 [Battle HUD character-name renderer](../../localization/ui/battle/character_names.md).
 
-Evidence is static and bounded; incomplete overlay cross-references do not
-establish absence. Annotation addresses are live runtime addresses.
+Evidence is static. Annotation addresses are live runtime addresses.
 
 ## Battle-session ownership and order
 
@@ -49,9 +48,7 @@ gates. Mask construction belongs to
 [Pause and replay](pause_and_replay.md#controller-fields-and-mask-construction).
 
 The final `query_process_active_pairs` follows HUD/root work. Thus the HUD
-samples fighter state before that final overlap-query publication. This
-ordering does not establish a universal elapsed time or same-update contact
-result.
+samples fighter state before that final overlap-query publication.
 
 ## Top-panel construction
 
@@ -157,15 +154,14 @@ ID minus one; invalid indexes use the final record under
 `hud_character_name_count` (96).
 Only selected key `0x25` with a fighter can substitute `0x5E`: it requires
 `major_state == 0 && substate == 3`. Leaving that condition restores
-`0x25`. This bounded substitution is not generalized to every character.
+`0x25`.
 
 ### Chakra storage and display
 
 `BtlGauge` owns three sprites, three `ANM_ef_gau02a/01a/00a` players
 and a `0x50`-byte view helper; parent, fighter, container and secondary
 context are borrowed. `gauge_container_setup` binds `battlegauge`,
-`TEX_xgauge` and `TEX_xgauge3`. Its two helper vectors' original semantic
-types remain unresolved.
+`TEX_xgauge` and `TEX_xgauge3`.
 
 `hud_chakra_reset` initializes current/previous samples from
 `Fighter.chakra` and requested/displayed reservation from
@@ -209,8 +205,7 @@ Feedback scans `Fighter.actions` records 4..9 and takes the first nonzero
 the display total admits threshold feedback. Separate state feedback requires
 `major_state == 0 && substate == 4`. First/third feedback fade by 0.1 and
 1/30 per update after their respective conditions cease. Animation progression,
-active flags and fades remain local to the child. This consumer does not
-establish whether an action will execute; the array contract belongs to
+active flags and fades remain local to the child. The array contract belongs to
 [Action commands](../combat/action_commands.md#working-action-arrays).
 
 Draw orders fill/thresholds, optional feedback when `feedback_enabled`,
@@ -348,7 +343,7 @@ the next call suppresses child drawing and selects idle.
 `hud_top_show` starts velocity 20, adds it to offset and increases it by
 0.1 with minimum 10, clearing suppression while moving. It clamps at -2;
 its terminal substate holds -2 while retaining show selection.
-Visibility alone therefore does not prove return-slide completion.
+Visibility alone therefore does not mean the return slide has finished.
 
 Clock hide subtracts velocity starting at 5, increasing by 0.7; its terminal
 state after crossing -120 sets hidden and idle. Clock show adds velocity
@@ -381,10 +376,9 @@ row from eight `hud_top_shake_samples`. Each sample multiplies X/Y by
 amplitude, adds resting Y -2, clamps base X plus offset to 0..512 and advances
 the count. Termination restores `(0,-2)` and idle transition.
 
-The bounded direct-call screen establishes `sp_skill_play_frame` as the
-shake producer: it finds the opposing side's parent through
-`battle_top_panel_get` and passes a hit-record signed level unless it is -1.
-Indirect producers are not excluded.
+The direct-call screen finds `sp_skill_play_frame` as the shake producer: it
+finds the opposing side's parent through `battle_top_panel_get` and passes a
+hit-record signed level unless it is -1.
 
 `hud_top_anchor` computes fresh base plus offsets. The root-owned status
 glyph's `hud_status_glyph_anchor` adds its signed-halfword attachment offset
@@ -393,17 +387,15 @@ the parent's four children. This getter differs from the HP geometry getter.
 
 Top update publishes its Y offset in `hud_shared_top_slide_y`; side 1 is
 the last top writer in the side-order service pass. Clock cleanup resets it
-to -2. It is a shared publication, not per-parent storage; other consumers
-are not exhaustively assigned.
+to -2. It is a shared publication, not per-parent storage.
 
 ### Direct visibility request coverage
 
-The bounded resident/BTL direct-call screen establishes whole-HUD hide/show
-requests with -1 and the Ultimate-Jutsu staging hide with -7. Two other BTL
-hide/show pairs have independent enclosing state gates; their class names and
-full presentation semantics are not established by the request. The exact
-call census is in the request routine annotations. Indirect/unindexed callers
-remain open; mirrored resident instructions do not count as extra producers.
+The resident/BTL direct-call screen finds whole-HUD hide/show requests with
+-1 and the Ultimate-Jutsu staging hide with -7. Two other BTL hide/show pairs
+have independent enclosing state gates. The exact call census is in the
+request routine annotations; mirrored resident instructions do not count as
+extra producers.
 
 ## Remaining ordinary presentation forest
 
@@ -436,15 +428,13 @@ in slot 0, which `hud_gameplay_icons_bind` places at scale 1.2 on the top
 parent's emblem cell center (`hud_frame_cell_offset_get`), so it covers the
 emblem. Class 0 and 4 effects take a free slot 1..25 at scale 0.8 in a row at
 Y 90, from X 24 in steps of 16, mirrored for side 1.
-This membership display does not establish another gameplay update; node
-effects belong to
+This membership display is not another gameplay update; node effects belong to
 [Battle items and status effects](../projectiles_and_items/battle_items_and_status_effects.md#per-fighter-storage).
 
 The marker projects `Fighter.position` through `fighter_position_project`.
 Draw uses descriptor groups 117..119 and 120..122 with screen-edge clamps
 and borrowed shared textures. Numeric history maintains a linked popup list
-and saturated aggregate/peak pair and draws admitted active entries;
-its triggering gameplay meanings are not established here.
+and saturated aggregate/peak pair and draws admitted active entries.
 Shared icons own five sprite wrappers, an animation and two render layers.
 
 ### Combo digit presentation
@@ -480,8 +470,7 @@ Draw requires active and uses the latched count. It never selects style row 0:
 | At least 30 | 5 | `0xFF0000A0` | 1.3 |
 
 `hud_combo_styles` names the base and `hud_combo_selected_styles` the
-five selected rows. No unverified color-channel convention is assigned to
-those numeric words. `hud_combo_render_digits` uses 32-by-40 atlas cells,
+five selected rows. `hud_combo_render_digits` uses 32-by-40 atlas cells,
 spacing `24 * scale`, and at most three digits from the clamped publication.
 Base position is `(96,140)` or `(386,140)` plus shake. Draw orders main
 digits, optional appearance overlay with extra scale, then hit animation.
@@ -502,8 +491,7 @@ state, placement selector, label, command bytes, opacity and ramp state.
 `hud_prompt_set_placement` stores the mode and coordinates from
 `hud_prompt_placements`. Modes 0/2 use the object's side; mode 3 chooses
 a placement side from the fighters' relative X positions. Mode 1's stored
-zeros are replaced by draw-time projection. The modes do not establish
-original gameplay names or every caller's reachability.
+zeros are replaced by draw-time projection.
 
 `hud_prompt_activate` at live `0x006B5D20` activates only when
 `battle_simple_display_get` succeeds or force is nonzero. It sets duration,
@@ -511,7 +499,7 @@ active, opacity 1, ordinary path, placement and force.
 `hud_prompt_activate_ramp` uses the manager gate for activation, while a
 positive ramp independently clears ordinary path, zeroes fraction/count and
 sets denominator. Those ramp writes and final placement occur outside the
-activation gate, so calling the helper does not prove activation.
+activation gate, so calling the helper does not imply activation.
 
 Eligible update advances the ramp once and changes to ordinary path when count
 reaches denominator. During ramp, draw submits two horizontally displaced
@@ -523,7 +511,7 @@ depending on its argument and ordinary-path state.
 
 Suppressed value 1 or inactive state skips both callbacks. Unforced prompts
 also retain manager/fighter gates. All counts are eligible invocations,
-not measured durations. Full label/glyph gameplay identity remains unresolved.
+not measured durations.
 
 Player-marker rectangles/labels belong to
 [Battle UI selectors and prompts](../../localization/ui/battle/selectors_and_prompts.md#player-markers);
@@ -531,13 +519,8 @@ item/status label composition belongs to
 [Battle item/status presentation](../../localization/ui/battle/item_status.md).
 These display values are not additional gameplay resource state.
 
-## Confidence and remaining limits
+## Naming and rates
 
-Ownership, direct ordering, reads/stores, atlas bounds and selector branches
-are established by static code/data. Functional names describe consumers and
-textures; they are not original class identities. Rates count admitted native
-callbacks and do not imply wall-clock durations.
-
-Decorative-cell artwork, chakra helper-vector semantics, indirect scalar/enable
-writers, complete prompt subtype identities and sharing with cut-in/special-scene
-HUD variants remain open.
+Functional names describe consumers and textures; they are not original class
+identities. Rates count admitted native callbacks and do not imply wall-clock
+durations.

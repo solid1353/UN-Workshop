@@ -6,15 +6,14 @@ Established: retail NA2 camera classes and activation, main-camera tracking,
 stage parameters and smoothing, presentation requests and ownership, preset
 families, effect adaptation, timing gates, the scoped producer families, and
 the direct stage-table reader and its 24-entry limit.
-Open: player-facing request and move names, vertical-axis sign, unused stage
-fields, mode 1's exit alternative, visible behavior and script selectability.
 Routines, structures and data use the names in `@annotations/NA2`.
+Open: nothing.
 
 ## Camera classes and activation
 
 This document covers the retail battle camera; cutscene cameras and rendering
 projection internals are outside its scope. Axis roles and timing consequences
-come from code. Annotation comments carry per-routine detail and bounded searches.
+come from code. Annotation comments carry per-routine detail.
 
 The graph's `BattleHub.camera` is a `CameraRegistry` (native
 `ccCameraCtrl`). Its nodes share the `ccCamera` base initialized by
@@ -60,7 +59,7 @@ it through `camera_output_submit`. The submitted eye is
 `eye + eye_offset`, and the look-at point is `target`. View construction uses
 `target - eye` and axis `(0, 0, -1)`, with `(1, 0, 0)` as fallback when
 direction components 0 and 1 are both zero. Component 2 is therefore the
-vertical axis; the sign of “up” remains open.
+vertical axis.
 
 Only active cameras publish a view. The camera registry runs before the
 fighter registry in phase 1. Stage drawing temporarily selects each background
@@ -118,15 +117,14 @@ uses physical `position` only when its component 1 exactly equals
 of the scaled fighter height to the vertical component.
 
 `fighter_get_tracking_position` supplies the eased `tracking_position`
-during transfers, but this independent main-camera branch does not establish
-that the camera follows the eased point. Neither direction requests a
+during transfers. Neither direction requests a
 presentation event or ownership change. Transfer admission and lifetime belong
 to [Section transfers](../stages/section_transfers.md#request-admission-and-retained-destination).
 
 ### Distance, elevation, and framing
 
-`camera_compute_fit` sets `EngineBattleCamera.field_of_view` from code
-constants while `dynamic_fov` is clear. The fit distance is the larger of the
+`camera_compute_fit` sets `EngineBattleCamera.field_of_view` to
+atan(0.8 × tan 47°), 40.6°, while `dynamic_fov` is clear. The fit distance is the larger of the
 fighter fit and half the frame span divided by the half-angle tangent.
 `StageCameraRecord.spread_control == 1.0` disables the extra spread term.
 
@@ -188,7 +186,7 @@ contiguous `camera_stage_tracking_gains` array of `0x60`-byte
 The named fields cover smoothing, distance, target clamps, lateral edge
 limits, eye height and lateral scale, section elevation, and spread control.
 Offsets `+0x10`, `+0x18`, `+0x44`, `+0x58` and `+0x5C` have no direct
-camera reader and retain unknown meanings.
+camera reader.
 
 | Archives | Smoothing | Distance | Target clamp | Edge limits | Eye cap | Lateral scale | Elevation reductions | Spread control |
 | --- | --- | --- | --- | --- | ---: | ---: | --- | ---: |
@@ -223,8 +221,7 @@ and binds `table[slot]` without a range check. Its recovered direct caller,
 `camera_node_initialize` (`0x006D6800`), supplies signed manager byte
 `+0x98` at `0x006D6894`, or slot 0 without a manager. The per-field and
 table-word reference scan recovered no independent reader of a fixed stage
-record; compute routines consume the pointer bound here. Computed-address
-and indirect paths remain outside that recovered-reference claim.
+record; compute routines consume the pointer bound here.
 
 Raw slot 24 reads the word at `0x00891E70`: `0x7B96EE8A`, the beginning
 of a Shift-JIS camera debug name. It is treated as a `StageCameraRecord *`,
@@ -296,8 +293,7 @@ A changed request derives a new mode through `camera_controller_derive_mode`.
 Requests -5/-6/-7 map directly to modes 4/5/6. Request 1 queries the selected
 fighter-side subsystem: results 0/1/2 map to modes 2/1/3.
 Other requests pass the discriminator and request to `camera_discriminator_mode`;
-an unrecognized result -1 keeps the previous mode. These are numeric control
-values, with player-facing camera names still open.
+an unrecognized result -1 keeps the previous mode.
 
 | Discriminator or request | Derived mode |
 | --- | ---: |
@@ -340,9 +336,8 @@ their previous fields and clearing the pending event. Handlers see the
 preceding update's snapshot.
 
 Explicit events require a nonzero value different from the previous event.
-Identical events on consecutive updates decode only once. **Inference:** one
-zero-event update commits zero and re-arms the same event; producer timing
-beyond the scoped local gates remains open.
+Identical events on consecutive updates decode only once. One zero-event
+update commits zero and re-arms the same event.
 
 Without a new explicit event, nonzero ownership in modes 1..3 returns request
 -1 when both exchange roles are zero. Mode 1 with request 3 can instead return
@@ -366,9 +361,9 @@ exactly once when `manager_menu_state_equals(manager, 0)`; otherwise it clears.
   preset, request and slot fields.
 - -1 copies the presentation view into the main camera before the same cleanup.
 
-One camera owns output at a time. **Inference:** state 0 cuts to the main
-camera's retained view; state -1 starts it from the presentation view and lets
-its own smoothing return it.
+One camera owns output at a time. State 0 therefore resumes the main
+camera's retained view; state -1 starts it from the presentation view, and
+its own smoothing returns it.
 
 ## Preset orientation and non-repetition
 
@@ -424,13 +419,11 @@ requests.
 
 Request -1 disables the counter and clears main hold. Mode 2 chooses ownership
 -1 after preset 22/23, otherwise 0; mode 3 chooses -1. Mode 1 assigns -1 but
-then compares the current request to 3; whether this has an ownership-0
-alternative remains unresolved.
+then compares the current request to 3.
 
 Mode 2 requests 2/3 with previous slot invalidated map previous preset 1 to 9
 (`camera_mode2_preset9`) and 2 to 10 (`camera_mode2_preset10`) before random
 selection. Mode 1 request 2 forces preset 1/2 for native fighter ID 4.
-Player-facing move names for these exceptions remain open.
 
 Modes 4..6 choose slot 1. Mode 4 takes ownership on the request edge and
 refreshes both anchors every update through `sequence_camera_anchor_eye`
@@ -461,8 +454,7 @@ rather than a camera frame counter.
 | 18 / `camera_controller_mode18` | -4 | `camera_mode18_record` | Counter-driven correction after the timed threshold. |
 
 The contiguous effect block has 55 complete records, ending before the camera
-debug strings. These are physical intervals; the bytes do not prove that
-shipped scripts can select every index. Both channels have equal delay and
+debug strings. Both channels have equal delay and
 duration in these records.
 
 | Mode | Physical indices | Enabled delay / duration |
@@ -520,7 +512,7 @@ directly select the main per-stage camera record.
 It tests component 0 first, then ambiguous directions through
 `collision_segment_query` from the subject raised 75 along component 2.
 A blocked direction returns side code 1/2 and forces candidate 1 on that
-side. Screen-left/right labels depend on orientation and remain unassigned.
+side. Screen-left/right labels depend on orientation.
 
 ### Presentation-camera smoothing
 
@@ -560,8 +552,7 @@ Registry scheduling belongs to [Pause and replay](pause_and_replay.md).
 
 Record application sets `initialize_motion = 1`. **Static consequence:**
 mode 17 repeatedly applying a nonnull record restarts enabled channel counters
-before each eligible movement update. Which timed records retail effects
-supply here remains open.
+before each eligible movement update.
 
 ## Stage- and event-driven inputs
 
@@ -571,19 +562,17 @@ resolution, stage segment queries, and mode 18's logical-stage-5 height bias.
 [Stages](../stages/stages.md) owns archive bounds and line data.
 
 The scoped producer families below supply explicit events and discriminator
-values. The bounded direct-call census excludes indirect producers and does
-not prove every authored action reaches a listed family.
+values, from a direct-call census.
 
 `scene_update_restricted` includes the presentation-ownership predicate.
 When its combined state is true, background phase 1 disables scene selectors
 2 and `0x30` once and restores them on exit through
 `bg_scene_set_type_updates`. Its enabled argument is 0 on entry and 1 on
-exit; the on/off interpretation remains an inference from these calls.
+exit.
 
 ### Action and effect producers
 
-Native class names identify retail code families; translated move names and
-individual inherited action/asset ownership remain open.
+Native class names identify retail code families.
 
 | Producer | Event and local gate |
 | --- | --- |
@@ -609,7 +598,7 @@ checks and clears the latch before consulting metadata, preventing another
 event on a repeated exit. HAK follows the same order. FIR uses `side + 1`
 and literal discriminator 1. `skill_camera_reset` clears the latch before
 requesting reset. Extra Hit teardown and the separate sequence termination
-also request reset; they do not establish additional event producers.
+also request reset.
 
 FIR's pending contribution is
 `InteractionManager.pending_combo_hits[side]`

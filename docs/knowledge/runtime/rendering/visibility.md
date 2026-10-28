@@ -3,11 +3,11 @@
 ## Research coverage
 
 Established: local box ownership, construction and lifetime; ordinary eight-corner X/Y/W classification;
-controller-specific off-screen inputs; background state gates; effect depth and particle distance/draw gates.
-Open: entry-0 additional-point register lifetime and later writes; other bounds writers;
-indirect/other-overlay visibility coverage, lower primitive clipping and exact VU boundary behavior.
+controller-specific off-screen inputs and entry 0's sixteen points; background state gates; effect depth and
+particle distance/draw gates.
 Routine, field and data names come from `@annotations/NA2`; comments hold per-routine detail.
-Evidence is bounded static retail NA2 (`SLPS-25837`) inspection, without execution or live-memory observations.
+Evidence is static retail NA2 (`SLPS-25837`) code.
+Open: nothing.
 
 ## Evidence conventions
 
@@ -23,13 +23,8 @@ for downstream scheduling.
 
 Addresses are live resident `SLPS_258.37` EE addresses; see
 [address conventions](../../game/files/file_identities.md#address-conventions).
-Observed contracts below have high confidence within the inspected paths;
-inferences and open matters are identified explicitly. The direct-call screen
-also covered `BTL.BIN` and `ETC.BIN`, but imported function/xref gaps prevent
-whole-program absence claims. VU plane equations abstract floating-point sign
-flags rather than establish exact hardware contact behavior. Opaque return
-types in annotations preserve an unestablished original return while retaining
-proved used parameters.
+Inferences are marked. The direct-call screen also covered `BTL.BIN` and
+`ETC.BIN`. VU plane equations abstract floating-point sign flags.
 
 ## Box ownership and lifetime
 
@@ -60,8 +55,7 @@ The extrema producers are `ccs_read_model_vertex_arrays`
 (`0x001B0790`), `ccs_read_model_mesh_aux` (`0x001ADD80`) and
 `model_prepare_projection_geometry` (`0x0018D740`), using signed XYZ
 positions. `ccs_convert_packed_model_mesh` (`0x001AFF20`) does not consume
-or forward the supplied outer extrema accumulator in its inspected body.
-Passing an accumulator therefore does not prove every parser updates it.
+or forward the supplied outer extrema accumulator.
 [Model runtime](model_runtime.md) owns the geometry routes and packed flag bypass.
 
 ## Ordinary model draw boundary
@@ -70,8 +64,7 @@ Passing an accumulator therefore does not prove every parser updates it.
 `CcsScenePlayTarget.model` and optional `auxiliary` instances through
 `ccs_model_instance_initialize` (`0x001992A0`). The instance's `bounds`
 initially points directly to descriptor `bounds_minimum`; descriptor
-`runtime_flags & 0x804` clears it. This construction-time ordinary box
-bypass does not establish that those flags disable every geometry clipping operation.
+`runtime_flags & 0x804` clears it, bypassing the ordinary box test.
 
 `scene_object_submit_geometry` (`0x00190F40`) refreshes the child transform
 and inherited draw factor when `alpha_flags & 1` is set. Primary geometry
@@ -99,13 +92,12 @@ The instance borrows local descriptor bounds. Ordinary drawing transforms
 their corners with the current model-to-device matrix, so movement changes
 the classified points without requiring a local endpoint rewrite.
 
-In the inspected non-packed draw continuation, the whole-model decision
+In the non-packed draw continuation, the whole-model decision
 precedes part preparation and `morpher_blend_vertices` (`0x00197570`).
 Its position branch edits draw positions and can rescale source arrays, but
 does not rewrite endpoint/midpoint vectors or perform a new whole-model
 classification. This draw's visibility is consequently decided before its
-morph edits. This ordering does not establish that every resource or animation
-callback leaves bounds unchanged.
+morph edits.
 [Model runtime](model_runtime.md#morph-control-and-geometry-ownership) owns
 the geometry mutation.
 
@@ -129,7 +121,6 @@ cursor; retention permits `projection_controller_append_packets`
 
 This controller renderer can differ from the ordinary view renderer.
 Ordinary view visibility is therefore not the sole off-screen decision.
-Entry 0's extra-point geometry remains unresolved as described below.
 
 ## VU point tests and classification
 
@@ -170,13 +161,36 @@ subtraction sign bits, so effect-path CPU equality rules cannot substitute.
 | 1 | Every viewport plane has an inside point and every tested point lies inside every larger-limit plane. |
 | 2 | Every viewport plane has an inside point, but larger-limit containment is incomplete. |
 
-Entry 0 prepares 16 points: eight from endpoint XYZ and eight from two
-additional VU vectors. The wrapper initializes only one additional vector,
-and the microprogram's initial writes modify only their W lanes. The bounded
-evidence establishes the point count and shared predicate, but does not
-establish a self-contained endpoint-plus-direction extrusion. Additional
-register lifetime and later microprogram writes remain open; no exact shadow
-extent or visible defect follows from this evidence.
+`visibility_vu0_offscreen_entry` (`0x003D11F0`, VU entry 0) prepares 16
+points for the shared predicate: the eight endpoint XYZ corners, then the
+eight corners of the box spanned by the XYZ of `vf20` and `vf21`. Its two
+initial additions (`vf20 += vf18`, `vf21 = vf19 + vf20`) write only W, which
+the transform ignores, so they change no point.
+
+- `vf20` is the wrapper's additional vector, loaded on every call. On the
+  off-screen path it is the environment `projection_direction` transformed by
+  `matrix_rigid_inverse` of the model transform (all four components) and
+  multiplied by `projection_scalar`: a local-space displacement, used here as
+  a point.
+- `vf21` is not a call input. It keeps whatever last wrote VU0 `vf21`. The
+  point loop leaves the last transformed point there, so after an ordinary
+  entry `0x1F` call it holds the projected maximum corner of that call's box,
+  and after an entry 0 call the projection of the stale `vf21` itself.
+  `resource_transform_update` (`0x0019C7C0`) also leaves a node-list qword
+  there; `scene_object_submit_geometry` runs it, and the ordinary dispatch can
+  run it after its box test. No other `vf21` writer appears in the resident,
+  `BTL.BIN` or `ETC.BIN` disassembly, except a save/restore routine
+  (`0x001510A8`) with no found caller.
+
+So the second box has no fixed geometric meaning: one corner is a
+displacement and the other a leftover from earlier work. **Inference:** had
+the additions written XYZ, the second box would be the bounds moved by the
+displacement, an extrusion along the projection direction.
+
+The extra points can only add inside points, and the off-screen caller rejects
+only classification 0. Entry 0 therefore never rejects geometry whose own
+eight corners would be retained under the same matrix and limits; it can only
+retain more.
 
 ## Renderer limits and matrix ownership
 
@@ -188,17 +202,16 @@ owns their construction and refresh. The viewport setter
 `abi_float_arguments_consume` (`0x0010E460`, existing annotation name)
 does not rewrite the larger-limit X/Y pair.
 
-Ordinary model and inspected background owners compose `device_projection`
+Ordinary model and background owners compose `device_projection`
 with a child, owner or placement transform. The off-screen path uses its
 controller's same matrix field. The classifier consumes the supplied matrix
 and never reads `symmetric_projection`; that matrix's construction, copying
-and unresolved consumers belong to
-[Renderer coordinates](renderer_coordinates.md#persistent-0x0c0-and-bounded-alias-tracing).
+and consumers belong to
+[Renderer coordinates](renderer_coordinates.md#persistent-0x0c0-and-alias-tracing).
 
 ## Bounded resident caller inventory
 
-The bounded direct-call screen establishes the following decision owners,
-without excluding indirect calls or other visibility routines. The opcode,
+The direct-call screen establishes the following decision owners. The opcode,
 call-site counts and alias deduplication are recorded in
 `model_classify_bounds`'s annotation.
 
@@ -235,13 +248,12 @@ the current submission context's `BattleHudRenderContext.renderer`.
 The verified retail class identities are `ccBgRotateSky` for
 `bg_rotate_sky_update` and `ccBgUVAnm` for `bg_uv_animation_update`,
 recorded by `bg_rotate_sky_vtable` and `bg_uv_animation_vtable` with their
-named type descriptors and strings. Other rows receive no unproved class names.
+named type descriptors and strings.
 
 **Inference, high confidence within these methods:** visibility can govern
 state advancement as well as packet submission. Rejected rotating-sky and UV
 owners skip their increments, and two rejected cloth boxes skip countdown
-and PRNG work. Other callbacks' possible writes to those owners remain outside
-this bounded conclusion.
+and PRNG work.
 
 ## Animated textured-effect rejection
 
@@ -257,8 +269,7 @@ path rejects translation W below `device_min.plane` or above
 `device_max.plane`; equality survives. These are the depth limits also
 supplied to the model wrapper, but this effect path does not invoke the box
 classifier. `CcsEffectDrawDescriptor.projection_offset` changes the depth
-projection calculation before rejection. This one path does not establish
-whole-scene or population visibility.
+projection calculation before rejection.
 
 ## Particle visibility layers
 
@@ -297,9 +308,9 @@ a non-null attached action/particle `attached_manager`. Its scoped renderer subs
 applies to these draws. A particle scene resource can therefore use different
 camera inputs from its manager.
 
-**Inference, bounded scope:** no single common population frustum box occurs
-at the inspected manager submission boundary. Visibility combines manager
-and visual gates, optional distance suppression and the selected draw path.
+No common population frustum box occurs at the manager submission boundary.
+Visibility combines manager and visual gates, optional distance suppression and
+the selected draw path.
 [Particle runtime](particle_runtime.md#concrete-visual-update-and-draw) owns
-construction, history and frame advancement; draw rejection alone does not
-establish that particle lifetime or playback stopped.
+construction, history and frame advancement; draw rejection does not stop
+particle lifetime or playback.

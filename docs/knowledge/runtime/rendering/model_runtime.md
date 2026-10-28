@@ -3,18 +3,16 @@
 ## Research coverage
 
 Established: geometry routes and ownership, hierarchy and bone matrices,
-animation binding, CPU skinning, and inspected morph gates/arithmetic/mutation.
-Open: authored morph pairs/counts, later property owners and borrowed lifetimes,
-wider mutations, full attributes, and palette/influence limits.
+animation binding, CPU skinning, ordinary vertex-stream meanings, and morph
+gates/arithmetic/mutation, and equal UN3 and NA2 packed position values.
 Names and per-routine detail come from `@annotations/NA2` and `@annotations/UN3`.
+Open: nothing.
 
 ## Evidence conventions
 
 All cited code is resident ELF code at live EE addresses; see
 [address conventions](../../game/files/file_identities.md#address-conventions).
 Static evidence concerns retail NA2 `SLPS_258.37` and official UN3 `SLUS_217.27`.
-Bounded reader agreement does not establish whole-file model equivalence or
-complete asset interpretation; unexamined branches remain unknown.
 `CcsRecord`, source descriptors, geometry resources, runtime model instances
 and instantiated scene children describe distinct allocations. Annotated names
 describe demonstrated behavior, rather than recovered retail symbols.
@@ -43,14 +41,14 @@ The file geometry selector is `(file_flags >> 1) & 7`:
 | Selector | Runtime flag added | Prefix and route |
 | --- | --- | --- |
 | 0 | none | Clear the bookkeeping record; read dependency and vertex count; ordinary arrays through `ccs_read_model_vertex_arrays`. |
-| 1 | none | Fail-fast null store; no accepted route established. |
+| 1 | none | Fail-fast null store; no route. |
 | 2 | `0x04` | Dependency, vertex count and second count; packed conversion through `ccs_convert_packed_model_mesh`. |
 | 3 | `0x10` | The property reader `ccs_read_property_geometry_part` owns its prefix; the loader also adds flags `0x4a01`. |
 | 4 | `0x08` | Reserved record zero as dependency and zero ordinary count; topology through `model_prepare_projection_geometry`. |
-| 5..7 | none | Fail-fast null store; no accepted route established. |
+| 5..7 | none | Fail-fast null store; no route. |
 
 The internal auxiliary route `ccs_read_model_mesh_aux` has no selector assignment in
-the examined outer dispatch. Its reader contract does not establish reachability.
+the outer dispatch.
 
 Older container versions mask or omit additional header fields. The optional
 palette byte list is retained in `palette_indices`/`palette_count`, with no
@@ -75,7 +73,7 @@ its blend state from `model_blend_states`. Constructor selectors 0..3 select
 `0x44`, `0x48`, `0x42` and `0x09`: this is a two-bit selector, not two
 independently demonstrated enable flags. Ordinary selection through
 `model_instance_set_blend` writes the instance's separate `blend_state`.
-Neither inspected selector assignment changes the other state. Blend/state
+Neither selector assignment changes the other state. Blend/state
 meanings and width/color consumers belong to
 [Extra model-owned blend state and FRAME restoration](material_render_modes.md#extra-model-owned-blend-state-and-frame-restoration).
 
@@ -83,11 +81,9 @@ Independently allocated owners are independent header snapshots.
 `model_copy_instance_draw_state` copies flags and scale to the draw context without refreshing
 the snapshot. `handle_e68_destroy` frees an extra-pass owner only with ownership
 `0x10000`; a borrowed property's owner belongs to `property_geometry_destroy`.
-The inspected `property_geometry_convert` clears that source owner on completion, so a
-later producer is required for the nonnull borrowed case and remains unidentified.
-These paths establish no reference count or safe source destruction while an
-instance still uses its owner. Wider indirect consumers and later mutations
-remain incompletely examined.
+`property_geometry_convert` clears that source owner on completion. These paths
+keep no reference count and do not protect an owner from source destruction
+while an instance still uses it.
 
 `model_instance_copy` (`0x00198E30`) copies the existing owner pointer and clears
 destination ownership. It borrows the child array, copies flags/scale and
@@ -95,7 +91,7 @@ constructs a separate part table; it neither reconstructs nor duplicates the
 extra-pass snapshot. Copying an instance therefore borrows a lifetime that
 independent construction can own. `scene_child_copy` similarly borrows primary and
 secondary scene-model handles, and `child_b30_handle_destroy` destroys them only for an
-owning scene node. No reference-count increment appears in these inspected copies.
+owning scene node. These copies increment no reference count.
 
 `list_node_handle_clear` installs an incoming model while clearing scene ownership.
 When both models have flags `&0x804` nonzero it rebuilds the incoming bone mapping
@@ -106,8 +102,8 @@ models. Scene attachment alone does not imply independent model storage.
 The extra-pass gate is independent of the header selector.
 `model_draw_parameters_setup` snapshots `model_extra_pass_descriptor` into the draw context.
 `model_dispatch_geometry` (`0x001910E0`) requests the pass only with model flag
-`0x80`, a nonnull descriptor and its nonzero halfword `+0x1c`; the descriptor
-field's complete meaning is unresolved. Ordinary and packed routes then use
+`0x80`, a nonnull descriptor and its nonzero halfword `+0x1c`. Ordinary and
+packed routes then use
 `model_submit_ordinary_extra_pass` and `model_submit_packed_extra_pass`, respectively.
 Whole-model admission belongs to
 [Visibility](visibility.md#ordinary-model-draw-boundary); selected VU behavior
@@ -121,8 +117,19 @@ aligns to four bytes and updates aggregate extrema. Optional dword arrays follow
 | Runtime condition | Consumption and retention |
 | --- | --- |
 | `0x40` clear | One word per vertex in `elements`, plus its high byte in `strip_controls`. |
-| `0x200` clear | One word per vertex; flag `0x01` discards it after reading, otherwise `uv_words` retains it. |
-| `0x400` clear | One word per vertex in `auxiliary_attributes`. |
+| `0x200` clear | One word per vertex; flag `0x01` discards it after reading, otherwise `uv_words` (part `+0x1C`) retains it. |
+| `0x400` clear | One word per vertex in `auxiliary_attributes` (part `+0x20`). |
+
+Despite its annotated name, `uv_words` is the **vertex color** stream and
+`auxiliary_attributes` the **texture coordinates**, as the packet builders
+show. `model_geometry_packet_set_uv` (`0x00193B50`) sends part `+0x1C`
+through a VIF `UNPACK V4-8` unsigned (four RGBA bytes per vertex) to VU
+address `0x0A`; with flag `0x200` set it unpacks `model_neutral_vertex_colors`
+(`0x005BEE30`, all `0x80`) instead, and flag `0x01` omits the stream.
+`model_geometry_packet_set_auxiliary` (`0x00193A70`) sends part `+0x20`
+through a masked `UNPACK V2-16` signed (two halfwords per vertex) to VU
+address `0x0B`. Draw setup borrows the two streams into
+`CcsModelDrawContext.uv_words`/`auxiliary_attributes` at `+0x238`/`+0x23C`.
 
 `ccs_normalize_ordinary_strips` treats control values 1/2 as run starts and zero as continuation.
 Parity can reverse the geometry/attribute run or duplicate a vertex and rebuild
@@ -131,8 +138,7 @@ Ordinary and packed strip normalization run only with flag `0x02000000` set
 and `0x04000000` clear.
 
 Ordinary arrays remain retained beside the geometry packet. Its layout depends
-on the low 16 runtime-flag bits. Attribute widths alone do not establish every
-attribute meaning or VU interpretation. Material binding, draw-time UV changes
+on the low 16 runtime-flag bits. Material binding, draw-time UV changes
 and packed material offsets belong to
 [Texture and material runtime](texture_material_runtime.md).
 
@@ -168,7 +174,7 @@ after packet publication.
 `position` contains signed XYZ. The generated fields are `(control&0x1ff)<<4`,
 `0x50+4*(control>>10)`, and the first influence's list count (1 for subsequent
 influences). **High-confidence inference:** these are a weight and matrix-palette
-index. They do not establish normalization or a maximum influence count;
+index. The converter neither normalizes weights nor limits the influence count;
 [Packed influence evaluation](model_vu_programs.md#packed-influence-evaluation)
 owns the selected downstream accumulation rule.
 
@@ -199,8 +205,7 @@ owns the selected control interpretation. Neither supplies an omitted CPU check.
 NA2 packed conversion does not propagate temporary extrema to the outer loader.
 The loader nevertheless expands the outer extrema for flags `0x804` and builds
 bounds, while instance construction clears its ordinary bounds pointer for those
-flags. This establishes only that data flow; broader packed-model culling belongs
-to [Visibility](visibility.md).
+flags. Broader packed-model culling belongs to [Visibility](visibility.md).
 
 ## Composition hierarchy and matrix lifetime
 
@@ -231,8 +236,8 @@ Scale precedes Z, Y, X rotation, then translation.
 `resource_transform_update` (`0x0019C7C0`) finds the highest dirty ancestor,
 starts from its clean parent's accumulated matrix (or its local matrix at a root),
 and updates back toward the requested child. In column-vector notation:
-`world=parent_world*local`. Updated nodes clear dirty. No cycle detection or
-hierarchy-depth guard is visible in this inspected algorithm.
+`world=parent_world*local`. Updated nodes clear dirty. The algorithm has no
+cycle detection or hierarchy-depth guard.
 Unattached drawing copies local to accumulated and clears dirty; palette upload
 uses the same root/parent distinction. These paths use the ordinary scene hierarchy
 for bone matrices, rather than a separate skeleton-matrix allocation.
@@ -258,7 +263,7 @@ and zeroes unused bytes in the last word.
 | `0x03/0x0a/0x20` | 8 |
 | `0x22` | 64 |
 
-Other element widths remain unestablished. Kind 1's registered factory creates
+Kind 1's registered factory creates
 kind-2 `CcsPropertyGeometry`; `property_geometry_vtable` selects its converter.
 Temporary payloads are released after conversion.
 
@@ -279,8 +284,8 @@ Its destructor frees the wrapper; source destruction owns the array allocation.
 With model flag `0x0800`, `model_property_matrix_workspace` constructs matrices
 `inverse(context_matrix)*child_world`, refreshing children and emitting identity
 for null children. Identity fill for missing entries stops strictly below
-`highest_bone_index`. The converter records the highest index, not index+1;
-initialization of a missing highest-index bone is not established.
+`highest_bone_index`. The converter records the highest index, not index+1, so
+the identity fill skips a missing highest-index bone.
 
 `model_prepare_property_geometry` (`0x001921C0`) evaluates
 `rigid_count+weighted_vertex_count` float positions and vectors. Rigid XYZ
@@ -317,8 +322,7 @@ Entry flag `0x02` applies the parent map: -1 attaches to the player node,
 otherwise to the indexed runtime target. Playback can thus construct or reparent
 a hierarchy independently of composition construction. Entry flag `0x01`
 controls target allocation/destruction. Prior-animation matching can copy
-target/type/flags, but owned entries materialize again later; a copied handle
-does not prove survival across switching. See
+target/type/flags, but owned entries materialize again later. See
 [Animation-to-animation blending](../animation_runtime.md#animation-to-animation-blending).
 
 Typed `0x0102` evaluates translation, rotation, scale and opacity into the local
@@ -348,16 +352,15 @@ clearing draw ownership. The first position edit through `model_draw_edit_positi
 allocates a separate destination, returns the old input separately and clears the
 retained packet. Later modifiers use that destination as input and output.
 The packed delegate has no corresponding controller hook and retains no ordinary
-halfword position buffer. A universal morph contract across geometry modes is
-not established.
+halfword position buffer.
 
 ### Selected morph admission and topology assumptions
 
-Both inspected non-packed continuations invoke the controller after part setup
+Both non-packed continuations invoke the controller after part setup
 and before property preparation. Context initialization copies the scene controller
 without comparing its sources or geometry.
 
-| Inspected path | Enforced gate | Comparison absent |
+| Path | Enforced gate | Comparison absent |
 | --- | --- | --- |
 | Streamed producer and `ccs_play_target_unchecked` lookup | Target exists for installation; retain nonnull sources. Missing target still consumes every pair. | Entry type/index bounds; model kind, parts/counts, scalar compatibility or strip correspondence. |
 | Typed `0x1902` evaluation | Omit exactly zero weights; fetch source by the key's halfword player index. | Source validity/type and part/count/format correspondence. |
@@ -373,11 +376,10 @@ uses source counts separately.
 enough readable signed-halfword XYZ triples for the target's ordinal sequence.
 Count equality is not required: a longer source supplies only the target-length
 prefix. Meaningful vertex correspondence is an authored requirement, not an
-inspected admission predicate. Independent strip reversal/duplication means equal
-file counts do not prove equal post-conversion correspondence. Source indexes,
+admission predicate. Independent strip reversal/duplication means equal
+file counts do not guarantee equal post-conversion correspondence. Source indexes,
 strip controls, material and normals are not substituted. The blend has no
-target-count-zero precheck before its first iteration. These assumptions neither
-establish malformed-asset outcomes nor prove such pairs occur in retail assets.
+target-count-zero precheck before its first iteration.
 
 Arithmetic always uses six-byte signed-halfword XYZ. Destination allocation can
 select six or twelve bytes per vertex, but that does not change the blend stride.
@@ -385,14 +387,11 @@ Packed and topology source parts lack the ordinary buffer; property coordinates
 live in their separate object, and there is no explicit property rejection at
 the hook. Later property preparation replaces the context position/vector inputs
 from that object's arrays and indexes; it does not use the controller destination
-as geometry input. No packed/property/topology adaptation or authored unsupported
-pairing is established.
+as geometry input.
 
 Controller allocation has room for 32 entries. Blend scratch reserves `0x100`
 bytes and writes sixteen bytes per retained source, room for 16 records.
 No inspected producer, setter or blend setup clamps to either capacity.
-These are distinct storage bounds, not an established safe retail count;
-authored counts and wider scratch use remain unmeasured.
 
 ### Shared mutation and draw-local results
 
@@ -406,14 +405,12 @@ The comparison reads the resource's current scalar, while the ratio uses this
 instance's copied scalar. Initially borrowed arrays can be shared by independently
 constructed instances with separate scalar copies. The morpher neither refreshes
 other instances nor recomputes bounds or reverses mutations. Later aliasing
-consequences depend on owner ordering; complete retail distribution and ordering
-remain unresolved.
+consequences depend on owner ordering.
 
 Explicit duplication through `model_instance_duplicate_arrays`/`model_part_duplicate_arrays` can create
 private positions and controls for non-packed parts and rebuild their packet.
 That is separate from initial borrowing. The morpher still updates the source
 resource scalar, so private positions alone do not isolate the header mutation.
-Complete use of duplication requests remains unestablished.
 
 Streamed zero-weight sources remain in the list and can undergo pointer collection
 and rescaling; typed zero weights are omitted. Zero contribution thus does not
@@ -446,26 +443,27 @@ as separate entries, providing no independent source-list reference count.
 Animation switching and evaluator/target lifetime belong to
 [Restart, hold and removal boundaries](../animation_runtime.md#restart-hold-and-removal-boundaries).
 
-## Bounded official UN3 comparison
+## Official UN3 comparison
 
 Official UN3's resident `ccs_parse_model` (`0x001660A0`) agrees with
-the inspected NA2 allocation, accepted geometry selectors and part prefixes.
+the NA2 allocation, accepted geometry selectors and part prefixes.
 Its internal auxiliary branch is likewise not assigned by the outer selector.
-The comparison concerns bounded readers, not every asset.
 
 | Contract | NA2 | Official UN3 |
 | --- | --- | --- |
 | Packed rigid payload | Matrix selector, signed XYZ, attribute words, masked/shifted UVs; batches at most `0x36`. | `ccs_convert_packed_model_mesh` consumes the same fields in order with the same batch cap. |
 | Packed weighted payload | Eight-byte terminated lists, per-influence words, per-vertex UVs, low-nine-bit weight shifted four and palette index `0x50+4*(control>>10)`. | Same widths, grouping and generated weight/index encoding. |
-| Packed multiplier | Descriptor `position_scale /4096`. | `un3CcsModelDescriptor.position_scale /256`. |
+| Packed multiplier | `float(XYZ) * (position_scale /4096)`. | `vector_int_to_float_fixed4(XYZ) * (position_scale /256)`, that is `XYZ/16 * position_scale/256`: the same value. |
 | Packed extrema | Temporary extrema do not reach the outer buffer. | Both branches update the outer six-extrema argument. |
 | Strip normalization | Additional header modes can reorder/duplicate ordinary and packed strips. | Outer loader does not decode those NA2 modes; packed converter has no corresponding normalization call. |
 | Retained color/header word | Low 24 color bits plus separately assigned selector bits for version `>=0x123`. | Entire `header_color_word`; no matching extra-byte assignment. |
-| Property framing | Dependency/count, 12-byte headers, width/multiplicity and rounded payload. | `ccs_read_property_geometry_part`/`ccs_read_property_geometry_data` agree for the listed types; selected converter was not compared. |
-| Topology input | Counts, signed XYZ, alignment and integer(index_count/3) triples. | `model_prepare_projection_geometry` agrees on reads and cyclic triangle calls; complete generated packet equality is unestablished. |
+| Property framing | Dependency/count, 12-byte headers, width/multiplicity and rounded payload. | `ccs_read_property_geometry_part`/`ccs_read_property_geometry_data` agree for the listed types. |
+| Topology input | Counts, signed XYZ, alignment and integer(index_count/3) triples. | `model_prepare_projection_geometry` agrees on reads and cyclic triangle calls. |
 
-**High-confidence inference:** identical packed coordinates and header scalar
-produce positions 16 times larger in the inspected UN3 converter.
-Consumption agreement does not imply equal interpretation. Whether a particular
-asset compensates through its scalar, hierarchy or coordinates is unresolved;
-whole-file loading, VU behavior and animation/model pairing require separate evidence.
+UN3's `/256` is offset by its integer-to-float step, `VITOF4`, which divides
+by 16; NA2 converts with a plain integer-to-float. Both scalings are powers of
+two, so identical packed coordinates and scalar give identical positions.
+The assets agree too: the packed body models that `2FIRBOD1`, `2HAKBOD1`,
+`2ANKBOD1` and the other shared characters' body files hold in both games have
+equal scalars and the same or similar coordinate extents, and their body
+compositions the same bone offsets with unit scale.

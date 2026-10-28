@@ -2,12 +2,15 @@ address	kind	name	type	comment
 0x08809FD4	function	sceGuAlphaFunc		Emits GE command 0xDB (alpha test): function | reference << 8 | mask << 16.
 0x0887C3EC	function	scalar_approach	void scalar_approach(float target, float rate, float *value)	Proportional approach value += (target-value)*rate when different; effect_screen_blur_update type6 uses gain1/lifetime to approach scale1,turn0,RGB128 and alpha0. Alpha is converted to integer and repacked after every update.
 0x0887CBC8	function	random_inclusive		Random integer 0..maximum inclusive.
+0x08888054	function	render_env_bind_view_camera		Copies the view camera's field of view (+0x0C) to +0x2E0 and rebuilds the projection.
+0x0888807C	function	render_env_rebuild_projection		Projection scale = screen width / (2 tan(fov/2)), fov in degrees at +0x2E0.
 0x088889E0	function	projectile_context_begin		Clamps the percentage 0..100 into context +0xE8 and the low 24 colour bits into +0xEC, as NA2's 0x0010D220.
 0x08888A28	function	projectile_context_end		Clears context +0xE8, as NA2's 0x0010D200.
 0x0888AF30	function	material_set_alpha_test		Alpha test greater than the texture's cutoff (runtime texture +0x10, the archive's +0x17) times the material alpha; failing texels are discarded.
 0x0888CD3C	function	model_submit_ordinary		Ordinary model submission. Iterate part table at model+18 forward by50 bytes through u16 part_count+26, compile each draw into current PSP list; direct/ordered selection uses material*context alpha below127/128, model draw-state bit3 or texture flags+4 bit8. Both lists retain forward material-part order. Unlike NA2 model_dispatch_geometry, no head-prepending/reversal of material parts; partial-alpha floor decals can therefore depend on earlier opaque ground parts.
 0x0888DEC8	function	material_apply_draw_state		Per material: colour with material alpha; untextured: alpha test greater than 0; textured: binds texture and palette, alpha test always when model flag +0x180 bit 3, else material_set_alpha_test.
 0x08895DD8	function	scene_object_unregister_environments		For each child: objects (0x100) recurse through 0x0889021C; models (0x800) with collision (+0x38) unregister it (0x088C3EF0).
+0x0889DCA8	function	view_camera_init		Field of view +0x0C = 45 degrees; clears the view matrix at +0x10.
 0x088A6304	function	gu_alpha_func_mapped		sceGuAlphaFunc with the function mapped through 0x08B35DCC (identity: 1 always, 6 greater).
 0x088A6874	function	ccs_expand_vertex_colour		Expand each packed RGBA byte c to max(2*c-1,0), with no upper clamp before packed OR. Used by ordinary geometry list compilation; RGB above128 spills into adjacent channels.
 0x088A7330	function	model_compile_ordinary_mesh		Compile retained ordinary arrays into PSP vertex layouts based on model flags, signed short XYZ*position scale, optional normal bytes, expanded RGBA through ccs_expand_vertex_colour and UV/256. Split triangle-strip runs using normal/control fourth byte, recording sceGuDrawArray lists. This preserves vertex/strip order inside a material part.
@@ -39,6 +42,7 @@ address	kind	name	type	comment
 0x0890695C	function	bg_factory_fog		Factory 10: RGB, near/far percentages, near/far distances, NA2's tokens.
 0x08907160	function	bg_factory_render_coefficients		Factory 17: first token to 0x08CDDA48, second to 0x08CDDA44.
 0x089409B0	function	stage_select_build_available_list		Scans the 13 Stage Select rows in order, keeping scenes whose availability bit is set.
+0x08957988	function	battle_camera_create_view		Allocates the 0x50-byte view camera at +0xB4 (45 degree field of view).
 0x08958724	function	camera_track_stage		Normal-stage camera: frames the fighters by mode, clamps to the stage markers (0x089599F0), eases eye and target by 0.3 per update.
 0x089589DC	function	camera_follow_behind_fighter		Mode 1: eye behind the tracked fighter on the line to its opponent, (2 + 0.001 d) of the half-span out, raised by a fifth of its depth and 100, at least 50 above the fighter.
 0x08958C34	function	camera_frame_fighter_box_same_section		Mode 3: target = active fighters' box centre + (0,0,100); eye = target - (0,d,-0.11d), d = max(600, 1.44 x box diagonal).
@@ -81,6 +85,8 @@ address	kind	name	type	comment
 0x089BE0F0	function	fighter_damage_surface_feedback_alternate	void fighter_damage_surface_feedback_alternate(void *fighter, int kind, int with_sound)	Same surface feedback and optional thud as fighter_damage_surface_feedback; sole caller at089F2340.
 0x089BE340	function	fighter_present_action_effects		NA2's fighter_present_action_effects with knockdown, bounce and damage-state landing effects and surface thuds; run dust and landings.
 0x089C18E4	function	fighter_damage_feedback_suppressed	int fighter_damage_feedback_suppressed(void *fighter)	For identities3B/40 return flag byte74 bit1. For identity64(hex) return that flag except major6/action60 and major5/actions38..3B,3E..4B,53..5A,5C, which return0. Other identities return0. Common fighter presenter suppresses secondary damage-surface feedback when true.
+0x089C4628	function	timeline_event_crossed		Event check on the secondary timeline +0x208; fighter_present_action_effects plays the landing thuds when it reports event 0 for slots 0x1D/0x20/0x21.
+0x089C47AC	function	timeline_secondary_event_crossed		Called as NA2's timeline_secondary_event_crossed(primary +0x1E4, 0) at the top of fighter_present_action_effects.
 0x089CA408	function	fighter_place_pair_at_safe_position		Places a paired action's two fighters side by side at DMY_safe_pos on section 0.
 0x089D01A0	function	fighter_correct_position		NA2's stage_correct_position: mask 0x10 clamps x by field_clamp_section_extremes; mask 0x20 lifts to the floor profile as NA2's.
 0x08A8E670	function	stage_get_default_bgm_member		Scene's default track for scenes 0..41, else -1.

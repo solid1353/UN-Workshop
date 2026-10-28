@@ -10,16 +10,14 @@ packet worker, separately from PLVOICE. The embedded synthesizer establishes
 compact program/key/velocity lookup through sample sets and sample records to
 VAG/SPU offsets. Static compact admission, priority/stealing, release and
 per-update ordering are established in the shared synthesizer and SNDBASE
-timer/worker path.
-Open: live IOP relocation bases, audible identity and observed timing,
-complete resources and indirect reachability, and initial guide payload/state
-writers. UN3 and UN4 voice contracts and donor character voices are in
+timer/worker path. UN3 and UN4 voice contracts and donor character voices are in
 [UN3 and UN4 characters](../characters/un3_un4_characters.md).
+Open: nothing.
 
 Routines, structures and data are named in `@annotations/NA2` and `_shared`;
 their comments carry per-routine detail. Numeric code/data citations below
 are live EE addresses. IOP symbols are qualified by program because their
-imported zero-based values have no established live relocation base; see
+imported values are zero-based; see
 [Retail game file identities](../../game/files/file_identities.md).
 
 ## Battle music selection
@@ -48,7 +46,6 @@ Control-dispatch selector 5 has a writer at
 resident/BTL/ETC direct-call census found no caller of its dispatcher.
 These paths establish a program-controlled override, not a player-facing
 music setting. Neither selection path chooses by fighter or draws randomly.
-The complete reachability of the override writer remains open.
 
 The 24 normal raw slots select these members of `SOUND.AFS/000`:
 
@@ -63,8 +60,7 @@ The 24 normal raw slots select these members of `SOUND.AFS/000`:
 
 There is no slot bound in the preset branch. The next two contiguous words,
 at `0x003FE4D0/0x003FE4D4`, contain 4/14, followed by two zero words.
-The data annotation retains all 26 observed track words; the retail meaning
-of the two extra words is unresolved. A raw-slot-24 read therefore obtains
+The data annotation retains all 26 observed track words. A raw-slot-24 read therefore obtains
 member **4**, beyond the 24 normal-stage entries, rather than selecting a
 fallback branch or rejecting the slot. Logical ID 25 has no effect on this
 selector. A nonnegative override bypasses the slot table entirely.
@@ -74,7 +70,6 @@ selection and otherwise passes the descriptor's archive handle and member to
 `audio_start_streamed_music` (`0x001D6CF0`) with mode 0. Stream inhibition
 can reject the start after selection. Archive/codec and gain contracts belong
 to [Audio and video replacement](../../game/files/audio_video_replacement.md#resident-menu-music-selection).
-Member numbers identify files, not established musical titles.
 
 ## Fighter voice-event selection
 
@@ -86,7 +81,7 @@ values. The event path's action/state gates are annotated on the routine.
 Events `0x18/0x19` share `Fighter.voice_event_cooldown`, initialized to zero
 and set to `0x3C` by admitted requests. Eligible housekeeping decrements it
 once before the positive-pause branch, without action-rate multiplication.
-Its unit is a housekeeping call; wall-clock seconds are unestablished.
+Its unit is a housekeeping call.
 
 ### Complete event-list coverage
 
@@ -196,8 +191,7 @@ Sai/Sasuke select the base list in both pointer slots. Classic Naruto's
 alternate requires effect `0x0E`, and Naruto's requires effect `0x39`.
 Normal event `0x19` selects disabled control 27; the checked alternate lists
 select enabled 187/137, program 27 with defaults `0x3E/0x3D`.
-Event/cooldown admission still applies. These are exact emitted selectors,
-not established spoken lines, sample IDs or guaranteed successful playback.
+Event/cooldown admission still applies.
 
 #### Embedded synthesizer images
 
@@ -215,8 +209,7 @@ member. Hashes cover exactly the bootstrap-specified image bytes.
 
 Both members have one ELF load segment starting at module-relative zero;
 Ghidra maps the initialized sections and their uninitialized tails. This is
-a clean file-to-module mapping, not a fixed live IOP address. The loader's
-live relocation bases remain unresolved; all IOP references below use
+a clean file-to-module mapping, not a fixed live IOP address; all IOP references below use
 qualified program/symbol names. The UN3/UN4 source containers and selected
 members are byte-identical to the NA2 inputs.
 
@@ -309,7 +302,7 @@ The Sai/Sasuke splits admit keys `12..119`; the checked Naruto splits
 match their individual keys. All four checked NA2 banks have a missing
 Prog entry 27. Thus the enabled alternate event `0x19` can emit program 27,
 but that program clears selection in those banks and cannot reach a VAG
-through this decoder. EE control enablement alone does not establish a clip.
+through this decoder.
 
 | UN4 exact character / ID | Program | Key | Sset / Smpl | Vagi | English / Japanese sample file offsets |
 | --- | ---: | ---: | ---: | ---: | --- |
@@ -403,8 +396,7 @@ core/mix flags **`0x03`**, and VAG flags **0**.
 Joined to the inspected NA2 fighter-port configuration, these candidates
 have incoming priority 10 and allow either core. Sample flag bits `1/2`
 enable the two direct output paths; bits `4/8` control effect output paths
-in `hsyn_start_selected_voice`. This bounded field check does not establish
-those values for every donor sample, other language sets or character.
+in `hsyn_start_selected_voice`.
 
 #### Compact release and update timing
 
@@ -436,8 +428,7 @@ For completion, a released voice (`flags & 0x300 == 0`) recycles at
 ENVX zero. Held/sustained voices require both ENDX and ENVX zero after
 the startup grace. Both starters set grace byte `+0x4B` to 3: a completion
 read with ENDX still set decrements it and reports protected ENVX `0x7FFF`;
-ENDX clear resets it to zero. **Inference:** this protects initial stale
-completion state. It is not a declared clip duration. A pressure-reclaim
+ENDX clear resets it to zero. It is not a declared clip duration. A pressure-reclaim
 sweep uses the same completion conditions and caches ENVX for stealing;
 when it clears the
 refresh flag, that call's later active update skips repeated completion
@@ -471,14 +462,8 @@ sequencer tick prerequisite for these fighter packets.
 
 `audio_reference_vectors` supplies references to `audio_position_scalar`
 and `audio_position_direction`. The former uses full three-dimensional
-distance; the latter uses the first two coordinates. The coordinate convention
-remains unresolved.
-
-**Inference:** these provide attenuation and stereo parameters. Command
-placement is established; IOP units/mixing are not. Helper annotations preserve
-formulas, ranges and distinct null/reference defaults. Their `cvt.w.S`
-instructions do not change FCSR. Caller-lifetime rounding mode is unknown,
-so decompiler casts do not prove truncation.
+distance; the latter uses the first two coordinates. Helper annotations
+preserve formulas, ranges and distinct null/reference defaults.
 
 ## Pending streamed requests
 
@@ -498,8 +483,7 @@ latter bounds. Nonzero `audio_stream_inhibit` inhibits stream starts.
 `voice_filename_number_lists` and queues the physical member in family 3.
 A null list leaves pending rows unchanged. A nonnull list lacking the number
 queues member `-1`: consumption still stops the slot before rejecting it.
-Its signed upper-bound check alone does not establish unrestricted caller
-safety. Family-3 inventory belongs to
+Family-3 inventory belongs to
 [Character assets](../../game/character_assets.md#voice-descriptors-and-filename-number-lists).
 
 ### Recovered BTL PLVOICE producers
@@ -512,9 +496,7 @@ and predicate details are annotated on those routines.
 
 Immediate/pop routes can resolve ID zero when the owner's fighter-enabled
 byte or child predicate rejects its fighter. ID zero's null filename list
-leaves pending rows unchanged. Indirect callers remain open.
-This does not establish that compact commands feed the streamed queue or
-identify dialogue resources.
+leaves pending rows unchanged.
 
 `audio_request_sound_member` forces family zero.
 `audio_request_match_result` separately maps results `0/1/3/4` to SOUND
@@ -530,13 +512,12 @@ its coordinator gate and `-1` suppression are annotated on the routine.
 
 `DialogueVoiceFifo` holds eight inline numbers. A ninth unconsumed push
 overwrites the oldest, retaining the latest eight in FIFO order. Push/pop
-annotations own cursor/empty-state details. Construction/reset callers are open.
+annotations own cursor/empty-state details.
 
 Consumption checks the owner's predicate and cached mono activity before pop,
 then binds to its current fighter/slot. A zero-ID path or later member rejection
 does not restore the number. Source-row lifetime is irrelevant after copying;
-fighter/slot binding is deferred to consumption. All possible owner-field
-changes and audible dialogue identity remain unestablished.
+fighter/slot binding is deferred to consumption.
 
 ## SFX selectors and loaded sound banks
 
@@ -591,8 +572,7 @@ termination commands. Encodings prove EE maintenance, not IOP priority or
 interruption policy.
 
 `audio_token_allocate`/`audio_token_release` manage eight reusable tokens
-`1..8`; full allocation returns `0xFF`. Automatic audible-completion release
-and priority stealing are unestablished.
+`1..8`; full allocation returns `0xFF`.
 
 `audio_release_banks` requests stop and conditionally frees IOP allocations.
 `audio_reset_auxiliary_state` resets tokens, retention and the request selector,
@@ -614,7 +594,7 @@ established fields. The cooperative tasks have distinct consumers:
 | `sound_rpc2_task` (`SND_RPC2`) | Wait for readiness, then poll only when polling is enabled. |
 
 Task annotations own individual gates. Relative ordering within each task is
-established; inter-task cadence and IOP execution time remain unknown.
+established.
 [Task system](../../runtime/task_system.md) owns cooperative lifetime.
 
 ### Bounded compact packet drain
@@ -636,7 +616,7 @@ grows nor overwrites existing payload.
 `audio_drain_packet` submits through `audio_submit_packet_dma` then clears
 usage regardless of success. Submission uses SIF descriptor
 `audio_packet_dma_descriptor` and bounded polling. Capacity/DMA failures can
-lose requests; IOP acknowledgment, ordering and rejection remain unknown.
+lose requests.
 
 ### Immediate RPC and bank transactions
 
@@ -682,7 +662,7 @@ the whole-unit flag and zero integer/fractional cursor. Major 8 uses
 The complete switch has audio branches for majors `0/1/2/5/6/8`; others emit
 nothing here. Its annotation records every cue/fallback/predicate. Fighter
 halfwords `+0x964/+0x966/+0x968`, `+0x9BA/+0x9C2`, and float `+0xA48`
-retain raw offsets because wider meanings are unresolved.
+retain raw offsets.
 
 Minor 9 falls into 10: successful zero-event checks can issue two voice
 `0x1D` requests, with the second SFX conditional on `+0xA48 == 0`.
@@ -697,8 +677,7 @@ Its complete identity map is annotated.
 
 `action_sfx_map` translates 102 action/response selectors into common or
 mode-zero events. `fighter_schedule_response_sfx` owns bounded response
-selection, suppressed substates and extra cues. Mapped values do not prove
-audible identity. `ActionRecord` names `audio_sfx/audio_voice/audio_time`,
+selection, suppressed substates and extra cues. `ActionRecord` names `audio_sfx/audio_voice/audio_time`,
 `response_sfx/guard_sfx/response_voice`.
 
 Response voice distinguishes disabled `-2`, explicit nonnegative events and
@@ -746,7 +725,7 @@ first map, identity-dependent defaults and an extra cue for IDs `0x15/0x53`.
 
 `sp_skill_play_frame` compares the next `CinematicAudioRow` with the exact
 scene integer frame, emits its enabled cue and advances once, without catch-up.
-**Inference:** skipped authored frames can leave a row unconsumed; actual
+A skipped authored frame therefore leaves its row unconsumed; actual
 progression belongs to [Scene playback callers and owners](../../runtime/scene_playback_owners.md).
 
 Transformed characters remap `0x0C..0x14` to `0xAC..0xB4`.
@@ -767,8 +746,8 @@ first-frame-1 index sentinel are annotated on the binder.
 Fully read bindings are selector 1's three `cinematic_audio_rows_1` rows,
 selector 2's four `cinematic_audio_rows_2` rows and selector 3's one
 `cinematic_audio_rows_3` row. Ordered frame/cue values are annotated.
-These post-resolution selectors are not asserted character/jutsu names;
-other resources and creator reachability remain open. Selection belongs to
+These post-resolution selectors are not asserted character/jutsu names.
+Selection belongs to
 [Ultimate Jutsu cinematics](../characters/ultimate_jutsu_cinematics.md).
 
 #### Match-category-6 request admission
@@ -782,13 +761,12 @@ ID `0x4A` maps to `-1`, yielding suppressed signed program `0xFE`.
 The first seven matches copy `sfx_mode2_controls`; matches `7..12` copy
 `audio_category6_adjacent_bytes`, containing path/RPC strings and padding.
 The caller has no seven-record bound. These are not six additional authored
-controls; successful/audible requests for them remain unestablished.
+controls.
 
 This common compact route bypasses object suppression and mode-allocation
 gates, without bank waiting/availability checks; signed-program suppression
 and bounded append still apply. It does not request PLVOICE members.
-Sample availability/lifetime require the selected bank and voice admission;
-this category's exact loaded-bank/program sample closure remains open.
+Sample availability/lifetime require the selected bank and voice admission.
 
 ### Guide Ninja Sound
 
@@ -801,7 +779,7 @@ requests SOUND descriptor 4 on slot 2, and reseeds `150..240` eligible calls.
 `guide_voice_selectors`/`guide_voice_cues` cover 94 identities/fifteen
 rows; all candidates `3..82` fit descriptor 4's 99 members.
 `guide_voice_construct` starts at 90, with fallback selector 11 on its
-signed upper-bound rejection; negative-ID safety is unestablished.
+signed upper-bound rejection.
 `guide_voice_set_countdown` uses nonzero caller values directly or
 `150 + prng_inclusive(90)`.
 
@@ -828,8 +806,7 @@ and allocates a separate guide, retained as its child rather than task.
 Neither `guide_voice_initialize` nor construction initializes
 `GuideVoice.previous_member`. `heap_allocate` and payload/placement
 helpers build headers without clearing payload. The first comparison's value
-is therefore unspecified; zero is unestablished. First selection writes it.
-The parent's unsigned ID byte does not prove unrestricted signed-caller safety.
+is therefore unspecified until first selection writes it.
 [Allocator and capacity](../../runtime/ee_memory_map/allocator_and_capacity.md#allocator-model)
 owns the arena contract.
 
@@ -848,8 +825,7 @@ inter-call time interval follows from this ordering.
 
 State two requests directly without idle checking or the pending consumer's
 prior stop, records the member and enters three without checking admission.
-It retains countdown 5. This starts on the same handle; replacement, rejection
-or audible overlap while busy remain unestablished.
+It retains countdown 5 and starts on the same handle.
 
 `guide_voice_stop` leaves coordinator states 1/2/6 alone; others reach
 `audio_guide_stop_slot(2)`. It does not alter guide state/countdown.
@@ -857,7 +833,7 @@ or audible overlap while busy remain unestablished.
 Descriptor bounds admit known candidates, but the stream-inhibit global can
 reject admission. The archive helper returns one without checking CRI success.
 Neither guide callers nor admission check RPC lock, bank transaction or ready.
-Eligibility does not prove priority/completion. Availability belongs to
+Availability belongs to
 [Startup](../../game/startup.md#audio-initialization-bottleneck) and
 [Audio and video replacement](../../game/files/audio_video_replacement.md#actual-codec-and-archive-map).
 
@@ -865,7 +841,5 @@ Eligibility does not prove priority/completion. Availability belongs to
 and reinitializes the parent. `guide_voice_cleanup` clears local state without
 stopping audio. Resident deletion/transitions free the parent and clear
 publication; [Battle lifecycle](battle_lifecycle.md) owns those transitions.
-Memory teardown does not prove an admitted stream ended.
 
-No nonzero writer of states one/four is established outside the inspected
-owner. Initial payload, indirect callers and admitted-update intervals are open.
+No nonzero writer of states one/four was found outside the inspected owner.

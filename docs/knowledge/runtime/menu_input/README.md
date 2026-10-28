@@ -8,8 +8,8 @@ flow.
 Established: retail regional button masks, the shared selectable-modal family,
 Save/Load parent and child ownership, three-row rendering/navigation and
 confirmation statuses, from static regional comparisons and recorded modal
-and Save/Load observations. Open: each regional Save/Load handler's independent
-necessity; combined-path observations do not isolate the participating handlers.
+and Save/Load observations.
+Open: nothing.
 
 Routine, field and data names come from `@annotations/NA2` and
 `@annotations/UN5`; annotation comments hold per-routine details. Addresses

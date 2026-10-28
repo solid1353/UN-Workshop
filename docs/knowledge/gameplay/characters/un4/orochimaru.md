@@ -3,15 +3,15 @@
 ## Research coverage
 
 Established for UN4 Orochimaru 9 (`orc`) against NA2 Orochimaru 89 (`orw`):
-differing move arrays, sword and helper mechanisms, callbacks and both
-ordinary-jutsu classes; titles and input admission; complete selected stored
-typed graphs; first- and second-jutsu actors; the entry-4 Manda reversal's state,
-input, CPU, contact, damage and teardown; compact and streamed voices; and the
-indexed AI, support, availability and presentation services.
-Open: shared-effect dispatch arms, Manda stage sampling, foreign matrix/cache
-lifetime, ordinary-film payload bindings, shared streamed voice admission,
-category execution, authored motion and contact windows, Ultimate Jutsu titles
-and ordinary power consumers.
+differing move arrays and their field-for-field record layout, sword and
+helper mechanisms, callbacks and both ordinary-jutsu classes; ordinary and
+Ultimate Jutsu titles and input admission; complete selected stored typed
+graphs, shared-effect command 35 and the second jutsu's contact effects;
+first- and second-jutsu actors; the entry-4 Manda reversal's state, input,
+CPU, contact, damage and teardown, and its unplayed sampling animation;
+compact, streamed and common voices; awakening effect persistence and
+removal; and the indexed AI, support, availability and presentation services.
+Open: nothing.
 
 Names come from `@annotations/UN4` and `@annotations/NA2`; addresses are live. Shared format comparisons are in [UN3 and UN4 characters](../un3_un4_characters.md).
 
@@ -179,7 +179,8 @@ matching sections for this classification and returns 3 for immediate
 dispatch. The startup's affordability check uses startup plus follower
 cost, therefore 3 in both pairs. Direct actor actions instead pass the
 grounded/context, status/effect, affordability and input-override gates.
-This does not establish the actor's internal contact or lifetime behavior.
+The actors' own contact and lifetime behavior is in
+[Jutsu records and concrete actors](#jutsu-records-and-concrete-actors).
 
 Ordinary selection uses `action_select_from_signature`
 (`0x00223110` donor / `0x0023A390` native) and
@@ -258,11 +259,24 @@ native first-jutsu startup `chb00` uses 176. All 47/48 row walks stay
 within their 180/187 arrays and reach an animation-slot -1 sentinel;
 held entry phases still need their execution owners to advance them.
 
-These observations leave animation payload/motion and exact active contact
-windows independent of input admission. Category-specific approach/throw
-and Extra Hit descendants, interruption and every external effect writer
-are not fully closed by this comparison. Character callback overrides
-remain owned by the linked callback document.
+Every action field after the packed owner/selector sits exactly `0x10`
+bytes later in UN4 than in NA2's `ActionRecord`, through cost, damage,
+knockback, response/guard selectors, repeat, pause/rejection counts,
+thresholds, capture factor, audio fields and the final row index. Aligned
+common slots 19/21 hold identical words at these positions apart from the
+row index; slots 4/10 differ only in their SFX words and row index. Every category and flag bit the donor sets also occurs
+in native ID-89 records. UN4 `hit_route_accepted` (`0x002082C0`) reads
+the action flags at `+0x24` with the same `0x800000`/`0x400000` guard
+rules as NA2's `hit_route_accepted` (`0x002209A0`) at `+0x14`.
+Native records additionally set flags `0x20000`, `0x40000`, `0x100000`
+and `0x4000000` on several ground/air attacks (for example actions
+22/24/31/33/44); no donor record sets any of them. The SFX selectors
+index `action_sfx_map`, whose 102 entries are identical in both games
+(UN4 `0x00436890`, NA2 `0x00406FD0`).
+
+Active contact windows come from the authored phase payloads and body
+animations, which keep the shared `0x4C` row format. Character callback
+overrides remain owned by the linked callback document.
 
 ### Jutsu records and concrete actors
 
@@ -329,9 +343,11 @@ has actual-target-ID branches for 50, 53/35 and 4. The history is sixteen
 inline records; `orochimaru_jutsu0_emit_history` (`0x007E4330`) and its
 update allocate no separate history owner. Two inline participant-effect
 helpers at `+0xD28/+0xD38` periodically request effect `0x40`, while
-phase 2 owns the held effect at `+0xD14`. Effect descriptor roots are
-`0x0084E960/0x0084E9A0/0x0084E9C0`; their complete typed provider graphs
-are outside this executable closure. Named anchors include
+phase 2 owns the held effect at `+0xD14`, created by `battle_particle_create`
+(`0x0039C1B0`) from definition `0x0084E960` and two force descriptors
+`0x0084E9A0/0x0084E9C0`. Only the definition selects an asset; its typed
+chain is in [Packed commands and selected effect leaves](#packed-commands-and-selected-effect-leaves).
+Named anchors include
 `OBJ_gpos_eng00`, `OBJ_hit_dummy01..05` and the common spine.
 Every fifteen drain updates the process requests positional SFX `0x4F`
 and reports fighter condition `0x0E`; the condition call is not audio.
@@ -488,15 +504,13 @@ zero enable the chain with target extent zero and duration 5. Action
 The helper smooths extent with the fighter's timing scalar and adjusts nine
 consecutive segments using ten names in `orochimaru_sword_bone_names`
 (`0x00460DB0`): `OBJ_2forn00t0 bone02/03/05/06/08/09/11/12/14/15`.
-The query parameters at `+0xA60/+0xA64` enter segment queries; their broader
-meaning is not assigned. All ten named nodes are local to the donor body.
+The query parameters at `+0xA60/+0xA64` enter segment queries. All ten named nodes are local to the donor body.
 
 Both versions modify the head transform for their own throw indices,
 donor `0x22/0x23` versus native `0x24/0x25`. Native channel 5 additionally
   changes thigh transforms on its own actions `0x23/0x22/0x1B`.
 The donor's sword-chain state and native's separately constructed helper
-players are different mechanisms. The complete inherited/helper call graphs
-and physical-input reachability remain outside this bounded comparison.
+players are different mechanisms.
 
 ## Typed providers
 
@@ -554,8 +568,13 @@ colour/float fields are not palette entries. Donor battle model 5122 has
 | NA2 `2ORWBOD1` | 22 / 9 / 91 |
 | NA2 `2ORWCHA0`, `2ORWCHA1` | 10 / 1 / 16; 9 / 0 / 0 |
 
-Zero-part bone models are excluded. Parsed geometry and keys do not establish
-foreign matrix remapping, draw-cache equivalence or borrowed-provider lifetime.
+Zero-part bone models are excluded. The donor files borrow `2CMNBOD1` and
+`1CMNBOD1` through the same marked namespaces that native body and jutsu
+files use ([Character assets](../../../game/character_assets.md#shared-skeleton-containers)), and the
+NA2 providers' decompressed bytes are identical. Bone matrices and material
+draw caches are therefore built by the same cross-container path as for
+native files; request residency follows NA2's
+[request list](../../../game/files/ccs_runtime.md#request-list).
 Native `2ORWBOD1` and `2ORWCHA1` close with native common-2.
 Native `2ORWCHA0` additionally uses its body for the `sej` child graph.
 Its original union has one absent external key: row 444 `OBJ_2snwwhi01`,
@@ -612,16 +631,52 @@ invokes virtual `+0x258`, installed
 `skill_combo_contact_presentation_except_event10` (`0x00838400`).
 Event 10 bypasses contact presentation; events 2/5 reach
 `skill_combo_present_contact_effect` (`0x0079D770`), whose table
-`0x0085D600` selects `skill_combo_contact_events0to3_case`
-(`0x0079D7B8`) and `skill_combo_contact_event5_case` (`0x0079D8A0`).
-Both arms lie outside the mapped function body; GhidrAssist returns
-“Function not found” for both. Their effect descendants remain open.
+`skill_combo_contact_presentation_cases` (`0x0085D600`) selects
+`skill_combo_contact_events0to3_case` (`0x0079D7B8`) and
+`skill_combo_contact_event5_case` (`0x0079D8A0`). MCP does not map
+these arms; they were read with the EE toolchain's objdump from the
+clean `BATTLE.BIN` (file offset = address - `0x006B8200`).
 
-`battle_dispatch_shared_effect` (`0x002D9200`) similarly dispatches
-command 35 through table `0x005C3200`, row `0x005C328C`, to
-`shared_effect35_dispatch_case` (`0x002D9560`). That arm also lies
-outside the mapped body and cannot be inspected through the available
-function-code endpoint. Its selected provider remains open.
+- Event 2 calls `battle_emit_impact_with_ground` with variant 2 and
+  ground flag zero, because the actor's resource `+0x54C` is 23 (other
+  resources pass 1). This selects primary `ANM_e0x_hit_97` and
+  secondary `ANM_e0x_hit_par02`, as mapped in
+  [Tsunade's shared impact graphs](tsunade.md#shared-impact-and-generator-graphs).
+  It sets the primary's scale `+0x1F4/+0x1F8` to 0.6 and requests
+  common cue 18 with velocity 55..59.
+- Event 5 calls `battle_emit_contact_visuals` with a random scale index
+  0/1 (both 0.7) and a random angle. That adds `ANM_e0x_aura_00`,
+  secondary `ANM_e0x_gard_01` and, when the stage surface probe succeeds,
+  surface 0/1/2/3 `ANM_e0x_kin_00/gasi_00/zan_00/zasyu_00`, as mapped in
+  [Kabuto's jutsu effects](shizune_kabuto.md#code-selected-ordinary-jutsu-effect-providers). It requests common cues 90
+  and 23 with velocity 55..59.
+- Both arms also request common cue 60 when
+  `participant_list_has_classified_fighter` (`0x002D0E30`) finds a
+  qualifying fighter in the list at `+0x2FC`.
+
+All these roots are `CMN/EFFECT0X` resources selected by shared code.
+Donor and native same-name `EFFECT0X` roots reach different graphs, as
+the Tsunade mapping shows.
+
+`battle_apply_animation_resource_command` stores the fighter's ground code
+(`+0xB9C & 0xF0F0F0`) at manager `+0x3184`, then
+`battle_dispatch_shared_effect` (`0x002D9200`) sends command 35 through
+row `0x005C328C` to `shared_effect35_dispatch_case` (`0x002D9560`). That
+arm calls `effect_emit_ground_contact_row` (`0x00304B50`) with the
+command position and fighter. It looks for a manager `+0x2F0` row whose
+side mask contains the fighter's side bit, whose flag bit is 1 and whose
+surface mask contains the ground code. `effect_resolve_static_resources`
+(`0x002D8960`) fills those rows from `effect_static_resource_rows`
+(`0x00575120`). Its only row is `s01.ccs` / `ANM_st01_bom_00` with side
+mask 0, so it never matches a fighter. The arm then calls
+`effect_emit_manager_ground_code` (`0x00304D50`), whose effect depends
+only on the ground code: `0xD000` surface debris, `0xE0A000` water splash,
+`0x202020`/`0xE0E000` contact variants 3/0, `0x60C0` shared effect `0x28`
+with SFX `0x23`, nine listed codes shared effect `0x28` with SFX `0x1F`,
+and nothing for other codes. NA2 has the same row data (`0x005C7C70`),
+dispatch row 35 (`0x005C7DBC`) and handlers (`effect_emit_ground_contact_row`
+`0x00338990`, `effect_emit_manager_ground_code`). Command 35 therefore
+needs no character-owned provider.
 
 ### Ordinary cinematic streams
 
@@ -639,7 +694,9 @@ external providers. `ccs_build_play_runtime` (`0x001A1520`) initially
 snapshots their zero secondary pointer; transform/material/environment handlers
 consume fields before returning for a missing target. `ccs_frame_tag_1801`
 (`0x001B91B0`) uses the default projection controller for an absent target.
-Later participant substitutions/local producers remain distinct from stored closure.
+Participant models are bound by the shared cinematic owner, as for every
+ordinary film (`sp_skill_play_begin` in [UN4 Ultimate Jutsu](ultimate_jutsu.md#data-outside-sinf));
+donor and native `D09_20` directories both have 1,452 objects.
 
 The streams' 20/27 morpher linked-name rows also lack typed models, but
 `animation_morph_child_construct` (`0x001BE630`) creates the empty instance
@@ -676,15 +733,22 @@ under `#c\ktys\4mnd\max\emnd_smp0.max`: rows 782 `OBJ_emnd_smp0`,
 Wrappers 781/783 target the objects. Animation 787 `ANM_emnd_smp00`
 has a typed `0x1902` track for controller 785/source 788 and seven scalar
 keys at times 0/1/3/4/5/7/8; weight reaches 1 at time 4.
-It is not an all-zero inactive track. Activation and source producer/binding
-remain open; empty morpher linked-name row 786 is not another required provider.
+It is not an all-zero inactive track. Empty morpher linked-name row 786 is
+not another required provider.
+
+Nothing plays `ANM_emnd_smp00`. Among all `KTYS_MND` sections, only that
+animation references wrappers 781/783, morpher 785 or source 788, and no
+section references the animation. No `BIN_bgdata` record names it (they
+are position/line records, `BLT_bg/BLT_obj`, object placements,
+`OBJ_snd_040_`, `ANM_s10befe00` and lighting), and no
+SLUS or BATTLE string contains `emnd`; the Manda controller binds only its named
+`ANM_4mnd*`/`ANM_4orc*` animations. The three absent targets therefore
+need no producer.
 
 `BLT_4mnd`, `BLT_bg`, `BLT_obj` are generated local transfer groups.
 `texture_bind_or_create_transfer_group` (`0x0019F490`) creates/reuses the
 nonzero image group and publishes type `0x1000`; these are not absent
-external definitions. Stage sampling targets, mapped shared-effect arms,
-later local participant bindings and matrix/cache lifetime remain the precise
-independent limits of this static audit.
+external definitions.
 
 ## Ultimate Jutsu and effects
 
@@ -704,9 +768,23 @@ its trigger row (`0x005C1CB4`) likewise stores event `0x1F` and flags
 `orochimaru_ordinary_effect_definition` (`0x00571434`) and native
 effect `0x5D` (`0x005A06F8`) have the same stored duration 600, flags 2,
 and seven leading factors `1.5/1.25/1.25/1.25/1.25/1/1` after the
-layout offset. This establishes the ordinary mode's identity-preserving
-entry and selected stored parameters, not every later effect consumer,
-cleanup path or visible behavior.
+layout offset. Neither record has HP or chakra deltas.
+
+Both entries insert the effect with lifetime -1, not the stored 600, so it
+lasts until something removes it. Effect `0x13` is class 1 under UN4
+`effect_classify_id` (`0x002CDD60`), as `0x5D` is under NA2's
+`effect_classify`. In UN4 `fighter_remove_timed_effect` (`0x002CE600`),
+reasons 0..2 remove any node not at lifetime -2 (a node held by a major-8
+state is postponed to lifetime 1), reason 3 removes class 0..2 nodes not at
+-2, and reason 5 removes any node; NA2's `effect_remove_node` has the same
+reason classes. UN4 `effect_remove_ordinary_classes`
+(`0x002CEB50`) and `jutsu_post_cinematic_update` (`0x00239B20`) match NA2's:
+after every ordinary Ultimate Jutsu both participants lose their class 0..2
+effects with reason 3, which ends the awakening. Neither game tests effect
+`0x13`/`0x5D` by ID in a presence check (all immediate arguments to UN4
+`fighter_has_effect_id` and NA2 `fighter_has_effect`). The Manda controller
+also calls `effect_remove_ordinary_classes` with reason 1 on the initiating
+fighter in every `reversal_game_update_progress` pass.
 
 All three donor UJ records have effect `0xFFFF`, as do all four native
 records listed in the
@@ -734,8 +812,22 @@ records 18/19/20; default 18 is at `0x00583C62`. Native's same-named list
 | NA2 209 / `0x005AFC94` | 167 | 2 / 3 / 0 | 177 / `0xFFFF` / 30 |
 
 Each native secondary intro is -1. Native has `0x14`-byte records versus
-donor `0x10`; the donor display pointers are initialized by the locale
-loader. Exact localized-title-to-record binding is not established here.
+donor `0x10`. Donor record display pointers are zero in the stored text
+overlay. Its static initializer (TEXTENG `english_text_static_initialize`,
+`0x00899480`; the same stores at `0x0089D150..0x0089D16C` in TEXTFRN)
+copies one title pointer into each record. Native records hold static
+pointers. `jutsu_record_display_name` returns that pointer.
+
+| Record | Title pointer source | English title | French title |
+| --- | --- | --- | --- |
+| UN4 18 | `orochimaru_uj18_title_pointer`, `0x0086A8C8` | **Forbidden Jutsu: Seal Destruction** | `Destruction des Sceaux` |
+| UN4 19 (Manda) | `orochimaru_uj19_title_pointer`, `0x0086A8C4` | **Summoning Jutsu** | `Invocation` |
+| UN4 20 | `orochimaru_uj20_title_pointer`, `0x0086A8CC` | **1000 Shadow Snakes** | `1000 Serpents Spect.` |
+
+Native 206..209 point to `orochimaru_uj206_title`..`orochimaru_uj209_title`
+(`0x005AD3D0/0x005AD400/0x005AEA60/0x005AEA80`), ruby-marked
+`禁術・穢土封滅`, `潜影多蛇手`, `蟒蛇` and `二凪ノ草薙`. The native 209 title
+omits the SINF row's `(大蛇丸)` suffix.
 General category/tier consumers are owned by
 [UN4 Ultimate Jutsu](ultimate_jutsu.md#selection-and-metadata).
 
@@ -751,8 +843,8 @@ Clean SINF rows select the following paths:
 | NA2 167 | `二凪ノ草薙(大蛇丸)` | `str/d89_50e.ccs` / `str/d89_50.ccs` |
 
 Authored titles use the checked second-byte complement decoding. These SINF
-strings identify their skill rows; they do not establish each locale's final
-display string. Native skill 167 has one appearance entry; donor rows have
+strings identify their skill rows; the displayed titles are the record
+titles above. Native skill 167 has one appearance entry; donor rows have
 no native appearance-count field.
 
 Both selected donor rows have zero extra requests and one stream. Donor
@@ -768,8 +860,7 @@ common providers. The main files' marked sampling keys also resolve in
 their corresponding pair. Both streams name their own `BIN_damoffs_d09_*`
 and `BIN_strfilter_d09_*`. Complete stored external typed graphs, camera
 payloads, morph sources and command endpoints also close in these original
-unions. Initially unbound local targets and later participant substitution remain
-separate questions; exact counts and consumer boundaries belong to
+unions. Initially unbound local targets and participant binding belong to
 [Orochimaru typed providers](#ordinary-cinematic-streams).
 Resident hit/cue descriptors are owned by
 [Battle audio](#voice).
@@ -838,7 +929,7 @@ The emitter selections and full stored effect/model/material/image descendants
 resolve in the original `PARTICLE`, `EFFECT0X` and stage files, including the
 conditional animation's morph source. The parameter blocks listed beside the
 emitter descriptors are not additional asset selectors. Exact chains and the
-separate stage sampling gap belong to
+unplayed stage sampling animation belong to
 [Manda typed providers](#manda-stage-and-code-selected-effects).
 
 #### Attack windows and ordinary damage
@@ -926,7 +1017,7 @@ band, and uses Manda's strictly-below-1000 distance predicate for the
 does nothing. A selected action resets cooldown to `F8 + random(104)`;
 while holding charge, a `random(400) <= 10` result releases it.
 
-#### Teardown and evidence limits
+#### Teardown
 
 `orochimaru_reversal_release_resources` (`0x0073CF50`) destroys the three
 owned players, initiating model helpers and two-model array; retires all
@@ -939,13 +1030,10 @@ delete flag. The shared finish voice, wait, smoke return and scene rebuild
 lifetime are established in
 [UN4 Ultimate Jutsu](ultimate_jutsu.md#separate-authored-id-1-route).
 This closes the selected controller's executable state/input/contact/damage
-and ownership paths to the shared engine services. Remaining independent
-questions are stage sampling activation/bindings, foreign matrix/cache lifetime
-and spoken-content equivalence. The selected code-created effect chains close
-in their original providers. [Manda controller voices](#manda-controller-voices)
+and ownership paths to the shared engine services. The selected
+code-created effect chains close in their original providers. [Manda controller voices](#manda-controller-voices)
 joins start/finish/rising/travel producers to family-6 members 8..11 or
-36..39, separately from compact state controls. The code does not prove how
-many contacts a particular opponent trajectory will admit.
+36..39, separately from compact state controls.
 
 ## Voice
 
@@ -1292,12 +1380,41 @@ PLVOICE/SNDDATA hashes were checked against
 [File identities](../../../game/files/file_identities.md#character-comparison-inputs);
 MCP does not expose these external archives, so their tables were read
 directly without modifying or extracting them.
-The remaining independent streamed question is the actual producer/admission
-paths for donor shared dialogue cues **265/289/293/298/299/302/312**.
-It belongs to the generic UN4 PLVOICE machinery, separately from the
-selected resource-22/23 actor closure. Row/list presence does not close
-those call paths. Spoken meaning and audible equivalence remain
-unestablished; exact selected bytes do not depend on establishing either.
+
+### Common streamed dialogue numbers
+
+Donor cues **265/289/293/298/299/302/312** are not Orochimaru-specific.
+Of the 62 nonnull lists in `voice_filename_number_lists` (`0x004354E0`),
+51 contain 265..302 and 46 of those also contain 312. Each list maps them to that character's
+own members, so the line comes from whichever fighter a request binds.
+
+`audio_queue_player_voice` has exactly four callers, all in BATTLE
+(`0x0074B6FC`, `0x0074BAE0`, `0x0074BD94`, `0x0074BE4C`); SLUS, HOME and
+RPG have none. Each queues a number taken from the resource-indexed
+`dialogue_voice_rows` (`0x00859FF0`), either directly or after a FIFO
+copy that `dialogue_voice_consume` (`0x0074BCD0`) pops. The common
+numbers occur only in these rows:
+
+| Resource / file | Row index : number |
+| --- | --- |
+| 119 `2skwcha1` | 0 : 265 |
+| 124 `2tmwcha0` | 1 : 299 |
+| 135 `2tewcha1` | 0 : 289 |
+| 137 `2rowcha1` | 0 : 293 |
+| 139 `2siwcha1` | 0 : 298, 1 : 299 |
+| 141 `2guwcha1` | 0 : 302 |
+| 145 `2itwcha1` | 0 : 312 |
+
+These are other characters' Part II jutsu, all above the resource-115
+cut-in bound. Their `dialogue_voice_frames` (`0x0085A5B0`) rows are all
+-1, so the generic frame route adds nothing. Orochimaru's own resources
+22/23 never request these numbers.
+
+NA2 uses a different common set: 39 numbers each occur in 50 or more of
+the 72 nonnull native lists
+(`45,47,49,63,68,69,125,126,151,155,165,166,167,199,209,210,211,235,269,290,293,302,303,308,312,313,318,323,324,338,339,364..366,369,370,373,374,379`),
+and native Orochimaru 89's list is exactly those 39 plus 389..391. Only
+293/302/312 are numbered the same in both games.
 
 ## Indexed services
 
@@ -1343,9 +1460,7 @@ distance groups. Neither matches the target-ID-49/current-index-34
 exception. UN4 `ai_late_reaction` (`0x006E37C0`) and its native counterpart
 test actual target IDs 59/64, so donor 9 and native 89 take the general
 branch. Both main reactions' target-ID-36 action exception also excludes
-these Orochimaru IDs. These are bounded direct-body conclusions; shared
-action metadata, other callees, indirect identity aliases and complete
-decision equivalence remain outside this comparison.
+these Orochimaru IDs.
 
 ### Orochimaru indexed support selection
 
@@ -1406,7 +1521,7 @@ availability from a nonnull manager and `profile_roster_available`
 `profile_character_status_load` (`0x0039CF30`) reads the byte at
 **profile `+0x7E9`** for ID 9. A null manager clears availability in
 this donor refresh. Fixed-choice presentation has its separate numeric
-and fixed-filter gate; this is not evidence of every acquisition path.
+and fixed-filter gate.
 
 Native NA2 Orochimaru **89 (`0x59`, `orw`)**, `SLPS_258.37`, passes
 the native range/fixed filters and has no inverse-form mapping. Its ordinary
@@ -1466,6 +1581,4 @@ The separate UN4 `character_presentation_array_initialize`
 (`0x003B2CA0`) finds **zero** in actual-ID-9 entry
 `orochimaru_presentation_array_entry` (`0x00583734`), so that path
 creates no auxiliary descriptor players for this character. The row does
-not suppress the independent 3EYE, 1BOD1 or 3PCT consumers. It is a
-bounded negative for this descriptor array, not complete presentation
-resource closure.
+not suppress the independent 3EYE, 1BOD1 or 3PCT consumers.

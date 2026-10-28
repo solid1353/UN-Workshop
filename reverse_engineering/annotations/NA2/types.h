@@ -6207,11 +6207,11 @@ typedef struct ModelVuWeightedPosition {
     unsigned int _unknown_w; // V3 unpack does not establish an independent W contract
 } ModelVuWeightedPosition;
 
-typedef struct UltimateJutsuHitRow { short frame; signed char popup; signed char sound; short damage_fraction; short chakra_fraction; } UltimateJutsuHitRow;
+typedef struct UltimateJutsuHitRow { short frame; signed char popup; signed char sound; unsigned short damage_fraction; unsigned short chakra_fraction; } UltimateJutsuHitRow;
 
 typedef struct UltimateJutsuHitDescriptor { int count; UltimateJutsuHitRow *rows; } UltimateJutsuHitDescriptor;
 
-typedef struct UltimateJutsuSkillPlay { unsigned int stream_identifier; CcsContainer *container; char *main_path; CcsContainer *main_container; UltimateJutsuHitDescriptor *hits; int next_hit; unsigned char _unknown_0018[8]; float damage_dealt; unsigned char _unknown_0024[4]; short attacker_side; short side_ids[2]; unsigned short appearance_flags[2]; unsigned char _unknown_0032[4]; short attacker_id; short defender_id; short selected_skill; short skill; unsigned char _unknown_003E[0x42]; void *optional_body; unsigned char _unknown_0084[0xC]; struct { CcsScenePlayTarget *target; CcsModelInstance *replacement; void *original; } bone_replacements[17]; unsigned char _unknown_015C[0xE]; short request_ordinal; unsigned char _unknown_016C[0x154]; struct { unsigned char _unknown_0000[0x14]; short active; unsigned char _unknown_0016[0xE]; } popups[2]; } UltimateJutsuSkillPlay;
+typedef struct UltimateJutsuSkillPlay { unsigned int stream_identifier; CcsContainer *container; char *main_path; CcsContainer *main_container; UltimateJutsuHitDescriptor *hits; int next_hit; float saved_defender_hp; float saved_defender_chakra; float damage_dealt; float remainder_reciprocal; short attacker_side; short side_ids[2]; unsigned short appearance_flags[2]; unsigned char _unknown_0032[4]; short attacker_id; short defender_id; short selected_skill; short skill; unsigned char _unknown_003E[0x42]; void *optional_body; unsigned char _unknown_0084[4]; void *requests; struct CcsStreamPlayer *player; struct { CcsScenePlayTarget *target; CcsModelInstance *replacement; void *original; } bone_replacements[17]; unsigned char _unknown_015C[0xE]; short request_ordinal; unsigned char _unknown_016C[0x154]; struct { unsigned char _unknown_0000[0x14]; short active; unsigned char _unknown_0016[0xE]; } popups[2]; } UltimateJutsuSkillPlay;
 
 typedef struct UltimateJutsuPresentation { int state; int countdown; AwakeningPauseGate *controller; struct UltimateJutsuPresentationResources *resources; } UltimateJutsuPresentation;
 

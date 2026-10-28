@@ -8,11 +8,10 @@ raw-slot and logical-ID census for both stages, the S01 and S11 object
 classes, common sounds and particles compared with NA2's, authored scene
 formats, resource/scene allocation bounds, conditional load sufficiency,
 group-0 parallel-animation correspondence,
-decoded soundtrack comparison and localized previews.
-Open: indirect consumers, the methods of the remaining generic classes, what
-the dust probes' padding and the break statistic change in play, minimum
-available load-time capacity, musical title, alternate arrangements and the
-clash-camera selector's meaning.
+decoded soundtrack comparison, localized previews, the clash camera's
+alternative record, the generic classes' methods and the dust probes'
+padding.
+Open: minimum available load-time capacity.
 Names and types come from `@annotations/UN4`; NA2 comparison names come from
 `@annotations/NA2`.
 
@@ -78,8 +77,7 @@ correspondence. This identifies shared stage content, not identical archives.
 
 S01 and S11 are the only UN4 battle stages absent from NA2. For either,
 asset-name overlap with any NA2 stage is at most 0.22, and identical masked
-bytes are at most 4%. These comparisons do not establish texture-pixel
-equivalence or whole-scene behavioral equivalence.
+bytes are at most 4%.
 
 ## Raw slots, logical IDs and archive ownership
 
@@ -164,8 +162,8 @@ UN4's consumers establish the same named field roles: `camera_stage_track`
 (`0x002D2350`) target clamps; `camera_compute_fit` (`0x002D2760`) spread;
 `camera_place_eye` (`0x002D31B0`) edges, distance, lateral scale and height;
 `camera_main_track` (`0x002D3970`) eye gains; and `camera_main_finish_track`
-(`0x002D3CA0`) target gains. The five unknown fields retain their names:
-the inspected consumers do not establish their roles. Shared camera behavior
+(`0x002D3CA0`) target gains. None of these consumers reads the five
+`unknown_*` fields. Shared camera behavior
 is detailed in [Battle camera](../session/battle_camera.md#per-stage-camera-record).
 
 ## S01 combo/skill anchors and authored navigation
@@ -323,7 +321,7 @@ for the explicitly identified logical-ID and section predicates.
 | --- | --- | --- |
 | `bg_surface_variant`, `0x006C49F0` | Slots 6/12/13 select classifier exceptions; S01 returns default 0. | `bg_surface_variant`; same raw-slot exceptions. |
 | `bg_setup_s15_animation`, `0x006C5460` | Only slot 14 resolves `ANM_s15efe04`; S01 clears the pointer. | `bg_setup_s15_animation`. |
-| `stage_nearest_line_extended`, `0x006D6180` | Slots 1/7 set the argument to 1100 before multiplication by 10; a separate common query can also do so. S01 uses the ordinary argument when that query is false. | `stage_nearest_line_extended`; NA2 additionally checks slots 18/20. |
+| `stage_nearest_line_extended`, `0x006D6180` | Slots 1/7 set the argument to 1100 before multiplication by 10; so does a running reversal game (`reversal_game_active_side`, `0x00745A30`). S01 uses the ordinary argument when none runs. | `stage_nearest_line_extended`; NA2 additionally checks slots 18/20. |
 | `stage_navigation_response`, `0x006D84B0` | Major state 5 invokes the special response for slots 5/2; S01 uses common handling. | `stage_navigation_response`; NA2's equivalent slots are 5/22. |
 | `stage_plan_route`, `0x006D7A80` | Slot 7 source line 1/2 can enter direct state 3 when the target/route is missing; S01 follows its authored route list. | `stage_plan_route`; NA2 also has raw 18/20 exceptions. |
 | `stage_navigation_s08`, `0x006DD380` | Slot 7 receives special line 1/2 handling with c2 threshold 800; S01 uses common handling. | `stage_navigation_s08`. |
@@ -338,8 +336,7 @@ for the explicitly identified logical-ID and section predicates.
 An additional direct raw-slot reader, `ai_stage_environment_adjust`
 (`0x006E2910`), has a slot-12 tail gated by the resident query at
 `0x0020DBB0`. For that slot and a false query, selected AI states can enter
-states `0x19/0x15/0x16` through a random choice. S01 skips this tail. The
-inspected code does not establish an exact NA2 counterpart for that tail.
+states `0x19/0x15/0x16` through a random choice. S01 skips this tail.
 
 Main-camera section elevation and transfer smoothing use the shared record
 and fighter-section state, not an S01-specific predicate. The clash handler
@@ -355,8 +352,12 @@ uses interaction anchors +AA0/+AB0. Once its counter reaches
 `camera_clash_correct_angle` (`0x003885D0`). It then overwrites the eye offset
 at presentation camera +1B0 with the authored endpoint and adds 80 to c2
 only for logical ID 5. S01's ID 1 receives no bias. NA2 already has this
-angle/section/segment correction and logical-5 bias. The UN4 alternative
-record selector's broader context remains unassigned.
+angle/section/segment correction and logical-5 bias. The alternative
+record serves while a reversal game runs: `reversal_game_active_side`
+(`0x00745A30`) returns the halfword `gp-0x55C0`, which
+`reversal_game_create_for_entry` sets to 2 for reversal side 0 and 1 for side 1, and
+`reversal_game_destroy_current` clears
+([UN4 Ultimate Jutsu](../characters/un4/ultimate_jutsu.md#entry-resource-and-concrete-controller)).
 
 The 27 direct calls to `stage_slot_logical_id` were traced. Their explicit
 special IDs are 2,3,5,6,7,8,9,10,12,13,18; none tests ID 1 or 11 as a
@@ -371,9 +372,7 @@ no wire; raw slot 10 is tested only by the three ground-dust probes under
 No classified read searches a raw-slot table such as NA2's
 `stage_line_change_rules`, and UN4's resident image never calls
 `field_first_line_head` (`0x006EBB10`), which NA2's
-`fighter_stage_line_changed` uses. These bounded negative results do not
-establish absence through every indirect call, alternative accessor, or
-unidentified memory alias.
+`fighter_stage_line_changed` uses.
 
 ## S01 background archive and native factory parity
 
@@ -409,7 +408,7 @@ Its animation nested tags are `0x0102` (49), `0x0603` (1), and
 `0xFF01` (919); each typed command's curve consumption agrees with
 the NA2 reader widths and reaches the next header. The absence of an
 unknown tag and a supported version establish input compatibility on
-these inspected routes, not all later rendering behavior.
+these inspected routes.
 
 No namespace begins with `#`. All 266 nonzero namespace filenames are
 source-export `.max` or `.bmp` paths, rather than CCS container imports.
@@ -779,6 +778,16 @@ The compared classes behave as NA2's do, with these exceptions.
 - Escape birds, cloth flags, lanterns, curtains, proximity-faded objects
   (factory 79), the glare pass and the background control's restriction
   gating (`bg_control_update`, `0x006C3C60`) match NA2's.
+- The generic classes `ccBgDrawObject` (factory 0), `ccBgDrawAnm` (2) and
+  `ccBgLightDistant` (18) run the same method logic as NA2's: parse
+  (`bg_draw_object_parse`, `bg_draw_animation_parse`,
+  `bg_light_distant_parse`), update, draw, collision enable/disable
+  (`bg_draw_object_enable_collision` and its pairs) and destructor. Their
+  code differs only in instruction scheduling, register choice and the
+  scene's list fields, which sit 4 bytes lower in UN4. NA2's background
+  vtables carry one more slot at `+0x20`, before the destructor, which
+  refreshes the model's world transform (`bg_draw_object_refresh_transform`);
+  UN4's have none.
 - Sounds: every common event `0..0x5B` plays the same program, records and
   samples as in NA2's common bank (`sfx_common_controls`, `0x004342D0`;
   `DATA/SNDDATA.BIN` at offset 0), and footsteps choose events by ground code
@@ -790,7 +799,16 @@ The compared classes behave as NA2's do, with these exceptions.
 - Raw slot 10 lengthens three ground probes for dust effects by 27
   (`fighter_ground_dust_probe_update`, `skill_player_blow_watch_update`,
   `skill_ground_dust_probe_update`), as NA2 does for its own slot 10;
-  slots 5 and 9 take 30 and 50 in both games.
+  slots 5 and 9 take 30 and 50 in both games. Each probe casts a segment
+  down from above the object against floor triangles (`0x20000000`), and a
+  hit spawns the floor's ground effect there; the padding only extends the
+  segment's lower end. The fighter probe runs every other update while the
+  fighter is in state 5/`0x3C` (NA2's `effect_footprints_update` uses
+  5/`0x3E`, `ACT_DMG_BSG`) and reaches half the fighter's height below its
+  position; the blow-watch probe, 200 units to one side, reaches 1.5 heights
+  below. On S11 each effect therefore keeps appearing while the object is up
+  to 27 units higher above the floor than on a slot without padding. A
+  fighter touching the floor hits it either way.
 
 ## Battle music and S01 soundtrack
 
@@ -864,9 +882,8 @@ in 10-ms steps gave a 10-second control floor of 0.7240625. A 16,000-Hz
 resampled donor scored 0.9446875; self-comparison scored 1.0. Internal decode
 consistency was checked, but external-decoder PCM parity was not.
 
-This is evidence against the same recording under the checked transforms,
-not proof excluding a different arrangement or tempo/pitch-altered version
-of the composition. Musical title remains unidentified. NA2 selection rules
+This is evidence against the same recording under the checked transforms.
+NA2 selection rules
 belong to [Battle audio](../session/battle_audio.md#battle-music-selection).
 
 ## Stage Select presentation
@@ -880,8 +897,7 @@ the raw slot.
 The English DATAE and French DATAF `MAPSEL1.CCS` contain a 512×256 indexed
 `TEX_mapname01`, four 512×512 indexed `TEX_mappure` atlases, and a separate
 512×512 `TEX_mapsel02`. These images are stored bottom-up. `mapsel02` is a
-texture in the MAPSEL1 container; its presence does not establish a separately
-loaded container named mapsel02.
+texture in the MAPSEL1 container.
 
 Big previews use six cells per texture: two columns spaced 256 pixels and
 three rows spaced 168 pixels. For raw slot s, texture index is `s / 6` and

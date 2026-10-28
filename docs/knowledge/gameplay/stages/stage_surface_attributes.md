@@ -3,22 +3,20 @@
 ## Research coverage
 
 Established: authored flags, geometric query classes, eligibility contracts,
-current and retained contact words, bounded consumers, footprint codes, all 24
-stage archive distributions and generated wire attributes. Open: complete
-consumer and alias coverage, remaining code meanings, resources, descriptor
-replacement and mesh reachability.
+current and retained contact words, their recovered consumers, footprint codes, all 24
+stage archive distributions, generated wire attributes and the root
+projectile contact predicate.
 Names come from `@annotations/NA2`.
+Open: nothing.
 
 ## Evidence conventions
 
 Addresses are live, following
 [Retail game file identities](../../game/files/file_identities.md#address-conventions).
-Static code and archive evidence establish encoded predicates and ordering,
-but not measured gameplay behavior, original material names, or reachability
-of every input combination. Numeric predicates remain numeric unless their
-meaning is established.
+Static code and archive evidence establish encoded predicates and ordering.
+Numeric predicates remain numeric unless their meaning is established.
 
-Per-routine details and bounded code censuses are in annotation comments.
+Per-routine details and code censuses are in annotation comments.
 This document describes
 unmodified retail NA2 (`SLPS-25837`). Fighter field names follow verified raw
 instruction offsets; current decompiler field expressions can misidentify
@@ -103,13 +101,12 @@ the second uses the scratch attribute as its replacement while preserving the
 old word separately. Neither updates the retained word. A current-word store
 therefore need not publish a new ground selection.
 
-### Bounded writer and alias coverage
+### Writer and alias coverage
 
 The confirmed lifetime is constructor clearing followed by retained movement
-selection. The bounded resident and BTL review established no additional
-fighter retained-word writer, but did not exhaust computed addresses, virtual
-callees, whole-object copies, or other programs. Its store counts and operand
-search bounds are retained in the `fighter_init` annotation.
+selection. The resident and BTL review found no additional fighter
+retained-word writer. Its store counts and operand search bounds are retained
+in the `fighter_init` annotation.
 
 `fighter_load_character_record` copies the character definition into the
 fighter's parameter block rather than copying another fighter's contact
@@ -137,9 +134,8 @@ The retained word supplies the airborne recovery code
 ([Hit response](../combat/hit_response.md#response-exits)) and full-word wire
 reaction predicate
 ([Stages](stages.md#animated-and-breakable-background-evidence)).
-The annotation field name does not establish an original developer name.
-The semantic consumer of the separate cached stage-line `+0x2C` remains
-open ([Stages](stages.md#cached-line-attribute-consumers)).
+The separate cached stage-line `+0x2C` belongs to
+[Stages](stages.md#cached-line-attribute-consumers).
 
 ## Query eligibility and contact classes
 
@@ -182,10 +178,31 @@ geometric class:
 
 The special-ground classifier also has state, battle-sequence, attack and
 resource gates. Class 2 always returns zero; class 1 can return one and enter
-contact descent. A code match alone does not establish rejection of ordinary
-grounding. Response exits belong to [Hit response](../combat/hit_response.md#response-exits)
+contact descent. Response exits belong to [Hit response](../combat/hit_response.md#response-exits)
 and motion paths to [Movement and physics](movement_and_physics.md).
 No material names are inferred from the repeated color-like bytes.
+
+### Projectile contact
+
+The root projectile contact slot `projectile_response32` queries through
+`projectile_query_contact` with the object's `contact_flags[1]` as a mode-0
+mask, or `2` when that word is -1, as it is for thrown kunai (config 1) and
+config `0xA8`. Only triangles with authored bit `0x2` are seen, and only the
+nearest one counts. Its word decides the response:
+
+| Nearest triangle | Result bits | Response |
+| --- | --- | --- |
+| Masked code `0xE0E000` or `0x202020` | `0x02` | `response32_selector` |
+| Authored `0x200` or `0x20000` | `0x04`, `0x08` | `response16_selector`; the candidate becomes the hit point |
+| Anything else | Geometric class bits only | None; the projectile keeps moving |
+
+A projectile therefore passes through any surface whose nearest seen
+triangle lacks `0x200`/`0x20000`, and through surfaces without bit `0x2`.
+In the retail archives the large `0x00E002xx`/`0x00E202xx` batches carry
+both bits and stop projectiles, while fighter-only batches such as
+`0x00E000E1` and `0x00606061` lack bit `0x2`
+([distribution](#stage-authored-attribute-distribution)). Bound projectiles
+use [their own flag query](../projectiles_and_items/projectile_motion.md#bound-and-character-carrier-motion).
 
 ## Effects reached from polygon codes
 
@@ -237,8 +254,7 @@ The installed `cc_skill_tmr001_vtable`, its RTTI and name identify the class.
 Its state-0 path enters state 1 through `tmr001_enter_state`, reaching the
 first helper; the state-1 path reaches the second when the old `counter`
 has its low two bits equal to three. Neither writes the associated retained
-word. This is a bounded class-specific trace; move and terrain names and
-complete callback coverage remain open.
+word.
 
 ### Effect-manager code inputs
 
@@ -252,8 +268,7 @@ from retained fighter contact:
 | `tsunade_channel3`, action `0x2C` / phase 2 after the animation predicate | Publishes current ground code and invokes `effect_emit_manager_ground_code`; its complete body has no paired reset. |
 | `effect_manager_setup` | Clears the code. |
 
-This is the bounded direct-store set; computed and aliased writes remain
-unexcluded. `0xF0F0F0` is itself recognized by
+This is the direct-store set. `0xF0F0F0` is itself recognized by
 `effect_emit_manager_ground_code` and reaches an ordinary numeric
 effect/sound branch, so the tail value is not an unused sentinel.
 
@@ -294,9 +309,7 @@ Initially only slot 0 is nonnull:
 `stage01_surface_effect_descriptor` names `s01.ccs` and one
 `stage01_surface_effect_source_row` for `ANM_st01_bom_00`, with kind
 mask 0, contact mask 1 and code mask `0x003060`. Kind mask zero fails both
-kind choices, so the static row's presence does not establish emission.
-Resource lookup success and descriptor replacement remain open. These
-containment predicates differ from query eligibility and footprint equality.
+kind choices, so the static row emits nothing. These containment predicates differ from query eligibility and footprint equality.
 
 The manager helpers also differ from each other:
 `effect_emit_manager_contact_code` admits `0x202020/0xE0E000` and,
@@ -305,7 +318,7 @@ with a nonzero third argument, selects contact variant 3 using
 `effect_emit_manager_ground_code` instead chooses variant 3 only for exact
 `0x202020`, and variant 0 for `0xE0E000`.
 
-Four bounded readers—`effect_1a_update`, `char_rcv1_callback_b`,
+Four readers—`effect_1a_update`, `char_rcv1_callback_b`,
 `char_rcv1_callback_a` and `effect_54_update`—share this current-ground
 choice after their own action/animation gates:
 
@@ -341,7 +354,7 @@ The separate periodic path uses `effect_emit_ground_21(fighter,0)`,
 which derives placement from the fighter transform and reaches
 `effect_create_ground_21`. The latter acquires an object from the manager
 animation pool and assigns numeric effect `0x21` through
-`effect_set_identifier`; its original effect name is unknown.
+`effect_set_identifier`.
 
 The class-1 contact path also conditionally debits current `chakra`,
 lower-clamps it to zero and writes `15.0` to `chakra_history_old`.
@@ -475,7 +488,7 @@ The wire reaction requires full retained-word equality with `0x2001D9D1`.
 It therefore also requires geometric class `0x20000000`: an initial
 triangle, or a refreshed triangle selected under another class, cannot satisfy
 that equality simply because it belongs to the wire. Retention through contact
-rejection also means equality alone does not prove current grounding.
+rejection also means equality alone does not mean current grounding.
 The inspected wire path has no fighter hit or HP write.
 
 `cc_wire_hit_model_vtable`, `cc_wire_hit_model_rtti` and

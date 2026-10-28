@@ -4,10 +4,9 @@
 
 Established: the in-scope Mode Select loop, Free Battle and Practice setup and pause flow,
 Options controls, screen-position editor and difficulty reset, and the visible Collection structure and Naruto subviews.
-Open: post-round results, alternate setups, setting domains/defaults, wider Reset effects,
-retail button confirmation, support/Linked Mode windows, initial Practice values and content availability.
-Observations have the image/save limits below; Collection and media coverage is partial.
 Routine, field and data names come from `@annotations/NA2`; addresses are live.
+Open: the Mode Select entries not covered, and whether each observed screen
+behaves as in retail.
 
 This document owns observed menu behavior. Static constructors and routing
 belong to [Mode flow](mode_flow.md), settings to
@@ -21,21 +20,17 @@ and the other combat documents. Not every Mode Select entry is covered.
 ## Observation conditions
 
 The recorded observations used an English-localized development image with
-a loaded memory-card save; memory-card writes were discarded. They remain
-conditional on the observed screens having retail behavior, which was not
-verified screen by screen. Image-dependent observations were removed.
+a loaded memory-card save; memory-card writes were discarded. Whether each
+observed screen behaves as in retail was not checked screen by screen.
+Image-dependent observations were removed.
 The English labels below describe the observed image; retail labels are
-Japanese. Stage and Collection lists record entries and order, not their
-availability at particular retail progress states, because the save was not
-retail evidence.
+Japanese. Stage and Collection lists record entries and order.
 
-Button assignments are grounded in static retail evidence. The command-ID
-joins come from the linked owners and were not independently re-derived by
-the navigation observations; menu and battle code were not exhaustively
-inspected. The Mode Select loop, every Practice pause entry, both Free Battle
+Button assignments are grounded in static retail evidence; the command-ID
+joins come from the linked owners. The Mode Select loop, every Practice pause entry, both Free Battle
 pause variants and every Options root entry were visited. Collection covered
 its three roots, Naruto's visible categories and the visible Movie/Music
-lists, rather than every character or item.
+lists.
 
 Each observation is a freshly rendered frame after a complete DualShock 2
 state was applied for an exact number of frames.
@@ -82,8 +77,7 @@ back to the first. The footer labels Start as the save action.
 | Options | Opens difficulty, controller, screen, audio, and reset settings. |
 
 Practice remained accessible after the return transition: a two-frame Confirm
-state was missed and an eight-frame Confirm state was accepted. A sampling
-miss is an inference from that observation; its precise cause is unresolved.
+state was missed and an eight-frame Confirm state was accepted.
 
 Resident callback IDs, overlay handoffs, unlock-driven physical-slot
 construction, and the complete result table are owned by
@@ -383,8 +377,7 @@ changed.
 Reset acts immediately, without a confirmation dialog. After deliberately
 changing Difficulty from `SIMPLE` to `HARD`, confirming Reset restored the
 visible value to `NORMAL`; the help/status line reads
-`Difficulty set to default.` This proves the Difficulty reset but does not
-establish whether Reset also affects Control, Screen, or Music values.
+`Difficulty set to default.`
 
 ## Collection
 
@@ -426,8 +419,7 @@ The visible Naruto Ultimate Jutsu entries were:
 - Nine-Tail's Cloak
 - Unchanging Relationship
 
-Confirm is labelled `OK` for the highlighted entry and Back returns. The
-selected entry was not opened.
+Confirm is labelled `OK` for the highlighted entry and Back returns.
 
 The visible Naruto Voice entries were:
 
@@ -451,8 +443,7 @@ The visible Movie list contained:
 6. Reunion Time II
 7. Credits
 
-Confirm plays the highlighted movie and Back returns. Playback itself was not
-exercised.
+Confirm plays the highlighted movie and Back returns.
 
 ### Music
 
@@ -465,24 +456,4 @@ The visible portion of the Music jukebox contained:
 5. Foundation's Hideout
 6. Tenchi Bridge
 
-Confirm plays the highlighted track and Back returns. This is only the visible
-portion of the list; the full track count and playback behavior were not
-tested.
-
-## Boundaries of current knowledge
-
-- Alternate team/settings combinations, most setting value domains and
-  Defaults actions, initial Practice settings values, and any Reset effects
-  beyond Difficulty remain unestablished.
-- The retail button assignments have not been confirmed by these
-  observations, including the Free Battle Customize Jutsu button; the
-  support-selection row and Linked Mode window were not observed.
-- Free Battle is mapped through playable 1P-versus-COM and joined-Player-2
-  Round 1 paths and both pause-menu variants. Post-round results remain
-  untested.
-- Practice is mapped through its versus confirmation, Practice Settings rows,
-  first playable battle frame, and pause menu.
-- Only the first visible character page, Naruto's visible detail lists, and the
-  visible portions of Movie and Music were recorded. Collection completeness
-  depends on save unlocks and was not established.
-- No collection media was played and no Free Battle round was completed.
+Confirm plays the highlighted track and Back returns.

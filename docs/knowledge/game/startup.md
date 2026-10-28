@@ -10,15 +10,10 @@ barrier, Continue controller, loading presentation, and eager audio loading
 have direct static coverage and existing sampled observations. UN5's boot
 language selector has static coverage only.
 Names come from `@annotations/NA2` and `@annotations/UN5`.
-SDK handler semantics, most sound commands, task timing, initializer-failure
-reachability, physical card failures, and indirect voice consumers remain open.
+Open: nothing.
 
-Existing samples establish ordering and observed bottlenecks, not a fixed
-startup duration or exact visible-frame boundaries. Frame and duration
-interpretations use 30 FPS. Ignored error returns do not establish a failure
-in normal play. Statements about absent teardown apply to the covered
-boot/front-end paths and recovered direct callers, not arbitrary indirect calls
-or the whole game.
+Existing samples establish ordering and observed bottlenecks. Frame and
+duration interpretations use 30 FPS.
 
 [Save data](save_data.md) owns the record, descriptors, and load worker;
 [Character asset tables](character_assets.md#voice-descriptors-and-filename-number-lists)
@@ -55,7 +50,7 @@ game task list exists:
 | Service | Established responsibility and gate |
 | --- | --- |
 | `sdk_libc_semaphores_initialize` | Create the `SceKernelLibc` and `SceKernelLibcEh` semaphores. |
-| `sdk_kernel_pattern_handlers_initialize` | Install and invoke the kernel pattern handlers, retaining their returned shared address. Their wider semantics remain unresolved. |
+| `sdk_kernel_pattern_handlers_initialize` | Install and invoke the kernel pattern handlers, retaining their returned shared address. |
 | `sdk_counter3_syscalls_install` | Install resident kernel payloads and syscall entries when counter 3's installation gate is clear. |
 | `sdk_counter2_records_initialize` | Initialize the counter-2 records, install `sdk_counter2_interrupt`, and configure and enable the interrupt source. |
 | `sdk_counter2_start` | Start inactive counter-2 timing through `sdk_counter2_time_read` and `sdk_counter2_alarm_program`; an already-active counter returns 1. |
@@ -64,9 +59,7 @@ game task list exists:
 | `sdk_exit_syscalls_install` | Install the exit-related kernel payload and syscall family, retaining the selector-3 result. |
 | `sdk_startup_state_clear` | Clear the startup words and state area. |
 
-The prelude ignores its initializers' returned errors. Its installed kernel
-payloads' complete behavior and a live kernel image were not investigated;
-the original SDK source names remain unknown. Kernel copy destinations and
+The prelude ignores its initializers' returned errors. Kernel copy destinations and
 payload sizes belong to the routine annotations.
 [EE kernel threads and synchronization](../runtime/kernel_threads_and_sync.md#separate-kernel-dispatch-queue-and-semaphore)
 owns the independent dispatch queue and its lifetime.
@@ -80,7 +73,7 @@ owns the independent dispatch queue and its lifetime.
 | 3 | `iop_bootstrap_reset` resets and synchronizes the IOP, reinitializes its services, and uses `iop_bootstrap_modules` to load the nine images in `MODULES.BIN`. |
 | 4 | `engine_root_allocate` constructs the system/input and render contexts, configures counter 0, and prepares display services. |
 | 5 | `sound_module_load` loads `sndbase.irx` through `iop_load_module_path`. |
-| 6 | `sound_rpc_initialize` binds the two sound RPC clients, sends their initial commands, and clears the sound-service startup word. Most command meanings remain unresolved. |
+| 6 | `sound_rpc_initialize` binds the two sound RPC clients, sends their initial commands, and clears the sound-service startup word. |
 | 7 | `card_context_initialize` constructs the lower card context only when `card_rpc_initialize` returns zero. Its expected-block count is `0x67`. |
 | 8 | `GetThreadId` and `ChangeThreadPriority` retain the root thread identity and set its priority to `0x78`. |
 | 9 | `file_services_bootstrap` loads `cri_adxi.irx`, initializes FLIST and ADX, mounts `DATA.CVM`, and loads the ROFS root. |

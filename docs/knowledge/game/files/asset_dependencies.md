@@ -5,12 +5,10 @@
 Established: the authored-key census of 1,094 battle-related retail files;
 nine typed dependency routes; startup, battle, stage and nine-slot fighter
 selection; request/adoption/release ordering; selected effect leaves; and the
-skill-1 provider, child, body, material and shadow closures. Open: every retail
-combination's typed closure, actual simultaneous residency, later substitution
-of initially empty stream targets, fighter-dependent replacement bindings, and
-Collection's permitted skill-list values. Donor provider graphs and UN4's jutsu
+skill-1 provider, child, body, material and shadow closures. Donor provider graphs and UN4's jutsu
 load and cache edges are in
 [UN3 and UN4 characters](../../gameplay/characters/un3_un4_characters.md).
+Open: nothing.
 
 Routines, structures and data are named by the owning game's annotations;
 their comments carry per-routine detail. Addresses are live. The evidence
@@ -26,9 +24,7 @@ resources. File identities and overlay address conversion belong to
 [Retail game file identities](file_identities.md#address-conventions).
 
 A published-directory match does not establish successful parsing,
-materialization or retention for a battle. The census excludes other disc
-families, and its candidate counts precede typed parsing. Inspected direct
-callers do not exclude indirect or unanalyzed callers.
+materialization or retention for a battle.
 
 ## Three different edge layers
 
@@ -72,7 +68,7 @@ The named fields below describe the retained dependencies.
 | `0x0800`, `ccs_parse_model` | `CcsModelDescriptor.parts`, `part_count`, and each `CcsModelMesh.material_record` | The collector visits each part; model subtype also selects geometry consumption. Directory rows alone cannot reconstruct geometry dependencies. |
 | `0x0900`, `ccs_parse_morpher` | `CcsCompositionDescriptor.child_count`, `children` and `child_transforms` | `projectile_simple_service_configure` resolves children through `ccs_resolve_external_record_chain`, then constructs tags `0x0100`, `0x0D00` or `0x0E00`. Publication precedes materialization. |
 | `0x0A00`, `ccs_parse_external_record` | `CcsExternalRuntime.link` (parent) and `owner_link` (target) | Chain traversal follows targets back to provider records. The wrapper is distinct from an authored `#` namespace; neither requests a file. |
-| `0x0700`, `ccs_parse_animation_tracks` | Eight-byte record/key pairs and a halfword parent map | `animation_attach` unwraps each source record; an unresolved `0x0A00` target yields an empty entry. A usable unbound scene provider can materialize its model. [Animation wrapper resolution](ccs_runtime.md#animation-wrapper-resolution) owns the guard and bounded UN3 comparison. |
+| `0x0700`, `ccs_parse_animation_tracks` | Eight-byte record/key pairs and a halfword parent map | `animation_attach` unwraps each source record; an unresolved `0x0A00` target yields an empty entry. A usable unbound scene provider can materialize its model. [Animation wrapper resolution](ccs_runtime.md#animation-wrapper-resolution) owns the guard and UN3 comparison. |
 | `0x0D90`, `ccs_parse_generator` | `CcsGeneratorDescriptor.children`, low-nibble child count in `child_count_flags`, and each `CcsGeneratorChild.record` | `ccs_materialize_generator_action` registers resolved tags `0x0900`, `0x0E00` or `0x0700`. A zero-child descriptor is freed and its runtime pointer cleared. |
 | `0x0E00`, `ccs_parse_effect` | `CcsEffectDescriptor.texture_record` | Effect texture/palette traversal is independent of model traversal. |
 | `0x2300`, `ccs_finalize_dependencies` | Composition children selected by attachment records | A negative child index from `ccs_relation_record_eligible` omits that child from compact attachment arrays. This is a selected omission rule. |
@@ -88,17 +84,15 @@ therefore does not establish readiness. The detailed boundaries belong to
 Dependency edges also have a lifetime. `ccs_destroy_container` resets
 surviving external records whose object back-pointers identify the departing
 provider to type zero/runtime `4`; later publication can resolve them again.
-That guarantee depends on the back-pointer contract and does not establish
-repair of every secondary cache or materialized child.
+That guarantee depends on the back-pointer contract.
 
 ### Collection and materialization are separate consumers
 
-The inspected point-cache path supplies `MDL_point*` through
+The point-cache path supplies `MDL_point*` through
 `ccs_load_point_dependency_cache` and `ccs_collect_pattern_dependencies`.
 It walks the selected input records and passes the supplied pattern and
 three-character selector to the collector. `EXT_point*` and `OBJ_root`
-are adjacent literals. This identifies one concrete selected closure path;
-it does not establish that every loader invokes it.
+are adjacent literals. This is one concrete selected closure path.
 
 `ccs_dependency_vector_append_unique` deduplicates pointer values without
 rejecting zero or `4`. The initial pattern match can append a record's
@@ -109,8 +103,7 @@ Composition construction and model absence have different boundaries.
 `projectile_simple_service_configure` leaves an allocated child slot
 unwritten when its resolved tag has no constructor branch. The later
 `ccs_composition_link_parents` and `ccs_composition_bind_controllers`
-passes dereference every child entry without a null-child guard. Safe
-omission is not established: the finalized child array needs usable children.
+passes dereference every child entry without a null-child guard, so the finalized child array needs usable children.
 
 For a valid scene-object child, `ccs_scene_child_bind_models` instead maps
 an ordinary model's zero or sentinel runtime to no model, clears the
@@ -146,8 +139,7 @@ the missing-resource boundary.
 ### Selected animation-effect leaves
 
 The following selected leaves have independently checked typed definitions
-and count-based consumption. They are bounded leaf closures; the remaining
-animation tracks and shared-skeleton routes are not closed by them.
+and count-based consumption.
 
 | Input | Selected typed route |
 | --- | --- |
@@ -162,8 +154,7 @@ entries do not add a child. The packet thus selects three generators but
 only two effect/texture/palette chains.
 
 All three child-registration gates are `-1`, and both name selectors are
-zero, so their auxiliary name queries add no resource. This stored sharing
-does not establish simultaneous instance counts.
+zero, so their auxiliary name queries add no resource.
 
 Attachment row 8 is a local `0x0A00` wrapper targeting row 106,
 `OBJ_gpos_tew`. That object's parent, model and controller IDs are zero,
@@ -172,7 +163,7 @@ definitions do not themselves request another file.
 
 ### Model geometry outside the material chain
 
-A model can own geometry independently of a material chain. The inspected
+A model can own geometry independently of a material chain. The
 `MDL_1nrt00t0 shadow10` and `MDL_1cmn00t0 shadow10` definitions use
 subtype four, one part, 20 vertices and 96 index words. The model parser
 assigns record zero as the material and uses
@@ -243,7 +234,7 @@ Sampling construction and drawing belong to
 
 ### Shared skeleton and effect-key examples
 
-| Consumer file | Authored `#` rows | Matching provider set in the inspected corpus |
+| Consumer file | Authored `#` rows | Matching provider set in the census |
 | --- | ---: | --- |
 | `PL/1NRTBOD1.CCS` | 0 | No authored external-marker edge. |
 | `PL/2NRTBOD1.CCS` | 34 | `CMN/2CMNBOD1.CCS`. |
@@ -368,7 +359,7 @@ there is no general scan of every manager handle.
 
 `battle_release_unshared_fighter_ccs_slot` retains a handle when the other
 side's same slot matches it; otherwise it destroys and clears the local slot.
-It has no internal side/slot bounds check. The inspected pending-side path
+It has no internal side/slot bounds check. The pending-side path
 supplies support slots 5, 6 and 7.
 
 `manager_release_pending_character_resources` chooses side 1 if its
@@ -387,8 +378,7 @@ Retained or duplicate local handles can remain when the helper returns.
 `manager_replace_form` subsequently resets that side's cache, installs its
 pending identity and requests mask `0x1FF`. The other side retains its
 adopted pointers. Form gates and reconstruction order belong to
-[Post-UJ replacement](../../gameplay/characters/awakening.md#static-reconstruction-order);
-this resource ordering does not establish display timing or an in-place swap.
+[Post-UJ replacement](../../gameplay/characters/awakening.md#static-reconstruction-order).
 
 #### Established release callers
 
@@ -423,7 +413,7 @@ Across all 24 directories, only three authored external rows occur:
 `#e\0x\tex\e0xpar03.bmp`, matching `CMN/EFFECT0X.CCS`.
 These rows do not replace the separate stage-selection and typed-object paths.
 
-### Cinematic request table and bounded closure
+### Cinematic request table and skill-1 closure
 
 The 184 retail `SINF` rows have 151 zero-extra, 28 one-extra and five
 two-extra requests. Row zero has no stream, and
@@ -527,11 +517,11 @@ after those reads. Nested packed-animation binding is separately owned by
 [Animation target binding](../../runtime/animation_runtime.md#target-binding-and-transform-application).
 
 Frames 0 through 318 end with marker `-1` at the file boundary.
-All inspected command targets lie inside the 883-row directory.
+All command targets lie inside the 883-row directory.
 The 87,566 transforms address 581 distinct rows: 368 wrappers, 20 defined
 objects and 193 undefined local `OBJ_*` rows 690 through 882 under
 `d\01\sss\d01_10.max`. Those local rows are not missing external files.
-Their initial play targets are null; later callback substitution remains open.
+Their initial play targets are null.
 
 Frame-zero body wrappers include rows 204 (`1cmn`), 258 (`1nrt00`)
 and 338 (`2nrt00`). The second `1nrt` uses row 312; additional
@@ -588,16 +578,14 @@ it follows a different consumption route.
 The `1NRTBOD1` eye materials share a texture; `1CMNBOD1` uses
 separate eye textures. All selected leaves are typed local definitions,
 all transfer-group IDs are zero, and they enter the local material-cache
-construction path. This closes stored geometry/material routes without
-establishing allocation success or replacement matrix binding.
+construction path. This closes the stored geometry/material routes.
 
 The two `1nrt` stream body compositions each have 51 children;
 the five `2nrt` compositions each have 25. Their palette-order lists stay
 within those arrays. Rigid selectors and weighted indexes remain inside
 palettes `0..42` (`1nrt`), `0..19` (`2nrt`) or `0`
 (`1cmn`). Common model lists select child 2 or 3 within the corresponding
-64/34-child composition. Stored index bounds do not establish allocated
-matrices or later name mapping.
+64/34-child composition.
 
 After initial playback-table construction, `sp_skill_play_begin` obtains
 the defender's body/eye1/eye2/mou1 descriptors from its shared lookup holder,
@@ -629,8 +617,7 @@ Selected shadows contain 8, 12, 16, 20 or 24 vertices and
 Child construction materializes a resolved shadow separately in
 `CcsScenePlayTarget.auxiliary`, while the ordinary model uses `model`.
 The empty ordinary pelvis model therefore does not imply absent shadow
-geometry. Static inputs do not establish generated packets or later selection;
-the renderer contract belongs to
+geometry. The renderer contract belongs to
 [Shadow rendering](../../runtime/rendering/shadow_rendering.md).
 
 ### Selected provider identity and lifetime
@@ -647,8 +634,7 @@ determine the winner. Equal payload content does not merge provider identity,
 allocations or ownership.
 
 Unload invalidates imported record runtimes and types without rebuilding
-the copied playback targets. Authored-key equality and invalidation alone
-therefore do not prove borrowed scene-target validity over a playback lifetime.
+the copied playback targets.
 
 All default main/extra/stream paths for rows 1 through 183 exist except
 `0x9A`'s `str/d21_10e.ccs` and `str/d21_10.ccs`, and
@@ -658,18 +644,13 @@ The other three overrides replace a skill row without requesting their
 placeholder paths. Override behavior belongs to
 [Opponent-dependent cinematic selection](../../gameplay/characters/ultimate_jutsu_cinematics.md#opponent-dependent-cinematic-selection).
 
-No inspected path establishes retail battle selection of either absent-path
-skill. Their missing files are a table/availability observation, rather than
-evidence of a player-visible failure.
-
 At countdown 85, BTL's `jutsu_presentation_update` obtains the side
 manager's selected record and supplies the admitted skill from
 `jutsu_record_playable_skill` to `sp_skill_play_start`.
 The 223-entry `jutsu_name_table` contains neither `0x9A` nor `0xA0`
 in `UltimateJutsuRecord.authored_id`; `jutsu_find_record_by_skill`
 searches that same domain. An index in this retail table cannot directly
-supply either skill through that battle path. This does not prove every
-manager index valid or exclude later table writes. The ten support skill
+supply either skill through that battle path. The ten support skill
 replacements and twelve opponent overrides also contain neither value.
 General admission belongs to
 [Skill-play admission](../../gameplay/characters/ultimate_jutsu.md#skill-play-admission).
@@ -678,8 +659,6 @@ ETC's `etc_skill_select_list_row` instead copies the selected
 `CollectionSkillListRow.skill` into `CollectionSkillViewer.selected_skill`
 and requires `jutsu_skill_classification` > 1 before its playback-selection
 state. `etc_skill_play_start` passes that value directly to the constructor.
-The viewer-list producer and permitted values remain open.
 
 The constructor does not check an upper bound before indexing the post-override
-SINF row. The battle table consequently provides a caller-specific limit,
-rather than whole-program proof that the two absent rows are unreachable.
+SINF row.

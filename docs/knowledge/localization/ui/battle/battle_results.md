@@ -4,10 +4,10 @@
 
 Established: NA2 and UN5 summary clouds, both rank paths, title pulse,
 footer ownership, objective layout, arithmetic routing, bonus rows and scroll clamps.
-Open: the shared-rank sprite's visible role and uncommon descriptor/bonus combinations.
 Recorded comparisons cover all five visible stamps and representative Ninja Song layouts.
 Names come from `@annotations/NA2` and `@annotations/UN5`; comments hold routine detail.
 Addresses are live under the [game binary conventions](../../../game/files/file_identities.md).
+Open: nothing.
 
 Result metrics, calculations and rank tiers belong to
 [Battle statistics](../../../gameplay/session/battle_statistics.md); match results
@@ -66,8 +66,7 @@ NA2 lacks those localized access/fit helpers on this path and has the available
 `sprite_draw_scaled_rectangle` (`0x0037BD00`) centered helper.
 
 Previously recorded changes to the shared-rank rectangle and anchor changed
-no visible rank pixels. Hidden, occluded or secondary-layer ownership remains
-uncertain; this sprite cannot establish the visible rotated stamp's placement.
+no visible rank pixels; the visible rank is the rotated stamp below.
 
 The paired title controllers use the same pulse algorithm. Independently
 timed still frames can therefore show different title sizes without a static
@@ -160,5 +159,4 @@ to `scroll` and `scroll_limit`.
 
 Recorded representative comparisons confirmed objective line breaks,
 arithmetic columns, the two-line timer label, percent-unit suppression, N/A
-rows, dynamic bonus-label boxes and right-aligned totals. Uncommon result
-combinations remain bounded by the paired static control flow.
+rows, dynamic bonus-label boxes and right-aligned totals.

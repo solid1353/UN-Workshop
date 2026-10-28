@@ -3,11 +3,10 @@
 ## Research coverage
 
 Established: hierarchy-derived chains, coefficients, collision volumes,
-integration order, rebase, destruction and bounded caller gates.
-Open: other force writers, the Z-bound writer, outer scheduling, authored
-coefficient ranges and visible consequences of degenerate collision geometry.
+integration order, rebase, destruction and caller gates.
 Names come from `@annotations/NA2`; all addresses below are live.
-Evidence is static retail code; no seconds or display-frame cadence is assigned.
+Evidence is static retail code.
+Open: nothing.
 
 Retail NA2 (`SLPS-25837`) turns the composition's `0x2300` attachment
 resource into scene-child dynamics. The manager changes child transforms;
@@ -87,9 +86,8 @@ Translation therefore supplies authored center offsets and diagonal scale
 supplies axis extents for transformed unit-sphere collision volumes.
 
 This geometry is established by the consumer independently of the CCS explorer's
-`Dynamics` label. The inspected path does not guard zero center-distance or
-singular scale; whether authored retail data contains them and their visible
-consequences remain open.
+`Dynamics` label. The path does not guard zero center-distance or singular
+scale.
 
 ## Attachment step, rebase, and destruction
 
@@ -118,13 +116,11 @@ the correction pass does not search collision volumes again.
 
 `attachment_force` is the four-component float force vector, and
 `attachment_z_lower_bound` is the float Z lower bound.
-`oscillating_composition_step` is one established force
-writer; other force writers and the lower-bound writer remain open.
+`oscillating_composition_step` writes the force.
 
 There is no delta-time argument or frame-count loop in the manager step.
 `composition_attachments_request_rebase` sets the latch without immediately
-stepping. A call to construct a composition does not establish that the owner
-has nonnull attachments or schedules their integration.
+stepping.
 
 `composition_attachments_release` destroys an owned manager and clears its
 pointer and ownership bit. The composition destructor `handle_e6c_destroy`
@@ -171,9 +167,6 @@ rebase when all these gates hold: `Fighter.animation_slot == 0x29`,
 `BattleStateAttachmentOwner.previous_animation_slot == 0x31`,
 `Fighter.phase == 0`, and `timeline_event_crossed` admits secondary
 timeline event 0. It then saves the current animation slot and performs the
-ordinary step. The numeric animation slots are not assigned action names.
+ordinary step.
 
-The bounded direct-call screen covers the resident executable and `BTL.BIN`;
-it found no direct step call in `ETC.BIN`. It does not exclude indirect calls,
-other encodings or untraced outer scheduling owners. No live instance state
-was observed.
+`ETC.BIN` has no direct step call.

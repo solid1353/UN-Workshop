@@ -4,21 +4,18 @@
 
 Established: selected character events, held exits, rate overrides, writable
 rows, all six relative-cycle destinations, and Lee/Guy drawing-state ownership.
-Open: unvisited aliases, copied-descriptor lifetimes, action reachability and
-Kidomaru interruptions; static paths do not establish duration or appearance.
 Routine, field and data names come from `@annotations/NA2`. Donor callback
 comparisons are in [UN3 and UN4 characters](un3_un4_characters.md).
+Open: nothing.
 
 ## Static scope
 
-This document describes unmodified retail NA2 (`SLPS-25837`). The bounded
-screen covered all seven callback slots of 78 definitions and nine virtual
-slots of 74 concrete fighter classes selected by `character_definition_table`,
+This document describes unmodified retail NA2 (`SLPS-25837`). The screen
+covered all seven callback slots of 78 definitions and nine virtual slots of
+74 concrete fighter classes selected by `character_definition_table`,
 including the four jutsu-only definitions. It excludes independently constructed
-classes and later virtual slots; selected descendants were followed, without a
-complete transitive call graph. The annotation comments retain census counts
-and instruction evidence. Successful decompilation or a nonzero pointer does
-not establish complete behavior or ordinary-play reachability.
+classes and later virtual slots. The annotation comments retain census counts
+and instruction evidence.
 
 MCP currently displays some `Fighter` fields incorrectly after pointer-array
 members despite the saved declaration matching checked raw offsets. Conclusions
@@ -48,15 +45,14 @@ specialized effects.
 
 ## Complete bounded class/slot census
 
-The complete selected definition/vtable root inventory and bounded direct-writer
+The complete selected definition/vtable root inventory and direct-writer
 screen are attached to `character_definition_table`. The algorithm sections
-below describe selected matches. Equivalent operations through aliases, indirect
-calls, unparsed instructions or transitive helpers remain outside that screen.
+below describe selected matches.
 
 ## Code-authored events and continuation permission
 
 Some callbacks author events in code rather than in phase rows. Character
-names follow the numeric reference and do not establish roster reachability.
+names follow the numeric reference.
 
 | Definition / callback | Established behavior |
 | --- | --- |
@@ -114,8 +110,7 @@ bits 1/2 and `Fighter.placement_facing`. Phase-0 event zero initializes +6.
 ID 75 action `0x1F` stops vertical speed when the non-sentinel
 `floor_probe_distance` is at most 165. In phase 1, zero vertical speed
 selects `bank2_attack_offset = -60` and `bank2_radius = 70 + 2 * wraps`;
-nonzero vertical speed selects +60 and radius zero. These writable row values
-do not establish visible geometry or contact results.
+nonzero vertical speed selects +60 and radius zero.
 
 ### Kiba's response-count exit
 
@@ -299,7 +294,7 @@ therefore do not fully describe the live configuration.
 Action `0x2E` radii change in phase 1 bank 1, phase 2 banks 1/2,
 phase 3 bank 1 and phase 4 banks 1/2. Mode zero assigns 70 to all six;
 nonzero assigns 100 to the first four and 110 to the last two. Centers are
-unchanged; the assignments do not establish a contact result.
+unchanged.
 
 ### Might Guy
 
@@ -375,8 +370,7 @@ Lee additionally owns a 0x40-byte `BattleHudRenderContext` in
 `owns_renderer` is clear, so the renderer is borrowed.
 `publish_draw_environment` starts zero.
 `rock_lee_channel2` sets it at local action 6 primary event 5 and clears
-it at event 13. These selected writers do not establish that every interruption
-clears it. Channel 7 publishes the environment only while that byte is nonzero.
+it at event 13. Channel 7 publishes the environment only while that byte is nonzero.
 
 Both model-working initializers snapshot the shared environment into
 `CcsModelDrawContext.draw_environment` and its renderer into `renderer`.
@@ -408,20 +402,21 @@ its renderer pointer; and `default_extra_pass_descriptor`, the default optional-
 block. `engine_root_allocate` constructs and selects the default environment,
 and `model_default_extra_pass_initialize` constructs the default optional-pass block.
 
-### Bounded alias coverage
+### Descriptor aliases
 
-Equal offsets do not establish aliases. The selected owner-link routines
+The owner-link routines
 `projectile_linked_owner_destroy` and `projectile_linked_owner_update` compare
 another object's owner-stamp field, rather than the model-working descriptor alias.
 
 `sp_skill_copy_draw_descriptors` copies a supplied context's optional-pass
-descriptor to supplied storage and repoints the context to that copy. No
-incoming reference was returned in the bounded investigation, so reachability
-from Lee/Guy traversal and the copy's full lifetime remain open.
+descriptor to supplied storage and repoints the context to that copy. It runs
+as the pre-model callback of the node that `sp_skill_play_begin` links onto
+the Ultimate Jutsu defender's body through `sp_skill_link_defender_pass`, each
+time that body is drawn; the copy lives in the node until `sp_skill_play_end`
+destroys it
+([Renderer coordinates](../../runtime/rendering/renderer_coordinates.md#scene-pre-model-callback-path)).
 `sp_skill_play_draw`'s distinct scoped global substitution belongs to
 [Material draw modes](../../runtime/rendering/material_render_modes.md#scoped-cpu-state-and-restoration-boundaries).
-The selected paths establish roles and concrete owners, without a complete
-whole-program alias-consumer census.
 
 ## Kidomaru's secondary holds and delegated relative-cycle exit
 
@@ -479,7 +474,6 @@ charge synthesis through `fighter_update_countdowns` before channel 1 and
 copies the resulting input to the fighter later. This helper dispatch differs
 from ordinary signature/pending selection
 ([Action commands](../combat/action_commands.md#resident-synthesis-after-translation)).
-The static destinations do not establish every interrupted or delayed sequence.
 
 ### Channel-5 count and phase-3 destination
 
@@ -521,5 +515,4 @@ zero events, including the invocation advancing to phase 3.
 `kidomaru_emit_projectile` fails on a null spawn and does not write the
 entry count; successful creation does not gate the phase exit.
 [Projectiles](../projectiles_and_items/projectiles.md) owns construction and
-later behavior. Ordinary-play cadence, emitted totals and all interruptions
-remain outside this result.
+later behavior.

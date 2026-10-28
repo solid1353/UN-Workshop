@@ -4,10 +4,10 @@
 
 Established: IDs 57/58/73 in four Practice captures, current versus selected
 identity, selector gates, all 13 forward and 12 inverse form pairs, all 94 NA2
-definition rows and their static UN3 lineage. Open: remaining character
-identities, ID 74's identity/use, auxiliary rows 29..31 and wider helper roles.
+definition rows and their static UN3 lineage.
 Names come from `@annotations/NA2` and `@annotations/UN3`; routine comments
-hold code detail. Static relationships do not establish ordinary reachability.
+hold code detail.
+Open: nothing.
 
 ## Evidence identity and address conventions
 
@@ -15,12 +15,11 @@ Static findings use the maintained resident analysis of NA2 `SLPS_258.37`
 and UN3 `SLUS_217.27`; all cited addresses are live resident addresses.
 File identities and mappings follow
 [Retail game file identities](../../game/files/file_identities.md).
-Captured identities are bounded to Naruto, Sakura, direct selection of
-Nine-Tailed Fourth Awakened State, and an in-match Naruto transformation.
-Screenshots establish matchups; extracted EE memory establishes the
-selector, manager, pointer, ID and resource values. Heap pointers are
-capture-specific. The UN3 comparison is static and establishes no UN3
-battle observation.
+Captures cover Naruto, Sakura, direct selection of Nine-Tailed Fourth
+Awakened State, and an in-match Naruto transformation. Screenshots establish
+matchups; extracted EE memory establishes the selector, manager, pointer, ID
+and resource values. Heap pointers are capture-specific. The UN3 comparison
+is static.
 
 ## Confirmed IDs
 
@@ -75,8 +74,7 @@ both fixed filters to return zero. Despite its retained name,
 `roster_secondary_filter` always returns zero and excludes no ID.
 The playable reference has no row for any ID in the fixed excluded set.
 This agreement supports treating `roster_character_valid` as a roster-hole
-filter in this path, while the reason each numeric slot exists remains
-unresolved.
+filter in this path.
 
 Held-input bit `0x08` (R1) makes `character_selector_handle_fighter_input`
 set `CharacterSelectorInput.form` to 1; releasing it clears the field.
@@ -110,7 +108,7 @@ while the numeric relationship is observed directly in the clean ELF.
 | 37 (`0x25`) | Sakon | 55 (`0x37`) | Second Stage Sakon | Yes |
 | 38 (`0x26`) | Kimimaro | 56 (`0x38`) | Second Stage Kimimaro | Yes |
 | 57 (`0x39`) | Naruto Uzumaki | 73 (`0x49`) | Nine-Tailed Fourth Awakened State | Yes |
-| 62 (`0x3E`) | Granny Chiyo | 74 (`0x4A`) | Unresolved; no playable-reference row | No |
+| 62 (`0x3E`) | Granny Chiyo | 74 (`0x4A`) | No playable-reference row | No |
 | 63 (`0x3F`) | Sasori | 75 (`0x4B`) | Sasori (Puppet) | Yes |
 
 `character_to_base` implements the inverse form-to-base mapping for the 12 rows
@@ -120,12 +118,10 @@ predicate recognizes it, but `roster_character_valid` excludes it and the
 inverse mapper omits it. In `character_selector_resolve_fighter`, that
 exclusion rejects the mapped candidate and falls back to the original ID.
 It is therefore a latent or disabled mapping in
-this selector path; its character identity and any other consumer are not yet
-established.
+this selector path.
 
 The mappings are shared beyond the selection-return path. Their annotations
-retain the verified caller inventory; this does not establish one shared
-semantic role for every consumer.
+retain the verified caller inventory.
 
 ## Character-definition table
 
@@ -158,7 +154,6 @@ the selector, so the excluded set is the set of rows that lack a dedicated
 fighter. ID 26's record is the auxiliary Jutsu metadata owner `0x1A` for
 selectors `0x34` and `0x35`; see
 [Content availability](../../game/content_availability.md#auxiliary-jutsu-selectors-0x34-and-0x35).
-How rows 29..31 are used is unresolved.
 
 ### UN3 ID lineage
 

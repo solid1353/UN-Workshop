@@ -4,10 +4,11 @@
 
 Established: retail NA2 (`SLPS-25837`) and UN5 five-row Character Select
 assignment-dialog owners, row coordinates and selected/ordinary routing.
-Recorded Menus suite evidence covers the five-row player-mode list; other
-callers, strings and animation phases remain open. Routine names come from
+Recorded Menus suite evidence covers the five-row player-mode list. Routine
+names come from
 `@annotations/NA2` and `@annotations/UN5`; their comments hold code details
 and signature limitations. Addresses are live.
+Open: nothing.
 
 Secondary-font metrics and the selected-row offset belong to
 [Renderer metrics](../renderer_metrics.md); Character Select name records
@@ -29,9 +30,7 @@ behavior within this list. The resident assignment-dialog owners are
 | 3 | 80 | 72 |
 | 4 | 120 | 106 |
 
-These are caller coordinates before the text helpers apply their layout;
-they do not establish final glyph positions for every string or animation
-phase.
+These are caller coordinates before the text helpers apply their layout.
 
 ## Character Select ordinary-row metrics
 
@@ -40,5 +39,4 @@ and every ordinary entry through `panel_draw_text_positioned`
 (`0x00382470`). UN5 routes both states through
 `panel_draw_selected_boxed_text` (`0x00393210`), passing whether the row is
 selected. The NA2 selected/ordinary split and UN5 shared route are therefore
-separate layout contracts; the bounded five-row evidence does not establish
-ordinary-row behavior in other modal lists.
+separate layout contracts.

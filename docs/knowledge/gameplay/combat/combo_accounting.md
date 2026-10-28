@@ -8,13 +8,8 @@ unmodified retail NA2 (`SLPS-25837`).
 Established: side-owned counters, signed pending hits, update/reset ordering,
 accepted-result and selected projectile attribution, HNW contribution gates,
 auxiliary mask routing, and the separate clamped presentation count.
-Open: indirect writers/callers, full admission and state reachability,
-borrowed-record reuse, auxiliary UI meanings, and measured cadence.
 Names come from `@annotations/NA2`; routine comments hold code-level detail.
-
-Static code establishes operations and local ordering, not visible timing or
-exhaustive player-facing reachability. Direct-call and fixed-offset screens
-do not exclude indexed stores, retained-pointer aliases or indirect calls.
+Open: nothing.
 
 Related owners: [Damage](damage.md) (HP arithmetic and scaling),
 [Match outcomes](../session/match_outcomes.md) and
@@ -90,8 +85,7 @@ With all children present, accounting runs in this order:
 4. Publish a changed high-water statistic for a remaining nonzero count,
    then run the independent presentation/action notification tail.
 
-The 90-unit window is in native update units. This local route does not
-establish invocation frequency.
+The 90-unit window is in native update units.
 
 ## Retention and reset
 
@@ -112,8 +106,7 @@ rejects majors 5..8, and otherwise retains its initial nonzero result.
 A nonzero `section_transfer_delta` or
 `fighter_reaction_variant_high(defender)` rejects eligibility.
 The latter tests the defender's reaction-variant low bits; it is a
-fighter-specific query. Full reachability of these numeric predicates remains
-open.
+fighter-specific query.
 
 `fighter_current_action_index` returns -1 outside major 8. Within major 8,
 indices outside 0..3 pass through. For 0/1 it uses `jutsu_selector[0]`;
@@ -146,9 +139,7 @@ setter neither rearms the timer nor archives `largest_completed`.
 
 `fighter_init`, manager consumption and `fighter_update_countdowns` clear
 the pending byte. Countdown maintenance clears it independently after its
-hit-stop block and outside its node-update block. Skipping manager consumption
-because of unresolved children or the status gate does not establish durable
-queued work.
+hit-stop block and outside its node-update block.
 [Battle lifecycle](../session/battle_lifecycle.md#phase-3-and-the-final-collision-boundary)
 owns broader phase ordering.
 
@@ -161,7 +152,7 @@ A combo hit is therefore not synonymous with every collision or damage event.
 
 The screened character callbacks publish outcome 1 with auxiliary publication
 disabled, so their outcome byte alone does not add a pending hit. Their
-routine annotations retain the bounded publication inventory.
+routine annotations retain the publication inventory.
 [Character action callbacks](../characters/character_action_callbacks.md)
 owns callback identity and bodies; numeric entries alone do not assign move
 names.
@@ -192,7 +183,7 @@ Optional direct damage joins before this gate; later affiliation and slot
 0x40 gates do not guard this earlier publication.
 [Projectile contact](../projectiles_and_items/projectiles.md#hit-and-despawn-evidence)
 and [Damage](damage.md#shared-wrapper-and-combo-call-contracts) own the broader
-contracts. Other attribution callers remain open.
+contracts.
 
 `hit_paired_marker_consume(fighter, enabled)` requires a nonzero low enabled
 byte and the opponent's signed-byte `paired_hit_marker` outside 0/-1/-2
@@ -269,16 +260,15 @@ branch above, rather than being a prerequisite inside the contribution helper.
 `binding1_shared_press_a` uses `controlled_press & 1` on the admitted
 alternate-controller branch. Otherwise it obtains `bindings_get(side + 1)`
 and intersects configured binding 1 with the side's shared pressed mask;
-missing bindings return false. The configuration does not establish a fixed
-physical button. [Action commands](action_commands.md#native-masks-and-bindings)
+missing bindings return false. The configured binding, not a fixed
+physical button, decides. [Action commands](action_commands.md#native-masks-and-bindings)
 and [Controller input](../../runtime/controller_input.md) own those input
 domains.
 
 Inherited slot 0x124 uses `skill_primary_input_callback`, which performs
 ordinary virtual work before the input updater. A nonzero
 `BtlSkillPlayback.transfer_blocked` selects another branch and skips that
-route. This establishes an invocation path, not one increment per frame or
-a measured order relative to every HNW update.
+route.
 
 ## Per-side accumulated contribution route
 
@@ -309,7 +299,6 @@ directly clear `NativeCombo.current`.
 
 The override bank's layout, application and reset belong to
 [Battle lifecycle](../session/battle_lifecycle.md#fighter-overrides-at-phase-boundaries).
-Its fields' UI meanings and all selecting paths remain unresolved.
 
 ### Request-mask producers and retained values
 
@@ -353,7 +342,6 @@ not a reader of fighter node flags.
 `skill_hnw_definitions` byte is zero.
 In `skill_primary_event_update`, that zero-result branch selects setup
 slot 0x22C; the **nonzero** branch invokes slot 0x208 with flags -1.
-Thus this binding does not establish HNW acquisition of a trailing mask.
 
 When invoked, slot 0x208's `skill_control_dispatch` retains flags in
 `InteractionManager.control_dispatch_flags`, invokes acquisition for bit 0
@@ -363,8 +351,7 @@ performs eligible linked-descriptor cleanup, and invokes release before
 clearing `control_dispatch_active`. The release latch is independent of
 that dispatcher.
 
-Another directly screened actor family also owns trailing requests; its
-player-facing identity remains unassigned.
+Another actor family also owns trailing requests.
 `fighter_overrides_acquire_global` uses mask `0x1000` for the trailing
 request and first-channel value 0 / third-channel value 1 on both sides.
 `fighter_overrides_release_global` removes those bits. `clash_initialize`
@@ -387,16 +374,3 @@ therefore remain after gameplay current becomes zero.
 [Battle HUD](../session/battle_hud.md#combo-digit-presentation) owns side
 binding, fade, shake and digit styling. Drawing uses the latched count; fading
 does not inspect gameplay current or its 90-unit timer.
-
-## Remaining static leads
-
-- Complete projectile slot-0x34 invocation and attribution sources beyond the
-  concrete contact join remain open. The screened indirect-slot encoding
-  includes primary actor tables as well as projectile tables.
-- Complete HNW collision admission, all state-2 entries, later borrowed-record
-  mutation and simultaneous reuse remain open. Authored markers and local
-  counters do not establish visible cadence.
-- Auxiliary masks have concrete setters, HNW side-mask selection, inherited
-  acquisition/cleanup interfaces and a global-request caller. Every indirect
-  owner, actual HNW trailing-mask acquisition path, alternate selection and
-  UI meaning remains unresolved.

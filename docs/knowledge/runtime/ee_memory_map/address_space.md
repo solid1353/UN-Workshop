@@ -7,17 +7,14 @@ All ranges are end-exclusive.
 
 Established: resident and overlay ranges, allocator boundaries, high-memory
 ownership, large static buffers, and their relevant lifetimes.
-Open: smaller-object ownership in `arena_low_boundary..audio_stereo_work_areas` and
-`audio_common_append_handle..0x006B3F00`, and byte-level main-thread stack use.
 Routine, structure and data names come from `@annotations/NA2`; addresses are live.
+Open: nothing.
 
 Allocator internals belong to [Allocator and capacity](allocator_and_capacity.md);
 overlay lifetimes belong to [Runtime lifetimes](runtime_lifetimes.md).
 The map combines program headers, startup ownership, all three overlay kinds,
 allocator sentinels, the `malloc` layer, and sampled high-memory states.
-Zero or stable bytes do not establish unused memory. The static-object map uses
-absolute and `gp`-relative references, so objects reached only through computed
-pointers can be merged into a neighbouring span.
+Zero or stable bytes do not make memory unused.
 
 ## Address-space map
 

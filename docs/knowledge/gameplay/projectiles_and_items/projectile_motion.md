@@ -5,8 +5,9 @@ Retail NA2 projectile callbacks combine launch velocity, steering, direct positi
 ## Research coverage
 
 The 60 distinct factory motion bodies, common candidate/commitment order, selected Clay/Ink guide producers and cleanup, five carrier command publications, and seven representative callback compositions are established by static analysis of retail `BTL.BIN` and its called resident services. The tables retain their game values and gates.
+Open: nothing.
 
-Nested services, complete class state machines, unselected guide interpolation modes and key blocks, remaining carrier row payloads and producers, and external resource lifetimes remain open. COP1 conversion rounding and callback cadence are not established; clocks and counters below imply neither frames nor seconds.
+Clocks and counters below are in callback or step units, not frames or seconds.
 
 Shared random services belong to [Randomness](../../runtime/randomness.md#mt-wrappers), collision internals to [Collision](../combat/collision.md#resident-segmentenvironment-broad-and-narrow-phases), resource execution to [Animation runtime](../../runtime/animation_runtime.md) and [CCS runtime](../../game/files/ccs_runtime.md), and damage to [Damage](../combat/damage.md).
 
@@ -24,11 +25,11 @@ candidate.w = 1
 
 `projectile_setup_linked_helper` initializes speed (`scalar1`) from `config.initial_scalar` only at sentinel `-1`; that branch also copies the inverse-side manager step and enables adaptive stepping. `transient_manager_reset` sets both manager steps to `1`.
 
-After the positive-delay and inactive gates, `projectile_update_local_step` preserves the instance step when adaptive stepping is disabled. Otherwise it chooses the same-tag fighter, uses `fighter_has_effect(fighter, 0x4A)` and `vector_distance`, and sets the step to `0.25` when the effect is present within distance `400`, or `1` otherwise. This consumer establishes the membership gate, without defining the effect's broader behavior.
+After the positive-delay and inactive gates, `projectile_update_local_step` preserves the instance step when adaptive stepping is disabled. Otherwise it chooses the same-tag fighter, uses `fighter_has_effect(fighter, 0x4A)` and `vector_distance`, and sets the step to `0.25` when the effect is present within distance `400`, or `1` otherwise.
 
 At the admitted root update's tail, `accumulator` gains the instance step while signed `active_count` gains one. Position uses the minimum of instance and manager steps; derived callbacks can use the instance step, an unscaled counter, or their own multiplier. These quantities remain distinct.
 
-Below, `q = accumulator_step`, `int(x)` means the observed COP1 conversion with rounding mode unresolved, `bounded_draw(n)` is `prng_inclusive` (unsigned remainder modulo `abs(n)+1`), and signed draws use `rng_signed_scaled`. Ordinary nonnegative bounded inputs include both endpoints.
+Below, `q = accumulator_step`, `int(x)` means COP1 conversion, which rounds toward zero ([EE hardware conversion](../../runtime/randomness.md#ee-hardware-conversion-and-software-packing)), `bounded_draw(n)` is `prng_inclusive` (unsigned remainder modulo `abs(n)+1`), and signed draws use `rng_signed_scaled`. Ordinary nonnegative bounded inputs include both endpoints.
 
 ## Straight and distance-scaled launch vectors
 
@@ -113,7 +114,7 @@ first tries the low root. For each root it calculates
 `150` reaches the target height; otherwise high is tried. If neither reaches
 that comparison, the result is high when the reference angle exceeds low,
 otherwise `max(low, btl_converted_scalar30)`. The retail word at that constant
-address is zero. These comparisons select the launch angle; continuous trajectory predictions do not establish exact equality with the discrete updater.
+address is zero. These comparisons select the launch angle; the discrete updater need not land exactly on the continuous trajectory.
 
 For negative `D` or zero `X`, the fallback compares `abs(X)` with double
 `5.0` through predicate `double_less_than`. Its true branch selects either
@@ -162,7 +163,7 @@ Steering normalizes desired/current directions, snaps when their dot product exc
 | 1 | Decrements the signed wait by one. At nonpositive wait selects `2`, clears phase count and accumulator, sets speed `50`, and snapshots the same-tag fighter's position into the aim with its height exception and `post_spawn_vector` bias. |
 | 2 | In the stored float window, turn amount is the turn scalar times `q`, otherwise zero. Steers toward the snapshot; leaving manager x bounds clears the turn scalar. |
 
-Every continuing phase publishes the chosen direction and speed-scaled velocity, clears its fourth component, and increments the unscaled phase count. The default `-1` wait takes activation through phase `1` into phase `2` on the same call. Homing reacquires a live position; HomingDelay phase `2` uses its earlier snapshot. Neither retains the selected fighter pointer. The common side tag does not by itself establish ownership.
+Every continuing phase publishes the chosen direction and speed-scaled velocity, clears its fourth component, and increments the unscaled phase count. The default `-1` wait takes activation through phase `1` into phase `2` on the same call. Homing reacquires a live position; HomingDelay phase `2` uses its earlier snapshot. Neither retains the selected fighter pointer. The common side tag does not by itself mean ownership.
 
 ## SoundWave phases and repeated events
 
@@ -319,8 +320,7 @@ the latter vector's x float times `dt`. Bird N/S derive speed as
 class multiplier. Thus speed is not simply guide-point distance divided by
 time: the sampled y parameter is an additional input. The selected guide
 producers and their binding ownership are established in
-[guide construction and binding](#guide-construction-and-binding). A complete
-curve-interpolation audit is outside this projectile-facing contract.
+[guide construction and binding](#guide-construction-and-binding).
 
 Bird N private phase halfword `local_phase` selects its route. Phase `0` adds `q`
 to `clock` and derives an oscillating velocity around spawn `spawn_position`;
@@ -370,7 +370,7 @@ Channel stride chooses the next channel's start; it does not bound sentinel scan
 | `projectile_clay_bird_s_guide0` | 7 | `2 / 6 / 4` | `51 / 51 / 51`; 51 |
 | `projectile_ink_bird_guide0` | 8 | `2 / 6 / 2` | `25 / 25 / 25`; 25 |
 
-Their sentinels lie inside the selected strides. All six tail floats of the selected non-sentinel keys are zero; the selected linear flag `0x20` does not use them as tangents. This does not establish other interpolation modes or blocks.
+Their sentinels lie inside the selected strides. All six tail floats of the selected non-sentinel keys are zero; the selected linear flag `0x20` does not use them as tangents.
 
 Bird N activation (`projectile_clay_brd_n_activate`) allocates the guide, borrows its initial block with stride `8`, mirrors x through guide flag `2` on the directional branch, and sets bias from spawn. Its route changes borrow replacement blocks. Bird S (`rng_half_unit_object_initialize`) selects one of `projectile_clay_bird_s_guide0` through `projectile_clay_bird_s_guide4`, allocates and copies three channels with count/stride `7`, then edits the copied position keys. The guides are allocated in both classes, but their keys have different ownership.
 
@@ -380,7 +380,7 @@ Initial copied-guide speed is first position-segment distance divided by its aut
 
 Ink Bird (`projectile_ink_brd_n_activate`) initially borrows `projectile_ink_bird_guide0` with stride `8`. Routes `10/11`, `20..24`, and `30..33` replace it with allocated copies of the selected blocks at successive `0x3C0` displacements through `projectile_ink_bird_guide10`, using count/stride `8`; default routes keep the borrowed keys. Routes `40/41/42` enter stored-target phase `100` before allocating a guide, so that phase alone does not imply sampling.
 
-`projectile_clay_brd_n_destroy` and `projectile_clay_brd_s_destroy` delete a non-null guide, clear it, and continue root destruction. `projectile_ink_brd_n_destroy` reaches `projectile_ink_brd_n_release`, which deletes the guide and separately releases its owned auxiliary reference. Guide and reference lifetimes are distinct. Unrestricted aliases and repeated setup outside these routes remain open.
+`projectile_clay_brd_n_destroy` and `projectile_clay_brd_s_destroy` delete a non-null guide, clear it, and continue root destruction. `projectile_ink_brd_n_destroy` reaches `projectile_ink_brd_n_release`, which deletes the guide and separately releases its owned auxiliary reference. Guide and reference lifetimes are distinct.
 
 ## Ink motion and completion
 
@@ -542,7 +542,7 @@ The five carrier constructors publish borrowed resource and command tables and a
 
 These counts bound construction and allocation; they do not limit command rows. Resource IDs index both the resolved-pointer array and resource table directly. Cleanup frees the array, while this path leaves the borrowed tables and individual descriptor pointers intact. The wider source-container and animation-player lifetimes remain outside the selected carrier routes.
 
-`projectile_carrier_update_registration` uses `projectile_find_registration` and `query_list_registration_at` to find a node whose sphere pointer matches the embedded carrier member. Only a found node permits copying position into that member. `projectile_char_cleanup_tail` searches the same pair, calls `query_registration_deactivate`, then `query_list_remove_registration`, and signals the embedded handle. Removal repairs the registration links, decrements the owner-list count, and calls `query_registration_destroy(node, 1)`. This binding is independent of row resource IDs; its producer under every carrier route remains open.
+`projectile_carrier_update_registration` uses `projectile_find_registration` and `query_list_registration_at` to find a node whose sphere pointer matches the embedded carrier member. Only a found node permits copying position into that member. `projectile_char_cleanup_tail` searches the same pair, calls `query_registration_deactivate`, then `query_list_remove_registration`, and signals the embedded handle. Removal repairs the registration links, decrements the owner-list count, and calls `query_registration_destroy(node, 1)`. This binding is independent of row resource IDs.
 
 `projectile_carrier_publish_command` is rejected while carrier flag `1` is set. Otherwise it clears flag `8`, stores callback command and table index, resets the fixed-point clock to `-256`, retains the selected header, and resets row index to zero. It neither copies the rows nor checks the table index. Test and both Tonton activations publish `(0,0)`. Test command zero can publish `(1,1)` after contact flag `0x20000000`; its command-one callback selects full rows through flag `8`. NRW and both Tonton command-zero callbacks also select full rows on their admitted routes.
 
@@ -555,7 +555,7 @@ These counts bound construction and allocation; they do not limit command rows. 
 | `start` | Authored resource start written on selection and subtracted in the movement-event threshold. |
 | `step` | Multiplied by `q`, converted, and stored as the helper's step halfword. |
 
-Test command zero (`projectile_test_command0_rows`) begins `(0,0,0,256)`, then `(-1,0,0,0)`. Command one's full rows (`projectile_test_command1_rows`) begin `(1,-16,0,256)`, flags `0x0202`, and disabled event `0x7FFF`. These selected examples establish both formats without enumerating all authored commands.
+Test command zero (`projectile_test_command0_rows`) begins `(0,0,0,256)`, then `(-1,0,0,0)`. Command one's full rows (`projectile_test_command1_rows`) begin `(1,-16,0,256)`, flags `0x0202`, and disabled event `0x7FFF`. These examples show both formats.
 
 `ProjectileCarrierCommandView` names the established command, table index, clock, selected header, retained resource word, row index, borrowed tables, speeds, and gravity multiplier. The command and movement contracts here use those named roles.
 
@@ -589,7 +589,7 @@ On the continuing ungated path it compares `u32(helper.cursor) >> 8`, separately
 
 For a different resource ID other than `-1`, it sets transient flag `2`, calls `animation_attach(helper, pointer, 0)`, writes the authored start, stores the ID, and retains that resource entry's second word. It then publishes the scaled step. This links borrowed publication, retained references, event crossing, and resource selection without treating any of them as a fighter-owner pointer.
 
-Unrestricted table aliases, all class-local command/index choices, remaining full-row payload consumers, and external source-container teardown remain open. Resource-loop execution belongs to [Animation runtime](../../runtime/animation_runtime.md).
+Resource-loop execution belongs to [Animation runtime](../../runtime/animation_runtime.md).
 
 ## Emitter callbacks and their local schedules
 
@@ -606,9 +606,9 @@ that the body continuously integrates the parent's position.
 | `ccProjLunLinear`, `projectile_lun_linear_motion` | Same count/config/delay/speed/value inputs and same-call completion as Fan. Uses parallel normalized direction, with positions distributed from `spawn - 0.5*width` along a step `width/count`; count `1` uses spawn itself. Width is `spread_or_speed`. |
 | `ccProjTripleChase`, `projectile_triple_chase_motion` | Emits signed record count `config.constructor_count` using `config.constructor_value`. Child float `launch_delay = float(config.value38) + 3*index`; child `turn_scalar/steering_deadline` receive numerically converted record words `config.value3c/config.value40`, and byte `stored_launch_target = 0`. Direction geometry can use fighter byte `contact_flags` bit `7`. Writes parent state `6` after the bounded loop. |
 | `ccProjLauncherTewAnki`, `projectile_anki_launcher_motion` | Private phase `local_phase == 0` changes to `1` only when common counter `active_count` equals signed `context_threshold`; it does not execute phase `1` on that same call. Phase `1` calls `projectile_begin_retirement`, emission helper `projectile_anki_launcher_emit`, and sets private phase `2`. |
-| `ccProjTewSkillAnki`, `projectile_anki_motion` | Calls Parabola motion first. With signed `context_threshold != 0` and `accumulator >= that threshold`, calls `projectile_anki_query_motion`, whose full loop emits 15 config `0x77` children, three aimed through the fighter-service route and twelve using random spatial inputs. It signals the parent handle; neither this call site nor the helper clears the threshold, so this body alone does not establish a one-shot trigger. Angular `orientation[1]` also uses `orientation_scalar*q` and wrapping. |
+| `ccProjTewSkillAnki`, `projectile_anki_motion` | Calls Parabola motion first. With signed `context_threshold != 0` and `accumulator >= that threshold`, calls `projectile_anki_query_motion`, whose full loop emits 15 config `0x77` children, three aimed through the fighter-service route and twelve using random spatial inputs. It signals the parent handle; neither this call site nor the helper clears the threshold. Angular `orientation[1]` also uses `orientation_scalar*q` and wrapping. |
 | `ccProjSNWCmbULauncher`, `projectile_snw_cmb_u_launcher_motion` | At `s16(int(accumulator)) >= emission_threshold`, config other than `0x97` emits config `0x0F`, copies `steering_enabled`, `retire_threshold`, and the 16-byte Homing control block through their exact setters. Then calls `projectile_response_selector2`, also for config `0x97` and failed child spawn. |
-| `ccProjDDRExcItemLauncher`, `projectile_ddr_item_launcher_motion` | Uses record count/config `config.constructor_count/config.constructor_value`, bounded speed/amplitude inputs, and child delay `2*index`. The scalar setters publish deadline, amplitude, angle rate, and angle; `projectile_ddr_bullet_copy_vector40` separately copies a 16-byte block whose broader meaning remains open. Writes parent state `6` only on the body path with a resolved same-tag fighter; the null-fighter route skips that write. |
+| `ccProjDDRExcItemLauncher`, `projectile_ddr_item_launcher_motion` | Uses record count/config `config.constructor_count/config.constructor_value`, bounded speed/amplitude inputs, and child delay `2*index`. The scalar setters publish deadline, amplitude, angle rate, and angle; `projectile_ddr_bullet_copy_vector40` separately copies a 16-byte block. Writes parent state `6` only on the body path with a resolved same-tag fighter; the null-fighter route skips that write. |
 | `ccProjDDRBuddyLauncher`, `projectile_ddr_buddy_launcher_motion` | Uses record count/config `config.constructor_count/config.constructor_value`, indexed vectors at `projectile_ddr_buddy_directions`, direction-dependent rotation, and child `config_scalar = parent.config_scalar/count`. Writes parent state `6`. |
 | `ccProjTEWExcItemKagura`, `projectile_tew_kagura_motion` | Clears first-call byte, signals handle, disables collision, and emits record count/config `config.constructor_count/config.constructor_value` with interpolated angles; odd child indices get delay `5`. Writes parent state `6`. |
 | `ccProjSIWExcItemRakushiki`, `projectile_siw_rakushiki_motion` | Same first-call/handle/collision setup and record count/config interface; its loop assigns child parameters through `projectile_siw_child_set_parameters / projectile_siw_child_set_value298 / projectile_siw_child_set_value2ac / projectile_siw_child_set_value2a8` using random inputs. Writes parent state `6`. |
@@ -730,4 +730,4 @@ Shared invocation order is narrower than these class strategies: spawn invokes `
 
 Root `projectile_update_orientation` selects orientation/transform helpers from record `activation_selector` values `0..7`; its default builds a separate matrix workspace from orientation. Chase's `projectile_chase_update_orientation`, in common states `2/5`, enables the optional service and updates the third orientation component from signed angular rate, `q`, and pi/32768 quantization. It leaves position intact. `projectile_chase_build_transform` consumes that angle and anchors the transform to current position. Common state `5` has a separate direct integration path adding `state_vector` to position on each invocation.
 
-After its positive-delay and inactive gates, Explosion's `projectile_explosion_update` returns removal result `0` for state `7`; for state `6`, it writes `7` and returns continuation result `1`. Thus state `6` advances on that manager callback and is removed on a later admitted one, bypassing the common state-6 handler. At `active_count == 0`, its continuing path also invokes activation setup and `battle_emit_position_event(0x1000, position)`. The static callback contracts establish neither cadence nor a damage meaning.
+After its positive-delay and inactive gates, Explosion's `projectile_explosion_update` returns removal result `0` for state `7`; for state `6`, it writes `7` and returns continuation result `1`. Thus state `6` advances on that manager callback and is removed on a later admitted one, bypassing the common state-6 handler. At `active_count == 0`, its continuing path also invokes activation setup and `battle_emit_position_event(0x1000, position)`.

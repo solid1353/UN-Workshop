@@ -5,11 +5,12 @@
 Established for UN3 ANBU Kakashi 30 against NA2 Kakashi 70: katana moves,
 46 actions, 179 rows and 157 names, callbacks and parameters; Young Lightning on
 the shared Lightning Blade's ANBU branch; Young Fang's players, contacts and
-camera; the Hazy Moon variants; typed providers and the definitions NA2 lacks;
-compact samples, sparse streamed banks and intro 121.
-Open: shared Lightning Blade and Young Fang executable closure, UN3 parser
-conversion, Hazy Moon conversion, remaining voices, input and contact
-semantics, effect consumers, ID-dependent services and typed descendants.
+camera, interrupts and borrowed handle; Hazy Moon's variants, placement,
+soundtrack and cue rows; effect `0x2A/0x3C` factors; response translation to
+NA2; NA2 reading of every donor file and the definitions NA2 lacks; compact
+samples, sparse streamed banks, jutsu dialogue, end-demo quotes and intro 121.
+Open: the trigger route of the effect-only Chakra Release record; which clips
+match intended lines needs listening.
 
 Names come from `@annotations/UN3` and `@annotations/NA2`; addresses are live. Shared format comparisons are in [UN3 and UN4 characters](../un3_un4_characters.md).
 
@@ -122,7 +123,10 @@ therefore differ from native's checked move set. Donor action 0 has no
 phase where native has `chb00/chb02`; native additionally owns actions
 20/21. Several common UJ chains also have different repetition counts.
 The donor's callback-controlled row and response behavior is recorded under
-[ANBU callbacks](#callbacks).
+[ANBU callbacks](#callbacks). ANBU's records use the same layout and
+input-signature encoding; their `response_selector` and `guard_sfx`
+numbers translate to NA2 as described under
+[Kakashi moves](kakashi.md#complete-authored-move-correspondence).
 
 ### Ordinary jutsu and concrete actors
 
@@ -176,14 +180,26 @@ machine, not just a body animation.
 `anbu_young_fang_draw` (`0x0090DF50`) draws two players in state 9,
 three in 2/3, suppresses state 5, and restores changed shared renderer
 fields. `anbu_young_fang_camera_position` (`0x0090C530`) returns
-the copied position with `+0x968 * 100` subtracted from its third
-component; that scalar's meaning remains open.
+the actor's `+0x360` position lowered by `+0x968 * 100`. `+0x968`
+is a 0..1 ramp: `anbu_young_fang_hit_update` (`0x0090D330`) zeroes it
+when the eight clone cycles end and raises it by 0.1 per update during
+the final rise, so the camera point drops by up to 100 units while the
+third player rises.
 `anbu_young_fang_destroy` (`0x0090FAA0`) invokes participant/player
 release, destroys the embedded helpers, restores the intermediate
 vtable for `jutsu_compound_release` (`0x00903380`), and completes
 common destruction before optional free. The latter releases the
-allocated `+0x5A4` helper. The separately resolved private movement
-handle at `+0x990` still needs its owner/release path established.
+allocated `+0x5A4` helper. `anbu_young_fang_release` (`0x0090C290`)
+restores the receiver's scale `+0x19C` to 1, releases the target
+participant and frees the three-player block, so destruction from any
+state (hit, miss 9, escape C or an external removal) leaves the
+receiver unfrozen. The `+0x990` pointer set by
+`anbu_young_fang_prepare` (`0x0090C590`) is the `OBJ_2cmn00t0` entry
+of the receiver participant's player, found by `ccs_player_find_entry`
+(`0x00148090`): a borrowed pointer that allocates nothing and needs no
+release, valid while that participant player exists.
+The escape predicate `(5,0x41)` is NA2 substate `0x44` after the
+[response translation](kakashi.md#callbacks).
 
 ### Checked typed asset bindings
 
@@ -220,8 +236,9 @@ Replacing the common providers with NA2 leaves four missing keys in
 CHA0 and the film differences recorded under
 [Hazy Moon](#cinematics).
 The eye's 52 marked keys resolve through `1ANBBOD1`.
-This proves bounded typed-definition availability, not complete packed
-geometry, nested-command semantics or destination parser equivalence.
+NA2 reads all these files as UN3 does, as checked under
+[Kakashi body dependencies](kakashi.md#body-eye-and-common-dependencies);
+the missing common definitions are the only unresolved bindings.
 
 ## Callbacks
 
@@ -273,8 +290,12 @@ Only callback mode 2 writes selected receiver coefficients at
 For example action `0x1A`, repeat <2 writes `{1,0.35,1.35}`,
 and `0x1E` writes `{1,0.25,1.25}`. This response behavior
 differs from both ordinary UN3 Kakashi and native Kakashi.
-The receiver bit's gameplay meaning and complete response-domain
-translation remain open.
+The receiver bit is UN3's grounded bit, and the repeat value comes
+from `fighter_action_repeat_for_receiver`; both are described under
+[Kakashi callbacks](kakashi.md#callbacks), with the UN3-to-NA2
+response table. Through it ANBU's set
+`29,2A,2B,2C,2E,30,31,32,36,3D` becomes NA2
+`29,2A,2B,2C,30,32,33,34,3A,3F`.
 
 `anbu_kakashi_channel5` (`0x00207150`) returns for actual
 fighter ID 30. Other actual fighters using this configured jutsu
@@ -305,20 +326,35 @@ are `00 01 01 01`, `00 01 02 02`, `00 01 04 00`.
 The six stat-adjustment halfwords at `+0x18..0x22` are
 `{10,0,0,0,0,0}`, `{20,0,0,10,0,0}`, and all zero.
 Thus the first two records share one authored cinematic and differ in
-metadata. Individual stat meanings and full admission semantics remain open.
+metadata. The stat halfwords are only drawn as digits by
+`ultimate_menu_stat_digits` (`0x002C5650`), as for
+[Kakashi](kakashi.md#ultimate-jutsu-and-effects), so Hazy Moon and
+Hazy Moon 2 behave the same in battle. Admission follows the shared
+ability check described there.
 
 `anbu_kakashi_effect_record` (`0x00474F40`), indexed effect
-`0x2A`, stores lifetime 600 and flags 2. Its leading factors at
-`+0xC/10/14` are `1.2/1.1/1.2`; `+0x1C` is also 1.1.
-No specialized factory for `0x2A` occurs in the inspected terminated
-`status_effect_factory_bindings` list, so this selected effect uses
-the generic record-backed effect path. Complete scalar consumers remain open.
+`0x2A`, stores lifetime 600 and flags 2. Effect `0x3C`'s record at
+`0x004756D8` also stores lifetime 600 and flags 2. Neither ID occurs in
+the terminated `status_effect_factory_bindings` list (`0x00473D00`),
+so both use the generic node built by `fighter_status_effect_construct`.
+Their nonneutral fields, read by the reducers listed under
+[Kakashi UJ/effects](kakashi.md#ultimate-jutsu-and-effects), are:
+
+| Effect | Attack | Defense input | Action rate | Jump | `+0x84` factor |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `0x2A` | 1.2 | 1.1 | 1.2 | 1 | 1.1 |
+| `0x3C` | 1 | 1 | 1.5 | 1.5 | 1 |
+
+`effect_action_rate_factor` caps the summed rate at 1.25, so
+`0x3C`'s 1.5 acts as 1.25. Neither record has an HP or chakra delta.
+Effect `0x2A` enters like Kakashi's effect, through
+`jutsu_post_cinematic_update` after a surviving defender, and
+applies to ANBU only (flags 2).
 
 `ultimate_jutsu_record_form` (`0x0028BFF0`) maps only effects
 `0x3D..0x46` to IDs 47..56. Neither ANBU effect `0x2A/0x3C`
 returns a replacement identity through that completion route.
 The effect-only third record does not establish a separate fighter form.
-Other roster/availability/ordinary-effect services remain separate questions.
 
 The native ID-70 record set 154..156, skills `0x7D/7E/7F`,
 intro members 133/134/135, damage 40/25/35 and effect
@@ -368,21 +404,28 @@ to `0x006A10E4`, whose two request-ordinal pointers are
 timed auxiliary channels. These are scene/renderer entries, not
 the cinematic spoken-cue/damage rows.
 The defender-position entry at `0x0047CB38` selects
-`0x005E8E30`, count 4, with frame thresholds at `0x005E8720`:
-`{1,103,263,320}`. Exact position values remain open.
+`anbu_hazy_moon_defender_positions` (`0x005E8E30`): count 4, frame
+thresholds `{1,103,263,320}` at `0x005E8720`, then a pointer per UN3
+defender ID 0..56 to four signed XYZ halfword triples, applied by
+`sp_skill_play_update` (`0x00294F10`) as a defender translation
+for the current threshold interval. The descriptor format is the one
+described under [Kakashi cinematics](kakashi.md#cinematics).
 
-The appearance-script pointer at `0x0047C908` is zero;
-the palette pair at `0x0047D0F0` is zero/zero.
-The camera-admission range entry at `0x0047C1F0` is zero;
-the inspected `sp_skill_defender_camera_admission`
-(`0x00294770`) therefore supplies no per-range exclusion for this
-skill. This is a bounded table/consumer result.
+The timed command script at `0x0047C908` is zero and the
+palette-record list at `0x0047D0F0` is zero/zero, so Hazy Moon has
+no timed screen or appearance commands and no costume palette records.
+The camera-reject entry at `0x0047C1F0` is zero, so
+`sp_skill_defender_camera_admission` (`0x00294770`) admits the
+camera auxiliary for every defender.
 
-The checked UN3 `sp_skill_play_frame` (`0x002952B0`)
-updates camera auxiliary state and does not establish Hazy Moon's
-timed damage or spoken-cue producer. That scheduler, the exact
-defender placements and nested scene/command interpretation remain
-open. Source-file hashes are in
+Neither film file contains a queued tag-`0x0108` command or an audio
+section. Film damage, soundtracks and cue rows follow
+[UN3 cinematic damage and audio](itachi.md#un3-cinematic-damage-and-audio).
+Skill `0x78`'s `skill_cinematic_cue_descriptors` entry selects cue rows
+`0x003879D0` and `STREAM.AFS` soundtrack member 119 (`0x0437D800`),
+Japanese 259 (`0x095B6000`), stereo 48,000 Hz, 13.03 s. Its defender
+cue rows, all request ordinal 1, are frame/control 109/`0x0C`,
+129/`0x0D`, 143/`0x0E`, 173/`0x0F` and 271/`0x11`. Source-file hashes are in
 [ANBU inputs](../../../game/files/file_identities.md#anbu-kakashi-comparison-inputs);
 startup SOUND intro 121 is independently established in
 [ANBU voice](#voice).
@@ -449,10 +492,33 @@ The outer ranges begin at `0xC37800/0x1BF8800`, sizes
 | 85 / 6 | `0x1BF9000` | 10512 | `F14D1D92A478E3F0E78F4E9A36CD78ED97141D7B030B8C94806C64898D3624BE` |
 
 `dialogue_voice_remap_for_fighter` (`BATTLE.BIN 0x0086AF70`)
-has no ID-30 exception in the inspected body. Young Fang's first-frame
-update uses dialogue selector 0 or the alternate random-plus-6 path
-through the source participant. The exact physical cue selected by its
-dialogue-row producer remains open; archive membership is not that join.
+has no ID-30 exception in the inspected body. The jutsu cues go through
+`dialogue_voice_produce` with `dialogue_voice_rows`
+(`BATTLE 0x0093D3D0`), where each cue is the physical PLVOICE member
+of the performer's bank:
+
+| Jutsu / row | Row cues | Emitted |
+| --- | --- | --- |
+| Young Lightning / 53 | `138,136,134,137` | State 0: index 1 (136) for actual ID 30, index 2 (134) for any other performer; state 3: index 0 (138) for ID 30 only |
+| Young Fang / 54 | `131,132,133,-1` | First update: index 0 (131) when the performer is the resource's configured owner (`0x0087BFC0`); otherwise compact voice index 6 or 7 at random (controls 6/7) |
+
+| PLVOICE member | Outer 29 offset / bytes | Outer 85 offset / bytes |
+| ---: | --- | --- |
+| 131 | `0x00C67000 / 8726` | `0x01C1C800 / 7469` |
+| 134 | `0x00C6C800 / 8596` | `0x01C22000 / 9538` |
+| 136 | `0x00C71800 / 9537` | `0x01C26800 / 9765` |
+| 138 | `0x00C77800 / 13572` | `0x01C2C000 / 5061` |
+
+The win end demo, `end_demo_update` (`0x002E2120`), plays one random
+member of ANBU's `end_demo_quote_lists` (`0x0047F140`) entry, SOUND
+members 118..121 from outer 2, or outer 16 for Japanese voices:
+
+| Member | Outer 2 offset / bytes | Outer 16 offset / bytes |
+| ---: | --- | --- |
+| 118 | `0x120FE000 / 19211` | `0x25348800 / 13571` |
+| 119 | `0x12103000 / 9633` | `0x2534C000 / 18531` |
+| 120 | `0x12105800 / 16009` | `0x25351000 / 12931` |
+| 121 | `0x12109800 / 10937` | `0x25354800 / 11444` |
 
 Both Hazy Moon records use intro 121 through
 `audio_request_sound_member_for_voice_set` (`0x0018A1C0`),
@@ -465,6 +531,3 @@ SOUND outer 9/23, separately from PLVOICE:
 
 Complete archive identities are owned by
 [File identities](../../../game/files/file_identities.md).
-Hazy Moon's timed cinematic voice/damage scheduler and remaining
-ordinary-jutsu/end-demo cue joins remain open, as does spoken-content
-matching against any selected destination bank.

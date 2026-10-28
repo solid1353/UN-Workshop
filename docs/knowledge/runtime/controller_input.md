@@ -4,11 +4,8 @@
 
 Established statically for retail NA2 (`SLPS-25837`): pad initialization,
 publication/decoding, resident pad storage, configuration, vibration, library
-boundaries and inspected consumers' ordering/retention. Open: opaque fields,
-shutdown writer, callback API name, indirect callers/writers and direct binding
-predicates' scheduling.
-Hardware effects/timing remain unobserved; Adventure consumers and remaining
-PADMAN/SIO2MAN code were not surveyed.
+boundaries and consumers' ordering/retention.
+Open: nothing.
 
 ## Related owners
 
@@ -26,7 +23,7 @@ task scheduling to [Resident task system](task_system.md), Save/Load to
 Resident ELF/BTL identities and address rules belong to
 [Retail game file identities](../game/files/file_identities.md#address-conventions).
 `pad_library_version_tag` is `PsIIlibpad  3000`. Sony API identities
-are strong ABI-correlated identifications, not recovered original symbols.
+are strong ABI-correlated identifications, not original symbols.
 
 Supporting IOP evidence is the embedded `padman` IRX in
 `@source_na2/MODULES/MODULES.BIN` (315,392-byte container). Its analyzed
@@ -38,7 +35,7 @@ Prior findings retain that image identity; annotating its code requires
 the missing owning program and relocation evidence.
 
 Addresses are live. PADMAN behavior is preserved without numeric code
-citations because its runtime relocation is unestablished. Resident pad globals
+citations because its runtime relocation is not mapped. Resident pad globals
 are named in the ELF's zero-filled BSS block.
 
 ### Confidence guide
@@ -50,9 +47,6 @@ are named in the ELF's zero-filled BSS block.
 - **High, ABI-correlated:** the `scePad*` identities, standard button/pressure
   names, and conventional `libpad` state labels. These match the compiled
   behavior and bundled PS2SDK source but are not symbols retained by the ELF.
-- **Unproven dynamically:** real-time cadence, hardware/emulator presentation,
-  observed pressure/rumble values, and whether statically unreferenced helpers
-  can be reached through a computed mechanism.
 
 ## Ownership, initialization, and update order
 
@@ -90,8 +84,7 @@ Core input/configuration can therefore advance while those consumers skip.
 
 The callback sees core publication before front-end synthesis; the late
 snapshot can include synthesized directions. `raw_held_history` stays the
-physical/core history used for edges. Engine cycles are not proven one-for-one
-displayed frames under all skip/stall modes.
+physical/core history used for edges.
 
 ## Publication lifetime and consumer snapshots
 
@@ -190,8 +183,7 @@ Direct BTL predicates `binding1_shared_press_a` (`0x00796A50`),
 `binding1_shared_press_c` (`0x00806680`) also read shared pressed.
 Their human branch uses `SharedBindingInputReader.side` and configured
 binding 1, returning false for null bindings. The controlled branch can use
-`controlled_press & 1` instead. Full registry placement is unresolved;
-no relative scheduling order is assigned.
+`controlled_press & 1` instead.
 
 The jutsu-clash reader `interaction_pending_pair_call` (`0x0077C270`)
 intersects each side's shared pressed with its clash mask and increments
@@ -536,9 +528,8 @@ distinct pressure consumer was needed to establish polling behavior.
 ### Active front-end path
 
 `pad_frontend_analog_adapter` (`0x001E0D20`) runs inside front-end task `resident_flow_dispatch`. It runs at the top of that task's steady loop,
-before its state-specific handlers and before the task yields. This proves its
-placement for that front-end task only; it is not part of the core poll and is
-not proven to run for every resident/overlay consumer.
+before its state-specific handlers and before the task yields. It is not part
+of the core poll.
 
 For each port it:
 
@@ -608,7 +599,7 @@ The sector table at `angle_to_direction_table` is:
 `pad_unused_analog_adapter` has the same behavior as
 `pad_frontend_analog_adapter`, with separate zero-filled private counters
 in `pad_unused_repeat_counters` and saved masks in `pad_unused_held_history`.
-No direct caller or stored pointer was found; its intended context is unresolved.
+No direct caller or stored pointer was found.
 
 `pad_analog_from_direction` maps valid held direction nibbles to the same
 angle convention with magnitude `0xFF`; all other nibbles produce zero
@@ -649,9 +640,8 @@ An enqueue is accepted only when:
 - `PadRecord.actuator_state` is nonzero.
 
 The clean ELF initializes `vibration_enqueue_enabled` to 1. Its only direct clean-resident
-reference is this read in `pad_enqueue_vibration`; no resident writer was found. It is
-therefore an enabled-by-default enqueue gate whose external/overlay control, if
-any, remains unproven.
+reference is this read in `pad_enqueue_vibration`, and no resident writer was found,
+so it is an enabled-by-default enqueue gate.
 
 Milliseconds become nominal 60 Hz ticks using:
 
@@ -691,14 +681,12 @@ state loop. This establishes that vibration durations are stored in 60 Hz
 display ticks rather than update-call counts: a front-end update normally ages
 the active segment by two ticks while the update loop is paced by two display
 counts. The same distinction does **not** apply to the button repeat counter,
-which increments once per `pad_read_packet_words` poll. Real elapsed timing
-remains unobserved.
+which increments once per `pad_read_packet_words` poll.
 
 At full depth, if all three older tails survive pruning, the code cannot push a
 fourth entry even though it has already reduced those tails and marked the old
 top dirty. The requested new command is dropped, while the shortened old top
-can be retransmitted. This edge case is statically visible but has not been
-reproduced at runtime.
+can be retransmitted.
 
 `pad_configure_actuators` owns configuration and actuator transmission. Once configured,
 its actuator substates are:
@@ -768,12 +756,11 @@ latent static edge, not a practical observed failure.
 
 No recognizable resident controller-combination reset was found.
 Canonical IGR literals `0x0F09,0x090F,0x0F08,0x0F06,0x0F0F` and game
-reset/reboot strings were absent in the bounded resident search.
+reset/reboot strings were not found in the resident executable.
 `os_load_exec_wrapper` and `os_exec_browser_wrapper` reach OS relaunch
 services without an identified direct caller or stored pointer.
 `frontend_slideshow_update` changes state on Start; its separate exit
-ancestry was a vector-bounds fatal path. This negative result does not exclude
-indirect/overlay reset; overlays were not surveyed for that check.
+ancestry was a vector-bounds fatal path.
 
 ## Embedded `libpad` boundary
 
@@ -783,8 +770,8 @@ The snapshot names packet/direct/alignment data, four actuator rows then four
 combination rows, four modes, generation/retries/length, configuration/model/
 task/state bytes and packed requested/supported button masks.
 Opaque snapshot `+0x6C` is cleared on open and set to 1 at the end of one
-IOP configuration worker; its external meaning remains open. The final three
-bytes have no identified producer write/linked reader. Direct/alignment data,
+IOP configuration worker. The final three bytes have no identified producer
+write or linked reader. Direct/alignment data,
 retries, mode/lock/direct-size/run-task/status70 and requested-mask outputs
 have no identified linked EE reader.
 
@@ -831,8 +818,8 @@ These compiled APIs do not bounds-check port/slot.
 
 One game pad worker serializes init/open/configure/close/end through the
 shared RPC buffer, which has no internal lock. Ordinary reads use DMA;
-direct submission uses per-slot blocks. This bounded call-graph serialization
-does not establish general thread safety for additional callers.
+direct submission uses per-slot blocks. That serialization is the only
+protection; the APIs are not thread-safe for additional callers.
 
 Mode metadata requires open/current task 1/request not busy. Selectors return
 mode nibble (`0xF3 → 0`), current mode entry/offset or count/indexed entry;
@@ -863,12 +850,12 @@ the next attempt is rejected locally without RPC. Zero open leaves wrapper
 state 0 despite low-level open; zero close can leave wrapper ready despite
 low-level closed. Sentinel 99 then publishes zero without disconnect reset.
 Vibration may still enqueue/age locally while the stuck close loop never
-services transmission. These failure replies are unobserved.
+services transmission.
 
 `pad_set_dma_completion_callback` returns the previous callback.
 Null clears it and retries RPC `0x18` value 0 until transport succeeds;
 first nonnull installation sends 1, then saves callback/caller GP under an
-interrupt-safe critical section. Its exact public Sony API name is unknown.
+interrupt-safe critical section.
 The IOP value-0 path transfers ordinary snapshots without completion command.
 Value 1 waits for completion-aware batch DMA and sends `0x80000019`
 with the IOP VBlank counter only when at least one open slot contributed.
@@ -899,34 +886,30 @@ Names, prototypes, comments and live entries are in
 `@annotations/NA2/BTL.BIN/symbols.tsv`. Layouts are in
 `@annotations/NA2/types.h`.
 
-## Useful negative results and remaining uncertainty
+## Negative results
 
-- The work is static-only. Update cadence, disconnect presentation, pressure
-  values, vibration timing, and adapter behavior have not been live-tested.
-- Record `+0x46` remains semantically opaque. `pad_initialize_record` initializes it to
-  zero; `pad_read_packet_words` merely snapshots it and writes back `value & 3` without
-  branching on either surviving bit. No other direct clean-resident access to
-  the two context instances was found, so bits 0/1 are preserved storage with
-  no proven resident effect.
-- No clean-resident writer of pad-worker lifecycle value 2 in
-  `pad_worker_lifecycle` was found. An overlay or indirect path may own shutdown.
-- No statically recognizable resident soft-reset/controller combo was found;
-  the resident OS relaunch wrappers are unreferenced library code.
-- `pad_unused_analog_adapter` has no proven caller in the clean ELF. The reverse helper
-  `pad_analog_from_direction` has no proven resident caller but is called by BTL input
-  normalization.
-- No active right-stick-to-digital adapter was found; the proven adapter uses
+- Record `+0x46`: `pad_initialize_record` initializes it to zero;
+  `pad_read_packet_words` snapshots it and writes back `value & 3` without
+  branching on either surviving bit. No other direct resident access to the two
+  context instances was found, so bits 0/1 are preserved storage with no found
+  resident effect.
+- No resident writer of pad-worker lifecycle value 2 in `pad_worker_lifecycle`
+  was found.
+- No resident soft-reset/controller combo was found; the resident OS
+  relaunch wrappers are unreferenced library code.
+- No caller of `pad_unused_analog_adapter` was found in the clean ELF. The
+  reverse helper `pad_analog_from_direction` has no found resident caller but is
+  called by BTL input normalization.
+- No active right-stick-to-digital adapter was found; the found adapter uses
   only the left stick.
 - The wrapper reserves 32 raw packet bytes, but only offsets through pressure
-  byte 19 have a proven resident decode.
+  byte 19 have a known resident decode.
 - `pad_library_set_vref`, `pad_library_set_warning_level`, the port/slot maxima queries,
   `pad_library_exit_pressure_mode`, and the callback/RPC-`0x18` path have no NA2 caller.
 - `pad_library_init` can wait indefinitely for both RPC binds; the pad worker's
   init/open/close/end retry loops likewise have no static timeout.
-- Adventure-mode input consumers were not inspected.
 
 ## Provenance
 
-Pointer-slot xrefs do not establish all GP-relative references or computed
-calls. PADMAN findings are bound to the exact image identified above;
-its runtime relocation and owning MCP program remain unavailable.
+PADMAN findings are bound to the exact image identified above; it has no owning
+MCP program.

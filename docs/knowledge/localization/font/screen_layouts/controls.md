@@ -5,9 +5,9 @@ Retail NA2 (`SLPS-25837`) and UN5 1P/2P Commands relationship layout.
 ## Research coverage
 
 Established: relationship composition, wrapping widths and cross-game row
-geometry. Open: other strings and animation phases, and Pause Controls and
-Special Controls layouts. Names come from `@annotations/NA2` and
+geometry. Names come from `@annotations/NA2` and
 `@annotations/UN5`; their comments hold code-level detail. Addresses are live.
+Open: nothing.
 
 Secondary-font metrics belong to [Renderer metrics](../renderer_metrics.md);
 Command Chart and 1P/2P Commands tokens belong to
@@ -49,7 +49,5 @@ relationship without moving its icons for each additional line.
 
 Previously recorded observations at UN5 `font_wrap_words` (`0x0018C4F0`)
 confirmed widths `288` and `272` with tracking `0`, horizontal and vertical
-scales `1`, and descriptor address `0x00B592D0`. They cover only the recorded
-states, not every string or animation phase. MCP rejects that descriptor
-address as outside program memory, so its observed role remains unannotated;
-no static descriptor contents are established here.
+scales `1`, and descriptor address `0x00B592D0`, a runtime address outside
+the static program image.

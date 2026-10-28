@@ -7,10 +7,11 @@ and input contest, resolves damage and outcome, and drives the CPU side.
 
 Established: Ultimate Jutsu admission and presentation, every contest class,
 input retention, CPU scoring and results, cinematic damage, support-dependent
-voices, branch frames, and the interruption animation's transforms and bindings.
-Open: status `2`'s producer, the exact projected interruption appearance,
-and measured display timings.
+voices, branch frames, the interruption animation's transforms and bindings,
+Start handling and early film endings, and the sizes and bounds of the
+record and per-skill tables.
 Names come from `@annotations/NA2`.
+Open: nothing.
 
 Related owners: [Chakra and guard](../combat/chakra_and_guard.md) owns Triangle
 staging and reservation; [Awakening](awakening.md) owns the Ultimate Jutsu
@@ -32,8 +33,7 @@ resource, record and curve contracts.
 Binary identities follow
 [Retail game file identities](../../game/files/file_identities.md#address-conventions).
 Addresses are live. Evidence comes from static code and authored asset reads.
-Bounds on direct calls and stores do not exclude indirect callers or external
-writers. Names come from `@annotations/NA2`; per-routine details are in their
+Names come from `@annotations/NA2`; per-routine details are in their
 comments. Fighter field names follow raw instruction offsets and saved
 declarations; current MCP decompiler expressions do not consistently reflect
 that layout.
@@ -129,7 +129,7 @@ All passing gates queue the slot through `action_queue_set`. A later
 failure still reloads the countdown from parameter `18`; failed chance or
 missing record instead diverts to the other masked attempt using parameters
 `15/17`. The affordability path treats the action cost as a record index,
-then uses its signed tier directly; whether that is intended remains open.
+then uses its signed tier directly.
 
 `fighter_set_facing_fields`, `fighter_facing_from_orientation` and
 `fighter_restore_facing_orientation` establish binary facing values
@@ -199,8 +199,9 @@ before freeing its resources.
 
 `stream_break_released` (`0x00373770`) reads that flag alone. It signals
 release after the voice wait, not animation completion; the task may still
-be finishing when presentation restores the HUD. The status-`2` branch
-has [no recovered producer](#status-2-producer-boundary).
+be finishing when presentation restores the HUD. Contest constructors
+clear `status` and its direct stores write only `0/1/4`; no inspected
+code writes status `2`. The adjacent `status_flags` byte is separate.
 
 The alternate-voice case requires `UltimateJutsuRecord.category == 2`
 and a match in `support_cinematic_admission_table` (BTL `0x008D2660`).
@@ -233,9 +234,45 @@ class `3` and cost tier `0`.
 Presentation uses the match, not the replacement value as a voice ID:
 it extends the intro to `150` and plays the selected record's second voice
 after the first stops. `sp_skill_play_begin` uses the same pair/category
-gate for `sp_skill_substitute_support_resources`. This establishes a
-support-dependent voice/resource relationship; player-facing names for
-the combinations remain unverified.
+gate for `sp_skill_substitute_support_resources`, so voice and resources
+depend on the support.
+
+### Start and early endings
+
+Nothing reads Start during a presentation. The start menu stays closed
+while the coordinator is in state 6
+([start-menu blockers](../session/pause_and_replay.md#resident-ownership-and-top-level-result-routing)),
+and the presentation, skill play and contest read no Start input.
+`pause_ougi_pre_update` (BTL `0x0076FCF0`) is the only caller of
+`jutsu_presentation_update`.
+
+A battle film ends early only through the status-`4` cut,
+`ccs_stream_player_latch_stop_skip(player, 2)`. The Collection viewer,
+`etc_skill_play_wait` (ETC `0x006C0D80`), ends a film the same way when
+the first pad presses Cross after the hold point is released, with common
+sound `0x33` (`sfx_play_common`). Other games' viewers are listed under
+[player controls](../../game/files/ccs_runtime.md#player-controls).
+
+An ending through request `2` keeps every step of a normal ending. The
+play loop calls `sp_skill_play_end`, which restores bone replacements, ends
+the film's fade slot, runs `jutsu_apply_completion` and passes the contest
+total to the battle statistics. `ccs_stream_player_run` then destroys the
+film's containers, restores the render globals and calls
+`audio_finish_skill_soundtrack`, which stops the film soundtrack and asks
+for battle music. `sp_skill_play_destroy` restores the render descriptors
+and destroys the contest. Cinematic control is still `0` when the end
+callback runs, unless the interruption wrote `2`. Texture switches on `EXT`
+targets change duplicated instance arrays, so no film change remains on
+the fighters' battle models.
+
+Only the hit rows not yet reached are lost: their damage, chakra debit,
+defeat latch, popup, panel shake and cue. Rows fire only on an exact frame
+match. `CcsContainer.frame` advances by `(rate_remainder + rate) >> 8` per
+play step, capped at `last_frame`, and the frame callback runs once per
+step. What follows the film does not depend on where it stopped:
+`jutsu_post_cinematic_update` applies the outcome effect, restores both
+fighters from their saved positions and sets their actions and facing; its
+knockdown branch also resets the camera.
 
 ### Authored interruption animation
 
@@ -280,8 +317,7 @@ binding is in
 animation. Hold argument `1` permits advance only at integer frame at
 most `1`; `-1` removes that restriction. Drawing continues in both cases.
 The task therefore holds the beginning of an authored moving, rotating,
-fading animation and later releases it. These transforms and bindings do
-not establish its exact projected appearance or display duration.
+fading animation and later releases it.
 
 ### Skill-play admission
 
@@ -289,7 +325,18 @@ At countdown `85`, presentation calls `sp_skill_play_start`
 (`0x0035CF00`) only when `jutsu_record_playable_skill` is nonzero and
 `jutsu_presentation_skill_blocked` returns zero.
 The playable-skill accessor returns `authored_id`, except classifications
-below `2` or equal to `5` return zero. The raw mode comes from
+below `2` or equal to `5` return zero. `jutsu_record_classify_playability`
+(`0x00372770`) returns `0xFF` for authored ID `0xFFFF` and 3 for ID 0;
+any other ID is looked up in the per-character classification lists of
+`STRMCMN.CCS` `BIN_strtbln4`, the first match across character IDs 1..93
+winning. Each list is a 14-byte entry: a signed halfword count, then up to
+six skill bytes and their six classification bytes. Retail lists use 4
+for ordinary playable skills and 5 or 2 for some others. UN4's lists use
+the same entry layout with 3 for ordinary playable skills; skill `0x28`
+(`str/d16_20.ccs`), which no UN4 record selects, has 5. UN4 returns 4 for
+authored ID 1
+([UN4 Ultimate Jutsu](un4/ultimate_jutsu.md#selection-and-metadata)).
+The raw mode comes from
 `battle_rule_ultimate_mode_get`, falling back to the side's cached
 `ultimate_mode`
 ([Practice mode](../modes/practice_mode.md#presentation-options-and-ultimate-gate)).
@@ -347,18 +394,6 @@ and seeds `jutsu_outcome_effect_id` from the record's effect (record
 `99` for skill `0x49`). CPU tiers are
 `{0,1,2,3,3,4,4}[difficulty]`; difficulty key `0x0B` comes from the
 Free Battle/Practice setting bank or the default bank otherwise.
-
-### Status-2 producer boundary
-
-No producer of status `2` was recovered. The inspected contest constructors
-allocate fresh storage and clear status; the inspected direct stores write
-only `0/1/4`. The adjacent `status_flags` byte is separate.
-The inspected broader stores, rebased accesses, dispatch descriptors and
-direct accessor callers did not establish another producer. Their exact
-scan bounds and counts are retained in the owning routine annotations.
-This does not exclude multi-step address arithmetic, escaped aliases,
-indirect callers or external writers, and does not prove status `2`
-unreachable throughout the game.
 
 ### Lifecycle and time limit
 
@@ -587,6 +622,15 @@ It applies HP debit with display enabled; Practice HP stops at `0.01`.
 - At the first nonzero total, the reciprocal sum of remaining hit fractions
   is computed; remaining hits deal `(total - dealt) * fraction / sum`,
   delivering the resolved remainder.
+- `remainder_reciprocal` starts at `1.0` and each total-zero hit resets it
+  to `0`; it is computed only when it is `0`. If the total becomes nonzero
+  before the first hit, every hit deals `total * fraction`.
+- `sp_skill_play_start` sets `next_hit` to `999` when the first row's
+  frame is `1`, so such a film deals no row damage. It also saves the
+  defender's HP and chakra in `saved_defender_hp/chakra`;
+  `sp_skill_play_end` tops the defender back up to them only for cinematic
+  control `2`.
+- The target's `state_flags` bit `3` is restored after each hit.
 - With `jutsu_outcome_control_flag == 1` and target HP at most zero,
   attacker condition `7` becomes `1`, blocking transformation.
 - Chakra fraction at least `0.00001` debits `fraction * 15.0` chakra
@@ -599,3 +643,37 @@ again. The branch-`2` cut normally ends the cinematic near this point.
 `jutsu_post_cinematic_update` (`0x0024ED40`), the coordinator's state-`6`
 handler, applies the retained effect ID to the attacker through
 `effect_apply_outcome` when it is not `-1` and the target was not defeated.
+
+## Table sizes and bounds
+
+Records:
+
+- A scan for direct references to `jutsu_name_table` (223 records)
+  finds only the accessors at `0x00372770..0x00372D10`, each with its own
+  `lui`/`addiu` pair;
+  `jutsu_find_record_by_skill` scans exactly 223 records.
+  `character_default_jutsu_records` starts right after the table.
+- A scan for direct references to `character_jutsu_lists` finds one
+  reader, `jutsu_select_record`.
+
+Per-skill data (184 retail skills, `0..0xB7`):
+
+| Data | Bound |
+| --- | --- |
+| SINF request rows | none; `sp_skill_play_start` indexes the row directly |
+| `cinematic_audio_descriptors` (184 entries) | none |
+| `sp_skill_frame_scripts` | index skill - 1 only below `0xB6`; any other skill gets entry 0 |
+| SINF branch frames | 183 halfwords for skills 1..183, then nine zero halfwords |
+| Playability lists | skill bytes are `u8`, so a skill above 255 never classifies |
+| Film soundtrack | `audio_prepare_skill_soundtrack` plays `STREAM.AFS` member = skill only below `0xB8` |
+
+`STREAM.AFS` has 184 entries. Member 0 and the members of ten skills no
+playable record selects are empty: `0x4A`, `0x4D`, `0x56`, `0x66`,
+`0x67`, `0x75`, `0x80`, `0x9A`, `0xA0`, `0xA8`; the eleventh such skill,
+`0x7B` (`d69_21`), has a track. The 173 tracks are stereo 24 kHz ADX,
+played on stereo player 1, one of three players created alike
+(`audio_players_initialize`).
+
+The intro is SOUND bank 7, member `jutsu_record_intro`, slot 0
+(`audio_request_sound_member`). Bank 7 has 189 entries: 169 mono 24 kHz
+AHX (134 type `0x10`, 35 type `0x11`) and 20 empty.

@@ -5,9 +5,8 @@
 Established: overlay loading, effective ends and temporary phase slack.
 Static CRI/ADX stacks, dynamic stacks and high-tail ownership are established.
 Persistent pools, startup allocations and CCS-load transients have static lifetime coverage.
-Open: battle and menu teardown totals; overlay-constructor callee allocations.
-Sampled slack and high-tail changes do not establish future non-use or dynamic heap lifetimes.
 Routine, field and data names come from `@annotations/NA2`; addresses are live.
+Open: nothing.
 
 Native lifetime and ownership of overlays, stacks, the high-memory tail, and
 the main heap-backed regions in retail NA2 (`SLPS-25837`). CCS container release
@@ -39,10 +38,9 @@ are verified from the retail files rather than those views:
 | `product_label` | internal name | `BTL_product.bin` | `ETC_product.bin` |
 
 The image itself needs no heap allocation. The static constructors call no
-allocator entry directly; allocation by their callees remains open within
-this document's coverage. One BTL constructor registers
+allocator entry directly. One BTL constructor registers
 destructors through `compiler_cleanup_register`, but overlay replacement does
-not run those destructors in the covered native paths. The resident
+not run those destructors. The resident
 `compiler_cleanup_head` points to the most recently registered
 `CompilerCleanupNode`; registration links its `previous_head` to the old head.
 
@@ -105,10 +103,10 @@ Both parts must remain reserved.
 
 | Region | Allocated | Released |
 | --- | --- | --- |
-| `0x200000`-byte renderer pool | once by display initialization `engine_root_initialize` | never in the covered paths; its entries are recycled every frame by `render_pool_release_frame` |
-| `0x10000`-byte untracked buffer | once by `render_untracked_buffer_construct` | not observed |
-| Sound controller | once by `afs_manager_allocate` | not observed |
-| File-directory text and tables | once by `gzlist_build_tree` during front-end startup | never in the covered paths; the text allocation's base pointer is not retained |
+| `0x200000`-byte renderer pool | once by display initialization `engine_root_initialize` | never; its entries are recycled every frame by `render_pool_release_frame` |
+| `0x10000`-byte untracked buffer | once by `render_untracked_buffer_construct` from a resident static constructor | only by its static exit destructor `render_untracked_buffer_destroy` |
+| Sound controller | once by `afs_manager_allocate` | never; `audio_stream_manager_ptr` is written only there |
+| File-directory text and tables | once by `gzlist_build_tree` during front-end startup | never; the text allocation's base pointer is not retained |
 | `0x4D000`-byte IOP module staging buffer | by `iop_bootstrap_modules` | before that routine returns |
 | CCS load transients | by `ccs_run_load_pipeline` at the start of each load, at the low end | before a flags-`0` load returns; worker stacks follow their tasks' lifetimes |
 | CCS containers | by the parser on the decode worker, at the high end | when their owner destroys the container |

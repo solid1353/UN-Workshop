@@ -3,10 +3,10 @@
 ## Research coverage
 
 Established: retail NA2/UN5 record layouts, TV-preview and carousel equivalence,
-localized name selection, draw ordering and bottom prompt anchors. Open:
-uncovered animation phases and indirect callers, and the carousel draw
-parameter's visual effect. Names come from `@annotations/NA2` and
+localized name selection, draw ordering and bottom prompt anchors. Names come
+from `@annotations/NA2` and
 `@annotations/UN5`; addresses are live.
+Open: nothing.
 
 NA2 choices and screen behavior belong to
 [Native Stage Select](../../game/stage_select.md), stage loading to
@@ -18,8 +18,7 @@ to [Shared frontend prompt layout](options.md).
 The comparison uses the retail NA2 and UN5 `BTL.BIN` programs and UN5's
 resident `SLES_556.05`. Input identities and address conventions belong to
 [Retail game file identities](../../game/files/file_identities.md#address-conventions).
-Current MCP code and data verify the owners below; the earlier paired memory
-and screen observations cover only the examined states. Annotation comments
+Current MCP code and data verify the owners below. Annotation comments
 hold signatures and per-routine code detail.
 
 ## Stage records

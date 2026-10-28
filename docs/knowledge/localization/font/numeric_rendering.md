@@ -7,10 +7,9 @@ Save/Load, Battle and Practice Settings, Jutsu rows, and Ninja Song values.
 
 Established: decimal padding, fullwidth versus ASCII ownership, Save/Load
 time conversion, Battle infinity handling, Jutsu wrapping, and Ninja Song layouts.
-Open: numeric callers outside these families and every fight-dependent bonus row.
-Paired screens cover representative values, not every value on each shared path.
 Names come from `@annotations/NA2` and `@annotations/UN5`;
 their comments hold per-routine details. All addresses below are live.
+Open: nothing.
 
 Related owners: [Renderer metrics](renderer_metrics.md) owns glyph metrics;
 [NA2 and UN5 text correspondence](../text_correspondence.md) owns translation

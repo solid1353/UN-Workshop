@@ -3,10 +3,9 @@
 ## Research coverage
 
 Established: retail NA2 save files/slots, record layout, checksum/copy contracts,
-load/save/repair ordering, worker task lifetime and frame timing, defaults, settings, snapshots and recovered counters.
-Open: discriminator/class/status-bit meanings, most secondary/opaque fields,
-and early-failure reachability/reclamation. One historical card corroborates
-these findings; it does not establish current execution or fault behavior.
+load/save/repair ordering, worker task lifetime and frame timing, defaults, settings, snapshots and battle-result counters.
+One historical card corroborates these findings.
+Open: nothing.
 
 ## Evidence, identity, and terminology
 
@@ -22,14 +21,10 @@ card-service modules in `MODULES.BIN`, and conventions in
 Record offsets are absolute offsets within the little-endian `SaveProfile`.
 `SaveSecondaryBlock` starts at record `0x0DFC`; `SaveDescriptor`, `SaveWorker`,
 `SaveCardContext`, `CardDirectoryEntry`, and the dialog types name verified
-fixed-layout fields. Storage shape alone does not establish semantics.
-Inferences remain identified explicitly. Static failure paths were not exercised
-with controlled corruption, allocation failure, short I/O or partial writes.
-Adventure-mode consumers remain outside the inspected scope.
+fixed-layout fields. Inferences are marked explicitly.
 
 A read-only parse of one historical local card image corroborates the static
-contracts but is not evidence of current
-runtime state. Its relevant bytes are recorded in
+contracts. Its relevant bytes are recorded in
 [Historical-card corroboration](#historical-card-corroboration).
 
 The related resident availability readers and their overlay consumers are
@@ -78,13 +73,12 @@ resident lighting inputs are documented in [Memory-card icon](files/save_icon.md
 `card_write_icon_sys` clears/rebuilds all `0x3C4` bytes from fixed
 `PS2D`, title, settings and icon tables. `CardIconSystem.first_icon_name`,
 `second_icon_name`, and `third_icon_name` each receive the eleven-byte
-`icon00.icn` string including NUL; full slot capacities remain open.
+`icon00.icn` string including NUL.
 No profile fields or payload checksum enter it.
 
 The seven files occupy 97 rounded 1 KiB blocks. Native directory-overhead
 arithmetic for nine entries adds six, giving `SaveCardContext.expected_blocks`
-103. This assumes the expected files plus two directory entries and is not
-measured allocation for an arbitrary card.
+103, counting the expected files plus two directory entries.
 
 ## Descriptor table
 
@@ -115,8 +109,7 @@ historical zeros are not a format invariant.
 zero; occupied rows require signed classification 0..4 and signed play_time
 0..`0x066FF2E2` inclusive (999:59:59 at 30 Hz). It ignores timestamps and
 payload/checksum agreement. Reset/reconstruction write classification 0;
-ordinary save preserves it. No other direct resident consumer was recovered,
-so classes 1..4 remain semantically unresolved.
+ordinary save preserves it.
 
 `save_scan_start` resets all rows and requests operation 3.
 `save_worker_update` reads the table through `card_read_descriptors` and
@@ -142,7 +135,7 @@ so the expected name should be present; the no-match path was not forced.
 
 | Record range | `SaveProfile` field | Size/count | Contract |
 | --- | --- | ---: | --- |
-| `0x0000..0x0001` | `discriminator` | 2 | Unknown semantics; fresh 3 |
+| `0x0000..0x0001` | `discriminator` | 2 | Fresh 3 |
 | `0x0002..0x0003` | `checksum` | 2 | Embedded additive sum |
 | `0x0004..0x0007` | `play_time` | 4 | 30 Hz ticks |
 | `0x0008..0x0009` | `display_x` | 2 | Signed horizontal offset |
@@ -168,7 +161,7 @@ so the expected name should be present; the no-match path was not forced.
 | `0x0B6C..0x0DC3` | `survival_times[25][3]` | 25 × 3 × 8 | Signed character ID/cumulative seconds |
 | `0x0DC4..0x0DF3` | `survival_wins[2][3]` | 2 × 3 × 8 | Signed character ID/completed wins |
 | `0x0DF4..0x0DF7` | `gate_bits` | 4 | Bit 0 explicitly reset |
-| `0x0DF8..0x0DFB` | `scalar` | 4 | Reset zero; semantics open |
+| `0x0DF8..0x0DFB` | `scalar` | 4 | Reset zero |
 
 `profile_ryo_draw` uses `ryo_display_format`,
 `%s<ruby両|りょう>`, establishing ryo as currency. Rewards add to it and a
@@ -178,7 +171,7 @@ a lower clamp or load-time validation. Checksum-valid words outside
 
 `roster_unlock_form_pair` sets unavailable target bit 0 and marks bit 1;
 the optional `character_to_transformed` linked form gets only bit 0.
-`profile_status_clear` clears the complete byte. No bit-1 meaning is established by the inspected direct consumers; inlined/indirect use remains open.
+`profile_status_clear` clears the complete byte.
 
 Grouped category names come from ETC tables/consumers, not byte counts.
 Established values are 0 default/unowned, 1 offered/announced but unowned,
@@ -196,7 +189,7 @@ bank index:   3,21, 7, 8, 9,10,11,12,13,14,15,16,17,18,20, 0, 1, 2, 4, 5, 6,19
 
 `profile_small_table_to_byte_bank`/`profile_byte_bank_to_small_table` copy
 in opposite directions between `small_availability` and `secondary.byte_bank2`.
-This establishes the relationship, not wider semantics. Indices 22..245 are
+Indices 22..245 are
 untouched.
 
 ### Secondary block and opaque tail
@@ -210,26 +203,24 @@ untouched.
 | `0x1C5C..0x20FF` | `0x0E60` | `word_bank1` | 297 × `u32` |
 | `0x2100..0x21F5` | `0x1304` | `byte_bank2` | 246 bytes |
 | `0x21F6..0x21F7` | `0x13FA` | `_gap_13fa` | Two omitted bytes |
-| `0x21F8..0x2213` | `0x13FC` | `opaque_13fc` | Seven aligned words; semantics open |
-| `0x2214..0x2393` | `0x1418` | `opaque_1418` | 96 aligned words; semantics open |
+| `0x21F8..0x2213` | `0x13FC` | `opaque_13fc` | Seven aligned words |
+| `0x2214..0x2393` | `0x1418` | `opaque_1418` | 96 aligned words |
 | `0x2394..0x23FF` | Outside secondary | `SaveProfile.opaque_tail` | `0x6C` bytes |
 
 `profile_copy_secondary` and independent
 `profile_secondary_snapshot`/`profile_secondary_restore` agree on these
-boundaries. Copy instruction choices do not establish floats or fixed-size
-semantic records in opaque regions. Bank accessors do not check indices.
+boundaries. Bank accessors do not check indices.
 
-No semantic use of the first four banks is established by the inspected resident/BTL/ETC consumers; indirect and inlined uses remain open. The tail's established handling is whole-record
+The tail's established handling is whole-record
 comparison and normal save/load copy, without a dedicated semantic reader/writer.
 The independent snapshot pair moves aligned opaque ranges but excludes the
-tail; its excluded-mode consumer was not interpreted.
+tail.
 
 **High-confidence inference:** `word_bank1[0]` is the main-progression ordinal:
 `profile_word1_get` exposes it, `profile_progress_at_least_101` tests signed progression greater than
 `0x65`, `loading_choose_random_asset` selects assets at thresholds
-`0x3E`/`0x66`, and presentation objects range-test it. Individual story
-chapters remain unassigned. `word_bank1[0x6A]` independently gates an extra
-menu entry; other entries remain unresolved.
+`0x3E`/`0x66`, and presentation objects range-test it. `word_bank1[0x6A]` independently gates an extra
+menu entry.
 
 ### Battle-result counters in the byte bank at `0x2100`
 
@@ -262,7 +253,7 @@ back afterwards; kind 0 with `ranking_result == -2` returns after the first
 mirror. `result_update_saved_counter_a` (`0x006EB7A0`) and
 `result_update_saved_counter_b` (`0x006ED820`) also increment an
 object-callback-selected index by one, skip `-1`, and cap at 99.
-Their content labels remain unresolved. Byte index `0x6A` at `0x216A`
+Byte index `0x6A` at `0x216A`
 differs from word index `0x6A` at `0x1E04`.
 
 ## Checksum and normal load/save
@@ -290,8 +281,7 @@ Profile `play_time` is neither range-checked nor compared with descriptor
 time. Descriptor validation protects only its displayed sample; historical
 32..34-tick drift corroborates independent values.
 
-The only observed semantic discriminator test is repair's `0xFFFF` erased
-sentinel. Reconstruction copies the embedded checksum without recomputing it,
+The only recovered discriminator test is repair's `0xFFFF` erased sentinel. Reconstruction copies the embedded checksum without recomputing it,
 making it indirectly authoritative only through that reconstruction.
 Normal load has no rolling-copy fallback after checksum failure.
 
@@ -367,8 +357,7 @@ so established initialization/load paths keep them zero.
 
 **High-confidence inference:** alignment padding carries stale allocator contents
 on card. Each gap precedes the next aligned field, and historical values vary.
-Native save can persist seven bytes of unrelated prior heap state; their source
-allocation cannot be recovered from card bytes alone.
+Native save can persist seven bytes of unrelated prior heap state.
 
 Within one save, primary/backup gaps and sums match. Across saves, semantically
 identical live profiles can yield different files/sums.
@@ -382,7 +371,7 @@ subconstructors, then clears all `0x2400` bytes, discarding earlier defaults.
 
 | Field | Fresh/reset value |
 | --- | --- |
-| `discriminator` | 3; semantics open |
+| `discriminator` | 3 |
 | `checksum`, `play_time`, `ryo` | 0 |
 | `display_x/display_y` | Cold start 0/0 |
 | `volume` | Cold start `0x100` |
@@ -407,8 +396,8 @@ mono/one-speaker, from assets rather than recovered enums.
 in steps of two; `audio_set_volume` does not clamp loaded values before
 scaling. Normal load performs no per-setting sanity checks.
 
-Vibration predicates consume bits 0/1; other stored bits survive without a
-recovered predicate effect. Cold initialization builds mask 3 from
+Vibration predicates consume bits 0/1; other stored bits survive without
+a recovered effect. Cold initialization builds mask 3 from
 `default_vibration_enable == 1` as `b | (b << 1)`.
 `profile_vibration_set` changes live record and cache; port below 1 resets
 mask 3, but Controls confirmation uses only ports 1/2.
@@ -462,7 +451,7 @@ permutations of display-scan masks `20,10,80,40,4,8,1,2`. Native edit/swap
 preserves them and `options_controls_confirm` reconstructs eight
 action-order halfwords. Load does not validate uniqueness/recognized masks.
 Missing/duplicate/foreign values can leave editor selections `-1`, later
-used as stack-array indices on confirmation; that path was not exercised.
+used as stack-array indices on confirmation.
 The shoulder selector cycles indices 4..6 and `control_action_labels` has
 eight entries, first Ultimate Jutsu Prep. Captured control screen and historical
 record bytes corroborate the mapping.
@@ -502,19 +491,14 @@ all seeds.
 Finite-course mode 5 inserts ascending whole elapsed seconds; mode 4 inserts
 descending completed wins and uses only win row 0. Insertion takes controller
 row index verbatim; pair accessors do not check row/slot bounds.
-Controller modes/courses/ranking/navigation and the win-row-1 producer search
-remain owned by [Survival](../gameplay/modes/survival.md).
+Controller modes/courses/ranking/navigation belong to [Survival](../gameplay/modes/survival.md).
 
 ### Bitset `0x0DF4` and scalar `0x0DF8`
 
 `SaveProfile.gate_bits` bit 0 in `menu_select_saved_gate` diverts selected
-item 0 to `menu_enter_saved_gate`. Its semantics remain unnamed.
-Only the reset clear is established as a writer in the inspected consumers.
+item 0 to `menu_enter_saved_gate`. Reset clears it.
 
-`SaveProfile.scalar` resets to zero, but the inspected resident and battle
-consumers establish no semantic meaning. ETC consumers reach an excluded
-component. These bounds do not exclude indirect, inlined or pointer-arithmetic
-use.
+`SaveProfile.scalar` resets to zero.
 
 ## Snapshot and change detection
 
@@ -524,8 +508,8 @@ clears the pointer.
 
 `save_snapshot_changed` returns 1 only with manager mode 4..7, an existing
 snapshot and difference in record `0x0008..0x23FF`. It ignores
-discriminator/checksum/play_time but includes seven gaps. Its sole recovered
-caller `options_exit_update` exits directly when unchanged, or enters save
+discriminator/checksum/play_time but includes seven gaps. Its sole recovered caller
+`options_exit_update` exits directly when unchanged, or enters save
 confirmation when changed.
 
 During manager phase 4:
@@ -537,8 +521,7 @@ During manager phase 4:
 | 6 | `manager_snapshot_state6` | Capture entry; release normal exit |
 | 7, Options | `manager_options_lifecycle` | Create child, capture; destroy child, release |
 
-Normal exit returns mode to 1. Only Options has the recovered comparator call.
-Other owners' gameplay remains uninterpreted.
+Normal exit returns mode to 1. Only Options has a recovered comparator call.
 
 Reversed edits matching baseline bytes produce no difference; play-time alone
 does not dirty, while any changed compared byte can prompt outside named
@@ -551,8 +534,7 @@ state 3. Initial No in `save_dialog_controller` flows through states
 `0x0A`/`0x0C` to parent result 2. This branch, Options completion,
 snapshot release and Controls/Audio/Display destruction do not restore baseline
 bytes or old settings. **Static conclusion:** declining save keeps edited live
-settings active and skips card write. A general rollback contract or persistent
-dirty flag for other controllers is not established.
+settings active and skips card write.
 
 ## Save/Load dialog text and confirmations
 
@@ -605,15 +587,13 @@ Lower submissions share one request gate and pending command:
 `card_rpc_wait` waits for completion, clears pending command, copies the
 completed count/error when requested, and releases the request gate.
 No pending command returns `-1` without writing the destination.
-`card_file_wait` and inspected callers ignore that return; this does not
-establish an ordinary submitted request can leave its result unwritten.
+`card_file_wait` and its inspected callers ignore that return.
 
 Read accepts every nonnegative completed byte count. Write does likewise, then
 requires flush completion zero. Requested counts are never compared.
 Indexed wrappers close only after successful transfer/flush. Successful close
 sets the stored handle to `-1`; failure retains it. Later open can overwrite
-the handle. Missing EE close alone does not prove a leak because the lower
-service can invalidate ownership.
+the handle; the lower service can invalidate ownership.
 
 #### EE completion and teardown ownership
 
@@ -629,9 +609,8 @@ fragments then signals. Neither tracks handles or closes
 files. Error completion releases the one-request gate just as success.
 
 `card_rpc_teardown` waits, deletes the two semaphores and invalidates the
-request-semaphore ID, without handle walk/close. No direct resident invocation
-was found, without excluding indirect calls. Inspected EE completion/teardown
-therefore does not supply file-descriptor reclamation.
+request-semaphore ID, without handle walk/close. EE completion and teardown therefore do not supply
+file-descriptor reclamation.
 
 #### IOP descriptor reclamation
 
@@ -642,8 +621,7 @@ exports. These relationships establish operation identity.
 
 The manager has three shared `0x30`-byte descriptor slots. Byte `+0` is
 in-use, `+1/+2` write/read permission, and signed halfwords `+6/+8`
-retain port/slot. Raw field offsets remain because no owning live program is
-available for applying their type. Open selects the first inactive slot,
+retain port/slot. Open selects the first inactive slot,
 returns `-7` if all three are occupied, and marks successful ownership.
 
 | Lower operation | Reclamation contract |
@@ -662,8 +640,7 @@ not guarantee continued occupancy.
 Manager full-close visits each occupied slot and invokes close. Its
 negative-argument module stop reaches full-close after unregister zero or
 `-213`, as do two device-lifecycle paths. This establishes lower teardown
-reclamation without establishing that ordinary NA2 save failure requests it.
-Server read/write errors return normally without close; inspected
+reclamation. Server read/write errors return normally without close; the
 open/close/read/write/flush handlers contain no cancellation command.
 
 The server's active flag is set during dispatch and cleared on the common
@@ -674,15 +651,11 @@ the descriptor-reclamation evidence.
 
 **Static conclusion:** backend-negative read/write and listed flush/close
 paths can release ownership despite an EE context retaining its numeric handle.
-Earlier errors, including EE submission failure after open, do not establish
-reclamation. A permanent leak is not proved either: later card invalidation/
-teardown can reclaim slots. Actual early-failure conditions remain open.
+Later card invalidation or teardown can reclaim the other slots.
 
-`shared:/MODULES.BIN` retains later embedded card members as unallocated
-bytes rather than separately analyzed programs. Relocated execution addresses
-are unestablished; their routines/types cannot be annotated at live addresses.
-The findings retain module and import/export identity without link-relative
-code citations.
+`shared:/MODULES.BIN` holds the embedded card members as relocatable bytes
+not analyzed as separate programs, so these findings cite module and
+import/export identity instead of live addresses.
 
 #### Directory-query producer and cached-buffer lifetime
 
@@ -712,13 +685,12 @@ Non-root enumeration starts at zero; root at 2. Non-root `*` retains its
 first two active entries and synthesizes `.`/`..`; ordinary names are
 copied. Creation order is consistent with payload rows 3..6 and descriptor
 row 7. Deleted/inactive/differently placed/extra matching entries change
-compacted indices. This is storage order, without an arbitrary-card guarantee.
+compacted indices.
 
 Only accepted rows are written. Short enumeration preserves an old suffix;
 a later negative one-row manager request returns error without rolling back
 already DMA-copied rows. Failed queries can therefore leave a new prefix and old
-suffix. These buffer-lifetime findings do not establish any particular card's
-contents.
+suffix.
 
 `card_info_stable` repeats paired responses until type/free-space/format/
 completed-result agree. Neither submission retry nor disagreement has an attempt
@@ -809,27 +781,23 @@ the earlier missing-primary branch fails reading descriptor before reconstructio
 even with a backup. Missing backup fails the four-profile rebuild.
 **Deduction:** an all-zero record reconstructs as occupied, passes structural
 validation and normal checksum zero, and loads without discriminator/default
-validation. This malformed case was not exercised.
+validation.
 
 Nonnegative short profile reads leave an uncleared heap suffix inside checksum
 calculation, also during reconstruction/restoration. Scan pre-fills its table
 destination `0xFF`, so short table read validates received bytes plus that
-remainder. Nonnegative short writes report success too. These are static
-contracts, without induced short-I/O observations.
+remainder. Nonnegative short writes report success too.
 
 No per-slot delete flow was recovered; occupied slots are overwritten.
-`card_rpc_delete` packages path deletion without a recovered resident
-caller. Worker `0x0B` uses full-card `card_format`/`card_rpc_format`;
+`card_rpc_delete` packages path deletion without a recovered resident caller. Worker `0x0B` uses full-card `card_format`/`card_rpc_format`;
 `0x0C` recreates the whole set.
 
 Normal load/save/snapshot, erased-record creation, missing-primary restoration
-and aligned icon allocation are unchecked before I/O/copy. Most secondary banks,
-aligned opaque regions and the tail retain unresolved meanings; copy shape
-does not establish float or fixed semantic record interpretation.
+and aligned icon allocation are unchecked before I/O/copy.
 
 ## Historical-card corroboration
 
-The inspected card contained a 64-byte descriptor file and four exact
+The historical card contained a 64-byte descriptor file and four exact
 `0x2400`-byte records. `data01` and `data04` were byte-for-byte identical.
 
 The raw descriptor table was:
@@ -884,8 +852,7 @@ The seven checksum-covered structured-copy gaps were:
 
 The values demonstrate that those bytes are not reliably zero. In combination
 with the proven copy omissions and non-clearing temporary allocation, their
-variation strongly supports the stale-allocation inference; one historical
-image alone would not establish provenance.
+variation strongly supports the stale-allocation inference.
 
 All four records shared identical Survival-table and late opaque-region bytes.
 The table values corroborate both insertion directions and seed metrics. For

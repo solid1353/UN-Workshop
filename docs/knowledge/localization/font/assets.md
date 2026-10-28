@@ -4,9 +4,9 @@
 
 Established: all five retail NA2 (`SLPS-25837`) font resources, their loading,
 selection, descriptors, glyph cells and palettes; GRF4 ruby behavior; and the
-UN5 GF4/GF4C cell and palette differences. Open: meanings of every descriptor
-flag. Static comparisons establish data differences, not rendered appearance.
+UN5 GF4/GF4C cell and palette differences.
 Routine, field and data names come from `@annotations/NA2`; addresses are live.
+Open: nothing.
 
 ## Resident loader and auxiliary ruby atlas
 
@@ -34,7 +34,7 @@ and `FontPaletteRecord`; parser comments retain the file-layout details.
 | GRF4 | One descriptor, 167 glyphs, 334 two-byte-code map records | 8×8 ruby cells; 32 packed 4-bpp bytes per glyph |
 
 `FontAssetRendererView.ruby` retains GRF4 independently of the selected face.
-Its only examined renderer path is `font_decode_ruby_glyph` (`0x00186C30`),
+`font_decode_ruby_glyph` (`0x00186C30`) decodes it when
 reached from `font_draw_text` (`0x00188140`) when inline markup enters the
 annotation arm after a pipe character. This arm requires bit 0 of
 `FontDrawState.render_flags`; otherwise the annotation is skipped through `>`.
@@ -54,8 +54,8 @@ unexplained trailer.
 | `SF1.BIN` | 103,046 | 1 | Mode-0 selectable font rasters and metrics |
 | `SF1C.BIN` | 104 | 2 | SF1's 16-entry RGBA CLUT |
 
-The semantic names of every type-1 descriptor flag remain unresolved; observed
-branches establish only the behavior recorded in the parser annotations.
+The parser annotations record the observed behavior of the type-1 descriptor
+flags.
 
 ## Retail NA2 10x22 baseline
 

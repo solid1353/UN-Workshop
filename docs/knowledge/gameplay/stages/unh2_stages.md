@@ -5,13 +5,14 @@
 Established: the archive set and format, BOOT.BIN's scene table, record
 dispatch and per-scene tables, scenes 5, 18 and 19's records with the
 handlers of the types UN2 lacks and of scene 5's props, the breakables,
-training dolls and item drops, the camera's section elevation, the route
+training dolls and item drops, the camera's section elevation and eye
+height limits, scene 19's floor layout, the route
 reader, the combo anchors, the scene-keyed code, the common sounds and
 footsteps, the battle tracks' format and selection, the Stage Select
 container and the English stage names, and what UNH2's scene 5 changes
-from UN2's. Open: the other scenes' records, which items UNH2's item codes
-are, and what the battle director's mode 6 does. Names come from
+from UN2's, and the jutsu camera's end request. Names come from
 `@annotations/UNH2`; UN2 comparison names from `@annotations/UN2`.
+Open: whether UNH2 applies UN2's screen-glare colour overrides.
 
 This document owns retail UNH2 (*Naruto: Ultimate Ninja Heroes 2*, US
 `ULUS-10349`) battle-stage facts and their correspondence with UN2, whose
@@ -108,7 +109,6 @@ Kind 7 holds `0x30`, `0x14`, `0x0E`, `0x25`, `0x23`, `0x2B`, `0x26`,
 `0xD`..`0x16` with `0x23`, `0x24` and `0x26`..`0x2B`, and `0x17`..`0x1B`
 with `0x2C`..`0x2E`; in UN2, items 1, 4 and 5 heal and 8..`0xC` restore
 chakra ([UN2 battle stages](un2_stages.md#record-types-of-the-six-scenes)).
-Which items UNH2's codes are is not established.
 
 ## Per-scene tables
 
@@ -117,6 +117,7 @@ Which items UNH2's codes are is not established.
 | `stage_camera_records_by_scene` | `0x08B57B60` | 22-float records, UN2's fields 0..21; `camera_bind_stage_record` (`0x088ECF40`) binds them at camera `+0x17C` |
 | `stage_effect_intensity` | `0x08B25E68` | UN2's 18 bytes, then `0xFF` for scenes 18 and 19 |
 | `stage_render_coefficients` | `0x08B51D50` | UN2's, then (0.32, 0.3) and (0.45, 0.3) |
+| `stage_scene_effect_defaults` | `0x08B51E70` | UN2's 18 [screen glare rows](un2_stages.md#per-scene-tables), then disabled zero rows for scenes 18 and 19; whether UNH2 applies UN2's colour overrides is not traced (scene 5's row has none in UN2) |
 | `stage_music_tracks` | `0x08BD071C` | a `music_rows` index per scene, `0x0F` for scenes without an archive |
 | `stage_navigation_authored_routes` | `0x08B58E30` | UN2's rows; scenes 18 and 19 point at scenes 16's and 17's lists |
 | `stage_combo_anchors` | `0x08B31ED0` | UN3's and NA2's layout: side 0 and 1 vector pointers at `+0`/`+4`, counts at `+8`/`+9` |
@@ -125,8 +126,20 @@ Which items UNH2's codes are is not established.
 19 (`+0x4C`) when the fighters' sections differ and by field 20 (`+0x50`)
 when either is nonzero, as UN2's does. Scene 18's record equals UN2 scene
 16's; scene 19's equals scene 17's except field 17 (`+0x44`), -2000
-against 200, which NA2 does not read either; scene 5's differs from UN2's
-in field 17 alone (-1200).
+against 200; scene 5's differs from UN2's in field 17 alone (-1200).
+`camera_place_eye` (`0x088EE2A8`) caps the eye's height at field 16
+(`+0x40`), then raises it to field 17 when below it (`0x088EE848`), so
+the eye stays at height 200 or above on UN2's scenes and scene 18, while
+scenes 5 and 19 have no effective floor. No read of field 17 was found in
+UN2's stage camera (`0x001ED960` and its placement routines). Each
+fighter's tracked point rises by 0.55 of its scaled height
+(`camera_stage_track`), where UN2's rises by 0.75 (`0x001EDFE8`).
+
+Scene 19's floor (`MDL_obj_000_`) is a pit at height 0, |x| up to 492,
+from depth -2496 to 488, between walkways at height 200 (|x| 548 to 1600)
+along the whole room, with a rim from |x| 492 to 548 whose top is at 204.
+Its camera has no eye floor, so nothing keeps the eye above the rim and
+the walkways when it sits at |x| 492 or more.
 
 Each route list ends with a zero row where UN2's end with source `0xFF`.
 `stage_navigation_initialize` (`0x08905738`) copies rows until source
@@ -165,7 +178,7 @@ default.
 | `stage_choose_combo_anchor` | 5 | Return side 1 (above) |
 | `skill_pair_place_rectangles` (`0x08A359C8`) | 0, 1, 2, 5, 13 | A jutsu's pair placement (`skill_pair_place`, `0x08A35DFC`, UN2's `0x007BEDE0`: ground probes at distances per jutsu) first moves a participant standing inside a rectangle of `skill_pair_rectangles` (`0x08BCEB10`) to its target row's point picked by the partner's side. On scene 5's section 0, x -1500..-500 below height 120 or -500..0 below 400 move both participants to (-720 or -500, 0, 0), the mirrored rectangles to (500 or 810, 0, 0); on section 1, x -1250..-1055 or 1055..1250 below 300 move the participant to (-550 or -300, 600, 400) or (300 or 550, 600, 400) |
 | `skill_camera_kind13` (`0x08A44488`), `skill_camera_kind1b` (`0x08A44F10`), `skill_camera_scene5_high` (`0x08A47734`) | 5 | Three jutsus' cameras take scene-5 presets near the stage's ends or with both fighters high on section 1 |
-| `skill_request_director_mode6` (`0x08A16A24`) | 5 | Every jutsu sets the battle director's mode 6 but jutsu 5 with the target off section 0 and jutsus `0x46` and `0xF` above height 500 |
+| `skill_request_jutsu_camera_end` (`0x08A16A24`) | 5 | Every jutsu posts request 6 to the jutsu camera (battle `+0x1FC`, UN2's battle `+0x260`), which ends its shot and hands the view back to the battle camera (`jutsu_camera_take_request`, `0x08A41214`; `jutsu_camera_apply_state`, `0x08A4749C`), but jutsu 5 with the target off section 0 and jutsus `0x46` and `0xF` above height 500 keep the shot |
 
 ## Battle music
 

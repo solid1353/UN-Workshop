@@ -5,10 +5,7 @@
 Established from the retail NA2 `ICON.BIN`: header, all triangle records,
 the single constant shape key, complete RLE texture, sheet UVs and sector
 padding. The resident writer's background and lighting tables are identified.
-The PS2 Browser's exact projection, camera and lighting arithmetic remain open;
-an offline viewer image does not establish those firmware behaviors. Header
-flag bits 0 and 1 and the unused fourth position/normal components are not
-assigned meanings here.
+Open: nothing.
 
 ## Source and extent
 
@@ -31,8 +28,8 @@ All multibyte values are little-endian. The header occupies `0x14` bytes.
 | --- | --- | --- | --- |
 | `0x00` | u32 | `0x00010000` | Icon format magic |
 | `0x04` | u32 | 1 | Shape count |
-| `0x08` | u32 | `0x0F` | Flags: texture present (`0x04`), RLE (`0x08`); low bits unresolved |
-| `0x0C` | f32 | 1.0 | Header scalar; exact consumer meaning unestablished |
+| `0x08` | u32 | `0x0F` | Flags: texture present (`0x04`), RLE (`0x08`) |
+| `0x0C` | f32 | 1.0 | Header scalar |
 | `0x10` | u32 | 1,302 | Vertex count, forming 434 independent triangles |
 
 Geometry is `0x0014..0x7A23`: 1,302 records of 24 bytes. Each record has
@@ -102,8 +99,3 @@ these values; vector W values are all zero.
 | `card_icon_ambient_color` | `0x003FBBE0` | `0xB0` | `(0.3,0.3,0.3)` |
 
 The writer sets the transparency field at `icon.sys+0x0C` to `0x60`.
-Those inputs are distinct from the firmware's camera and projection.
-The public mymc viewer's
-[default camera](https://github.com/ps2dev/mymc/blob/master/gui.py)
-is `(0,4,-8)`; using it is an approximation, not evidence that the PS2
-Browser uses the same transform.

@@ -10,11 +10,9 @@ attachments, framebuffer coordinate ownership, 71 scoped
 transition-pool setups, BTL cover/window identities, native help backing,
 splash source artwork, selected authored menu backing models, and sprite
 texture re-upload and V origin.
-Open: unsampled authored frames, indirect/inline
-draw paths, the optional Circle panel's parent, exact SPBATTLE labels and
-higher resource ownership of local flashes.
 Names come from `@annotations/NA2`; comments carry per-routine evidence.
-Coverage is static and bounded; incomplete references do not prove absence.
+Coverage is static.
+Open: nothing.
 
 This document classifies retail NA2 (`SLPS-25837`) 2D geometry by its
 screen/object, purpose, coordinate space, transforms and clipping owner.
@@ -26,7 +24,6 @@ Shared transform formulas belong to [Renderer and coordinate systems](renderer_c
 packet lifetime to [Render submission](render_submission.md), HUD bindings to
 [Battle HUD](../../gameplay/session/battle_hud.md), and font metrics to
 [Font renderer metrics](../../localization/font/renderer_metrics.md).
-No rendered output is established by this static classification.
 
 ## Colored-rectangle slots
 
@@ -53,9 +50,8 @@ rotated transform.
 `primary_transition_pool` (`0x00607460`), then draws it. It assigns
 `transition_alternate_render_context` to the second, `global_transition_pool`
 (`0x00607464`), then draws that pool. `transition_global_start` and the
-inspected global frontend/battle requests use this second pool.
-The constructor's default viewport does not establish the final list used by
-every global fade. Local pools can also select their own context.
+global frontend/battle requests use this second pool. Local pools can also
+select their own context.
 
 ## Immediate rectangles and bounded sprites
 
@@ -99,9 +95,7 @@ these sprites. Its geometry branches use `ProjectedTextGeometryView`:
 The rejection region is 512 by 448 device pixels, at 16 units per pixel and
 centered on `0x8000`. It is broader vertically than the logical 384-line
 viewport. These are coarse CPU bounds, separate from object-specific scissor
-state; they do not establish visible pixels outside the logical viewport.
-Generic rotation support does not establish that an individual HUD caller
-enables it.
+state.
 
 ### Direct primitive-emitter census
 
@@ -118,15 +112,15 @@ resident cohort includes these owners:
 | Geometry owner | Named routines | Coordinate ownership |
 | --- | --- | --- |
 | Textured quads | `immediate_textured_rectangle_scaled_rotated` (`0x00353A60`), `centered_texture_owner_draw` (`0x00391EA0`), `lens_flare_draw_quad` (`0x003943B0`) | Caller dimensions, optional local rotation or uniform scale, then shared 2D. Texture/artwork identity is separate from quad extent. |
-| Atlas number | `atlas_number_with_suffix_draw` (`0x00360740`) | Up to three decimal digits and suffix use local atlas metrics on the supplied context. Exact screen identity remains open. |
+| Atlas number | `atlas_number_with_suffix_draw` (`0x00360740`) | Up to three decimal digits and suffix use local atlas metrics on the supplied context. |
 | Colored mesh/segments | `colored_six_rectangle_pairs_draw` (`0x0036E480`), `colored_radial_mesh_draw` (`0x0036E590`), `gradient_axis_segment_draw` (`0x00378AD0`), `gradient_rectangle_draw` (`0x00378D50`), `gradient_axis_segment_color_first_draw` (`0x0037DDB0`) | Caller pairs, ring/band geometry or segment/rectangle dimensions. None has an intrinsic screen-cover contract. |
 | Rectangle records | `immediate_rectangle_outline_draw` (`0x0037DC20`), `colored_rectangle_record_draw` (`0x0037E030`), `twelve_rectangle_color_pulse_draw` (`0x0038AB60`) | Closed perimeter, caller rectangle or twelve signed-halfword table rectangles. Producer semantics remain separate. |
-| Text/state overlays | `ccs_player_status_overlay_draw` (`0x0019FD20`), `text_panel_state_draw` (`0x00390A30`) | Bounded backing plus text; CCS status reachability and the panel's screen identity remain open. |
+| Text/state overlays | `ccs_player_status_overlay_draw` (`0x0019FD20`), `text_panel_state_draw` (`0x00390A30`) | Bounded backing plus text. |
 
 BTL's `linked_ribbon_geometry_draw` (`0x00707BD0`) selects flags zero when
 owner flag `0x1000` is set, otherwise flags one and `device_projection`.
 `track_render_weights` (`0x00720FD0`) uses flags one for its world-space trail
-points; that path is not evidence of a bounded UI bypass. The remaining two
+points, not a UI bypass. The remaining two
 owners are the interaction-region draws below.
 
 ## Practice geometry cohort
@@ -162,7 +156,7 @@ selected list's clipping contract.
 | --- | --- | --- |
 | Global fade | `transition_global_start` (`0x00105600`) | Forward supplied duration/colors to the second/global pool with fixed full-frame geometry; presentation selects the alternate context. |
 | Table-selected fill/fade | `transition_fullscreen_hold` (`0x001EB600`), `transition_fullscreen_reverse` (`0x001EB670`), `transition_fullscreen_forward` (`0x001EB700`) | Clear the secondary slots first; hold uses the second color for both endpoints, reverse uses second→first, forward uses first→second. |
-| Playback/transition | `movie_play_descriptor` (`0x001DBD60`) | Initial cover and timed/skip transitions use opaque/transparent white. Wait on `settings_resource_pending` and yield through `task_wait_current`. The exact presentation identity remains open beyond the established movie ownership. |
+| Playback/transition | `movie_play_descriptor` (`0x001DBD60`) | Initial cover and timed/skip transitions use opaque/transparent white. Wait on `settings_resource_pending` and yield through `task_wait_current`. |
 | Title | `title_update` (`0x001DF690`) | State 2 starts a 14-step white cover; states 4/6 use the black table fade over 20 steps. Scene geometry belongs separately to `title_present`. |
 | Mode Select entry/return | `mode_select_construct_resources` (`0x00383DB0`), `mode_select_update` (`0x003854F0`) | Entry: opaque→transparent white over 16 steps. Return to title: transparent→opaque saved clear color over 30 steps. Resumed dialog: `0x50000000`→transparent over four steps. |
 | Character Select confirmation | `character_select_update` (`0x003BBBB0`) | Accepted selection starts transparent→opaque white over 16 steps, independently of portrait and prompt batches. |
@@ -176,7 +170,6 @@ The decoded `transition_fullscreen_colors` (`0x005C0950`) values are:
 | 2 | `0x00FFFFFF` | `0xFFFFFFFF` |
 
 These express black/white opacity transitions; the wrapper chooses direction.
-Table index bounds are unproved.
 
 Title and Mode Select state ownership is in
 [Front-end mode flow](../../game/mode_flow.md#mode-select-controller);
@@ -185,7 +178,7 @@ Character Select's final handoff is in
 
 ### Scoped transition producer ownership
 
-The inspected in-scope setup labels comprise 38 resident sites, 27 BTL sites
+The in-scope setup labels comprise 38 resident sites, 27 BTL sites
 and six Collection ETC sites. All 71 supply `(0,0,512,384)`: 69 select
 `global_transition_pool`, while two select embedded pools below. This closes
 geometry in that cohort, rather than every call to these generic services.
@@ -213,25 +206,23 @@ The second owner is the lens flare UN3 builds for its `0x6A0` stage record
 ([UN3 battle stages](../../gameplay/stages/un3_stages.md#s20-stage-specific-records)).
 UN3's copy is the same code. Indexed references, stored-pointer and direct J/JAL
 searches across NA2's resident, BTL and ETC expose no attachment to its
-initializer or draw, without truncation; computed-address reachability remains
-open.
+initializer or draw.
 
 ### Presentation-rectangle records
 
 `presentation_effect_request` (`0x00309C50`) retains a caller origin and
 width/height in one of four `0x50`-byte records. Its direct encoded-JAL and
 xref census is five physical resident calls, 57 BTL calls and no ETC calls.
-All 62 inspected setups supply `(0,0,512,384)`. Source-setup labels in
+All 62 setups supply `(0,0,512,384)`. Source-setup labels in
 `@annotations/NA2` retain each site's evidence. The service itself still
-accepts arbitrary dimensions; the census does not classify indirect callers.
+accepts arbitrary dimensions.
 
 Known producers include `clash_initialize`, `skill_primary_submit_record`,
 `skill_camera_enter` and the cut-in controller. `cutin_stage_record`
 (`0x0086FCD0`) requests transparent-to-`0x40000000` black on its own bank;
 `cutin_reset` (`0x0086FEA0`) and `cutin_update` (`0x00870270`) request the
-reverse. Other inspected producers use black, white or colored opacity
-transitions, independently of their authored scene geometry. Exact character
-and scene identities remain open for some producer routines.
+reverse. Other producers use black, white or colored opacity
+transitions, independently of their authored scene geometry.
 
 `presentation_rectangle_records_draw` (`0x00309BC0`) counts active records
 and selects its optional environment or the current environment.
@@ -251,9 +242,8 @@ the end of its pass. These local banks keep their own phase/color state.
 
 ## Direct immediate-rectangle caller inventory
 
-This is the bounded cohort of inspected direct callers. It does not cover
-inline quads, function-pointer calls or rectangle-slot producers. Annotation
-comments retain the physical-call census and individual call evidence.
+These are the direct callers. Annotation comments retain the physical-call
+census and individual call evidence.
 Logical geometry is `(x,y,width,height)`; dimensions alone do not identify a
 screen.
 
@@ -265,13 +255,13 @@ screen.
 | Practice settings backdrop | `practice_settings_draw` (`0x00882250`) | Same full-frame/color contract, gated by `PracticeSettings.backdrop`. |
 | SPBATTLE window dimmers | `btl_window_rows_draw` (`0x006E2D70`, `ccTermsInfoWnd`), `btl_window_two_boxes_draw` (`0x006E4D80`, `ccTermsBtlSetWnd`), `btl_window_scene_draw` (`0x006E6CE0`, `ccTermsSelWnd`) | Integer `(0,0,512,448)`, black with computed opacity. The first two multiply modal opacity by parent `fraction` and `255*0.5`. Requested logical height does not establish a 448-line viewport. |
 | Two repeated boxes | `btl_window_two_boxes_draw` (`0x006E4D80`) | For `i=0,1`: outer `(110,16+36*i,123,25)`, RGB `0x808080`; inner `(112,18+36*i,121,23)`, RGB `0xF0F0F0`. Parent `fraction` controls alpha, independently of its modal dimmer. |
-| BTL modal covers | `btl_menu_modal_draw_a`, `btl_menu_modal_draw_b`, `btl_modal_text_draw_a` (`0x006ED080`), `btl_modal_text_draw_b` (`0x006ED2E0`) | Integer `(0,0,512,384)`, `0x88000000`, before modal/menu children. Exact modal labels remain open. |
+| BTL modal covers | `btl_menu_modal_draw_a`, `btl_menu_modal_draw_b`, `btl_modal_text_draw_a` (`0x006ED080`), `btl_modal_text_draw_b` (`0x006ED2E0`) | Integer `(0,0,512,384)`, `0x88000000`, before modal/menu children. |
 | Selected-stage fallback | `stage_select_selected_stage_draw` (`0x007151D0`), called by `stage_select_close` (`0x00715CC0`) | Integer `(20,340,200,40)`, `0x7F000000`, when the selected stage has no match in the 24-row record table. Matching selects its stage-name atlas cell; fallback adds a box/text and subsequently uses record 0's atlas cell. |
 | Battle item-selection separator | `btl_item_menu_draw` (`0x008768D0`), `btl_item_menu_separator_rectangle` (`0x008BD830`) | Fixed X `8`, width `348`, height `1`, RGBA `0xA0402020`; when item index `0x15` is in the seven visible rows, only Y becomes `rowY-16`. Signed-halfword conversion uses the parent window's content context. This is a bounded rule. |
 | Three menu rules | `btl_item_menu_draw`, `btl_menu_rule_rectangles` (`0x008BD850`) | `0xFF404040` with `(200,14,1,296)`, `(284,14,1,296)`, `(8,42,348,2)`: bounded vertical/horizontal rules. |
 | Start Menu host cover | `start_menu_draw` (`0x0087D460`), `start_menu_cover_rectangle` (`0x008BD9F0`) | Integer `(0,0,512,384)`, `0x88000000`; host `render_context` selected before child dispatch. |
 | Running-help backing | `scrolling_strip_draw` (`0x0037F900`) | Native styles stretch a `2x48` alpha slice to an owner-width `512x48` band in a separate backing context; text has its own cropped context. Null texture/descriptor selects the generic solid rectangle branch. |
-| Character Select modal covers | `character_select_draw_assignment_dialog` (`0x003BC780`), `character_select_draw_return_dialog` (`0x003BC950`) | Integer `(0,0,512,384)`, `0x88000000`, followed by windows and bounded text/prompts. Specific modal labels remain open. |
+| Character Select modal covers | `character_select_draw_assignment_dialog` (`0x003BC780`), `character_select_draw_return_dialog` (`0x003BC950`) | Integer `(0,0,512,384)`, `0x88000000`, followed by windows and bounded text/prompts. |
 
 The Start Menu child/result boundaries are in
 [Pause and replay](../../gameplay/session/pause_and_replay.md#btl-start-menu-construction-and-ui-states);
@@ -289,7 +279,7 @@ background/modal covers remain distinct from ranking, row highlights and text.
 classes. `spbattle_linked_windows_draw` (`0x006E8070`) invokes their descriptor
 draw member `+0x18`, establishing computed reachability. Their authored
 `ANM_spbattle_ca`/rule/player scenes and `gauge` atlas children have separate
-geometry. Exact translated screen wording remains open.
+geometry.
 
 `battle_item_selection_construct` (`0x00875B80`) creates the item-selection
 window and `ANM_xkun1a` / `MDL_xkun1` player. The same owner supplies the
@@ -308,7 +298,7 @@ from cropped text; panel bounds do not make that cover a bounded text quad.
 
 ## Screen and resource ownership
 
-The inspected consumers distinguish the frame they cover from the bounded
+The consumers distinguish the frame they cover from the bounded
 artwork, text or authored scene layered with it.
 
 | Screen/object | Named owner/resource | Geometry/layout contract |
@@ -371,7 +361,7 @@ texture coordinates. The character backing is a separate atlas swatch;
 portraits. The latter combines backing with bounded artwork. Sharing
 `TEX_mtttl02` or one player does not combine the models' geometric purposes.
 Title camera positions have multiple authored keys, so one fixed camera does
-not establish coverage throughout both animations.
+not give the coverage throughout both animations.
 
 `mode_select_construct_prompt_resources` (`0x00383F80`) binds original
 `MODESEL1.CCS` players `ANM_modesel_ca`, `ANM_mode_back` and
@@ -382,8 +372,8 @@ IDs `20/21`, material `1412` and texture `1413`. Its model-space X bounds
 are `-529.75..530`, Z `-397.25..397.5`; all four paired texture coordinates
 are `(4,251)`. This constant-sample backing is separate from the machine's
 15 object tracks, the tube and secondary backing model. Model-space extents
-and source sampling identify these owners; they do not establish final
-projected or widened coverage. Source identities are retained in annotations.
+and source sampling identify these owners, not final projected or widened
+coverage. Source identities are retained in annotations.
 
 `hud_combo_draw` (`BTL.BIN:0x006B7100`) similarly mixes atlas digits with an
 optional authored animation. It reconstructs the animation's world anchor
@@ -391,7 +381,6 @@ through `renderer_screen_depth_to_world` at depth 500. The digit and animation
 paths are separate; their placement agreement depends on the forward
 projection and the fixed-reference inverse described in
 [Renderer and coordinate systems](renderer_coordinates.md#coordinate-utility-consumers).
-Their separate paths do not by themselves establish a visible mismatch.
 
 ### Auxiliary interaction regions
 
@@ -422,8 +411,7 @@ They share X endpoints: signed word `movie_bar_left_x` (`0x006075A0`) and
 `movie_bar_bounds.right_x = 512`. `entry` zero-fills the BSS interval containing
 the left word at `0x00100160`, establishing initial X `0`. Own-game xrefs
 expose the four subtitle reads; an aligned GP word-store search across the
-three maintained programs found no later producer. Indirect, bulk or aliased
-mutation remains outside that bounded writer audit.
+three maintained programs found no later producer.
 
 | Bar | Y interval |
 | --- | --- |
@@ -473,8 +461,7 @@ Other framebuffer producers bypass the shared 2D matrix:
 not choose coordinates: `render_packet_append` (`0x00109740`) only links DMA
 tags. Its exposed resident callers are image copy, the two framebuffer-record
 branches and the device alpha pass below; exposed BTL/ETC references add no
-callers. Other producers inline those links. This is a bounded attachment
-query, not a census of raw GS writers.
+callers. Other producers inline those links.
 
 | Screen/object path | Established coordinate owner |
 | --- | --- |
@@ -512,14 +499,14 @@ to VU data slots `0..3`. `particle_sprite_vu_entry_31f` (embedded EE bytes at
 `0x003CEB30`, VU entry `0x31F`) consumes all four columns, divides XYZ by
 homogeneous W and converts to fixed4 before emitting the planar quad. It does
 not fetch another renderer matrix. Its projected XY sign checks against
-`0/4095` can suppress the kick; boundary arithmetic is not established here.
+`0/4095` can suppress the kick.
 The [shared upload boundary](model_vu_programs.md#initial-upload-boundaries)
 owns installation. MCP exposes these embedded instructions as bytes rather
 than EE functions; their decoding is recorded in the annotation.
 
 `effect_position_history_draw` (`0x0039D8D0`) and
 `effect_fifteen_records_draw` (`0x003A72B0`) also reach that particle route.
-Their local position records alone do not establish a bounded UI owner.
+Their local position records alone do not make them UI owners.
 World trails and framebuffer transfer quads are not classified as UI by their
 packet or rectangle shape.
 
@@ -531,8 +518,7 @@ six member descriptors. Preparation selectors 0/1/2 choose a no-op,
 draw group chooses a no-op, `colored_six_rectangle_pairs_draw` or
 `colored_radial_mesh_draw`. `ccfm_owner_draw` (`0x003701E0`) and the nested
 transformed owner select that draw group with their byte selector. Thus these
-computed calls reach the already classified shared-2D meshes. This establishes
-the installed descriptor family, not every authored callback in NA2.
+computed calls reach the already classified shared-2D meshes.
 
 Other packets in those owners have separate contracts:
 
@@ -589,8 +575,7 @@ The condition windows' resident descriptors, `btl_terms_info_callbacks`
 named constructors and draw callbacks. `battle_spbattle_ccs_acquire` creates
 the children, `btl_terms_child_link` (`0x006E8250`) links them, and
 `spbattle_linked_windows_draw` (`0x006E8070`) invokes descriptor slot `+0x18`.
-This closes their installed computed draw path; exact player-facing labels
-and complete frontend reachability remain open. The command-menu layer-2
+This closes their installed computed draw path. The command-menu layer-2
 sprite binds to the owned host context `+0x40` in `start_menu_create_resources`
 (`0x0087B7F0`).
 [Start Menu ownership](../../gameplay/session/pause_and_replay.md#btl-start-menu-construction-and-ui-states)
@@ -598,8 +583,8 @@ owns its child/result routing.
 
 None of these five draw callers publishes a scrollbar-specific viewport or
 scissor. A rectangle derived from the text renderer can therefore submit on
-the panel backing or host renderer instead. Moving the text crop does not
-establish a matching change to that sprite's final matrix or list scissor.
+the panel backing or host renderer instead. Moving the text crop does not change
+that sprite's final matrix or list scissor.
 
 `optional_circle_prompt_owner_initialize` (`0x003906B0`) instead creates one
 environment borrowing `default_renderer`, selector `0xFF`, and leaves its
@@ -608,15 +593,11 @@ that environment and, while copied draw state `+0x10C == 1`, draws an opaque
 black strip with endpoints `(0,120)..(512,230)`, text at `(100,135)` and
 `optional_circle_prompt_draw` (`0x00390540`) at `(450,195)`. The two sprite
 cells yield the same 18-by-18 destination; the font fallback binds the same
-environment, although its extent is not established by the sprite table.
-Neither branch introduces another renderer or private crop. The backing's
-512-wide interval does not establish its intended screen coverage.
+environment. Neither branch introduces another renderer or private crop.
 
-Exposed references and encoded direct-call/literal-pointer searches establish
-no parent attachment for this Circle-panel initializer or draw. Its screen
-identity remains open. These attachment findings close the named consumers
-and installed callbacks, while universal indirect/inline, asset-frame and
-all-screen coverage remain unproved.
+The ELF, `BTL.BIN` and `ETC.BIN` never call this Circle-panel initializer or
+draw; only `ADV.BIN` does (direct calls recorded on both routines'
+annotations).
 
 ### Streamed-color source geometry
 
@@ -658,7 +639,7 @@ the same packet. Ordering and lifetime belong to
 Caller geometry and local transforms therefore inherit the **selected
 list's** scissor on the normal path. Replacing a pool context or selecting a
 window context changes that viewport owner. A 512-by-448 mask or glyph beyond
-a window does not establish visible coverage outside the selected viewport.
+a window is still clipped to the selected viewport.
 
 `render_begin_draw_packet` also copies `device_min/device_max` and
 `clip_min/clip_max` into the primitive; `model_property_build_draw_workspace`

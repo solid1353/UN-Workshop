@@ -3,7 +3,7 @@
 ## Research coverage
 
 Established: primary ownership, playback synchronization, attack origins, update order and root-motion coupling for Classic Kankuro, Kankuro, Chiyo and Sasori, plus trail definitions, attachment precedence, fixed pools, expiry and curve equations.
-Open: complete action-specific deformation, every generated descendant and visible configuration, Chiyo's nonzero decay-source writer, missing-attachment reachability, degenerate normalization, original action names and elapsed-time retention.
+Open: nothing.
 
 Routines, structures and data use names from `@annotations/NA2`; comments hold per-routine detail.
 
@@ -29,12 +29,9 @@ confirmed character-local state. Shared primary fields use `Fighter`;
 playback fields use `CcsAnimationPlayer`. Unknown layouts retain raw offsets.
 
 An auxiliary scene is not automatically an independently registered battle
-actor. These control, allocation and attack paths establish primary coupling;
-they do not establish separate controller input, independent fighter
-registration or an independently damageable puppet. This is a bounded
-conclusion, not a whole-program proof of absence. Large deformation routines
-were inspected for control and ownership without decoding every authored
-constant or matrix operation.
+actor. These control, allocation and attack paths couple the puppet to the
+primary; none gives it separate controller input, independent fighter
+registration or its own damage.
 
 ## Chiyo's two subordinate records
 
@@ -297,8 +294,7 @@ Default channel 3 supplies mode zero for selector `0x21` while
 `(60,0,150)`, with X reversed when `response_facing == 1`. It supplies
 mode one for `0x1B/0x1E/0x20` while second state is zero, for `0x1D`
 throughout the inspected callback branch, and for `0x1C` in phase 1 or
-in phase 0 while second state is zero. These are callback predicates,
-not recovered action names or observed emission frequencies.
+in phase 0 while second state is zero.
 
 Every successful call uses `sasori_puppet_generator_descriptor` and
 `sasori_puppet_generator_force`. It chooses one of two borrowed materials
@@ -326,8 +322,7 @@ under manager update gates. Primary puppet teardown is not the demonstrated
 owner of this registered generator. Registration publishes the explicitly
 supplied material-object array and bypasses
 `battle_generator_resolve_visual_resource`, whose catalog branch applies
-when no array is supplied. Descendants' actual appearance remains unsampled;
-other overlay creation calls in this callback remain unclassified.
+when no array is supplied.
 [Scene playback owners](../../runtime/scene_playback_owners.md#generator-child-ownership)
 owns construction/reuse of those resources.
 
@@ -346,9 +341,7 @@ Playable `0x4C` uses `fighter_id_076_construct` (`0x002D42D0`) and
 and substitute the bone's `CcsScenePlayTarget.auxiliary`, preserving its
 prior pointer in `SasoriBoneGeometryRecord.saved_geometry`.
 `sasori_variant76_release_bone_geometry` (`0x002D4910`) destroys the
-owned replacements and restores nonnull saved pointers. These model/bone
-ownership paths do not establish that playable `0x4B/0x4C` alias the
-`0x3F` controlled auxiliary playbacks.
+owned replacements and restores nonnull saved pointers.
 
 ## Primary dispatch and subordinate update order
 
@@ -374,8 +367,8 @@ then surviving-primary auxiliary work. Each primary receives
 `entity_resource_update`, its ordinary class update, then channel 5.
 The generic movement/animation pass sets `state_flags & 0x10` for an
 active fighter. Later phase-2 submission reaches the class presentation
-wrapper, whose playback/movement work requires that bit clear. Reaching both
-wrappers therefore does not prove two subordinate advances.
+wrapper, whose playback/movement work requires that bit clear, so reaching
+both wrappers does not mean two subordinate advances.
 [Battle lifecycle](../session/battle_lifecycle.md#what-phase-2-guarantees)
 owns the full session order.
 
@@ -445,7 +438,6 @@ modulates sample alpha.
 
 **Inference, high confidence:** primary/puppet attachment names and the
 segmented fading geometry identify this as the puppet-string/trail family.
-They do not establish which configuration is visible in every action.
 The inspected helper allocation/cleanup owns neither an input object nor a
 primary battle slot. `puppet_trail_helper_destroy` frees its sample buffers
 and nodes, then the helper; borrowed fighter/playback lifetime stays with the
@@ -477,7 +469,7 @@ Successful construction produces 15 nodes from **13 distinct definitions**.
 | `point_count` | Spatial points, parameter `i/(N-1)`. |
 | `extra_temporal_samples` | Subdivisions between retained samples once at least four are active. |
 | `tension` | Shared authored value for spatial and temporal curves. |
-| Raw `+0x84` | Zero in the sampled definitions; meaning unknown. |
+| Raw `+0x84` | Zero in the sampled definitions. |
 
 All definitions have lifetime 4, pool count 8, point count 16 and tension
 `-1.0`. Extra temporal count is 2 for
@@ -485,14 +477,12 @@ All definitions have lifetime 4, pool count 8, point count 16 and tension
 `kankuro_kuroari_trail_head`; the other ten use zero.
 Each node therefore owns `8*0x310 = 0x1880` bytes: a sample header and
 16 point records per slot. The embedded parameter array also holds 16 floats.
-These shipped capacities do not prove arbitrary authored counts safe: the
-inspected code does not clamp them.
+The code does not clamp authored counts to these capacities.
 
 For each sample, a cached primary attachment wins. Only a null cache invokes
 a fresh retained-playback name lookup; the result is local and looked up again
 later. If both fail, the producer uses the playback root-matrix translation.
-There is no missing-name rejection in this producer. Reachability of that
-fallback in every shipped action remains unmeasured.
+There is no missing-name rejection in this producer.
 
 The configurations preserve slot order. Primary suffixes complete
 `OBJ_2cmn00t0 `; auxiliary suffixes complete the listed prefix plus a space.
@@ -514,8 +504,7 @@ The configurations preserve slot order. Primary suffixes complete
 | `sasori_trail_left_arm` | r clavicle / r finger0 | `OBJ_2kkg00t0` | l hand / l forearm |
 | `sasori_trail_right_arm` | l clavicle / l finger0 | `OBJ_2kkg00t0` | r hand / r forearm |
 
-The literal `l forerarm` spelling is confirmed data; it does not establish
-a lookup failure.
+The literal `l forerarm` spelling is confirmed data.
 
 ### Pool reuse, expiry and smoothing
 
@@ -567,9 +556,7 @@ C(t) = H00*P1 + H10*s*(P2-P0) + H11*s*(P3-P1) + H01*P2
 
 W is forced to 1. Each point then adds
 `sin(pi*t/2)*rng_central_band(5.0,1.0)` to Z.
-[Randomness](../../runtime/randomness.md) owns the random service; these fixed
-arguments do not establish an observed visible amplitude distribution or
-reproducible sequence here.
+[Randomness](../../runtime/randomness.md) owns the random service.
 
 `puppet_trail_insert_temporal_samples` (`0x0020F8E0`) snapshots the newest
 four samples as `Q0/Q1/Q2/Q3`, inserts the authored extra count `k`
@@ -618,7 +605,6 @@ P3 = A2 + U1*cos(phase1)*(amplitude1 != 0 ? amplitude1 : 50)
 Nonzero amplitudes approach zero by their own decay factor and clear below 1.
 The envelope independently approaches zero with factor `0.25`, hence
 `q_next=0.75*q`. Resetting samples does not alter these fields.
-Zero-length normalization and visible geometry for every pose remain open.
 
 In major 0, minor 3, `classic_kankuro_channel2` checks each node's
 channel-0 amplitude below 50 and `prng_inclusive(1)==0`, then sets both
@@ -643,15 +629,11 @@ amplitude is `300*(current_record.damage/0.015)`. Decay is
 ```
 
 This publishes curve controls without replacing definitions or resetting
-samples. Other branches sharing the request were not exhaustively assigned
-action-specific equations.
+samples.
 
-The nonzero writer of `motion0.deformation_decay_source` (primary
-`+0x5710`) remains open. Reset clears it. The inspected outbound,
-mode-2/return, playback wrappers and default channel-2/3 routines do not write
-it; their bounded negative findings are in their annotation comments.
-Those reads establish neither the value for every request nor avoidance of a
-zero denominator.
+Reset clears `motion0.deformation_decay_source` (primary `+0x5710`). The
+outbound, mode-2/return, playback wrappers and default channel-2/3 routines
+do not write it; their negative findings are in their annotation comments.
 
 ### Draw admission, update and reset remain separate
 

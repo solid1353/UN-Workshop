@@ -6,11 +6,9 @@ Established statically: the main-loop states, New Game's manager setup, the
 scene and mode dispatch, Mode Select's results, the Practice controller's
 states, how Character and Stage Select hand their results to the manager,
 where each side's Ultimate Jutsu is kept, and where Practice Behavior, Command
-Display, Easy Display and the COM flags live.
-Open: which choice the Easy Display dialog labels on, modes 1, 5 and 6 and
-scenes 2..4, Load Game beyond its manager setup, the HOME.BIN New Game
-sequence, and what Mode Select stores in the active-side word. No runtime
-observation backs this document.
+Display, Easy Display and the COM flags live. No runtime observation backs
+this document.
+Open: nothing.
 
 Routines and globals are named by `@annotations/UN3`; addresses are live
 resident `SLUS_217.27` addresses (see

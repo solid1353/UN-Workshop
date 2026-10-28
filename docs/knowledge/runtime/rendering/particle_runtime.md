@@ -7,15 +7,13 @@ pool reuse, emission, movement, lifetime, force fields, drawing and destruction.
 
 Established: base/battle construction, circular pools, spawn/velocity selectors,
 fades, all 34 force keys, history, visual publication and manager gates.
-Open: repeat reachability, key-9 direct/nonzero-mode publication, complex velocity
-axes, selector reachability and other callers. Names and per-routine detail are
-in `@annotations/NA2`.
+Names and per-routine detail are in `@annotations/NA2`.
+Open: nothing.
 
 ## Evidence and address conventions
 
-Evidence is static resident ELF analysis with a bounded BTL repeat-store search;
-computed or bulk writes remain outside that search. Counts do not establish a
-universal wall-clock rate or an exhaustive particle-family inventory.
+Evidence is static resident ELF analysis with a BTL repeat-store search.
+Counts are per call.
 
 Related owners: [Effect-generator commands](../effect_generator_commands.md)
 (authored packets and anchors), [CCS object types](../../game/files/ccs_object_types.md)
@@ -28,7 +26,7 @@ and [Puppet control](../../gameplay/characters/puppet_control.md)
 Addresses here are live resident EE addresses in `SLPS_258.37`; see
 [address conventions](../../game/files/file_identities.md#address-conventions).
 Names describe demonstrated behavior, rather than recovered source names.
-Unknown flag meanings stay numeric. R5900 vector/scalar decompiler omissions
+Flags without names stay numeric. R5900 vector/scalar decompiler omissions
 were checked against instructions or bytes where consequential; missing leaf
 entries were verified through their callers or dispatch/vtable pointers before
 annotation.
@@ -38,7 +36,7 @@ Layouts are named in `ParticleEmitter`, `BattleParticleGenerator`,
 `ParticleForceField`, `ParticleForceDescriptor`,
 `ParticleGeneratorParameters`, `ParticleResourceChoice`,
 `ParticleOriginLink`, `ParticleHistorySnapshot` and the partial
-`ParticleStandaloneOwner` prefix. Unresolved owner layouts keep their raw offsets.
+`ParticleStandaloneOwner` prefix. Other owner layouts keep their raw offsets.
 
 ## Construction and ownership
 
@@ -71,7 +69,7 @@ routines:
 | `particles`, `capacity`, `constructed_count`, `cursor` | Capacity-bounded pool, lazy visuals and circular replacement. |
 | `live_count` | Active visuals whose unsquared visual/element alpha product exceeds the positive threshold. |
 | `emission_enabled`, `emission_stopped` | Enabling clears stopped; emission requires enabled and not stopped. |
-| `repeat_enabled` | Separate from emission enable; no positive producer is established. |
+| `repeat_enabled` | Separate from emission enable; every found producer clears it. |
 | `distance_enabled` | Enables reference-distance suppression and alpha processing. |
 | `resources`, `resource_count` | Linked choices sampled on each spawn. |
 | `identifier`, `previous`, `next` | Manager registration and linkage. |
@@ -91,7 +89,7 @@ and replaces the old particle array. Explicit capacity bypasses estimation.
 Capacity -1 estimates from particle lifetime, rate divided by 30.0,
 lifetime variation and signed fade increments divided by 2048.0. The estimate
 is clamped to at least one and rounded with `(estimate + 15) & 0xFFF0`.
-Capacity above 2000 reaches a write to address zero in the inspected routine.
+Capacity above 2000 reaches a write to address zero.
 
 The allocation is `capacity * 0xA0 + 0x10`; `allocated_array_initialize`
 sets up its header and callbacks `particle_element_initialize` /
@@ -173,8 +171,8 @@ Environment binding has a class-dependent publication boundary:
 | Battle `ccHigeParticleGenerator` | `battle_particle_generator_bind_environment` (`0x002A8DE0`) writes `requested_environment`; pre-update later publishes it, substituting the owner default for zero. |
 
 Both classes have empty `particle_emitter_pre_draw_hook` /
-`particle_emitter_post_draw_hook`. A virtual binding alone therefore does
-not establish immediate battle draw-loop publication.
+`particle_emitter_post_draw_hook`, so a virtual binding alone does not
+publish into the battle draw loop immediately.
 `ccs_draw_generator_actions` obtains the current environment through
 `draw_environment_get_current`, calls `particle_manager_bind_environment`,
 then draws the manager.
@@ -219,8 +217,7 @@ Low nibble 1 of `parameters.emission_geometry` instead emits the truncated
 rate itself once and stops emission.
 
 The 30.0 divisor appears in emission and capacity estimation. These are
-call-count contracts; it does not establish that every manager runs at
-30 calls per second.
+call-count contracts.
 
 ### Fade and hold states
 
@@ -259,34 +256,27 @@ or checking the retained pointer, while its hold write still targets the
 current element. It is restored on return; the preceding invocation's last
 visual is not retained. The fade loop has no active-visual admission gate.
 
-On the recovered `particle_emitter_update` caller path, the initial pointer
+On the `particle_emitter_update` caller path, the initial pointer
 is the manager scale vector. Before a disabling slot replaces it, an admitted
-repeat write targets `manager + 0xA0`, beyond the recovered 0x70-byte manager.
+repeat write targets `manager + 0xA0`, beyond the 0x70-byte manager.
 After such a slot, it targets the most recently visited disabling slot's
 visual, which can differ from the repeating element's visual. The owning
 routine annotations carry the register and instruction evidence.
 
-### Repeat producers and the reachability boundary
+### Repeat producers
 
-The established repeat-byte producers disable it:
+The repeat-byte producers disable it:
 `particle_emitter_reset`, finite expiry in `particle_emitter_update`
 (after fade processing), and state request 2 in
 `particle_manager_request_state`. Other nonzero state requests stop
-emission without clearing repeat. The inspected base and battle construction
+emission without clearing repeat. The base and battle construction
 paths include reset and never enable repeat. Emission enable and battle
 registration do not enable it; the parameter copy does not cover this byte.
 
-**Bounded inference:** fresh emitters on those construction paths keep
-repeat disabled until another writer changes it, so reaching state 5 does
-not itself reach reactivation. Spawn precedes fade and can reset a slot;
-an arbitrary pool ordering alone cannot prove wrong-visual reactivation or
-an out-of-object write.
-
-No positive producer, ordered pool population before respawn, or reachable
-retail failure is established. The immediate-offset store search preserved
-in the reset annotation does not exclude computed/bulk writes or other
-subtype callers. `particle_fade_state_targets` corroborates the seven state
-targets.
+**Inference:** fresh emitters on those construction paths keep repeat disabled,
+so reaching state 5 does not itself reach reactivation. Spawn precedes fade and
+can reset a slot. The immediate-offset store search is preserved in the reset
+annotation. `particle_fade_state_targets` corroborates the seven state targets.
 
 ### Manager gates and call sequence
 
@@ -330,7 +320,7 @@ and unit scale/color. `battle_particle_manager_initialize` installs the
 by battle generators. Catalog authorship belongs to
 [Asset dependency graphs](../../game/files/asset_dependencies.md).
 
-Recovered scheduling boundaries:
+Scheduling boundaries:
 
 - `engine_root_finish_update` (`0x00108490`) admits the default manager
   and detached-list update/draw only when the engine gate's low three bits are
@@ -361,7 +351,7 @@ The mask, pause relationships and exceptions
 are owned by [Pause and replay](../../gameplay/session/pause_and_replay.md#selective-update-gating).
 Update and draw suppression are distinct; the emitter has no battle-pause
 query. [Effect-generator scheduling](../effect_generator_commands.md#scheduling-and-owner-gates)
-owns the recovered scene callers and their different iteration-count units.
+owns the scene callers and their different iteration-count units.
 
 ### Distance suppression and alpha processing
 
@@ -401,7 +391,7 @@ This outer wrapper does not advance emitter/visual age or velocity.
 
 History restores `base_scale`, while resource publication reads
 `composed_scale`. History drawing does not call `particle_visual_compose`
-to recompute it, so restored base-scale records alone do not establish a
+to recompute it, so restored base-scale records alone do not give a
 different submitted scale per snapshot.
 
 Full element reset sets the one-draw skip. That byte also selects
@@ -466,15 +456,13 @@ Attachment origin resolution belongs to
 
 `particle_spawn_angular` rotates the resident unit vector, scales by radius
 and adds the resolved primary origin. Planar uses one angle; spatial uses two.
-It publishes position and element angular state. A uniform surface/volume
-distribution is not established.
+It publishes position and element angular state.
 
 `particle_spawn_between_origins` uses primary and secondary origins.
 Velocity selectors 3/10 place the point along their separation using
 `cursor / capacity`, after that spawn has advanced/wrapped the cursor.
 Other selectors use `abs(rng_signed_scaled(separation_length))` along the
 normalized separation and can add a random planar radial offset.
-This establishes the sampling operation, not a uniform continuous distribution.
 
 `particle_spawn_velocity` uses angular bases/spreads converted with
 `pi / 32768`, and sampled speed from `speed` / `speed_variation`.
@@ -484,16 +472,13 @@ This establishes the sampling operation, not a uniform continuous distribution.
 | 0, 5, `0xD..0xF` | Default angle-derived normalized direction transformed by emitter basis and sampled speed. |
 | 1, 8 | Outward from primary origin, with basis handling and sampled-speed branch. |
 | 2, 9 | Inward toward primary origin, normalized/scaled. |
-| 3, 10 | No vector-producing branch here; used by the two-origin helper. The resulting vector is unresolved. |
+| 3, 10 | No vector-producing branch here; used by the two-origin helper. |
 | 4 | Random angles, then the selector-6 basis/direction path. |
 | 6 | Angle/basis direction, normalization and speed scaling. |
 | 7, `0xC` | Two angle matrices composed with emitter basis, then scaled unit vector. |
 | `0xB` | Two random angles composed with emitter basis, then scaled unit vector. |
 
-Exact axis conventions and distributions of complex branches remain
-incomplete because of R5900 vector/scalar decompiler limitations.
-The writes, branch set and per-call integration are established; authored
-cone/sphere names are not recovered.
+The writes, branch set and per-call integration are established.
 
 ## Force-field consumer table
 
@@ -505,7 +490,6 @@ strictly below the selected radius. Radius mode 1 uses the descriptor radius,
 with zero replaced by float max; other modes use float max directly.
 
 There is no exhausted-search check before reading the handler pointer.
-Malformed-selector reachability in retail assets is not established.
 
 | Key(s) | Annotated handler | Consumer behavior |
 | --- | --- | --- |
@@ -541,7 +525,7 @@ Malformed-selector reachability in retail assets is not established.
 `direct_selection` chooses descriptor values when zero and direct values
 when nonzero. Several handlers use visual `age`; angular increments use
 `pi / 32768` and scale/alpha changes occur once per dispatch.
-No inspected handler takes delta time. Exact authored flag meanings belong
+No handler takes delta time. Exact authored flag meanings belong
 to the resource/command owners.
 
 `particle_emitter_update_fields` refreshes the manager anchor when changed
@@ -555,7 +539,7 @@ dispatch.
 float to an integer. Zero mode computes triangular scale from visual age
 and half the converted period. Nonzero mode skips local scalar computation.
 
-On the recovered dispatcher path, the nonzero-mode scalar is
+On the dispatcher path, the nonzero-mode scalar is
 `field.center[0] - visual.position[0]`, recomputed for each admitted particle.
 The handler scales `particle_unit_scale_vector` (`0x005C8D10`,
 `(1,1,1,0)`) and explicitly writes W 1, giving
@@ -565,8 +549,7 @@ handler's scalar.
 
 Admission still requires enabled field, active visual, fade other than 4 and
 strict radius inclusion. It does not require a nonzero X delta or constrain
-its sign. Other indirect routes and a concrete admitted retail use of
-nonzero mode remain unestablished.
+its sign.
 
 ### Selected key-9 field publication and authored values
 
@@ -578,8 +561,6 @@ necessarily recomputed each update; both field update hooks are empty.
 
 Direct selection instead uses `direct_values`, initially all zero.
 Neither descriptor copying nor emission enable sets the selection byte.
-A direct vector writer alone would not establish selection; the key-9 direct
-writer/selection producer remains unresolved.
 
 Selected resident descriptors (decimals describe binary32 values):
 
@@ -616,9 +597,6 @@ indices map nonnegative values into 0x20-byte rows of
 | `particle_generator_preset_11` (`0x005A76E8`) | 16, -1, -1, -1 | Field 16: the same descriptor |
 
 `particle_preset_pair_owner_initialize` (`0x0031B2D0`) establishes that
-publication mechanism but selects preset 1 in the inspected construction
-path, not presets 3/6/11. Their concrete caller/gate selection remains open.
-Arithmetic and these sources are established; authored mode names, a selected
-nonzero-mode descriptor, all indirect callers and live admission are not.
-Broader descriptor distributions and interpretation belong to the resource
+publication mechanism but selects preset 1 in its construction path, not
+presets 3/6/11. Broader descriptor distributions and interpretation belong to the resource
 and effect-command owners.

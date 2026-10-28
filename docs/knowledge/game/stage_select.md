@@ -4,11 +4,10 @@
 
 Established: object lifetime, 24-slot limits, previews, name rectangles,
 atlas free area and carousel.
-Established: input gates, Random bounds and eight-state ordering.
+Established: input sources, buttons, Random bounds and eight-state ordering.
 Evidence: static retail BTL, resident ELF and decoded `MAPSEL1.CCS`.
-Open: button identities and input-source meaning.
-Open: carousel draw-parameter effect and unscreened indirect callers.
 Routine, field and data names come from `@annotations/NA2`.
+Open: nothing.
 
 The native Stage Select screen of retail NA2 (`SLPS-25837`): its choices,
 stage records, previews and names, browsing, Random, and confirmation handoff.
@@ -57,13 +56,13 @@ preselected raw slot; a negative value means no preselection.
 | Fields | Role |
 | --- | --- |
 | `state`, `reinitialize` | Eight-state screen and reset request |
-| `input_source` | `0`: first input record; `1`: second; `2`: bitwise OR of both |
+| `input_source` | `0`: port 0's pad record; `1`: port 1's; `2`: bitwise OR of both |
 | `context` | Preselection and settings/cancel gate |
 | `choice_count`, `choices[24]`, `choice_index` | Raw load-slot list and cursor |
 | `carousel_displacement` | Float displacement during browsing |
 | `fade_handle`, `result`, `result_countdown` | Transition and delayed completion |
 | `random_ticks`, `update_count`, `random_phase` | Random cadence, capped counter and float phase |
-| `input_primary`, `input_secondary`, `input_directional` | Three input words copied every update |
+| `input_primary`, `input_secondary`, `input_directional` | The pad record's pressed, repeat and held words, copied every update |
 | `settings`, `mapsel_container` | `0x54`-byte settings parent and `mapsel1` resources |
 | `scene_draw_list`, `sprite_draw_list`, sprite and animation fields | Screen rendering resources |
 | `titlebox`, `carousel` | `CMP_titlebox` and `CMP_sirinder1` objects |
@@ -203,13 +202,13 @@ choices, an object can appear more than once.
 
 Ring placement uses approximately `0.62832` radians per step, including
 `carousel_displacement` and, in state 3, `random_phase`. The selected entry
-outside Random receives a different draw parameter from the others; its
-visual effect remains unestablished.
+outside Random receives a different draw parameter from the others.
 
 ## States and input
 
 `directional_players_update` copies the three input words according to
-`input_source`, then dispatches through `preparation_state_handlers`. The
+`input_source` from the engine context's two `PadRecord`s (`gp-0x35F4`
+`+0x1C` and `+0x94`; pressed `+0x68`, repeat `+0x70`, held `+0x64`), then dispatches through `preparation_state_handlers`. The
 state targets are labeled branches inside this routine.
 
 | State | Branch label | Behavior |
@@ -229,15 +228,18 @@ preselection; otherwise it starts a fade and enters state 1.
 Settings cancellation without preselection resets Stage Select; with
 preselection it enters state 5. Completion results use a two-update countdown.
 
-**Browsing:** `input_primary` bit `0x20` confirms, `0x40` cancels, and
-`0x10` enters Random only when `choice_count >= 2`. `input_directional`
-bit `0x4000` increments the cursor while displacement is at most `0.1`;
-`0x1000` decrements it while displacement is at least `-0.1`. The cursor
-then wraps by `choice_count`.
+Button names follow the native masks in
+[Action commands](../gameplay/combat/action_commands.md#native-masks-and-bindings).
+
+**Browsing:** pressed Circle (`0x20`) confirms, Cross (`0x40`) cancels, and
+Triangle (`0x10`) enters Random only when `choice_count >= 2`. Held Down
+(`0x4000`) increments the cursor while displacement is at most `0.1`;
+held Up (`0x1000`) decrements it while displacement is at least `-0.1`. The
+cursor then wraps by `choice_count`.
 
 **Random:** every second update, resident `prng_inclusive` (`0x00180210`)
 draws from `0..choice_count-1` until it differs from the current cursor.
-Bit `0x20` confirms the current entry; `0x40` or `0x10` returns to browsing.
+Circle confirms the current entry; Cross or Triangle returns to browsing.
 The two-choice entry gate ensures a different choice exists. Both paths use
 the current choice count rather than a separate fixed Random bound.
 

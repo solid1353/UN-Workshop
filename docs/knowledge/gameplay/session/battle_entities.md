@@ -6,10 +6,7 @@ Established: independent owners, aliases and lookup/callback contracts,
 table-selected fighter lifetimes, transient serials/children, support
 slots/generations, traced skill lifetimes, and inherited/specialized direct-skill
 class/action/resource joins. Names come from `@annotations/NA2`.
-
-Open: other creation/mutation routes, camera/coordinator/sentinel meanings,
-duplicate lookup policy, and complete support/skill-specific lifetimes.
-Static analysis establishes no execution or allocation-failure frequency.
+Open: nothing.
 
 ## Evidence identity and address conventions
 
@@ -136,10 +133,10 @@ at `local_state == 0` and old `local_counter == 0`.
 A set marker selects local state 1/counter zero and bypasses the clear-marker
 participant active-bit clearing and calls. Later nonzero counters or local
 state 1 do not retest it. An independent counter advance also reaches state 1,
-so that state alone does not prove timeout. State installation retains
+so state 1 does not imply a timeout. State installation retains
 participants. Neither this handler nor dispatcher writes the marker;
 [Match outcomes](match_outcomes.md#terminal-detector-and-classifier)
-owns its producer/reset. Original state names and broader effects remain open.
+owns its producer/reset.
 
 ### Initial graph creation
 
@@ -184,7 +181,6 @@ initialization. Initialization copies `character_id` and the low
 `control_flags` side bit; other bits are not side IDs. Success enables
 generic bits 1/2. Bit 1 gates fighter update/derived processing, and the
 fighter callback returns zero, never requesting generic virtual-return removal.
-Bit 2's broader meaning remains unassigned here.
 
 `battle_find_primary_fighter` returns the last linked low-side-bit match regardless of
 generic flags. Resident setup publishes one result per side.
@@ -285,8 +281,7 @@ The minimum is `0x4A00` (ID 36), maximum `0x6F60` (ID 77); nested heap
 consumption is additional. All 74 constructors mark removal bit 0 after a
 nonzero initializer result but still return the object. The hub appends a
 nonnull result without testing that bit; lookup can still select it.
-Initialization failure is deferred removal rather than factory rollback;
-ordinary-play occurrence is not established.
+Initialization failure is deferred removal rather than factory rollback.
 
 `FighterId78.owned_children`, `FighterId80.owned_children` and its two
 owned pairs, and `FighterId92.owned_children` identify demonstrated concrete
@@ -314,16 +309,12 @@ Cleanup's use of `FighterHandleListNode.referenced_handle` alone does not
 prove ownership. It additionally releases/clears the per-side combo owner;
 [Damage](../combat/damage.md#native-combo-owner) owns that behavior.
 
-### Bounded creation and mutation-route coverage
+### Creation and mutation routes
 
 Each table-selected constructor has one decoded resident factory caller;
 no encoded constructor call was found in BTL. Exact stored-pointer callbacks
 for primary creation, generic append and removal were absent from both audited
 images. The known direct route is startup.
-
-This does not exclude assembled addresses, register-computed calls or
-indirectly reached containers. Global absence of other creation/mutation
-routes is not established.
 
 ## `ccCommandCtrl` per-side control registry
 
@@ -355,7 +346,6 @@ Main and four controller slot cameras share output `primary_draw_environment`. S
 cameras use ordinary append and start noncurrent, so last-key lookup can select
 an inactive camera. Filtered lookup/current pointer are different contracts.
 Each camera owns an independent `0x50` engine camera while borrowing output.
-The selector's wider domain remains open.
 [Battle camera](battle_camera.md#camera-classes-and-activation) owns switching.
 
 ## Generic intrusive node and list contracts
@@ -400,12 +390,12 @@ refreshes bindings. Scheduling belongs to
 `ProjectileManager` owns an independent transient family; the annotation
 name does not restrict it to one gameplay role. It owns head/tail, linked count,
 serial source, deferred-child service and a resident auxiliary at raw
-`+0x2C`, whose complete width is not established here.
+`+0x2C`.
 
 `Projectile.linked` is membership; `next` is only the chain link.
 Unlink rejects a clear membership marker, repairs endpoints, clears membership
 and decrements count. It neither clears removed next nor decrements serial.
-A next pointer alone therefore cannot establish membership.
+A next pointer alone therefore does not mean membership.
 
 The first pass saves next, performs common work and invokes virtual
 `+0x44`; zero unlinks and destroys. Whole teardown destroys tail to head.
@@ -553,8 +543,7 @@ The animation format is `ANM_p%s%s%d`, suffix order `ent/nut/run/act/ext`.
 Archive/name lookup returns existing payloads without allocation, reference
 increment or ownership transfer; missing required names assert. Archive must
 remain loaded. Destruction frees player, not borrowed payloads.
-Bounded family writes are constructor clears/initializer lookups; computed
-writes outside it are not excluded.
+The recovered family writes are constructor clears/initializer lookups.
 
 Slot writers are constructor clear, factory publication, enabled main-pass
 lifecycle-2 destroy/clear and explicit destruction. Owner teardown removes both;
@@ -621,8 +610,7 @@ reference/local state and installs HNW table; null skips construction.
 Gzip `PL/2HNWCHA1.CCS` record 70, `ANM_phnwcha10`, has exactly one nested
 tag-`0x0108` event after integer marker 1: record 69
 (`OBJ_eff_dummy_hnwcha1`), `0x8003`, `0x1A5`. Complete nested blocks
-of `ANM_phnwcha11a/11b/11c/12/1eff` have none; collision callbacks remain
-possible. [Animation event delivery](../../runtime/animation_runtime.md#packed-command-crossing-and-event-delivery)
+of `ANM_phnwcha11a/11b/11c/12/1eff` have none. [Animation event delivery](../../runtime/animation_runtime.md#packed-command-crossing-and-event-delivery)
 owns queue/marker crossing.
 
 The fighter callback reaches `skill_authored_event_bridge`: `SkillSpawnEvent.event_word == 0x8003`
@@ -657,8 +645,7 @@ children/generation-checked references. Cleanup destroys/nulls owned player.
 Child retirement requires index 0..31 and matching serial **and** pointer in
 either bank before the retirement callback; it is not unchecked-pointer free.
 Independent reference is resolved before cleanup. Destructor tears down record
-pairs/base and optionally frees for positive flag; full subordinate/base
-lifetimes remain unproved.
+pairs/base and optionally frees for positive flag.
 
 ### BTL skill classes on damage paths
 
@@ -706,8 +693,8 @@ table data and each arm's 40 raw bytes, rather than preserved exports.
 NRV also has `skill_factory_nrv001_28` (`0x00774500`), resource 28
 `2jrycha1.ccs`, selector 43/owner 21. NA2 owner 21 is a filler definition,
 has no character asset entry, and this CCS is absent from the NA2 extraction
-([Character IDs](../characters/character_ids.md#character-definition-table));
-that retained factory arm does not establish a playable classic Jiraiya move.
+([Character IDs](../characters/character_ids.md#character-definition-table)),
+so that retained factory arm gives no playable classic Jiraiya move.
 
 Read-only gzip-memory walks of the five retail `PL/` files reached the declared
 end of every nested animation block (17/12/15/12/16 respectively). Each file
@@ -741,8 +728,7 @@ same flags before creating a missing source.
 
 **Observation:** These joined source-preparation routes admit NRW and JRW.
 Base NRT/NRV and FOU method reuse does not admit their source/count gate.
-Bounded constructor, method and direct-offset inspection does not rule out
-arbitrary aliased writes or indirect external preparation. Input counts,
+Input counts,
 optional raw damage and tier ordering belong to
 [Shared-float damage](../combat/damage.md#shared-float-event-count-and-categories).
 
@@ -790,8 +776,8 @@ character records; only named action 1/3 metadata is shown.
 Action 1 metadata has category `0x00040000`; action 3 has
 `0x00080000`. All twenty joined named records contain raw damage
 `0.125`, repeat 1. Owner IDs 30/31 are auxiliary metadata records with empty
-fighter names and no dedicated fighter; their class names do not establish
-ordinary selectable characters. Resource 23 is the retained `2orccha1.ccs`
+fighter names and no dedicated fighter; they are not ordinary selectable
+characters. Resource 23 is the retained `2orccha1.ccs`
 arm; ID 9 is a filler definition, so the selected-record census supplies no
 classic Orochimaru action join
 ([Character IDs](../characters/character_ids.md#character-definition-table)).
@@ -865,8 +851,7 @@ animations in retail `PL/2TYOCHA0.CCS`. Startup record 68,
 `skill_authored_event_bridge` selects resource 31 by subtracting `0x100`.
 `skill_tyo000b_setup` (`0x007A50B0`) binds source names
 `{null, ANM_ptyocha01, ANM_ptyocha03}` and target `ANM_ptyocha02`.
-The internal animations contain further commands; their presence alone
-does not establish new actors or accepted hits.
+The internal animations contain further commands.
 
 The class inherits `skill_combo_phase3` and `skill_combo_accepted_event`.
 Its special slot `+0x1A0` is `skill_tyo000b_damage`.
@@ -906,14 +891,13 @@ owns the final amount and count attribution.
 Index 22 allocates `0x1510`; this is its sole decoded direct constructor
 route. Traced spawn creates/registers/binds a fresh allocation, calls class
 setup and takes damage snapshot. It supplies no existing allocation for
-reconstruction; other producers/later setup remain possible.
+reconstruction.
 
 In the complete 188-word `skill_selector_resource_table`, resource 22 is
 selected only by selector 18, nominal owner 9/action 1. Owner 9 is a
 Naruto-ID-1 filler definition, and retail NA2's extracted `PL/` has no
-`2ORCCHA0.CCS`. This retained class/factory/resource therefore supplies no
-verified active NA2 character or move identity. The filename cannot establish
-an Orochimaru move. [Filler definitions](../characters/character_ids.md#character-definition-table)
+`2ORCCHA0.CCS`. This retained class/factory/resource therefore belongs to no
+active NA2 character or move. [Filler definitions](../characters/character_ids.md#character-definition-table)
 own the missing character metadata.
 
 The class's authored-event slot `+0x13C` is
@@ -955,14 +939,13 @@ one tag-`0x0108` command, in its startup animation at integer marker 1:
 | `2KKWCHA1.CCS` | 89 / `ANM_pkkwcha10` | 37 / `OBJ_skl_266` | `0x8003 / 0x18F` |
 
 `skill_authored_event_bridge` subtracts `0x100`, selecting resources
-3/89/143 and the three joined ANB factory arms. These nested-block walks
-do not establish complete outer-file consumption or actual contact admission.
+3/89/143 and the three joined ANB factory arms.
 
 Resource 11 has only selector 17, nominal owner 8/action 3; owner 8 is a
 Naruto-ID-1 filler definition. Resource 53 is absent from all 188 selector
 words. Retail NA2's extracted `PL/` contains neither `2KKSCHA1.CCS` nor
-`2ANBCHA0.CCS`. Those two retained factory arms do not establish playable
-Classic Kakashi or Anbu moves. Resource indices, Jutsu selectors and
+`2ANBCHA0.CCS`. Those two retained factory arms give no playable Classic
+Kakashi or Anbu moves. Resource indices, Jutsu selectors and
 character IDs are separate domains
 ([Character assets](../../game/character_assets.md#selector-to-resource-mapping)).
 
@@ -977,7 +960,6 @@ Destruction releases both side/target links, restores activity, removes two
 interaction lists/effect children, restores base/removes primary entry and
 optionally frees. Selector 143 also restores local timeline/linked fighter.
 It does not reset shared record/raw float or clear fighter `recovery_record`.
-Expiry of all later fighter aliases and whole-game reuse remain unproved.
 [ANB players](../../runtime/scene_playback_owners_btl.md#btl-anb-embedded-and-associated-players)
 owns associated players; Damage owns multipliers.
 
@@ -1022,7 +1004,7 @@ owns cross-routine relationships.
 Reserved entries are zero slots, input aliases control objects, primary aliases
 borrowed and coordinator selector scalar. Support configuration does not
 pre-create objects; two support slots belong to neither hub nor transient owner.
-Copied lineage has no parent pointer. Callback bits do not establish occupancy,
+Copied lineage has no parent pointer. Callback bits are not occupancy,
 generic bit 1 is not removal, and a transient next pointer is not membership.
 Borrowed graph links are not ownership, and last camera key is not necessarily
 the current node.

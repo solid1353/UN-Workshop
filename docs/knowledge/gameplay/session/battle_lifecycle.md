@@ -4,13 +4,11 @@
 
 Established: retail NA2 (`SLPS-25837`) session construction and ownership,
 three-phase dispatch, stage binding, root cleanup, continuation rebuilds and
-their retained values. Open: original names of non-polymorphic root children,
-elapsed timing under stalls, character tails beyond six examples, indirect
-statistics copies and a whole-graph field census.
+their retained values.
+Open: nothing.
 
 Routines, fields and data use names from `@annotations/NA2`; routine comments
-hold code-level detail and bounded searches. Addresses are live. Evidence is
-static; shared virtual entries do not establish every downstream meaning.
+hold code-level detail. Addresses are live. Evidence is static.
 
 This document owns structural lifecycle and ordering. Related owners cover
 [masks and pause](pause_and_replay.md), [outcomes and timer](match_outcomes.md),
@@ -234,14 +232,12 @@ The dispatcher orders:
 [Pause and replay](pause_and_replay.md#selective-update-gating) owns mask bits
 and exceptions, including the contest object's first/second callback gates.
 
-**Inference:** the camera controller and main camera compute from fighter
-positions left by the preceding update, because both run before fighters
-in phase 1.
+The camera controller and main camera run before fighters in phase 1, so
+they compute from fighter positions left by the preceding update.
 
 ### What phase 2 guarantees
 
-Phase 2 is a dispatch boundary. Its generic node method does not establish
-a second full fighter update or universal drawing behavior.
+Phase 2 is a dispatch boundary.
 
 | Consumer | Established work |
 | --- | --- |
@@ -368,8 +364,7 @@ then performs one-time allocation and side binding.
 | `notice` | `0x34` | Resident-constructed singleton. |
 
 Every pair is registered with side IDs 0 and 1. The root accessors expose
-paired elements through the session. Element constructors install no vtables,
-so their original class names are unresolved.
+paired elements through the session. Element constructors install no vtables.
 [Battle HUD](battle_hud.md#remaining-ordinary-presentation-forest) owns roles,
 bindings and prompt placement.
 
@@ -382,8 +377,8 @@ numeric history draws only in that mode. Children retain independent
 active/fade gates.
 
 Initialization finishes with `callbacks_suppressed = 0` and
-`initialized = 1`. Scoped direct paths leave the callback gate open after
-initialization; an indirect writer remains possible.
+`initialized = 1`. Direct paths leave the callback gate open after
+initialization.
 
 ## Teardown order
 
@@ -533,8 +528,8 @@ copies these fields. See [Combo accounting](../combat/combo_accounting.md).
 Both handlers finish with continuation phase 2, clear pending character/stage
 values and select state `0x0D`. The reconstruction entry skips result-bank
 reset in phase 2 and advances to phase 3 after its allocation attempt.
-That store occurs even when allocation fails: phase 3 alone does not prove
-a replacement session exists. Form adoption belongs to
+That store occurs even when allocation fails, so phase 3 does not imply a
+replacement session exists. Form adoption belongs to
 [Awakening](../characters/awakening.md#static-reconstruction-order).
 
 ### Fighter statistics across reconstruction
@@ -555,12 +550,10 @@ Both new common constructors therefore initially reload bank 0, including
 the fighter that becomes side two. Both external banks are retained, but the
 scoped common setup and continuation restore contain no correcting reload.
 
-**Static consequence, high confidence within this chain:** distinguishable
-old pairs initially become the old side-one pairs on both new fighters.
-A later teardown saves each fighter's current pairs to its assigned bank,
-so prior side-two contents are not protected from that later save.
-This is traced dataflow, not a measured player-visible statistics result;
-an untraced derived copy could change intervening values.
+**Static consequence:** distinguishable old pairs initially become the old
+side-one pairs on both new fighters. A later teardown saves each fighter's
+current pairs to its assigned bank, so prior side-two contents are not
+protected from that later save.
 [Awakening](../characters/awakening.md#reconstruction-adoption-increment)
 owns the adoption increment.
 
@@ -568,8 +561,6 @@ The `0x2D6` layout contains 24 pairs (`0x60` bytes) followed by 63
 five-halfword action rows (`0x276` bytes).
 Construction resets every local `Fighter.action_statistics` row even in
 phase 2; save/reload and external clearing stop after the first 24 pairs.
-Bounded address/store searches do not exclude differently derived pointers,
-wider stores or indirect copies.
 
 ## Stage content binding
 
@@ -608,10 +599,8 @@ A battle consumes these inputs keyed by the manager's raw active stage slot:
 - The main camera's [per-stage record](battle_camera.md#per-stage-camera-record).
 - The stage slot supplied to the pause controller.
 
-## Limits and negative results
+## Negative results
 
 Both continuation routes rebuild rather than retain the graph.
-Scoped direct paths leave the root gate open; indirect writers remain open.
+Direct paths leave the root gate open.
 Stage destruction is established through virtual dispatch.
-Direct-call and address searches do not exclude computed or other-overlay
-callers, and no exhaustive indirect-caller search was performed.

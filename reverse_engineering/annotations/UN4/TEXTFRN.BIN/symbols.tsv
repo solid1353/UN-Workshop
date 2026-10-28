@@ -1,0 +1,7 @@
+address	kind	name	type	comment
+0x0086A8C4	data	orochimaru_uj19_title_pointer	char *	-> 'Invocation' 0x00874528
+0x0086A8C8	data	orochimaru_uj18_title_pointer	char *	-> 'Destruction des Sceaux' 0x00874540
+0x0086A8CC	data	orochimaru_uj20_title_pointer	char *	-> '1000 Serpents Spect.' 0x00874560
+0x0086FC30	data	orochimaru_ultimate_jutsu_record_18		UJ record 18; display pointer filled from 0x0086A8C8 at 0x0089D150
+0x0086FC40	data	orochimaru_ultimate_jutsu_record_19		UJ record 19 (Manda); display pointer filled from 0x0086A8C4 at 0x0089D160
+0x0086FC50	data	orochimaru_ultimate_jutsu_record_20		UJ record 20; display pointer filled from 0x0086A8CC at 0x0089D16C

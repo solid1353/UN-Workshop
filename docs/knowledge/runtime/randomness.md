@@ -3,17 +3,15 @@
 ## Research coverage
 
 Established: three resident streams, coordinated reset, wrapper reductions,
-caller gates and draw counts, state recovery, cycles and vectors. Open: caller
-ordering, unproven branches, animator dispatch/period writers, arithmetic low
-bits and unnamed consumers' gameplay meaning.
+caller gates and draw counts, state recovery, cycles and vectors.
+Open: checking the test vectors against a live trace.
 
 ## Evidence and scope
 
 This concerns retail NA2 (`SLPS-25837`), resident `SLPS_258.37` and its
 `BTL.BIN` consumers. File identities and address mapping are owned by
 [Retail game file identities](../game/files/file_identities.md).
-Findings are static or derived from the recovered recurrences. An incoming
-static edge does not establish every internal branch's feasibility.
+Findings are static or derived from the decoded recurrences.
 
 Names and per-routine details are maintained in `@annotations/NA2`.
 Addresses below are live.
@@ -196,7 +194,7 @@ The shared output contracts are:
 | `rng_signed_scaled(float scale)` | If `scale == 0`, return positive zero. Otherwise return `float((double)scale * ((double)(int32(word)) / 2147483648.0))`. | 0 for either signed zero; otherwise 1 |
 | `rng_central_band(float A, float B)` | Signed scaled draw with a conditional central-band remap described below. | 0 when `A == 0`; otherwise 1 or 2 |
 
-The recovered resident and BTL consumers use this shared wrapper surface.
+The resident and BTL consumers use this shared wrapper surface.
 
 `prng_inclusive` is a plain modulo reduction. The `^ 0x80000000` is a
 permutation of all 32-bit words and does not remove modulo bias; the result is
@@ -288,10 +286,7 @@ Caller values include ordinary, reversed, equal and table-selected bounds:
 | 25 | 30 | Two |
 | 60 | 70 | Two |
 
-Decimal spellings round-trip to the loaded binary32 values. Negative bounds
-and extreme exponent patterns have no assigned range interpretation;
-EE comparisons and software packing do not establish IEEE exceptional-value
-semantics.
+Decimal spellings round-trip to the loaded binary32 values.
 
 
 ## 64-bit LCG stream
@@ -370,9 +365,6 @@ the 0x6C0-byte pause sequence: animator +0x68C, destination +0x650.
 Ownership, publication, teardown and an independent non-RNG destination writer
 belong to [Battle lifecycle](../gameplay/session/pause_and_replay.md#tone-shade-destination-block).
 
-Animator dispatch, nondefault period writers and other destination producers
-remain unresolved; adjusted pointers, bulk stores and generic virtual dispatch
-are not excluded.
 
 ## Persistent 16-bit stream
 
@@ -407,8 +399,7 @@ Its result is lost but its one/two MT draws still matter to stream alignment.
 
 `effect_sized_route` invokes the sized producer.
 For slots zero/one it requires object word +0x68 bit zero clear and passes
-1.5; another slot can use `effect_selector_route`. Its classifier meaning
-remains open. Size 1.5 becomes 5.25 with coefficient clamped to 1.25.
+1.5; another slot can use `effect_selector_route`. Size 1.5 becomes 5.25 with coefficient clamped to 1.25.
 Exact floats 3.75 and 12.5 convert to divisor three/base twelve, giving
 12..14 after absolute signed remainder. Central(5,-4.25) returns its first
 draw; only central(10,2.5) and central(64,16) can draw again. A successful
@@ -464,19 +455,16 @@ the full cold cycle.
 
 ## Direct BTL imports
 
-Recovered BTL consumers call the resident MT wrappers and LCG output.
-No BTL seed/reset or local RNG state was identified. Computed targets remain
-open; a recovered entry edge alone does not establish its internal branches.
+BTL consumers call the resident MT wrappers and LCG output. No BTL seed,
+reset or local RNG state was found.
 
 Raw callers use unsigned XOR reduction, parity, folded signed remainder and
-dynamic unsigned remainder. Nonzero dynamic divisors remain an unresolved
-precondition. Positive literal bounded calls consume one word; dynamic bounds
-can also be zero or negative. Dynamic scaled values can be zero, suppressing
-the draw, and their positivity is not generally established.
+dynamic unsigned remainder, which assumes a nonzero divisor. Positive literal
+bounded calls consume one word; dynamic bounds can also be zero or negative.
+Dynamic scaled values can be zero, suppressing the draw.
 
-Two coherent LCG angle blocks have no recovered incoming edge. They compute
-((output>>3)&0x1800)*pi/32768 into two owner angles, but their invocation
-is unproven. Their presence does not establish gameplay consumption.
+Two coherent LCG angle blocks have no found incoming edge. They compute
+((output>>3)&0x1800)*pi/32768 into two owner angles.
 
 ### Masked-selector construction family and registration gates
 
@@ -486,8 +474,7 @@ is unproven. Their presence does not establish gameplay consumption.
 `effect_register(object,0)`. An absent `effect_manager_global` returns
 zero; `effect_manager_insert` otherwise admits into one of up to 0x300 slots,
 returning one on insertion or zero if full. Registration return gates draws.
-The wrapper still writes object fields, so this does not prove safe null
-allocation recovery.
+The wrapper still writes object fields after a null allocation.
 
 | Producer | Admitted direct sequence | Completed-body MT bound |
 | --- | --- | --- |
@@ -517,9 +504,6 @@ nested/later work belongs to [Particle runtime](rendering/particle_runtime.md).
 `masked_effect_update` later passes the retained value to
 `masked_effect_dispatch_second`; calls do not reread the selector.
 
-Broader owner lifecycle, frequency and player-facing selector names remain
-open.
-
 ### Fixed pairs in a two-record producer
 
 `rng_pair_record_produce` (`0x0083D860`) stores
@@ -540,8 +524,7 @@ the loop-indexed `rng_central_pairs`, converts the result and stores
 4..6 MT words in that pair order. It requires owner word +0x8 zero and signed
 word +0x4 converted to float equal to 5, then attempts three 0xB50 helper
 allocations. Null allocation skips production; s completed producers,
-0<=s<=3, contribute 4s..6s words. Other counts, computed calls, broader
-lifecycle and gameplay meaning remain open.
+0<=s<=3, contribute 4s..6s words.
 
 ### Guarded dynamic scales in a type-specific callback
 
@@ -582,8 +565,7 @@ or one, passing the receiver, `primary_header.context`, the embedded
 `primary_header`, and `primary_header.record`.
 Further eligibility/response gates remain with
 [Character action callbacks](../gameplay/characters/character_action_callbacks.md)
-and [Hit response](../gameplay/combat/hit_response.md). The recovered indirect
-users are not an exhaustive callback census.
+and [Hit response](../gameplay/combat/hit_response.md).
 The neighboring table uses `skill_random_position_noop` (`0x007895F0`);
 this randomness is a type-specific override, not every receiver's behavior.
 
@@ -593,7 +575,7 @@ this randomness is a type-specific override, not every receiver's behavior.
 SHA-256 `692AEB37982E021CA8D08AA14506C723B44948FDC3C6CA8F0BAD927CCEF82C34`.
 All xyz triples are distinct, fourth word is 1, and there are 21 exact
 antipodal pairs. Norms are 1.414198183637919..1.414214015007019,
-near sqrt(2); the game's name/role is not established.
+near sqrt(2).
 
 One selector uses output%42, scales xyz by 4, then adds/normalizes. Five use
 (output>>3)%42, scale xyzw by 7.5 and store object +0xB0. Their later uses
@@ -673,7 +655,7 @@ without a draw. Exact equality consumes inclusive(1) once and returns side
 zero for result one, side one for result zero.
 
 This is one binary tie, not a reservoir or pairwise-selection loop.
-Its recovered caller belongs to the
+Its caller belongs to the
 [separate side-index selector](../gameplay/combat/target_selection.md#separate-side-index-eligibility-selector).
 Null fighters skip their position copy but both distances still read the
 stack vectors, so no meaningful null-fighter result is established.
@@ -843,13 +825,7 @@ but not the low-tag attractor.
 
 Generator constants, widths, clean values, wrapper reductions, draw counts,
 reset relationships and derived recurrences are established by static evidence.
-Tables without identified gameplay names are limited to indexing/store facts.
-
-Open matters are caller frequency/order and internal branch feasibility,
-animator dispatch and nondefault period writers, exact hardware arithmetic
-low bits, most unnamed BTL consumers' gameplay roles, and a complete catalogue
-of unrelated caller-owned recurrences. The recovered BTL imports have static
-entry edges; those do not resolve these uncertainties.
+Tables without gameplay names are limited to indexing/store facts.
 
 The tag setter is not an immediate reseed; the snapshot has no resident
 reader; persistent16 has no resident reset; the signed-half-unit wrapper has

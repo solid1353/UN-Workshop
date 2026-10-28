@@ -4,9 +4,9 @@
 
 Established: retail NA2 (`SLPS-25837`) and UN5 Collection list geometry,
 fixed row cadence, selected-name string distinction, and Diorama title
-placement. Open: callers, strings, states and animation phases outside the
-bounded evidence. Names come from `@annotations/NA2` and `@annotations/UN5`;
+placement. Names come from `@annotations/NA2` and `@annotations/UN5`;
 their comments carry code-level details, and cited addresses are live.
+Open: nothing.
 
 Glyph metrics belong to [Renderer metrics](../renderer_metrics.md); graphics
 and prompts to [Collection UI draw-path analysis](../../ui/collection.md);

@@ -6,6 +6,19 @@ address	kind	name	type	comment
 0x00717C70	function	stage_select_draw_sprite_rect		JP counterpart of US 0x006AF520.
 0x00718E70	function	stage_select_draw_thumbnails		JP counterpart of US 0x006B0760.
 0x00719650	function	stage_select_bind_preview		Same cell mapping as US 0x006B0F40; entry 18 uses the random preview.
+0x0071AA20	function	character_select_build_choices		Copies character_select_order entries 1..33 into selector +0x4E (count +0x4D), filtered by availability; a locked kind-2 entry is skipped, other locked entries become 0.
+0x007BCC30	function	doto_jutsu0_initialize		Resource 59 (Black Dragon Blizzard) vtable +0x198.
+0x007BCCD0	function	doto_jutsu0_process		At controller frame 15 spawns doto_jutsu0_dragon (0xAB0, vtable 0x005C75E0), a facing-dependent particle generator and common sounds 0x0E/0x27; ends on the animation's last frame.
+0x007BD020	function	doto_jutsu0_dragon_setup		Plays ANM_pdtucha01 on its own controller and binds OBJ_krh00t0 bone01..13 as the dragon's 13 hit shapes; at most 3 hits (+0x5DE).
+0x007BD3E0	function	doto_jutsu0_dragon_update		Dragon states 0..5, 7 end: launch, follow the 13 bone shapes, query contacts (0x007C08D0), trail generator, end after the animation loops.
+0x007BE5A0	function	jutsu_create_for_resource		Resource below 0x48: switch through jutsu_factory_table (0x008AC240). 59 -> 0x3C0 doto_jutsu0 (base 0x007C4140, vtable 0x005C7640); 60 -> 0x6B0 doto_jutsu1_construct.
+0x008657E0	function	doto_jutsu1_construct		Resource 60 (2dtucha1, 氷遁 双龍暴風雪): base 0x007C4140, vtable 0x005C05A0, three 0x50 entries at +0x3A0.
+0x00865DA0	function	doto_jutsu1_process		Resource 60 (Twin Dragon Blizzard): updates three attached effect entries, queries contacts at controller frames 33 and 43, loops common sound 0x0E every 10 updates.
+0x008661D0	function	doto_jutsu1_initialize		Resource 60 vtable +0x198.
+0x0086B9A0	function	doto_jutsu0_destruct		Resource 59 actor destructor (vtable 0x005C7640, then base vtable 0x005C7340).
 0x008847A0	data	stage_select_thumbnail_origins	unsigned short[19][2]	Same values as US 0x0081C6A0; 16/17 are the snow scenes' thumbnails.
 0x00884800	data	stage_select_preview_texture_names	char *[4]	haipure01..04 name pointers.
 0x00884870	data	stage_scene_tables	void *[19]	18 scene record lists and null; same records as US 0x0081C760.
+0x0088EA90	data	jutsu_resource_filenames		Resource filename pointers; 59/60 = 2dtucha0/1.ccs.
+0x008ABC90	data	jutsu_selector_resource_table	int[68]	Selector -> resource; 52/53 -> 59/60 (2dtucha0/1).
+0x008AC240	data	jutsu_factory_table		72 switch targets of jutsu_create_for_resource.

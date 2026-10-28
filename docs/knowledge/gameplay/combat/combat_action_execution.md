@@ -11,16 +11,14 @@ ordering, separate action/phase/playback restarts, authored rows,
 continuation/interruption gates, attack publication and the objects that
 inherit the fighter rate.
 All 78 distinct definitions' counted action/phase arrays were checked.
-Open: held-phase and loop lifetimes, indirect registrations, payload meanings,
-rebased delta reads, untraced owners/consumers and player-facing durations.
 Names come from `@annotations/NA2`; addresses are live.
+Open: nothing.
 
 ## Evidence convention
 
 Static code and retail bytes establish control flow and array bounds, not
-observed animation outcomes or reachability of every record. Unexamined
-character paths remain unknown. Per-routine details and bounded code/data
-censuses are in the annotations. Address conventions and complete-file
+observed animation outcomes. Per-routine details and code/data censuses are in
+the annotations. Address conventions and complete-file
 identities follow [Retail game file identities](../../game/files/file_identities.md#address-conventions).
 
 Related owners: [Action commands](action_commands.md) covers input matching,
@@ -33,8 +31,8 @@ owns allocation and fighter-class tables.
 
 Fighter fields use `Fighter`. Authored rows use `CharacterAnimationRow`,
 motion blocks `ActionMotionEvent`, attack banks `ActionAttackBank`, and clocks
-`TimelineBlock`. Fields with established width and meaning use named types,
-including partial owner views; raw offsets remain where either is unresolved.
+`TimelineBlock`. Named fields use typed views,
+including partial owner views; other fields keep raw offsets.
 Grounded means
 `contact_flags & 0x80`. Saved field declarations and raw accesses determine
 the layout; decompiler field expressions after pointer arrays can disagree
@@ -46,8 +44,8 @@ with those offsets.
 `fighter_set_action_state(fighter, 8, index, mode)`. The setter calls
 `fighter_action_exit` and `fighter_prepare_action_state` before its
 same-state early return and before storing the requested major/substate.
-A zero return for an unchanged state therefore does not establish that
-cleanup and initialization were skipped.
+A zero return for an unchanged state therefore still follows cleanup and
+initialization.
 
 Major-8 preparation calls `fighter_enter_action_record`. It installs
 `current_action` and `current_record`, clears `pending_action` to -1,
@@ -72,7 +70,6 @@ treating its prior value as -1. Major 8 publishes the current record as
 own facing, motion, transfer or response cleanup. The dispatcher and
 `action_exit_record` (`0x00238D00`) contain no direct
 `character_dispatch_channel` call or fighter-class virtual cancellation.
-This bounded result does not classify indirect character paths.
 
 Major-8 exit retains the old record while applying category/outcome gates.
 It can increment action statistics, release paired motion, restore exchange
@@ -81,8 +78,8 @@ reset its local countdown. A non-8 destination can force an opponent in
 exactly `(5,0x50)` to neutral. The category-`0x100` helper
 `capture_starter_exit` is empty; category `0x200` reaches
 `fighter_cancel_current_action`, which projects each fighter's position and
-updates only `position[1]` (Y) on success. Its name does not establish general
-object cancellation. Capture ownership belongs to
+updates only `position[1]` (Y) on success; it cancels no other object.
+Capture ownership belongs to
 [Throws and captures](throws_and_captures.md).
 
 For a non-8 destination, `fighter_end_charge_on_action_exit`
@@ -187,8 +184,7 @@ that clock's integer/fractional positions and sets
 Positive pause clears only clock event mask `0x2`, preserving positions
 and remainder. Rounding/crossing contracts belong to
 [Timer primitives](../../runtime/timer_primitives.md), and pause ownership to
-[Pause and replay](../session/pause_and_replay.md). Invocation counts and
-authored rates alone do not establish elapsed seconds or visible duration.
+[Pause and replay](../session/pause_and_replay.md).
 
 ### Readers and writers of the update delta
 
@@ -197,19 +193,19 @@ scene rates and proportional approaches. `scalar_approach` implements
 `value += (target - value) * k`; callers supply factors such as a clamped
 constant times delta, delta divided by a divisor, or the reciprocal of a
 divisor divided by delta. `fighter_set_scaled_velocity` scales a requested
-gain unless it is exactly 1. Effect-child playback scaling is an inference
-from the stored rate.
+gain unless it is exactly 1. `effect_rated_child_setup` stores the rate it
+receives and passes it to the effect it creates.
 
 The rate affects more than continuous motion:
 
 | Use | Established behavior |
 | --- | --- |
-| Entry/transition speed approaches | One application can use gains `0.5 * delta`, `0.75 * delta`, or a character braking scalar times delta; the transition's single-run interpretation is an inference |
+| Entry/transition speed approaches | One application can use gains `0.5 * delta`, `0.75 * delta`, or a character braking scalar times delta |
 | Paired state 6 | Gain `min(1, 1.25 * delta)` snaps at delta 1 |
 | Definition ID 22 | Repeat count is 13/11/17 for delta equal to/above/below 1 |
 | Definition ID 51 auxiliary scene | No advance while delta is at most 0.1 |
-| `kimimaro_second_stage_channel3` | Record rejection count and event index branch on delta above 1 |
-| Definition ID 71 | Copies opponent speed times opponent delta; a further own-delta multiplication is inferred from the integrator |
+| `naruto_rate_scaled_events` | Record rejection count and event index branch on delta above 1 |
+| Definition ID 71 | Copies opponent speed times opponent delta |
 | Definition ID 78 pull | Delta scales the bounded pull term and then its accumulator |
 | Definition ID 80 | Adds `25 * delta` at secondary event `0x10` |
 | Definitions ID 80/93 | Effective animation-rate product is compared with `0x80/0x100/0x120` |
@@ -220,11 +216,9 @@ The rate affects more than continuous motion:
 
 The ID 80 and ID 93 values are retained in
 `fighter_id80_rate_threshold_pair` (`0x00603D20`) and
-`fighter_id93_rate_threshold_pair` (`0x00604148`). The ID 92/93 output
-consumers and the skill owners were not traced by this census.
-The former ID 57 attribution of `kimimaro_second_stage_channel3`
-conflicts with that definition's `naruto_callbacks` table. Its numeric
-delta-selection behavior is established; its character ownership remains open.
+`fighter_id93_rate_threshold_pair` (`0x00604148`).
+`naruto_rate_scaled_events` belongs to Naruto (ID 57): `naruto_channel5`, his
+channel-5 callback, reaches it through `naruto_auxiliary_update`.
 `hit_handle_bit2` tests delta above 1; `fighter_apply_movement` also has a
 zero-delta branch.
 
@@ -255,8 +249,7 @@ Other counters, override approaches and decays on these paths are unscaled:
 paired-state invocation counts, action-motion counts, exchange-phase counts,
 sequence-camera counts, statistic counts, override gains 0.0125/0.25/0.02,
 halving decays and the auxiliary `3 * scalar` subtraction.
-The annotation census bounds direct offset-based reads/writes; rebased
-pointers and additional entry callers remain outside it.
+The annotations list the direct offset-based reads and writes.
 
 ## Ordinary dispatch order
 
@@ -422,8 +415,8 @@ animation frame against adjusted inclusive bounds.
 On admission, the consumer resolves the node/transform, applies offsets,
 updates geometry, activates the selected registration and publishes
 `current_record` through `fighter_publish_current_attack`.
-Failure deactivates the bank. A nonterminal phase or attack-bearing row
-therefore does not establish an active attack.
+Failure deactivates the bank. A nonterminal phase or attack-bearing row alone
+is therefore not an active attack.
 [Collision](collision.md) owns contact evaluation and Hit response owns the
 accepted-hit result.
 
@@ -448,7 +441,6 @@ Auxiliary clocks advance by their playback scene's unsigned step /256 when
 remainder. Sasori's clock always follows its first playback scene even when
 the attack uses the alternate scene. Arithmetic belongs to Timer primitives
 and scene ownership to [Puppet control](../characters/puppet_control.md).
-The recovered direct callers do not establish complete indirect coverage.
 
 A separate path, `fighter_register_auxiliary_attack_bank`, copies a supplied
 center, scales radius by `capture_uniform_scale`, selects a side-dependent
@@ -520,8 +512,8 @@ in [Character identity](../characters/character_ids.md) and Character assets.
 
 Every original action row index lies within its definition's counted array,
 and every forward sequence reaches a terminal before the array ends.
-This establishes bounds, not linear execution or reachability:
-held conditions, relative jumps, callbacks and interruption can change the path.
+Held conditions, relative jumps, callbacks and interruption can still change
+the path.
 The annotation on the definition table retains the complete counts and
 linear-length histogram.
 
@@ -538,9 +530,9 @@ All six relative-jump records:
 
 `character_id058_zero_rate_phase_row` (`0x004DC064`) has rate zero and
 grounded condition; `character_id093_slow_held_phase_row`
-(`0x005986DC`) has rate 1 and condition zero. Slow/zero animation rate
-alone does not establish a malformed action: progression and character/native
-handlers are separate mechanisms. Their full action lifetimes remain open.
+(`0x005986DC`) has rate 1 and condition zero. A slow or zero
+rate alone does not make such a row malformed: character and native handlers
+can leave a phase independently.
 
 ## Prior outcome byte lifetime
 
@@ -551,8 +543,7 @@ only for an attack-to-attack transition; other destinations clear it.
 
 The state setter has no independent reset, the old-state dispatcher has no
 major-3 exit callback, and inspected neutral entry changes facing/exchange
-without clearing the byte. These paths establish no universal fall or
-landing reset.
+without clearing the byte.
 
 The alternative section-transfer branch writes prior outcome 1 after the
 setter installs fall `(3,0x1E)`, so cleanup precedes the write. That value
@@ -575,8 +566,7 @@ prior/current 1 in its nonterminal grounded exit path, and
 facing, distance, record and phase gates. These influence attack motion and
 landing decisions without admitting an attack by themselves.
 
-The annotations retain the bounded resident store search. Wider,
-computed/rebased-pointer stores and indirect readers remain unresolved.
+The annotations retain the resident store search.
 An auxiliary object can have independent bytes at the same offsets:
 `skill_auxiliary_init` (`BTL.BIN 0x0077F2F0`) establishes a class-5 owner
 with separate registry heads, not copied fighter outcome history

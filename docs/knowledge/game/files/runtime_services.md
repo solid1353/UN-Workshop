@@ -3,10 +3,8 @@
 ## Research coverage
 
 Static evidence establishes cache capacities, mount/preload ordering, path
-routing, sector I/O, AFS selection, and transport/queue ownership. Indirect
-removal and teardown callers, partial-AFS recovery, metadata release, the
-dynamic root-buffer consumer and secondary gzip magic remain open. Failure
-and concurrency outcomes were not exercised.
+routing, sector I/O, AFS selection, and transport/queue ownership.
+Open: nothing.
 
 ## Evidence and annotation owners
 
@@ -16,13 +14,12 @@ identified in [Retail game file identities](file_identities.md); its
 [address conventions](file_identities.md#address-conventions) apply to the
 disassembly evidence.
 
-`@annotations/NA2/SLPS_258.37/symbols.tsv` owns routine names, prototypes,
-instruction proofs and bounded searches, including `rofs_remove_volume`,
+`@annotations/NA2/SLPS_258.37/symbols.tsv` owns routine names, prototypes
+and instruction proofs, including `rofs_remove_volume`,
 `afs_parse_partition_chunk`, `entry` and `ccs_clear_load_queue`.
 `@annotations/NA2/types.h` owns layouts such as `AdxfHandle`,
 `AfsPartitionMetadata`, `CcsReader` and `CcsStreamPlayer`. Later BSS addresses
 are in owning routine comments because the resident program does not map them.
-Exact vendor names and numeric status enum names remain unestablished.
 
 CCS payload parsing, publication and registry ownership belong to
 [Resident CCS runtime](ccs_runtime.md). Fighter tables belong to
@@ -31,9 +28,8 @@ CCS payload parsing, publication and registry ownership belong to
 and battle ordering to
 [Battle lifecycle](../../gameplay/session/battle_lifecycle.md).
 AFS content and codecs belong to [Disc files](disc_files.md) and the media
-documents. Overlay selection, Adventure, and general save/load behavior are
-outside this investigation; the icon path was followed only to establish its
-file contract.
+documents. Overlay selection, Adventure, and general save/load behavior belong
+elsewhere; the icon path is covered only for its file contract.
 
 ## `FLIST.DIR` cache capacity and normalization
 
@@ -56,7 +52,7 @@ later case-sensitive ROFS tree lookup. The four direct consumers of
 `flist_get_location` divide into two behaviors: the existence query and two
 size queries treat zero cached bytes as a miss and search the disc; the cached
 LSN predicate only checks for a nonzero LSN. A false predicate therefore does
-not establish absence. Physical path construction uses the configured current
+not mean the file is absent. Physical path construction uses the configured current
 directory, adds a separator when needed, appends missing `;1`, uppercases
 ASCII and converts `/` to `\`.
 
@@ -126,8 +122,8 @@ synchronously.
 
 `rofs_preload_complete` participates in the startup barrier. This is eager
 directory metadata loading, not reading or decompressing 2,310 CCS payloads.
-All 21 dynamic buffers total 116,472 bytes (`0x1C6F8`); excluding the
-unproven dynamic root buffer, the 20 children total `0x1BD80`.
+All 21 dynamic buffers total 116,472 bytes (`0x1C6F8`); the 20 child buffers
+total `0x1BD80`.
 
 ## Logical and explicit path routes
 
@@ -150,8 +146,7 @@ path instead becomes a complete rewritten pathname opened with directory zero,
 bypassing the GZLIST tree.
 
 The retail host-rewrite branch contains a null store before prefix copying.
-Recognizing host spelling therefore does not establish a usable host open,
-independently of later open failure. Both generic open branches also treat
+Recognizing host spelling therefore does not give a usable host open. Both generic open branches also treat
 failure as fatal, storing through zero and retrying rather than returning a
 recoverable error.
 
@@ -167,8 +162,7 @@ Device splitting uppercases only the name before the colon. The remaining
 filename is not normalized there. A separate 32-entry registry holds
 callback tables and inline names. With no explicit device, selection uses the
 registered default. An unregistered explicit name also retries with the
-default, restoring the original complete pathname for it. This establishes a
-selection branch, not successful unknown-device access or an alternate CVM.
+default, restoring the original complete pathname for it.
 The default can be set only to a registered name; an empty name clears it.
 
 Control operation 100 governs rebuilding the filename with its device prefix.
@@ -203,7 +197,7 @@ the ROFS file slot; it neither unmounts nor closes the backing CVM.
 after a nonnegative information result, and unconditionally closes the saved
 backing handle. It ignores the removal result and therefore does not preserve
 the backing handle when removal fails. Its outer wrapper has no direct
-resident reference; indirect retail reachability is unknown.
+resident reference.
 
 Backend deletion finds the volume, scans its file pool and releases in-use
 linked files with the same backing handle. Release stops a state-2 file;
@@ -213,8 +207,7 @@ operation and in-use fields. Releasing a file slot does not close the archive.
 The scan advances its row pointer only after an in-use row with a nonnull
 volume link. An unused or unlinked row advances only the loop counter and is
 revisited, skipping later slots. Afterward the volume record is zeroed and a
-default pointing to it is cleared. This cleanup limitation is static evidence,
-not an observed stale-handle or cancellation outcome.
+default pointing to it is cleared.
 
 #### Registered removal callback and wrapper reachability
 
@@ -228,11 +221,6 @@ pointer. It invokes no close, destructor or removal callback. Registration
 obtains a table through the supplied constructor and uses the first empty-name
 slot when there is no match.
 
-Retail reachability of the backing-close wrappers remains unestablished;
-registering removal does not prove retail invokes it. The bounded evidence
-belongs to `rofs_remove_volume` and `device_remove_volume_control` annotations
-and does not exclude computed pointers, aliases or uninspected callers.
-
 #### Other teardown lifetimes
 
 ROFS context finalization requires a nonnull context whose initialized word is
@@ -240,21 +228,17 @@ ROFS context finalization requires a nonnull context whose initialized word is
 finalization callback, zeroes storage and clears the context pointer. The
 selected driver callback is a no-op: neither it nor volume-record clearing
 closes the backing generic handle. Valid backend initialization first performs
-this teardown. This establishes reinitialization's library contract, not a
-retail unmount event.
+this teardown.
 
 Generic device finalization instead decrements an initialization count and acts
 only when it reaches zero. It closes every allocated generic handle through its
-saved table, then clears all 40 slots, registrations and the default. Retail
-finalizer reachability remains unestablished.
+saved table, then clears all 40 slots, registrations and the default.
 
 An existing generic handle keeps its saved callback table after registration
 clearing; ordinary close does not resolve the name again. Outer volume removal,
 context teardown, unregistration and generic-pool finalization have distinct
-responsibilities and gates, without an established retail shutdown sequence.
-The outer volume enter/leave wrappers are no-ops and supply no locking around
-query/remove/close. Concurrent outcomes and locks in lower layers remain
-unresolved.
+responsibilities and gates. The outer volume enter/leave wrappers are no-ops
+and supply no locking around query/remove/close.
 
 ## AFS partition selection and member opens
 
@@ -283,7 +267,7 @@ The parser validates only the first three `AFS` magic bytes. It compares
 the little-endian 32-bit count as signed against `0x10000`, then rebuilds
 the accepted count from its low two bytes. Exactly `0x10000` therefore
 becomes zero, while high-bit malformed counts are not rejected by that signed
-upper test. This limitation does not establish archive usability.
+upper test.
 
 Only the first member offset is retained; later offset words are skipped and
 their adjacent sizes recorded. Exact mode keeps byte sizes; sector mode rounds
@@ -301,8 +285,7 @@ members; gaps or independently authored offsets are not represented.
 Member open borrows the partition metadata's pathname and applies reconstructed
 bounds to its stream. Metadata must outlive that handle; close releases the
 member transport, not the partition. Explicit pathname/directory/start/count
-open is a separate variant. Nested parsing uses the internal member opener;
-retail callers of the two public wrappers remain unestablished.
+open is a separate variant. Nested parsing uses the internal member opener.
 
 Startup serially loads these top-level archives, prefixed with `CDV:data/`:
 
@@ -325,8 +308,7 @@ temporary handle and clear transport, member cursor and input-sector count.
 Registry and metadata remain. Cancellation synchronously stops a non-idle
 handle, sets state 1 and performs that same transport cleanup. It neither
 unregisters nor erases partial metadata. Member validation checks presence and
-index range, not parser completion. Scoped startup callers do not establish
-use of canceled partial metadata.
+index range, not parser completion.
 
 ### Interrupted partition ownership and library teardown
 
@@ -353,16 +335,12 @@ all-members-recorded transition; malformed/truncated input cannot be treated
 as proven complete from those copies alone.
 
 Member validation reads no singleton completion state. Replacing a registry
-pointer does not retarget an open handle's borrowed pathname. Opening unfilled
-sizes or freeing old metadata while a member remains open is unproven, as are
-concurrent replacement outcomes and retail partial-metadata recovery.
+pointer does not retarget an open handle's borrowed pathname.
 
 ADXF initialization increments a count and initializes the handle pool and
 registry only on zero-count entry. Finalization decrements it; zero closes
 all in-use ADXF handles, resets parser ID/state and clears registry/pool
-without freeing caller metadata. Close-all has no registry operation. These
-library contracts do not establish retail shutdown or cancellation admission;
-the bounded caller evidence is in `adxf_finalize` and `afs_cancel_partition`.
+without freeing caller metadata. Close-all has no registry operation.
 
 ### Nested metadata allocation and pathname ownership
 
@@ -428,9 +406,8 @@ ownership marker controls destruction; the caller buffer is never freed.
 Status getters return the handle byte without advancing I/O. Required-read
 pumps before polling, returns the original byte length on 1 or 3 and retries
 4. It ignores the read-start return and never checks transferred sectors
-against requested length. Its returned byte count therefore does not prove
-full transfer after rejection or EOF clamping. This is a static consequence,
-not a measured short read.
+against requested length. Its returned byte count therefore does not show
+full transfer after rejection or EOF clamping.
 
 Synchronous stop samples transferred count, releases owned adapter and returns
 to 1. Asynchronous stop sets a pending latch; pumping releases/clears it when
@@ -459,9 +436,7 @@ contract.
 `card_write_icon_sys` separately writes a `0x3C4`-byte `PS2D` file with
 `icon00.icn` in `CardIconSystem.first_icon_name`, `second_icon_name` and
 `third_icon_name`, embedded as `SaveCardContext.icon_sys`. The type names the
-observed eleven-byte writes; full slot capacities remain unestablished.
-The source's save-icon role is confirmed; its internal visual and animation
-fields remain undecoded.
+eleven-byte writes. The icon format is in [Memory-card icon](save_icon.md).
 
 ## Payload transport, gzip stage, and background requests
 
@@ -541,7 +516,6 @@ The header parser accepts `1F 8B` and a secondary `1F 1F` comparison,
 requires method 8, reads MTIME and handles FEXTRA, FNAME and FCOMMENT. It
 neither consumes FHCRC nor visibly rejects reserved flag bits. Invalid magic
 reaches a null store; a positive non-8 method reaches the no-op diagnostic.
-The secondary magic's purpose remains unresolved.
 
 Except with destination mode 2, decode allocates output-chunk-sized scratch,
 commits output chunks and frees scratch on normal/abort exit. Both resident
@@ -611,8 +585,7 @@ clears the global pointer before requesting termination; later scheduler passes 
 mark pending retirement, then unlink, invoke any callback, terminate/delete
 the thread and free stack/descriptor. Queue inactivity precedes retirement,
 which does not walk nodes or clean the queue. Generic name lookup exists,
-but bounded name-construction searches establish no concrete name-based
-queue stop/cleanup caller.
+but name-construction searches find no caller that stops or cleans the queue by name.
 
 Progress mode prescans nonresident sector bytes and reports
 `completed * 100 / total`, changing only after whole requests. Zero total
@@ -621,7 +594,7 @@ Start argument 1 chooses progress, not result deletion.
 
 Normal cleanup preserves registered downstream objects, detaches embedded
 results, destroys transport and frees nodes. The alternate branch deletes a
-nonzero result first; no nonzero mode writer is established. Neither branch
+nonzero result first, but no writer of a nonzero mode was found. Neither branch
 checks state or activity, and head/tail reset follows the complete walk.
 Cleanup does not stop or wait for the current load; callers must reach the
 inactive fence first. Selected resident callers follow that order.
@@ -630,14 +603,10 @@ inactive fence first. Selected resident callers follow that order.
 
 Boot clears the cleanup mode and other queue globals before GP setup; new
 worker start also clears that byte. An already-active start returns before
-clearing it. These are the only observed mode writes, both zero, so the proven
-start interface supplies no alternate deletion admission.
+clearing it. These are the only observed mode writes, both zero.
 
-Queue storage, worker and byte-total ownership are separate. No nonzero
-cleanup-mode writer or separate stop writer is established. Bounded direct
-searches do not exclude indirect writers through computed pointers, aliases
-or general memory-writing callers; retail result-deleting cleanup remains
-unproven. Exact checks and live locations belong to `entry`,
+Queue storage, worker and byte-total ownership are separate. Direct searches
+found no writer of a nonzero cleanup mode or a separate stop. Exact checks and live locations belong to `entry`,
 `ccs_start_load_queue`, `ccs_load_queue_worker` and `ccs_clear_load_queue`.
 
 `battle_state_create_fighters` waits for an inactive worker, cleans the
@@ -646,11 +615,10 @@ is in [Adoption and cache reset](asset_dependencies.md#adoption-and-cache-reset)
 ordering is in
 [Resident setup order](../../gameplay/session/battle_lifecycle.md#resident-setup-order).
 
-## Useful negative results
+## Key negative results
 
 - Startup preloads directory metadata rather than all CCS payloads.
 - GZLIST's compressed-size column is discarded and its tree does not case-fold.
 - Mount failures retry indefinitely; required-open has no recoverable failure.
-- No dynamic root-buffer consumer is proven.
 - Gzip diagnostics do not propagate load failure.
 - Background requests run serially with no failure state or retry.

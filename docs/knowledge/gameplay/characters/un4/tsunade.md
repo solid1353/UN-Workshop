@@ -5,14 +5,14 @@
 Established for UN4 Tsunade 25 (`tnd`) against NA2 Tsunade 84 (`tnw`), with
 NA2's retained TND resources 51/52 kept distinct: authored move and phase
 differences, callbacks, construction and both donor jutsu classes; ordinary-jutsu
-titles and typed assets; the retained-actor comparison; matched ordinary
-Ultimate Jutsu camera/filter/hit payloads; the Katsuyu stage, controller, slug and
-acid objects, contacts, CPU decisions and cleanup; power and regeneration
-effects; compact samples and exact streamed voices.
-Open: Katsuyu's acquisition-field producer and the next charge-list halfword;
-later binding of one untyped hit record; shared framebuffer and blur lifetime;
-contact masks and effect admission; wave stage-height correspondence; remaining
-input/phase semantics, ID services and voice producers.
+titles and typed assets; the retained-actor comparison, including the contact-mask
+bit mapping and stage heights; matched ordinary Ultimate Jutsu camera/filter/hit
+payloads and defender-offset indexing; the Katsuyu stage path, controller, slug
+and acid objects, contacts, CPU decisions and cleanup; power and regeneration
+effects and their writers; blur lifetime; compact samples, PLVOICE cues and
+dialogue producers, and exact streamed voices.
+Open: none. Katsuyu's nonterminal acid count reads uninitialized heap memory,
+so its retail value varies at run time.
 
 Names come from `@annotations/UN4` and `@annotations/NA2`; addresses are live. Shared format comparisons are in [UN3 and UN4 characters](../un3_un4_characters.md).
 
@@ -214,7 +214,8 @@ interval, position, scale, RGB and alpha, then rebuilds the packet at `+0x48`.
 `tsunade_jutsu1_auxiliary_draw` (`0x007E7C80`) temporarily publishes that
 descriptor, submits the packet and restores the preceding descriptor.
 `tsunade_jutsu1_auxiliary_destroy` (`0x007D5320`) performs common cleanup
-and optional deleting free. The shared descriptor's full resource graph is open.
+and optional deleting free. The borrowed descriptor and its lifetime are in
+[Auxiliary blur environment](#auxiliary-blur-environment).
 `tsunade_jutsu1_destroy` (`0x007DFB80`) restores participant state/locks,
 deleting-destructs that child and destroys three subordinate owners, two
 embedded rendering owners and contact storage before common destruction.
@@ -297,13 +298,31 @@ destroy their rendering owners before common cleanup; deleting free is
 conditional on a positive flag. Wave finish clears both registrations and
 movement and marks retirement. A retirement request is not immediate freeing.
 
-Contact masks differ. The primary contacts and wave first bank use donor
-side-0 `{0x40,0x410900}` and side-1 `{0x800,0x208048}`, with donor
-`jutsu_extra_contact_mask_flag` (`0x00745A30`) conditionally adding
-`0x100000`. Native uses `{0x80,0x88900}` / `{0x800,0x44090}` without
-that addition. Wave second-bank masks are donor `{0x2000,0x400}` /
-`{0x4000,0x20}` versus native `{0x1000,0x400}` / `{0x2000,0x40}`.
-Matching contact windows do not establish matching admission semantics.
+Contact masks are written `{send, receive}`. The primary contacts and wave
+first bank use donor side-0 `{0x40,0x410900}` and side-1
+`{0x800,0x208048}`; native uses `{0x80,0x88900}` / `{0x800,0x44090}`.
+The two games assign the same contact roles to different bits. Each game's
+primary candidate builder groups the bits the same way: UN4
+`collision_build_primary_candidates` (`0x00758C90`) pairs
+`0x200000/0x400000`, `0x8/0x100`, `0x40/0x800` and `0x8000/0x10000`,
+where NA2 pairs `0x40000/0x80000`, `0x10/0x100`, `0x80/0x800` and
+`0x4000/0x8000` ([collision candidates](../../combat/collision.md#primary-objects)).
+Bit for bit, UN4 `0x8/0x40/0x100/0x800/0x8000/0x10000/0x200000/0x400000`
+correspond to NA2 `0x10/0x80/0x100/0x800/0x4000/0x8000/0x40000/0x80000`,
+and both Tsunade mask pairs translate exactly under that mapping. Wave
+second-bank masks are donor `{0x2000,0x400}` / `{0x4000,0x20}` versus
+native `{0x1000,0x400}` / `{0x2000,0x40}`.
+
+While a reversal game runs (`reversal_game_active_side`, `0x00745A30`,
+nonzero at setup), the donor also ORs `0x100000` into the primary receive
+mask, as do many other UN4 jutsu setups. `0x100000` is the reversal-controller
+channel: `reversal_game_contact_masks_init` (`0x00748140`) gives the
+Shukaku, Soutourou and Gamabunta controller contacts send `0x100000` and
+receive `0x400800` (side 0) or `0x200040` (side 1) plus `0x80000`. A
+jutsu contact that meets one sets candidate bit `0x2000000` and copies the
+reversal contact and controller side into its object. Katsuyu's own contacts
+do not use this channel. NA2 has no reversal games, and its retained TND
+setup has no such bit.
 
 The checked surface-emission branches retain their composition names and
 attribute cases. For `0xE0A000`, donor wave creation selects heights
@@ -312,8 +331,13 @@ attribute cases. For `0xE0A000`, donor wave creation selects heights
 the floating-point result of `stage_effect_height_bits` (`0x00345B20`),
 which additionally selects -50 for native logical ID 23. The service has
 both an integer success result and a float result; its caller stores `$f0`
-at `0x007C0210`. Logical IDs require each game's own mapping; see
-[Stage consumers](../../stages/stages.md#logical-id-equality-cases).
+at `0x007C0210`. UN4 logical IDs 5/10/9 are archives S05/S10/S09
+([UN4 slots](../../stages/un4_stages.md#raw-slots-logical-ids-and-archive-ownership)),
+which correspond to NA2's S05/S10/S09, also logical IDs 5/10/9
+([shared stage content](../../stages/un4_stages.md#stage-content-shared-with-na2),
+[NA2 slots](../../stages/stages.md#stage-identity-and-resource-mapping)).
+Both games therefore give the same heights for the same stages. NA2's extra
+ID 23 is its S03, which has no UN4 counterpart.
 
 **Gambling Shot:** `tsunade_legacy_jutsu1_initialize` (`0x008009A0`),
 `item_tnd001_action_update` (`0x00800FF0`), contact/receiver gates,
@@ -349,8 +373,8 @@ only after a registry-identity check. `tnd_destruct` (`0x008006D0`)
 restores participant state and side locks, unregisters contacts, retires
 that particle, deletes the allocated blur child and destroys the three
 subordinate children and two embedded players before common destruction.
-These ownership paths correspond to the donor; shared service semantics
-are not established merely by corresponding calls.
+These ownership paths correspond to the donor; the corresponding calls
+reach each game's own shared services.
 
 Two concrete jutsu-1 services differ. Donor
 `tsunade_jutsu1_emit_three_events` makes three one-item requests; its
@@ -384,20 +408,17 @@ These loaded data ranges agree byte for byte:
 Agreement establishes those bounded data ranges and the compared
 control/ownership structure, not raw binary equivalence.
 
-Remaining independent questions are the shared contact-mask interpretation
-and the writers/admission of the donor extra-mask flag, semantic correspondence
-of each game's stage IDs, and identity-dependent admission/meaning of the
-shared effect, collision and compact-cue calls reached by these actors.
-The mask/extra-flag question is shared with the
-[retained Kabuto actor](shizune_kabuto.md#retained-kabuto-first-jutsu-executable-comparison);
-the participant compact-selector contract is owned by
+The retained actors' masks are exact NA2 translations of the donor masks,
+apart from the reversal-controller bit, and their stage heights agree for
+the shared stages. The retained actors call NA2's own collision, effect and
+cue services; collision admission is owned by
+[Collision](../../combat/collision.md) and the participant compact-selector
+contract by
 [Battle audio](shizune_kabuto.md#jutsu-participant-compact-selectors).
 Typed CCS/provider closure is recorded in
-[Tsunade ordinary-jutsu dependency graphs](#tsunade-ordinary-jutsu-dependency-graphs);
-later local record binding and shared renderer/framebuffer lifetime remain
-resource questions. The retained actors are therefore
-structurally corresponding implementations with verified service differences,
-not completely equivalent executable behavior.
+[Tsunade ordinary-jutsu dependency graphs](#tsunade-ordinary-jutsu-dependency-graphs).
+The retained actors are therefore structurally corresponding implementations
+with the verified inventory and exit-service differences above.
 
 ### Katsuyu stage/controller Ultimate Jutsu
 
@@ -419,10 +440,16 @@ and prepares camera/contact state. `katsuyu_reversal_acquire_stage_container`
 `reversal_definition_auxiliary_value` (`0x00745970`), to resident
 `ccs_acquire_container_by_path` (`0x00341730`); ownership and container are
 stored at `+0xB0/+0xB4`. This is stage acquisition. The fourth word at
-`0x00859D0C` is zero in the checked overlay, and its runtime writer has not
-been identified. The descriptor's own first word and resource-21 filename
-table separately name `stage/ktys_kty.ccs`; they do not establish a write
-to that fourth word.
+`0x00859D0C` is zero in the stored image; BATTLE's constructor interval
+(`0x00863900..0x00863918`, from its header) runs
+`reversal_definition_table_initialize_stage_paths` (`0x008637E0`) at
+overlay load, which copies each of the seven reversal descriptors' first
+word into its entry's fourth word. Entry 3 receives
+`katsuyu_reversal_descriptor`'s `stage/ktys_kty.ccs` (`0x008588F0`).
+The acquisition is concrete vtable `+0x44`, which
+`reversal_game_initialize_hud_and_common_state` (`0x00747600`) calls
+before the `+0x40` initializer; `katsuyu_reversal_bind_animations`
+resolves every Katsuyu and Tsunade animation from that `+0xB4` container.
 `katsuyu_reversal_bind_animations` (`0x0073A6D0`) resolves nine
 Katsuyu suffixes and nine Tsunade suffixes from `0x00844D50/0x00844D80`,
 using `ANM_4kty%s` / `ANM_4tnd%s`, plus `ANM_4ktyrdy1`.
@@ -500,12 +527,17 @@ and installs cooldown 40.
 
 At progress 60 the acid emitter takes an explicit 28-node branch. Otherwise
 its signed-integer formula is `25 + (progress - T) / trunc((60 - T) / 4)`,
-where `T` is `list[current_index]`. After reaching threshold 56 that index
-can be 1, beyond the only initialized element. Both allocation placement
-helpers leave payload bytes uncleared. No selected write to this next
-halfword has been established, so **25..28 is not a proven bound for
-nonterminal acid emission**. This identifies the precise missing value;
-it does not establish a crash or the value in a running game.
+where `T` is `list[current_index]`. State 2 requires progress above
+`list[count-1]` = 56, and the charge update has already advanced the index
+to 1 at progress 56, so every nonterminal state-2 emission (progress
+57..59) reads `list[1]`. The list storage comes from a two-byte request that
+the allocator rounds to a `0x10`-byte payload behind a `0x10`-byte header;
+`list[1]` is uncleared padding inside that payload. Neither the default list
+creator nor Katsuyu writes it, so its value is whatever the heap block held
+before. The charge update also compares progress 57..59 with that same
+halfword. With `T = 56` the formula would give 26/27/28 for progress
+57/58/59; the retail count for these progress values depends on stale heap
+content. The emitter has no divide-by-zero trap.
 
 `reversal_game_bind_fighters` (`0x00747650`) replaces initialization's
 temporary CPU row with `katsuyu_reversal_cpu_weight_rows`
@@ -622,9 +654,8 @@ Channel 6 uses two embedded transient records in both games. Donor action 6,
 phase 1, uses the checked timeline interval 11..12 to seed record 1; native
 uses secondary event 12. Both action `0x1A`, phase 1, secondary event zero
 seed record 0. Both decay each record's float `+0x74` by 0.95 and pass its
-position into contact/effect feedback. This establishes local state ownership
-without a separately allocated class child; final visual cadence remains
-unmeasured.
+position into contact/effect feedback. The state is local, without a
+separately allocated class child.
 
 ## Typed providers
 
@@ -700,7 +731,7 @@ surface key masked with `0xF0F0F0`. Its selected roots are:
 | `0x00D000` | `battle_emit_surface_debris` (resident `0x00301B90`) / `battle_surface_debris_bind` (`0x002DE7F0`) select the 14 resource rows 111..124 using bank × 7 + field variant. Their aliases are `PARTICLE` leaf01/leaf02 compositions and base/`c1..c6` palettes. Leaf01 chain: 51 → 52 → 53 → 55 → texture 56 → palette 140 (variants 141..146). Leaf02: 57 → 58 → 59 → 61 → texture 62 → palette 147 (variants 148..153). |
 | `0x0060C0`, `0x80D0F0` | Descriptor `tsunade_wave_composition_particle` (`0x00578A18`) uses four explicit own-provider `CMP_ptndhhn_*` choices, whose local chains are above. The descriptor's ordinary cached-resource selection is replaced. |
 | `0x202020`, `0xE0E000`, `0xE0A000` | Facing selects `tsunade_wave_splash_particle_positive/negative` (`0x00578590/0x005785C8`). `battle_splash_particle_palette_offset` (`0x002D4EF0`) returns zero, so override index is 81. Choice count is three: 81/82 use `EFF_e0xdrop01` with default/`c1` palettes; 83 uses `EFF_e0xdrop02` with its default palette. Typed chains are effect 34 → texture 35 → palette 123, extra palette 124; effect 40 → texture 41 → palette 130. |
-| `0xF0D0D0` | Three `tsunade_wave_debris_particle` (`0x005789E0`) emitters receive an explicit composition from `battle_ground_particle_composition` (BATTLE `0x006C5590`). Its field/background chain ends at `background_ground_particle_composition` (`0x006C54D0`), which returns zero. No named CCS composition is established by that branch. This does not establish its visible result. |
+| `0xF0D0D0` | Three `tsunade_wave_debris_particle` (`0x005789E0`) emitters receive an explicit composition from `battle_ground_particle_composition` (BATTLE `0x006C5590`). Its field/background chain ends at `background_ground_particle_composition` (`0x006C54D0`), which returns zero, so this branch passes no CCS composition. |
 
 `tsunade_jutsu1_update_attached_particles` (BATTLE `0x007E2230`) writes
 catalog indices 32/31/30/33, selected by `tsunade_finish_particle_indices`
@@ -762,8 +793,12 @@ ordinary local records even when untyped, but
 wrapper's target runtime is sentinel 4. `animation_attach` (`0x001BD710`)
 then leaves that track's target, type, flags and evaluator zero. Thus the
 initial hit97/hit24 attachment does not materialize this scene child. This
-is not a marked request for another provider. A later local producer or
-rebinding has not been established. The checked Tsunade emission path calls
+is not a marked request for another provider. UN4
+`ccs_resolve_cross_container_refs` (`0x001B01B0`), which replaces
+sentinel-4 runtimes after a load, handles only `#` records, and neither the
+executable nor BATTLE contains the text `e0xfla02`; no rebinding of this
+ordinary record was found. Each hit97/hit24 attachment skips the same track.
+The checked Tsunade emission path calls
 `battle_acquire_primary_impact` (`0x002FEEB0`): it restarts a prebound
 resource-2/38 player when available, or binds the same type-4 resource through
 `transient_bind_typed_resource` (`0x002DB9C0`) and `animation_attach` on
@@ -796,18 +831,30 @@ order. `tsunade_jutsu1_auxiliary_update` (`0x007E79F0`) builds the embedded
 2D packet at `+0x48`; its enabled draw (`0x007E7C80`) temporarily selects
 the borrowed descriptor and submits that packet through
 `draw_environment_submit_2d_record` (`0x0010A790`). The submitter uses
-the descriptor renderer's device rectangle and shared framebuffer state
-`0x00609588` for its texture coordinates and draw registers. This path
-does not request a Tsunade CCS image for the blur.
+the descriptor renderer's device rectangle for its geometry, and takes its
+texture base from the shared GS state pointed to by `0x00609588`
+(the halfword at state `+0x1A0`, entry 1 of the `+0x19C` pair) plus the
+state's `+0x1B0` word for a second register. The blur therefore samples
+GS memory already written by earlier draws, not a Tsunade CCS image.
+The borrowed descriptor belongs to `battle_effect_context`
+(`0x00609774`), which `battle_effect_context_create` (`0x002D52B0`)
+allocates in `battle_create_graph` before the battle owner and fighters,
+and `battle_effect_context_release` (`0x002D5320`) frees at the end of
+`battle_destroy_graph` (`0x0031DD80`). The interaction manager that owns
+jutsu actors is allocated after the context (`interaction_manager_allocate`,
+`0x0074F040`) and released before it (`interaction_manager_release`,
+`0x0074F090`); its `interaction_registry_clear` (`0x007506F0`)
+deleting-destroys both primary actors through slot `+0x21C`, so the
+Gambling Shot actor and its blur child are gone before the borrowed
+descriptor is freed.
 The shared 2D submit geometry and framebuffer sampling contract is documented
 in [Framebuffer-effect local 2D object](../../../runtime/rendering/draw_2d_owners.md#framebuffer-effect-local-2d-object).
 
 The retained NA2 TND blur has the same 0xD8-byte local layout and draw
 sequence but borrows its native context descriptor at `+0x29D0` through
 `skill_blur_initialize` (BTL `0x00807510`); `skill_blur_draw`
-(`0x00807850`) submits through native resident `0x0010A520`. The shared
-framebuffer's production and renderer lifetime remain broader engine
-questions; the local blur's selected descriptor and submit path are closed.
+(`0x00807850`) submits through native resident `0x0010A520`, which also
+samples GS memory through NA2's own shared state.
 
 ### Tsunade Katsuyu dependency graphs
 
@@ -1013,7 +1060,8 @@ an unchecked type declaration. UN4 `jutsu_record_form_character`
 (`0x003CCD00`) maps only effects `0x5A..0x64` to replacement identities;
 all three Tsunade UJ records therefore return no replacement identity.
 Ordinary marker-driven mode changes also preserve the existing Tsunade object.
-This does not establish every later indirect effect writer or visible timing.
+The checked writers of these effects are listed under
+[Power effects](#power-effects).
 
 ## Power effects
 
@@ -1067,8 +1115,9 @@ deltas before the separate countdown pass. `effect_hp_contribution`
 (`0x002D04B0`) requires HP at or below its positive boundary 1;
 `effect_chakra_contribution` (`0x002D05D0`) suppresses a negative delta
 only below its boundary 0. The HP/chakra routers also check restoration,
-status and both fighters' contribution blockers. Thus the stored 600 does
-not establish realized healing, total chakra cost or elapsed time.
+status and both fighters' contribution blockers, so realized healing, total
+chakra cost and elapsed time depend on those gates, not on the stored 600
+alone.
 Admitted countdown passes decrement positive lifetime; zero-expiry and
 forced removal both reach the specialized destructor and successor request.
 
@@ -1086,8 +1135,21 @@ composition constructs an owned `0x2B0` renderer because
 composition. Its own animation/countdown governs retirement, separately
 from the gameplay node. Native effects `0x22/0x57/0x23` select the same respective
 `name2/name1/no-label` routes. The selected donor family is `3TND3PCT.CCS`
-and the native family is `3TNW3PCT.CCS`; corresponding image pixels and all
-indirect effect writers have not been established.
+and the native family is `3TNW3PCT.CCS`. Comparing the English donor file
+with the native one, `TEX_mode1name1/2` have equal headers and sizes (2,072
+bytes) but 662 and 1,100 differing pixel bytes, and both `CLT_mode1name1/2`
+palettes differ: the label images are different artwork.
+
+Every UN4 call of `fighter_apply_timed_effect` (`0x002CF220`) in the
+executable and BATTLE was checked for these IDs. Only three supply them:
+the record-56 outcome path (`0x23`), `tsunade_regeneration_effect_destroy`
+(`0x24`) and the ID-25 branch of `input_sector_widen_state_b` (`0x25`).
+The others pass other constants or read item-table and class-7 jutsu values
+that never hold `0x23..0x25`. Two pass-through sources were not resolved:
+BATTLE `controller_apply_effect` (`0x00758B20`), which has no recovered
+caller, and the post-reversal snapshot restore in
+`battle_restore_fighter_snapshot` (`0x003238C0`), whose only recovered
+save call passes -1 and so stores no effect.
 
 ## Cinematics
 
@@ -1185,9 +1247,18 @@ corresponding object/model/material/texture/palette chain is in its
 stored links and named resources, not proof of visible appearance or live
 allocation. NA2's separate `BIN_extobj_data_tnw` row in `STRMCMN` names
 `OBJ_1tnw00t0 forehead` and `OBJ_1cmn00t0 head`; the donor `STRMCMN`
-contains no corresponding `BIN_extobj_data_tnd` row. The native
-`sp_skill_select_body_composition` (`0x00354640`) selects that row by
-fighter abbreviation when constructing a participant body.
+contains no corresponding `BIN_extobj_data_tnd` row, and the UN4
+executable has no `extobj_data` name at all. In NA2 the row serves only the
+defender: `sp_skill_play_begin` builds its optional defender body through
+`sp_skill_body_owner_initialize` with the defender ID, and
+`sp_skill_select_body_composition` (`0x00354640`) looks up
+`BIN_extobj_data_<abbreviation>` in `STRMCMN` for that fighter. Each row's
+model is taken from the fighter's presentation or battle body and attached
+to the named parent of the defender's `CMP_1cmn00t0 trall` body when that
+composition has the parent. So the `tnw` row adds `OBJ_1tnw00t0 forehead`
+to the common head whenever Tsunade is the defender in
+another fighter's film; it does not act in her own `D25` films. A fighter
+whose abbreviation has no row gets no extra defender objects.
 
 The `_damOffs` tracks also differ independently of scene commands.
 `D25_10` has thresholds 1/232 in both games, with 78 donor versus 94
@@ -1198,12 +1269,12 @@ and `(0,0,-13)`. `D25_20` has donor thresholds 1/66/86 and native
 `(0,-9,-15)`, `(0,0,-10)`, `(0,0,-19)`; native ID 84 has
 `(2,-3,-13)`, `(2,0,-13)`, `(0,0,-19)`, `(0,0,-19)`.
 Sixty-three of the first 78 `D25_10` entries and 69 `D25_20` entries
-agree at the same numeric index over the donor phases; the remaining
-same-index rows and NA2's fourth phase require character-specific mapping.
-The generic participant substitutions, optional body, streamed block dispatch
-and shared renderer owners above still govern consumption. Exact appearance
-of every opponent and successful resource construction are not established
-by these static records.
+agree at the same numeric index over the donor phases. The tables are
+indexed by defender fighter ID: NA2 `sp_skill_play_begin` reads the entry at
+the defender's ID, and the donor's 78 entries match UN4's 78 fighter IDs
+(the bound used by `audio_queue_player_voice`). Equal indices therefore
+compare different characters wherever the two games' IDs differ; see
+[Character IDs](../character_ids.md).
 
 The cinematic hit/cue row comparison is owned by
 [Battle audio](#voice).
@@ -1242,7 +1313,7 @@ are Prog 55, Sset/Smpl 40, Vagi 39; NA2's are 40/28/28/28.
 Native program 27 is absent. Donor program 27 exists, but Tsunade's base
 event `0x19` is disabled: resource presence does not establish emission.
 The English/Japanese donor index relationships agree while sample bytes and
-offsets differ. Audible identity, priority and admission are not inferred.
+offsets differ.
 
 ### Physical streamed resources
 
@@ -1250,7 +1321,35 @@ UN4 PLVOICE outer member 24 (ID 25) is at file `0x004E3000`, size
 `0x4A000`, with 22 declared/populated inner members. The first eleven names
 are `PL25_106/107/111/112/265/289/293/298/299/302/312.ahx`; the remaining
 eleven stored names are `plv`. This filename observation does not assign
-a language or event to those latter members.
+an event to those latter members.
+
+`tsunade_player_voice_cues` (`0x004350F0`), the ID-25 list read by
+`audio_queue_player_voice` (`0x001D46F0`), is
+**106,107,111,112,265,289,293,298,299,302,312,-1**; a cue's ordinal is
+its member. `tsunade_player_voice_archive` (`0x004362A0`) has handle 145,
+type/start 1/1 and count 22, and `audio_request_archive_member` adds half the
+count when audio context `+0x10 == 1`. As for
+[Orochimaru](orochimaru.md#streamed-dialogue-selection-and-physical-members) this gives English members 0..10
+and Japanese members 11..21. Cues 265..312 also occur in Orochimaru's list.
+
+Both ordinary jutsu install `jutsu_request_participant_dialogue`
+(`0x0074B640`) at slot `+0xD4`. It reads the actor's resource row and queues
+the cue for the participant fighter's actual ID, immediately when its last
+argument is 1. `tsunade_jutsu0_dialogue_row` (`0x0085A188`) holds
+111/112/113/113; `tsunade_jutsu0_initialize` requests index `abs(rand & 1)`
+immediately, so cue 111 or 112. `tsunade_jutsu1_dialogue_row`
+(`0x0085A190`) holds 106/106/107/106; `tsunade_jutsu1_initialize` requests
+index 1 or 2 from `tsunade_jutsu1_dialogue_index_choices` (`0x00608C28`),
+so cue 106 or 107. Cue 113 is not in the ID-25 list. Both actors'
+authored-frame rows (`0x0085A748/0x0085A750`) are all -1, and
+`interaction_stage_cutins` admits only resources above 115. Jutsu 1's
+twelve-slot event FIFO at `+0x92C` is popped by
+`tsunade_jutsu1_animation_update`, but only the constructor (-1 fill) and
+the pop write its entries in BATTLE, so that pop requests nothing.
+
+In NA2 the retained resource-51/52 rows (`0x008CB8F8/0x008CB900`) are all
+-1. Native Tsunade's resource-172 row is 371/372/-1/-1 and resource 173's is
+-1/373/374/-1.
 NA2 outer member 83 (ID 84) is at `0x011A9800`, size `0x66800`, dense
 43/43. Its filename suffixes are
 `045,047,049,063,068,069,125,126,151,155,165,166,167,199,209,210,211,235,269,290,293,302,303,308,312,313,318,323,324,338,339,364,365,366,369,370,371,372,373,374,375,376,379`.
@@ -1294,8 +1393,10 @@ Complete source hashes belong to [File identities](../../../game/files/file_iden
 The donor setting-0 intro filenames are `strST_052/135/053.ahx`; its
 setting-1 names are `str`. Katsuyu's first set is `summon24..27.ahx`,
 the second `kuc`. Native files are `strST_165/166/167.ahx`.
-These code/file bindings establish exact selected bytes. Spoken-content
-equivalence, audible admission and timing remain unestablished.
+Setting 1 is audio context `+0x10 == 1`, the Japanese-voice setting of the
+established [language selector](../un3_un4_characters.md#compact-bank-set-language),
+so setting 0 is English. These code/file bindings establish exact selected
+bytes.
 
 ### Cinematic hit and sound descriptors
 

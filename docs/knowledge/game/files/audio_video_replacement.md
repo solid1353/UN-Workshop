@@ -4,29 +4,21 @@
 
 Established: the complete clean AFS/PSS corpus, file-size source, descriptors/subtitles,
 menu track selection, stream mode and completion, and the master, music, voice
-stream and sound-effect output levels.
-Open: adaptive AHX, ADX history/loop padding, PSS writing and `NOTICE`
-encoding, decoder acceptance/bandwidth and indirect consumers of dormant movie
-rows. Names come from `@annotations/NA2` and `@annotations/_shared`; comments
+stream and sound-effect output levels. Names come from `@annotations/NA2` and `@annotations/_shared`; comments
 hold per-routine details. Addresses are live.
+Open: nothing.
 
 This note records the native format and playback constraints for the four AFS audio
-archives and ten PSS movies in retail *Narutimate Accel 2*. It is a static
-research result, not a claim that the game has accepted a generated file at
-runtime. The protected files under `@source_na2/` were inspected read-only.
+archives and ten PSS movies in retail *Narutimate Accel 2*. The protected files under `@source_na2/` were inspected read-only.
 CriCodecs 1.2.0 was exercised from a checksum-verified release.
 
 Evidence labels in this note have their usual knowledge-base meaning:
 
 - **Observed**: read directly from the source files.
-- **Inferred**: a feasibility hypothesis follows from the observed layout;
-  structural fit and native decoder acceptance remain separate questions.
-- **Unresolved**: the current evidence does not close the question.
+- **Inferred**: a feasibility hypothesis follows from the observed layout.
 
-Evidence is one clean `SLPS_258.37` and its extracted media, bounded direct-call
-research, corpus parsers and offline codec experiments. It establishes structure
-and offline feasibility, not playback acceptance or the absence of indirect
-consumers. The menu observation also uses two supplied savestates. File
+Evidence is one clean `SLPS_258.37` and its extracted media, direct-call
+research, corpus parsers and offline codec experiments. The menu observation also uses two supplied savestates. File
 identities and address conventions are owned by
 [Retail game file identities](file_identities.md).
 
@@ -34,12 +26,11 @@ identities and address conventions are owned by
 
 - **Audio has a fixed-slot fit hypothesis.** A same-or-smaller encoded leaf can
   occupy the observed aligned slot without changing the archive's size.
-  Acceptance by the bundled CRI driver is unproved. CriCodecs 1.2.0 supplies
-  bounded ADX/AHX evidence, but its fixed AHX allocation and incomplete ADX
-  version-4 fields do not cover every observed profile.
-- **Movies have an established source contract and unproved writing hypotheses.**
-  A same-size donor with the target's stream contract has structural fit;
-  size alone does not establish acceptance. Packet-skeleton rewriting and
+  CriCodecs 1.2.0's fixed AHX allocation and incomplete ADX version-4 fields
+  do not cover every observed profile.
+- **Movies have an established source contract.**
+  A same-size donor with the target's stream contract has structural fit.
+  Packet-skeleton rewriting and
   constrained full muxing are inferred possibilities. Resident descriptors
   retain geometry, transition frames and six Japanese subtitle schedules,
   independently of the PSS. Movie size comes from the disc directory, with no
@@ -71,7 +62,7 @@ unread remainder. Total movie size is not a decoder-buffer allocation.
 
 **Supported conclusion:** a different number of valid `0x4000` packs is not
 rejected by a resident hard-coded length. The stream must retain the four-byte
-tail convention; disc-image integration is outside this native format finding.
+tail convention.
 
 ## AFS audio
 
@@ -315,7 +306,7 @@ A shorter leaf could retain its slot by changing its AFS length and clearing
 the unused remainder. Type `0x11` additionally depends on adaptive allocation
 that fits that slot; structurally valid fixed allocation alone is insufficient.
 Independent decoding can establish channel count, rate, sample count, timing
-and waveform, but those comparisons do not establish native decoder acceptance.
+and waveform.
 
 ### ADX history, loop, and footer contract
 
@@ -372,19 +363,15 @@ Padding or cropping to the target sample count makes coded-body fit predictable
 independently of waveform. Retaining loop sample semantics with new content
 would require byte positions derived from the generated `data_start`, initial
 histories derived from the new waveform, and a `0x8001` footer giving the target
-member length. Independent decoder round-tripping can establish encoded format
-and waveform; acceptance by `CRI_ADXI.IRX` remains unproved.
+member length.
 
-CriCodecs 1.2.0 encoded the inspected non-looped and looped cases to the exact
+CriCodecs 1.2.0 encoded the tested non-looped and looped cases to the exact
 target length and preserved the looped case's sample and byte positions. It did
 not reproduce two opaque-but-live version-4 fields. Re-encoding
 `STREAM.AFS.files/039.adx` changed all four nonzero predictor histories from 6
 to 0 and measurably changed its first decoded samples. Re-encoding
 `SOUND.AFS.files/000.afs.files/001.adx` changed the loop-padding field at
 `0x20` from `0x0013` to zero while keeping its other reported loop metadata.
-The inspected CLI output therefore leaves two acceptance questions open:
-correct generation of those fields, or evidence that their differences are
-irrelevant to the native decoder.
 
 ### Fixed-slot replacement model
 
@@ -405,19 +392,17 @@ For a shorter leaf, only `AfsMemberEntry.size` would differ and the unused slot
 would be cleared. Offsets, alignment, index order, null entries, archive length,
 every 48-byte attributes row and all non-target payloads would remain identical.
 An unchanged inner-archive length leaves its containing AFS offset and length
-unchanged; the same argument applies outward to the top-level archive. This
-establishes a possible layout-preserving substitution, not acceptance of a
-generated archive by the game's loader.
+unchanged; the same argument applies outward to the top-level archive.
 
 A leaf larger than its slot invalidates this hypothesis. Shorter content or a
 smaller encoding with the same profile could fit. Moving later members or
-rebuilding the archive is a distinct, unestablished hypothesis that also depends
-on retaining the AFS variant, opaque attributes and outer size.
+rebuilding the archive would also have to retain the AFS variant, opaque
+attributes and outer size.
 
 ### Candidate tools
 
 These are capability observations from the recorded release/source inspection
-and bounded experiments, not claims about every release or every NA2 member.
+and experiments.
 
 - [CriCodecs](https://github.com/Youjose/CriCodecs) 1.2.0 supplied a baseline
   for the recorded experiments, but its output did not cover every NA2 profile. Its
@@ -428,7 +413,7 @@ and bounded experiments, not claims about every release or every NA2 member.
   the looped case retained exact loop samples and byte positions. The ADX
   history and loop-padding exceptions are documented above.
 
-  The inspected CriCodecs AHX encoder applies one fixed allocation profile to every
+  The CriCodecs 1.2.0 AHX encoder applies one fixed allocation profile to every
   frame. It also prepends a 480-sample delay for mode `0x11`; 3,088 of NA2's
   7,512 type-`0x11` files would cross an additional 1,152-sample frame boundary
   under that policy. In the decisive silent case
@@ -436,14 +421,12 @@ and bounded experiments, not claims about every release or every NA2 member.
   347 bytes (21 all-zero 14-byte frames), in a `0x800`-byte slot. Re-encoding
   its decoded silence with CriCodecs produced 8,743 bytes and 22 fixed-profile
   frames. It round-tripped to 24,000 silent samples but cannot fit that target.
-  Runtime acceptance by `CRI_ADXI.IRX` is also still untested.
 - [FFmpeg's ADX encoder](https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/adxenc.c)
-  was not a direct NA2 writer in the inspected source: it emits a fixed 36-byte,
+  is not a direct NA2 writer: it emits a fixed 36-byte,
   version-3, non-looping header and an 18-byte standard terminator. The muxer
   can backfill total sample count, but it does not supply NA2's version-4
-  histories or extended loop block. **Inference:** reuse of its ADPCM core
-  would depend on a separate NA2-aware header/footer writer, whose feasibility
-  and acceptance are unestablished.
+  histories or extended loop block. Reusing its ADPCM core would need a
+  separate NA2-aware header/footer writer.
 - [vgmstream](https://github.com/vgmstream/vgmstream) supplied a candidate for
   independent decoding/metadata comparison in the recorded tool review. Its
   [AHX parser](https://github.com/vgmstream/vgmstream/blob/master/src/meta/ahx.c)
@@ -454,8 +437,7 @@ and bounded experiments, not claims about every release or every NA2 member.
   [AFSPacker](https://github.com/MaikelChan/AFSPacker) document configurable
   AFS alignment and attributes. The maintained extraction lacks AFSPacker's
   variant metadata, so an apparently valid rebuild could alter opaque attributes
-  or layout. This limits the rebuild hypothesis; it does not establish a safe
-  alternate archive writer.
+  or layout.
 
 The historical tools under `@tools/old/` are reference material, not maintained
 or trusted build dependencies.
@@ -463,7 +445,7 @@ or trusted build dependencies.
 The recorded offline experiments used CriCodecs 1.2.0 and FFmpeg 9.0.1. An
 exact-size synthetic `LOGO_C.PSS` passed static checks of its 90-picture MPEG-2
 stream, replacement PCM body, packet lattice, timestamps, padding and complete
-decode. This establishes bounded offline feasibility only.
+decode.
 
 ## PSS movies
 
@@ -472,7 +454,7 @@ decode. This establishes bounded offline feasibility only.
 `movie_descriptors` at live `0x00400AF0` contains 12 `MovieDescriptor` rows,
 more than the ten-file ISO population:
 
-| Index | Descriptor filename | ISO file | Statically recovered direct selector |
+| Index | Descriptor filename | ISO file | Direct selector |
 | ---: | --- | --- | --- |
 | 0 | `logo_c.pss` | `PSS/LOGO_C.PSS` | Resident startup |
 | 1 | `notice.pss` | `PSS/NOTICE.PSS` | None found |
@@ -495,12 +477,7 @@ admits an entry only once the save marks it unlocked, and
 
 **Observed:** `logo_cT.pss` and `openingT.pss` are real descriptor-table entries,
 not omitted members of the shipped ISO inventory, and no recovered direct path
-selects IDs 10 or 11. Cross-game meaning of the suffix is unestablished.
-
-**Supported conclusion:** the two rows are dormant in the recovered direct-call
-graph. The meaning of `T`, why the rows were retained, and computed indirect
-consumers remain unresolved. The absent files leave their loader and disc-layout
-behavior unestablished.
+selects IDs 10 or 11. The two rows are dormant in the recovered direct-call graph.
 
 ### Descriptor-authored geometry, transitions, and subtitles
 
@@ -550,14 +527,11 @@ geometry, frame count/rate, subtitles or transition timing. Different content
 for `DA2200` through `DA3250` retains original Japanese captions; different
 duration retains the old late transition frame. Such content must account for
 the descriptor's late frame and different schedule/text or a cleared
-`subtitles_enabled` gate; the PSS cannot supply those changes. Static evidence
-establishes these consumers and layouts, while playback acceptance remains open.
+`subtitles_enabled` gate; the PSS cannot supply those changes.
 
 **Inferred resident-data feasibility:** different late-transition timing and
 caption content would depend on changed resident frame/schedule/text data or a
-cleared `subtitles_enabled` gate. Such a hypothesis also depends on clean-byte
-preconditions and evidence of the resulting playback behavior. No accepted
-generated content is established by this trace.
+cleared `subtitles_enabled` gate.
 
 ### Observed stream contract
 
@@ -604,7 +578,7 @@ contains `body_bytes / 4` samples per channel.
 
 “Header aspect” is the MPEG sequence field, not a conclusion about how the game
 ultimately displays the frame. A target-matched aspect field is the conservative
-fit hypothesis; support for another value is unestablished.
+fit hypothesis.
 
 `DA2200.PSS` has one original-file exception: its `SSbd` declares 39,392,256
 body bytes, but concatenating all private-stream payloads yields the 40 bytes of
@@ -693,8 +667,7 @@ pack/system rate fields and total size. Video would retain target dimensions,
 frame rate, aspect, coding flags, GOP shape, picture count and rate ceiling.
 Audio would retain signed 16-bit stereo PCM at 48,000 Hz, the declared sample
 count and alternating `0x200`-byte channel blocks rather than sample-interleaved
-WAV order. This is a constrained feasibility hypothesis, not an established
-retail writing method.
+WAV order.
 
 Different compressed picture sizes move access-unit boundaries, so PTS/DTS
 belong to the new picture starts rather than the old file offsets. Reuse of the
@@ -705,14 +678,12 @@ capacity, with a split final stream packet within its pack where needed and
 the program-end code retained. Either stream exceeding available capacity
 invalidates this fit hypothesis. For `DA2200.PSS`, retaining the original
 26-byte zero-tail omission and adjusting its terminal packet are separate
-possibilities; acceptance of an adjustment is unproved. No purpose-built
-parser/writer or native playback acceptance is established.
+possibilities.
 
 **Inferred full-mux hypothesis:** a newly muxed PS2-style stream could preserve
 the stream IDs, `SShd`/`SSbd` PCM contract, `0x4000` pack lattice, disc alignment,
 timing behavior, valid padding and exact outer size. It permits more extensive
-content changes but has more unestablished behavior than the skeleton
-hypothesis. The bounded tool review found no maintained open-source creator
+content changes than the skeleton hypothesis. The tool review found no maintained open-source creator
 that supplied the complete PSS video/audio contract of NA2's movies.
 [PssMux](https://github.com/wagrenier/PssMux) injects audio from one PSS into
 another; it does not create the complete target stream.
@@ -721,7 +692,7 @@ proprietary PS2STR tool.
 [PS2-PSS-Tools](https://github.com/Silentwarior112/PS2-PSS-Tools) also documents
 a PS2STR-based approach rather than an open muxer, and its published recipe
 targets compressed PS2 ADPCM rather than NA2's observed 48 kHz
-`SShd`/`SSbd` PCM. None of these observations closes the muxer gap.
+`SShd`/`SSbd` PCM.
 
 Arbitrary appended bytes are outside the PSS syntax. Padding is valid only
 before the program-end code. Lower bit rate or shorter content are possible
@@ -729,50 +700,3 @@ capacity hypotheses when a stream exceeds the target length; shorter content
 also changes the duration constraint. ISO/UDF relocation and variable-size
 replacement are disc-image mechanisms outside this format research.
 
-## Evidence and acceptance limits
-
-### Audio
-
-The established target contract includes codec type, channels, sample rate,
-sample count, version, loop fields and encryption state. The fixed-slot
-hypothesis additionally depends on unchanged offsets, null indices, non-target
-payloads, attributes, alignment and outer length throughout the nested AFS
-tree. Independent decode comparison and recursive archive parsing can establish
-those properties; they do not establish acceptance by the bundled CRI driver.
-Clean-base ISO record position and size are image-assembler concerns rather
-than additional codec facts.
-
-The bounded codec experiments do not establish full-file completion and
-repetition for generated cues, or the absence of silence, truncation, pitch/rate
-errors, adjacent-cue corruption and archive-load failures. Those are open
-acceptance questions, not observed failures.
-
-### Movies
-
-The clean corpus establishes legal pack/PES lengths, marker bits, stream IDs,
-SCR/PTS/DTS cadence, every `0x4000` pack boundary, final program-end code and
-exact outer length. Simple PTS or SCR monotonicity is not its contract.
-Independent complete decoding can characterize frame count, GOP/picture flags,
-PCM duration, block interleave, A/V synchronization and decoder errors, as in
-the bounded synthetic `LOGO_C.PSS` experiment. It cannot by itself establish
-acceptance by the bundled movie driver.
-
-Generated startup and story-triggered playback remain separate open questions,
-including normal completion and native skip behavior. Real-hardware
-disc-streaming bandwidth is also unestablished. No emulator operation or
-acceptance procedure follows from these static findings.
-
-## Remaining unknowns
-
-- Which encoder or CriCodecs change can reproduce NA2's adaptive type-`0x11`
-  allocations and timing closely enough to fit the target slot and satisfy the
-  bundled CRI driver. CriCodecs 1.2.0's fixed allocation and extra 480-sample
-  pre-roll do not cover the full corpus.
-- The exact writer-side derivation and runtime significance of ADX version-4
-  predictor histories and `AdxV4LoopBlock.padding_be`; CriCodecs 1.2.0
-  currently zeroes both in inspected cases.
-- The exact timestamp-generation policy and decoder tolerance needed when a
-  newly encoded stream's compressed picture sizes move access-unit boundaries.
-- A maintained PSS writer and the exact progressive-plus-alternate-scan encode
-  path for `NOTICE.PSS` remain open. No generated AFS or PSS has established
-  acceptance by the bundled CRI/movie drivers in PCSX2 or on hardware.

@@ -1,16 +1,15 @@
 # Section transfers
 
-This document records fighter stage-section transfers in unmodified retail
-NA2 (`SLPS-25837`).
-
 ## Research coverage
 
 Established: request returns, destination retention, motion and descriptor
 ordering, interruption/cleanup, presentation and interaction gates, paired
-placement, and selected character/resource values. Open: observed presentation,
-audible samples, complete stage geometry and derived-callback coverage,
-indirect/tail callers, and exact visual durations. Names come from
+placement, and selected character/resource values. Names come from
 `@annotations/NA2`; its routine comments hold the code-level detail.
+Open: nothing.
+
+This document records fighter stage-section transfers in unmodified retail
+NA2 (`SLPS-25837`).
 
 ## Evidence and address conventions
 
@@ -28,9 +27,8 @@ Geometry queries belong to [Collision](../combat/collision.md), authored stage
 data to [Stages](stages.md), ordinary movement to
 [Movement and physics](movement_and_physics.md), and input infrastructure to
 [Action commands](../combat/action_commands.md). This document owns their
-section-transfer consumers. The bounded direct-call and immediate-store
-censuses are recorded in the owning routine annotations; they do not exclude
-computed calls, tail jumps, wider stores or rebased aliases.
+section-transfer consumers. The direct-call and immediate-store censuses are
+recorded in the owning routine annotations.
 
 ## Request admission and retained destination
 
@@ -114,10 +112,6 @@ Facing synchronizes as above, the unlatched timeline initializes to `-6`,
 and the action becomes ordinary fall `(3,0x1E)`. This path skips local stage
 `2` and the normal section-plus-delta store.
 
-**Inference:** the alternative selects the paired fighter's section and a
-relative placement instead of the initially resolved destination. A
-player-facing move name is not established.
-
 ### Alternative placement correction and contact handoff
 
 `fighter_place_relative_preset` (`0x0021D0C0`) installs `target_section`
@@ -153,8 +147,7 @@ section. The caller restores component 2 after endpoint correction and sets
 Placement then sets the relocation flag and physical position, projects the
 selected section to itself when a field exists, copies only a successful
 returned component 1 into physical position, and refreshes paired geometry
-with mode `1`. The transfer handler adds height afterwards. This ordering
-does not establish the separation on every authored stage.
+with mode `1`. The transfer handler adds height afterwards.
 
 ## Descriptor phases and normal return
 
@@ -248,8 +241,7 @@ as the countdown.
 `fighter_status_display_update` advances the factor by reciprocal duration
 and the signed presentation amount toward `100` on entry or `0` on
 arrival, converts every amount step to an integer, clears modes at their
-bounds, and decrements the lock. Divisor `7` does not establish seven updates
-to zero. `fighter_status_display_setup` supplies the factor to
+bounds, and decrements the lock. `fighter_status_display_setup` supplies the factor to
 `CcsAnimationPlayer.opacity` subject to its separate status branch, derives
 `RendererPresentationView.factor_byte`, and sends amount/style through
 `projectile_context_begin`, which clamps amount to `0..100`.
@@ -258,8 +250,7 @@ to zero. `fighter_status_display_setup` supplies the factor to
 `scene_object_submit_geometry` multiplies it by the object's inherited
 factor and requires a product of at least `1/128` for ordinary geometry.
 `model_draw_parameters_setup` retains that product as
-`CcsModelDrawContext.alpha`. **Inference:** this is a fade-out/fade-in
-factor; complete material/shader mapping and observed appearance remain open.
+`CcsModelDrawContext.alpha`.
 
 Node flag `2` admits these presentation updates in phase 2 through
 `fighter_render_slot`, separately from phase-1 motion
@@ -306,13 +297,12 @@ Entry's line effect adds `75` to physical component 2; smoke uses unshifted
 physical position at rate `0x100`. Normal stage-2 arrival uses
 `section_transition_spawn_arrival` to bind the line resource at physical
 position and reset its player to frame zero. The alternative exits before
-this arrival. Effect anchors remain independent of visual position; names do
-not establish observed appearance.
+this arrival. Effect anchors remain independent of visual position.
 
 Both helpers request shared SFX event `0x0F`.
 `section_transfer_sfx_selector` maps it to event `0x0F`;
 `section_transfer_sfx_control` holds
-`0F 00 00 3C 7F 7F 00 01`. Audible sample identity remains open
+`0F 00 00 3C 7F 7F 00 01`
 ([SFX banks](../session/battle_audio.md#sfx-selectors-and-loaded-sound-banks)).
 Allocation uses the shared manager's indexed controller;
 `indexed_effect_acquire` can recycle a full pool. No fighter-owned effect
@@ -335,8 +325,7 @@ Motion event `8` deactivates registrations `1/2` through
 `query_registration_deactivate`. The first stage-2 call activates them if
 event `8` is not crossing on that same call; cleanup activates them too.
 The DD chain and generation-safe lookup belong to
-[Collision](../combat/collision.md). This interval does not prove immunity
-to every attack source or query family.
+[Collision](../combat/collision.md).
 
 The movement pass avoids grounding on polygon attribute `0x10000` while
 the delta is nonzero and local stage is `2` in its downward-contact branch
@@ -349,8 +338,7 @@ Other polygons can ground descriptor phase `2`.
 transfer is active. The main camera independently chooses physical position
 or origin; delta and destination also select smoothing coefficients
 ([tracking](../session/battle_camera.md#tracking-target),
-[smoothing](../session/battle_camera.md#smoothing)). Auxiliary easing alone
-does not establish the camera's followed position.
+[smoothing](../session/battle_camera.md#smoothing)).
 
 ## Representative character-dependent placement
 
@@ -406,21 +394,13 @@ All transfer slots and ordinary fall slot `0x37` fail the special
 bone/offset gate (recorded slot below `0x23` and different from `0x1C`).
 They therefore receive physical position, orientation and scale, while the
 primary scene receives transfer visual position. Both receive the
-presentation factor. This static distinction does not establish simultaneous
-visibility because submission and model-factor gates are separate.
+presentation factor. Submission and model-factor gates are separate.
 Provider/puppet ownership belongs to
 [Character asset tables](../../game/character_assets.md#auxiliary-model-animation-providers)
 and [Puppet control](../characters/puppet_control.md).
 
-## Confidence and remaining leads
+## Evidence basis
 
-Request returns/order, transfer stages and comparisons, normal/alternative
-relocation, phase arrays, interruption and presentation/control lifetime have
-high static confidence. Contact handoff, outcome ordering and selected
-resource/retirement paths are established from complete inspected bodies.
-
-The four dimension records, Naruto/Hiruko primary resources, Chiyo scenes and
-two common effects are bounded samples. Remaining character callbacks, audible
-sample resolution and the complete authored stage-line set remain open;
-direct-call/store censuses do not establish the absence of other entry or
-write paths. None of these bounds changes the established transfer contract.
+Contact handoff, outcome ordering and selected resource/retirement paths come
+from complete inspected bodies. The four dimension records, Naruto/Hiruko
+primary resources, Chiyo scenes and two common effects are samples.

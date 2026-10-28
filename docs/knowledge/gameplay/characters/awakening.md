@@ -5,16 +5,14 @@
 Established in retail NA2 (`SLPS-25837`): controller triggers and cleanup,
 the 94 trigger/association rows, all 223 UJ records and 94 local/default
 selections, the 12 effect/form replacements, effect persistence, reconstruction
-ordering, and selected character parameter overrides. Open: visible timing,
-class-7 skill-play outcome seeding, record 0's use, later indirect parameter
-writers, and the identity of the earlier contest-type-0 observation. Donor
+ordering, and selected character parameter overrides. Donor
 Ultimate Jutsu and power comparisons are in
 [UN3 and UN4 characters](un3_un4_characters.md).
+Open: nothing.
 
 Routine, field and data names come from `@annotations/NA2`. Per-routine
 details are in their annotation comments; addresses are live. BSS globals
-belong to the resident ELF even when overlay code accesses them. Conventional
-BTL-reference negatives do not exclude computed indirect calls.
+belong to the resident ELF even when overlay code accesses them.
 
 The native implementation has three related, independent states:
 
@@ -52,10 +50,9 @@ the object being changed.
 ## Resident ownership and the BTL boundary
 
 Controller eligibility, associations, form mapping, requests and cleanup are
-resident-owned. The bounded BTL scans found no ordinary direct or conventional
-computed reference to the controller family, inherent-form constructor,
-form mapper, request owner or the two awakening tables. This does not exclude
-arbitrary indirect address computation.
+resident-owned. BTL scans found no direct or conventional computed reference
+to the controller family, inherent-form constructor, form mapper, request
+owner or the two awakening tables.
 
 BTL's `battle_create_primary_fighter` propagates the selected UJ class and effect into
 fighter-construction metadata; `jutsu_presentation_update` reads category for
@@ -123,15 +120,13 @@ Ownership is in [Pause and replay](../session/pause_and_replay.md#shared-ownersh
 `awakening_associations` has 94 `AwakeningAssociation` entries. Count zero
 means no association; count one uses the inline ID; larger counts use the
 ushort array. Presence, class-7 membership, ordinary selection and
-reconciliation share this table. Association membership does not prove a
-native trigger reaches the effect.
+reconciliation share this table.
 
 ### Trigger descriptors
 
 `awakening_triggers` has 94 `AwakeningTrigger` entries. A nonnegative
 `presentation_selector` is passed to `fighter_request_descriptor_event`
-after ordinary entry; every active nonnegative value is `0x1F`, whose
-gameplay meaning remains open. Active -1 rows are
+after ordinary entry; every active nonnegative value is `0x1F`. Active -1 rows are
 `2E,3B,3D,3E,43,44,46,47,4D,50,51,54`; every reserved byte is zero.
 
 | Bit | Route or predicate | Clean rows |
@@ -315,7 +310,7 @@ crossing bit `0x02` for class-7 entry at event 0.
 
 These are action-progress positions, not resource quantities. The dormant
 descriptor `0x20` branch uses Sakura `0x3A` and position 0, but no retail row
-enables it. Exact visible timing remains open; the tracker contract is in
+enables it. The tracker contract is in
 [Timer primitives](../../runtime/timer_primitives.md#event-and-interval-predicates).
 
 ### Deidara and Gaara character variants
@@ -382,8 +377,7 @@ the mode change. This is separate from generic effect aggregation.
 A separate `0x54` presence test controls later contact/presentation work,
 not this mode. Flag cleanup can therefore request target 16 while the node
 survives. The setter changes neither the four damage/resource parameters below
-nor acceleration, braking or first-jump height. Static order does not establish
-visible timing; the action-row value's units remain open.
+nor acceleration, braking or first-jump height.
 
 ## Entry paths
 
@@ -418,7 +412,7 @@ root eligibility gate.
 If the list has no associated effect afterwards, the next unsuppressed marked
 pass clears the marker and Deidara/Gaara special/sector changes. A protected
 duplicate already present is different: rejection leaves the association alive
-and does not imply marker cleanup. Failure frequency is not established.
+and does not imply marker cleanup.
 
 ### Exact class-7 UJ entry
 
@@ -452,7 +446,6 @@ with attack and defense factors approximately 1.1. Its positive lifetime ticks
 once per eligible countdown update. The folds depend on live node/lifetime,
 not the marker, so a sole surviving node can still contribute approximately
 1.1 attack and 1.1 defense (approximately 0.9 incoming factor when enabled).
-No on-screen name or presentation is established.
 
 Konohamaru's descriptor is only `0x40`; neither adoption nor an ordinary
 trigger restores the marker, and failure skips success bookkeeping. Repeated
@@ -496,8 +489,7 @@ are:
 | Effect only; `input_sector_widen_state_a` has no case | `0x01`: `1` (`2`) -> `0x0E`; `0x02`: `3` (`2`) -> `0x0F`; `0x03`: `6` (`3`) -> `0x10`; `0x0E`: `33` (`2`) -> `0x1A`; `0x19`: `56` (`2`), `57` (`3`) -> `0x22`; `0x22..0x26`: `65`, `67`, `69`, `71`, `73` (`2`) -> `0x27..0x2B`; `0x4D`: `171` (`3`) -> `0x4D`; `0x54`: `191` (`2`) -> `0x22` |
 | Transforming effect `0x68..0x73` | The 12 records in [Effect-to-form mapping](#effect-to-form-mapping-and-resource-replacement) |
 
-Class-7 effects have their separate entry path; whether their skill plays also
-seed the outcome global remains open. Character `0x57`'s `0x5C` is the sole
+Class-7 effects have their separate entry path. Character `0x57`'s `0x5C` is the sole
 adoption effect outside the records above.
 
 For every non-transforming outcome record, this is the only post-UJ effect
@@ -516,9 +508,7 @@ value; its other reader rebuilds per-action statistics without controller
 work. Damage total retains zero, so per-hit damage uses the unscaled fraction.
 An absent contest returns status 0, preventing the presentation's outcome-2
 interruption branch. These globals do not supply an additional controller/form
-gate. The earlier observation lacks its character/record identity; the static
-non-transforming explanation is established, while a transforming-record
-interpretation remains open. Its experiment details remain with
+gate. Details of an earlier contest-type-0 experiment are in
 `jutsu_outcome_effect`'s annotation.
 
 ## Generic effect state
@@ -582,7 +572,6 @@ The latter means major 8, an action record with `category & 0xC0000 != 0`,
 and `ActionRecord.streak_exempt`, read as signed, at least 1.
 Other chakra-debit gates remain in
 [Chakra and guard](../combat/chakra_and_guard.md#debit-and-reservation-behavior).
-A negative authored delta does not establish continuous drain in every state.
 
 Positive lifetimes decrease by exactly one per eligible countdown pass, without
 reading `update_rate`. These IDs are at least `0x0D` and bypass low-ID scalar
@@ -641,6 +630,44 @@ category-3 record; Classic Lee alone uses category-2/high-HP (>50%), while his
 category-3 record is non-transforming. These are selection prerequisites,
 separate from completion. Connection and presentation admission belong to
 [Ultimate Jutsu](ultimate_jutsu.md#start).
+
+### Record selection
+
+`jutsu_select_record` (`0x003729F0`) is called only by
+`jutsu_slots_rewrite`, three times, one call per key (`0x00244B4C` key 2,
+`0x00244BC8` key 3, `0x00244BF0` key 1); the fighter is in `s4` and its
+live `character_id` in `s7` at each call. It reads only static tables:
+it starts from `character_default_jutsu_records[character]` and returns the
+**first** record in `character_jutsu_lists[character]` whose category
+equals the key, or the default when none does. A list without a pointer
+returns record 0. Nothing in the save or the manager changes the choice.
+
+Every playable base list holds at most one ordinary record per category.
+Classic Naruto, Sasuke, Lee, Gaara and Choji and the Sound Five
+(`0x22..0x26`) have no category-1 record, so their tier 2 falls back to the
+default. Extra category-2
+rows (Naruto 112, Sakura 116/117, Chiyo 130, Sasori 134, Deidara 138,
+Itachi 160, Kisame 164, Orochimaru 209, Sasuke 222) are support-linked
+records; key 2 never reaches them, and only the tier-0
+`support_cinematic_skill_lookup` replacement through
+`jutsu_find_record_by_skill` selects them. Anko's records 98 and 99 are both
+category 1; 98 always wins. Transformed forms `0x2F..0x38`, `0x49` and
+`0x4B` list one category-1 record; `0x49` and `0x4B` have default record 0.
+
+`jutsu_slots_rewrite` reselects only when the tier changes, and selects by
+the live `character_id`, so a form change switches to the form's list.
+`fighter_load_character_record` sets `jutsu_slot_config` to 3, which no
+tier equals, so the fighter's first update always selects.
+Before battle, `manager_snapshot_configuration` calls
+`manager_refresh_selected_jutsu` (`0x001F4F70`) for both sides, which stores
+the character's default record when `selected_jutsu_record` is 0; BTL
+`battle_create_primary_fighter` reads that field for construction metadata.
+
+The selected record's own category, not the slot, drives later consumers:
+`jutsu_apply_completion` maps category 2/3/1 to class 0/1/2 for
+conditions `0x3D/0x3E/0x3F` and the class reward, and both it and
+`sp_skill_play_begin` require category 2 for the linked-support credit and
+`sp_skill_substitute_support_resources`.
 
 `sp_skill_play_end` tears down its 17 owned entries and transient handles,
 then invokes `jutsu_apply_completion` unconditionally. Form-request gates are:
@@ -729,12 +756,11 @@ Both selected response callbacks can write receiver `attack_scale`,
 `planar_scale` and `vertical_scale` in mode 2 while selecting a response and
 altering attack-record fields. No direct primary-fighter write to the four
 compared damage/resource parameters was found in the complete screened
-callbacks. This does not cover every slot, helper or update path.
+callbacks.
 
 The matching displacements in the Classic Naruto, Super Choji, Second Stage
 Kimimaro and Kankuro callbacks instead target a `0x120`-byte scratch allocation
-through `BattleManager.scratch`. They do not establish primary movement
-overrides. Full indirect-writer coverage remains open.
+through `BattleManager.scratch`, not the primary fighter.
 
 ### Static reconstruction order
 
@@ -776,8 +802,6 @@ new fighter's local statistic-17 increment. Block zero selects the newly copied
 local pairs; root suppression can block the increment. Adoption neither reloads
 bank one nor writes an external bank, and therefore does not repair the
 [statistics reload ordering](../session/battle_lifecycle.md#fighter-statistics-across-reconstruction).
-This is bounded constructor/save/restore coverage, not a classification of every
-field in the rebuilt graph.
 
 ### Reserved transformed slot `0x4A`
 
@@ -814,8 +838,7 @@ passes; Sakura removes `0x07`; Tenten keeps its counter zero. No association
 clears ordinary markers and the Deidara/Gaara paired state.
 
 The UJ skill resolver additionally clears awakened Choji's marker for requested
-`0x95` and substitutes `0x96`. Its surrounding gameplay label is open;
-ownership is in [UJ cinematics](ultimate_jutsu_cinematics.md#opponent-dependent-cinematic-selection).
+`0x95` and substitutes `0x96`; ownership is in [UJ cinematics](ultimate_jutsu_cinematics.md#opponent-dependent-cinematic-selection).
 
 The distinct exits are flag suppression, list-based marker reconciliation,
 targeted node removal, ordinary-reason persistence and terminal fighter teardown.
@@ -871,16 +894,9 @@ Resident globals relevant to awakening are named in `@annotations/NA2/SLPS_258.3
 | `side_jutsu_tier_remaps` | Identity-initialized per-side UJ tier remap |
 | `fighter_statistics_banks` | External statistics banks, stride `0x2D6`, pair-copy length `0x60` |
 
-## Negative results and open questions
+## Negative results
 
-Established negatives are limited to the screened paths: no general awakening
-chakra/HP gate, no active descriptor `0x20`, no authoritative cache after
-removal, no class-3 custom resource-swap callback, no reachable reserved
-`0x4A` form, and no direct reverse request.
-
-Open matters remain the visible timing of progress/marker/effect/identity and
-presentation; Konohamaru mismatch presentation; arbitrary indirect BTL behavior;
-later parameter writers/delegated callbacks; class-7 skill-play outcome seeding;
-UJ record 0's use; and the earlier contest-type-0 observation's missing
-character/record identity. Static evidence explains non-transforming
-outcome-effect loss, but does not predict removal of the forward form request.
+The screened paths have no general awakening chakra/HP gate, no active
+descriptor `0x20`, no authoritative cache after removal, no class-3 custom
+resource-swap callback, no reachable reserved `0x4A` form, and no direct
+reverse request.

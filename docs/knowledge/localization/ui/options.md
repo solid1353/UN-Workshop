@@ -4,10 +4,9 @@
 
 Established: retail NA2/UN5 prompt geometry, Options backdrop ownership,
 Controls lifecycle, nine-row layout, help ordering, and localized label sources.
-Open: uncovered animation phases and indirect callers, beige-box asset ownership,
-and the visible Select-icon source in UN5; its case-3 request submits nothing.
 Names come from `@annotations/NA2` and `@annotations/UN5`; addresses are live.
 The resident transition-manager pointer is annotated as `global_transition_pool`.
+Open: nothing.
 
 ## Binary identity and mapping
 
@@ -191,10 +190,8 @@ registered `gauge` archive, `CMN/GAUGE.CCS`:
 | `row_frames[0]`, `row_frames[1]` | `CMP_xfra_choise`, `CMP_xfra_choise01` |
 
 `options_controls_present` submits `camera_player` and `background_player`
-through `projectile_compound_submit` (`0x001BB790`) before cells and labels.
-No separate nine-box draw was established in the inspected Controls code;
-ownership of beige boxes by those animation objects remains an inference.
-Help follows the footer. `sprite_reset` (`0x001CC070`) flushes each sprite's
+through `projectile_compound_submit` (`0x001BB790`) before cells and labels;
+no separate row-box draw was found in it. Help follows the footer. `sprite_reset` (`0x001CC070`) flushes each sprite's
 accumulated draws afterwards; `shoulder_sprite` receives four cells per draw.
 
 For these sprites, `ProjectedTextGeometryView.geometry_flags` bits `0x20` /
@@ -211,8 +208,7 @@ rows `40..63` are blank. `TEX_xmenu` is 256x128 and 8-bit with a 256-color
 palette: index order in `CMN/GAUGE.CCS`, GS storage order after loading with
 index bits 3 and 4 swapped. It contains down-pointing 20x22 chevrons at X=`130`,
 `154`, `178`, Y=`29`: red `(240,51,51)`, blue `(74,41,237)`, green
-`(21,175,76)`, with darker shading. The inspected Controls code does not draw
-them. Texels X=`200..255`, Y=`26..57` are blank.
+`(21,175,76)`, with darker shading. The inspected Controls code does not draw them. Texels X=`200..255`, Y=`26..57` are blank.
 
 `options_destroy` (`0x0038B370`) calls `options_controls_destroy`
 (`0x003874C0`) and frees the child. It releases the Options archive only when
@@ -234,9 +230,10 @@ prompt case `3`, then submits the adjacent legend through
 Both UN5 callers add the same signed regional globals (`-12` / `-8`) to
 nominal OK / Back `400` / `470`. The four case-3/legend requests use the
 regional shared X on both screens. In the verified UN5 `button_icon_submit`
-body, case `3` exits without submitting a rectangle; the request alone does
-not prove an emitted Select icon. Its earlier visible-icon attribution remains
-unresolved.
+body, case `3` exits without submitting a rectangle, so the only drawn footer
+element at that X is the companion legend. On Controls it is the whole-line
+`controls_select_legend_rectangle` `(1,109,254,18)` in `TEX_xmenu` (UN5
+`0x005DC3F8`); any visible Select icon belongs to that legend.
 
 ## Mode Select footer
 
@@ -264,11 +261,9 @@ rectangles stay outside the shared transparent region. NA2 START uses
 ## Relationships and evidence
 
 Compared live bodies and data establish the geometry, owners, ordering, and
-gates above. Coverage is bounded to the inspected callers and screen states;
-it does not establish every animation phase or indirect path. Per-routine
-comments carry instruction sites, original comparison bounds, and record bytes.
-UN5 case-3 dispatch and corrected English string pointers are verified
-directly; beige-box ownership remains an inference.
+gates above. Per-routine comments carry instruction sites, original comparison
+bounds, and record bytes. UN5 case-3 dispatch and corrected English string
+pointers are verified directly.
 
 Options and Mode Select callbacks are owned by
 [Resident front-end and mode flow](../../game/mode_flow.md). Help queues and

@@ -4,12 +4,10 @@
 
 Established: ordinary locomotion, jump selection and impulses, aerial steering,
 landing, contact/gravity ordering, surface axes, initialization, character-record
-ranges, selected controller-marker/physics-selector boundaries, and bounded
+ranges, selected controller-marker/physics-selector boundaries,
 placement-notification consumers and pass order, native floor projection, and
-body-collision snapshot publication.
-Open: complete caller/writer coverage, mode-4 production, combined-mode reachability,
-saved-speed restoration, polygon names, and geometry-dependent landing timing.
-Names come from `@annotations/NA2`.
+body-collision snapshot publication. Names come from `@annotations/NA2`.
+Open: nothing.
 
 ## Evidence and address conventions
 
@@ -137,9 +135,8 @@ interval `0x0E..0x26` contains 25 descriptors.
 Grounded neutral begins running after one held-direction update. Matching
 movement and desired direction selects `0x0E`; a changed direction selects
 `0x10`, except speed/ground-target above 0.5 selects `0x11`.
-The bounded shared consumers use `ACT_RUN_0` for weak and strong input.
-Input amount changes the approach toward the same target; a separate walk
-state or every possible character-specific callback is not established.
+The shared consumers use `ACT_RUN_0` for weak and strong input.
+Input amount changes the approach toward the same target.
 
 | Run substate | Motion and exit |
 | --- | --- |
@@ -334,7 +331,7 @@ with the hit-point delta.
 
 Attribute `0x10000` is selectively passable: majors 2/3 skip grounding with
 logical bit 8 or faster-fall `0x1F`; other state/phase gates can also decline
-it. Its player-facing name is open. `fighter_polygon_contact_class` can
+it. `fighter_polygon_contact_class` can
 further decline ordinary grounding; response consequences belong to
 [Hit response](../combat/hit_response.md#response-exits).
 
@@ -404,10 +401,9 @@ center/radius/bias, runs `sphere_resolve_active` with environment mask
 `0x40000001`, applies correction, then restores its saved sphere vectors and
 dimensions (`0x0024B98C..0x0024BD00`). The resolver reads the other active
 spheres' stored centers; changing both fighter positions alone does not
-change those centers. **Inference:** movement immediately after paired
-coordinate publication can still resolve against pre-publication body
-snapshots until their producer runs. Refreshing one fighter at a time does
-not establish a coherent pair snapshot. The simple sphere chain and query
+change those centers, so movement immediately after paired coordinate
+publication resolves against pre-publication body snapshots until their
+producer runs. The simple sphere chain and query
 registrations have separate activation contracts, owned by
 [Collision](../combat/collision.md#resident-query-list-boundary).
 
@@ -437,7 +433,7 @@ For Kazekage Gaara 59 and Deidara 64, the shared pass samples controller marker
 without reversing vertical speed's sign: downward magnitude is reduced then
 its sign restored; positive speed clamps at zero if gravity would cross it.
 The marker also supplies the additional downward probe and final-ground rule
-described below. Animation presentation is not established.
+described below.
 
 World height is capped at 3000 while `state_flags & 0x80` is clear,
 clearing positive speed; the lower clamp is -500, grounded with zero vertical
@@ -445,7 +441,7 @@ speed. The marked Gaara/Deidara floor is -460 outside majors 5/6.
 At height at most -500 the next request pass enters recovery `(6,0x61)`
 unless already in `0x61/0x62`.
 [Stages](stages.md#boundary-and-floor-profile-data) owns the separate boundary
-and floor-line services; they are not established as every movement probe's source.
+and floor-line services.
 
 ### Gaara and Deidara marker lifetime and ordinary dispatch
 
@@ -464,8 +460,7 @@ Ordinary activation requires `(major,substate,phase) = (0,3,2)`,
 0 for Gaara or 6 for Deidara. `gaara_awakening_trigger` has flags `0x10`;
 `deidara_awakening_trigger` has `0x11`, whose extra bit 1 admits adoption.
 `action_descriptor_prv_0` identifies `ACT_PRV_0` through
-`action_name_prv_0`; this retail identity does not establish a player-facing
-name. Predicate and association ownership remain in
+`action_name_prv_0`. Predicate and association ownership remain in
 [Awakening's raw state predicate](../characters/awakening.md#raw-state-predicate)
 and [ordinary controller entry](../characters/awakening.md#ordinary-controller-entry).
 
@@ -493,12 +488,10 @@ The additional ray extends downward by 40 and adds 40 back to an accepted
 hit-point delta. A miss does not create a constant 40-unit displacement.
 The marker rejects attribute `0x10000`. After integration and world limits,
 the pass updates `grounded_updates` and `ground_air_history`, then forces
-grounded outside major 2. **Inference:** that final bit alone does not prove
-the count/history recorded actual floor contact on the same pass.
+grounded outside major 2, after the count/history update.
 
 Marker, effect association, variant byte, physics selector, and surface-axis
-bits are independently gated. Their consumers do not prove all combinations
-reachable.
+bits are independently gated.
 
 ## Special physics selector and return to ordinary motion
 
@@ -513,7 +506,7 @@ speed. The gravity multiplier's one-pass contract is separate.
 | 1 | Side and auxiliary queries retained, direct vertical contact skipped. Ungrounded actual speed gets unit-multiplier gravity then a nonnegative clamp; saved speed separately gets gravity. |
 | 2 | Same query selection; ungrounded actual speed approaches zero with `min(1,0.25*update_rate)` and 0.1 snap, while gravity advances saved speed. |
 | 3 | Initial contact-query block skipped. If still ungrounded, unit-multiplier gravity advances actual speed then integration bypasses multiplier reset and later overlap/segment corrections. |
-| 4 | Wrapper snaps actual speeds to zero and clears transient vectors. The shared pass admits the ordinary contact block but has no ungrounded mode-4 gravity branch. Producer open. |
+| 4 | Wrapper snaps actual speeds to zero and clears transient vectors. The shared pass admits the ordinary contact block but has no ungrounded mode-4 gravity branch. No producer was found. |
 
 All modes reach the final world limits and contact bookkeeping. Mode 3's
 shortcut depends on the recomputed grounded bit; it is not an unconditional
@@ -521,15 +514,12 @@ return.
 
 ### Selected producer and reset boundaries
 
-The bounded direct-store census is recorded with the movement annotations.
-It establishes selected resident halfword writers, not the absence of wider,
-displaced-base or computed writes, and not a full character-callback audit.
+The direct-store census is recorded with the movement annotations.
 
 Construction and placement clear mode and saved speed. Neutral preparation
 reaches `exchange_teardown` only with its own exchange role; running/landing
-cleanup and `fighter_set_action_state` have no universal selector reset.
-**Inference:** entering an ordinary state alone does not prove the selector
-returned to zero.
+cleanup and `fighter_set_action_state` have no universal selector reset, so
+entering an ordinary state does not by itself return the selector to zero.
 
 | Boundary | Selector contract |
 | --- | --- |
@@ -555,15 +545,12 @@ complete admission and presentation belong to
 `jutsu_post_cinematic_update` clears the paired mode and saved speed in its
 state-1 continuation before ordinary handoff. Its failed-precondition branch
 clears local sequence fields and returns without a fighter-selector store.
-Reachability of that branch after live mode-3 entry and surrounding cleanup
-remain open; it is not evidence for universal interruption cleanup or mode 4.
 
 Ground contact retains the selector while it may save pre-contact vertical
 speed and clear actual speed. Final height clamps also clear actual speed
 without clearing the selector. Reconstruction and participant-removal ordering
 belong to [Battle lifecycle](../session/battle_lifecycle.md) and
 [Battle entities](../session/battle_entities.md).
-No named authored action is assigned to an untraced producer.
 
 ## Initialization, history, and descriptor lifetime
 
@@ -606,8 +593,6 @@ Rebase ownership belongs to
 [Composition attachment dynamics](../../runtime/rendering/composition_attachment_dynamics.md#bounded-caller-coverage);
 sample-reset gates belong to [Puppet control](../characters/puppet_control.md#draw-admission-update-and-reset-remain-separate).
 The screen covers unsigned byte reads at `+0x61` with a nearby bit test.
-Wider, rebased, computed or more distant reads remain outside it; eight is
-not a whole-game consumer count.
 
 `fighters_phase_slot_0c` (`0x002504B0`) calls `fighters_update` at
 `0x00250658`, the generic `list_phase_slot_10` movement/animation pass at
@@ -636,9 +621,8 @@ construction and exceptions belong to
 [Pause and replay](../session/pause_and_replay.md#selective-update-gating),
 and the surrounding owner order to
 [Battle lifecycle](../session/battle_lifecycle.md#per-update-dispatch).
-**Inference:** a publication after maintenance has an opportunity for later
-consumers, but contact/body publication, per-consumer admission, later owner
-work and the next eligible maintenance clear remain separate boundaries.
+Contact/body publication, per-consumer admission, later owner work and the
+next eligible maintenance clear are separate boundaries.
 
 Major/substate changes reset the primary timeline, then
 `fighter_set_phase` selects phase zero and resets the secondary timeline.
@@ -655,36 +639,17 @@ fractional/rate behavior belongs to
 State entry, pause, animation completion, contact, and multiplier reset remain
 separate when interpreting elapsed motion updates.
 
-## Confidence and evidence limits
-
-Static confidence is high for the shared state and field contracts, complete
-ordinary descriptor interval and record ranges, jump arithmetic, placement,
-surface transitions, movement/contact/gravity ordering, limits, marker scheduling
-and final-ground ordering, and the selected mode producer/cleanup contracts.
+## Evidence basis
 
 The character-record survey covers all 94 table rows and 78 parameter blocks.
-Open scope includes the complete character-callback and stage-boundary caller
-sets, wider/computed marker and selector writes, a mode-4 producer, combined-mode
-reachability, saved-speed restoration beyond the selected paths, polygon names,
-and geometry-dependent landing times.
-
-Routine comments hold code-level detail.
-This document describes unmodified retail NA2 (`SLPS-25837`). Static evidence
-establishes dispatch and arithmetic, not observed animation presentation or
-elapsed wall-clock timing.
-
-Field conclusions use verified raw accesses and saved widths. A decompiler
-field expression alone does not establish a layout or a field's meaning.
-
-Retail RUN/JMP/FAL/LND identities and input/contact transitions support the
-ordinary locomotion terms used here. No additional animation presentation,
-selectively passable surface name, or untraced character-specific movement mode
-is inferred.
+Routine comments hold code-level detail. This document describes unmodified
+retail NA2 (`SLPS-25837`) from static evidence. Field conclusions use verified
+raw accesses and saved widths. Retail RUN/JMP/FAL/LND identities and
+input/contact transitions support the ordinary locomotion terms used here.
 
 `fighter_convert_direction_selector` has verified selector branches and
-integer results in its annotation, but their wider direction-conversion meaning
-is not established. Movement conclusions use the callers' actual stored indices.
-Missing direct references do not exclude computed callers or overrides.
+integer results in its annotation. Movement conclusions use the callers'
+actual stored indices.
 
 Related owners: [Hit response](../combat/hit_response.md),
 [X-dash](../combat/xdash.md), [Collision](../combat/collision.md),

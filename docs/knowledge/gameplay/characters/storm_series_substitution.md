@@ -5,9 +5,9 @@
 Established: the official manuals' limited-use substitution gauge, its
 recovery over time and by other means, the *Storm 4* one-notch cost and
 next-round refill, and the *Storm Connections* 1.20 fix of frame-rate-dependent
-recovery.
-Open: no official numeric model exists. The `0..100` meter, cost, delay,
-refill rate and damage threshold below come from community measurement.
+recovery. The official sources give no numbers; the `0..100` meter, cost,
+delay, refill rate and damage threshold below come from community measurement.
+Open: nothing.
 
 ## Evidence labels
 

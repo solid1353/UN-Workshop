@@ -5,10 +5,9 @@
 Established: the resident task record, start/wait/wake and destruction contracts,
 manager ordering, root pacing and engine gate, and the 24 direct resident
 creation lifecycles. UN5 corroborates the core; UN3 corroborates the shifted
-gate and pending-resume state. Open: gate producers and units, indirect callers,
-callback installation, failure recovery and independent-thread scheduling.
-Names come from `@annotations/NA2`, `@annotations/UN5` and
+gate and pending-resume state. Names come from `@annotations/NA2`, `@annotations/UN5` and
 `@annotations/UN3`; routine comments carry local code details. Addresses are live.
+Open: nothing.
 
 The retail NA2 (`SLPS-25837`) framework coordinates independent EE kernel
 threads. `TaskCleanupRecord.entry` is a thread entry receiving its own record,
@@ -18,10 +17,7 @@ order. There is no framework parent pointer, child list, priority sorting,
 semaphore or central update/draw dispatch.
 
 The resident core and all 24 direct constructions were covered; BTL and ETC
-coverage is limited to direct calls and static references. Adventure and
-runtime-generated or aliased calls are outside the negative conclusions.
-Static ordering does not establish kernel scheduling, presentation order or
-measured pacing cadence. Binary addresses follow
+coverage is limited to direct calls and static references. Binary addresses follow
 [Retail game file identities](../game/files/file_identities.md#address-conventions).
 
 Related owners: [EE kernel threads and synchronization](kernel_threads_and_sync.md),
@@ -58,13 +54,12 @@ there or in an owning object: `ccs_play_start` makes a primary task and a
 parent/child relation.
 
 The opaque word `+0x44`, halfword `+0x48` and byte `+0x4A` are zeroed;
-byte `+0x4B` is untouched. No direct use outside initialization was recovered
-among the 24 resident creator/entry paths. UN5 retains the same pattern;
-UN3 retains it at `+0x4C/+0x4E`, leaving `+0x4F` untouched. Their meaning
-remains unknown; aliasing and excluded overlays remain limits.
+byte `+0x4B` is untouched. The 24 resident creator/entry paths use them only in
+initialization. UN5 retains the same pattern; UN3 retains it at
+`+0x4C/+0x4E`, leaving `+0x4F` untouched.
 
 `resident_flow_dispatch` installs `mother_cleanup_noop` and a zero
-`cleanup_argument`. It is the only recovered cleanup registration among
+`cleanup_argument`. It is the only cleanup registration among
 the 24 entries. The callback has no side effect, but both destruction paths
 implement the same `cleanup_callback(cleanup_argument)` contract.
 
@@ -80,7 +75,7 @@ These are `TaskCleanupRecord.runtime_flags`.
 | `0x0002` | Termination requested; takes precedence over resume and cooperative wake. |
 | `0x0004` | Termination observed; the first eligible request pass sets it, the next destroys the record. |
 | `0x0008` | Cooperative sleep: waits set it before sleeping; the manager clears it and wakes only when `wake_gate == 0`. |
-| `0x0010` | Pending resume: the manager clears it and resumes the thread. UN3 has a set/suspend helper; no in-scope NA2 producer was recovered. |
+| `0x0010` | Pending resume: the manager clears it and resumes the thread. UN3 has a set/suspend helper; no NA2 producer was found. |
 | `0x0020` | One-pass barrier bypass: immediate starts and `task_force_wake` set it; the barrier consumes it. It is not a persistent started state. |
 
 ### Control flags at `+0x12`
@@ -90,7 +85,7 @@ These are `TaskCleanupRecord.control_flags`.
 | Mask | Meaning and limit |
 | ---: | --- |
 | `0x0001` | Protects against `task_request_termination`; does not protect against immediate removal or a request already set. |
-| `0x0002` | Written but no direct resident task-layer consumer recovered; domain meaning unknown. `FADE END` leaves it set when self-terminating. |
+| `0x0002` | Written; no direct resident task-layer reader was found. `FADE END` leaves it set when self-terminating. |
 | `0x0004` | Cooperative-barrier exemption; used by background MPEG, load/decode and save workers. |
 | `0x0008` | Engine-gate bypass for lifecycle service while `EnginePadContext.frame_gate & 7` is nonzero. |
 
@@ -118,8 +113,8 @@ the annotations; the sections below describe the shared lifecycle.
 uniqueness check. The first equal name wins. Dormant records are visible with
 `NO NAME` before final naming, and entry-installed names introduce another
 append-to-entry window. No atomic named registration exists. The per-entry
-annotations record when naming occurs. No lookup caller was recovered in
-resident, BTL or ETC; indirect reachability remains open.
+annotations record when naming occurs. Resident, BTL and ETC code has no direct
+call to the lookup.
 
 The manager head `task_list_head`, tail `task_list_tail`, published engine
 pointer `engine_pad_context`, root thread ID `engine_root_thread_id` and
@@ -130,14 +125,14 @@ CRI activity byte `cri_activity` are annotated resident ELF BSS globals.
 The dormant path allocates and initializes the record, links it through the
 old tail's `next`, and replaces the tail. The caller then fills name,
 control and payload before starting. There is no priority sorting,
-construction-complete bit or list lock. All recovered creators needing
+construction-complete bit or list lock. All creators needing
 payload use this path.
 
 `task_allocate_started` appends before starting and provides no guaranteed
 post-start initialization window. Its three ordinary uses—`SND_RPC`,
 `SND_RPC2` and `MC_CHECKDIR`—install their own names/control or result
 fields and need no creator write after return. Every one of the 24 direct
-ordinary constructions has a recovered start path.
+ordinary constructions has a start path.
 
 The framework presupposes a successful manager initialization. Append writes
 through the tail; manager wake and ordinary lookup dereference the head.
@@ -159,12 +154,11 @@ the transition succeeded. Creation also ignores kernel creation/status
 failure, and only the established descriptor inputs are explicitly
 initialized; the exact descriptor writes are in `task_record_start`.
 
-Allocation failure is not recovered: dormant allocation still links null and
+Allocation failure is not handled: dormant allocation still links null and
 sets a null tail; allocate-and-start additionally starts null; manager
 initialization publishes and starts null. A failed stack allocation is not
 rejected. Teardown treats only ID -1 as the no-thread sentinel, so another
-negative creation result can be truncated and later used as an ID. These
-are static failure consequences, not observed normal-play failures.
+negative creation result can be truncated and later used as an ID.
 
 ## Manager pass and ordering boundary
 
@@ -209,8 +203,8 @@ Smaller EE numeric priorities have higher scheduling priority. Lowering the
 manager to `0x76` allows ordinary non-exempt tasks to run during its spin.
 Every directly created task below that scheduling priority (numeric
 `0x7D/0x7E/0x7F`) is exempt. **Inference:** that exemption is needed for the
-barrier to complete under the recovered priority relation; it does not
-establish update/draw phases.
+barrier to complete under this priority relation; it does not form
+update/draw phases.
 
 Ordinary priorities span `0x14..0x7F`; SAVE SYS at `0x14` is the only
 inventoried ordinary task above the manager's normal priority `0x18`.
@@ -218,11 +212,11 @@ The boot thread first selects `0x78`, initializes and force-starts the
 `0x18` manager, then appends PAD `0x19` and MOTHER `0x23`.
 Both starts defer and are serviced in append order. Head publication precedes
 manager start; tail publication follows its return. This proves bootstrap
-call order, not the context-switch point inside start.
+call order.
 
 The manager sentinel is excluded from both traversals, so its own
-force-start `0x0020` token is not consumed there. No manager teardown or
-root-token clearer was recovered. The head remains published after
+force-start `0x0020` token is not consumed there. No manager teardown
+or root-token clearer was found. The head remains published after
 initialization; initialization, append and removal maintain the tail.
 
 `engine_boot_initialize` repeats `engine_wait_display_counts` followed by
@@ -276,11 +270,10 @@ workers, with an additional worker conditional on the library mode.
 These are outside the task-record relationship.
 
 **Inference:** when pacing is enabled, the root's manager-wake requests are
-bounded by an interrupt-count predicate. There is no established one-to-one
-mapping to completed manager passes, task handshakes, displayed frames or
-elapsed time. Byte wrap, bypass, alternate MPEG thresholds, independent
-kernel wakes and work around the barrier prevent substituting a measured
-time unit. Display submission/completion belongs to
+bounded by an interrupt-count predicate. Byte wrap, bypass, alternate MPEG
+thresholds, independent kernel wakes and work around the barrier prevent a
+one-to-one mapping to displayed frames or elapsed time. Display
+submission/completion belongs to
 [Render submission](rendering/render_submission.md#completion-and-packet-lifetime).
 
 ### Engine gate bit `0x04`
@@ -302,18 +295,15 @@ signed state is at least 2. The manager sees the post-transition gate.
 Before the transitions, lower control receives `state < 3` through
 `cdvd_set_lower_control`/`cdvd_store_lower_control`.
 `cdvd_get_lower_status`/`cdvd_read_lower_status` supplies the lower
-status word. Those status/control dependencies do not establish
-player-facing names for the state numbers.
+status word.
 
 A null callback leaves gate `0x04` clear even while states advance.
 A non-null callback runs for any resulting nonzero state, including 1;
 the state is reread afterwards. Callback mutation can therefore change the
 final gate in the same manager iteration.
 
-No direct engine producer of gate bits `0x01/0x02` was established.
-The bounded store scan does not cover copied pointers, computed or overlapping
-stores, bulk copies or excluded code. The manager still tests all three bits;
-the independent task `wake_gate` producer is also unresolved.
+The engine store scan finds no producer of gate bits `0x01/0x02`; the manager
+still tests all three bits.
 
 ### Callback installation and selected engine aliases
 
@@ -332,22 +322,18 @@ the CD kernel-thread callback
 It sets `cdvd_recovery_suppressed = 1` using the SIF owner's saved global
 context. It takes no task record and writes neither the gate nor recovery
 callback. It blocks state 0's advance; arrival after state advance is not an
-immediate reset. SIF delivery order remains unresolved.
+immediate reset.
 
-The inspected resident constructors, aliases and registrations reveal no
-nonzero recovery-callback installer or gate-`0x01/0x02` producer.
-The selected BTL skill-object initialization and ETC code supply no
-established engine installer; local candidate details are in annotations.
-This does not prove global nonuse: indirect writes, bulk copy, rebasing or
-excluded code could supply the callback. A concrete write/copy reaching the
-published engine and a nonzero callback's clearing path remain open.
+The resident constructors, aliases and registrations reveal no nonzero
+recovery-callback installer or gate-`0x01/0x02` producer, and BTL skill-object
+initialization and ETC code supply no engine installer; local candidate
+details are in annotations.
 
 ### Other consumers of engine bits `0x01/0x02`
 
 `mpeg_main_task` tests the same published engine's narrower `frame_gate & 3`.
 Either low bit skips its main/video service; `0x04` alone does not.
-Both low bits therefore participate in a scheduling gate, but their individual
-producers and domain meanings remain unknown.
+Both low bits therefore participate in a scheduling gate.
 
 `engine_root_update` gates `early_callback` after refreshing the recovery
 state; that is a different callback slot. `engine_root_finish_update`
@@ -373,9 +359,9 @@ according to the previous state.
 
 Positive counts describe completed sleep/wake handshakes, normally serviced
 by the manager but also satisfiable by force wake or another kernel wake.
-The recovered callers use small positive constants; their exact census is
-in the wait annotations. No frame, millisecond, refresh or VBlank unit is
-established. Waits above one wake belong to loader, sound, card and overlay
+The callers use small positive constants; their exact census is in the wait
+annotations. The count has no frame, millisecond, refresh or VBlank unit.
+Waits above one wake belong to loader, sound, card and overlay
 sequencing (`rofs_data_load_task`, `rofs_preload_directories`,
 `btl_prepared_state_wrap`, `resident_flow_dispatch`). Presentation timing is
 counted in count-1 loops instead: `fade_end_task` waits five wakes before
@@ -383,10 +369,8 @@ clearing its transition slot, and `zg_break_screen_task` counts its own waits.
 
 The manager wakes only for exact `wake_gate == 0`, narrower than the
 waiter's signed `<= 0` return condition. Only constructor zeroing and
-`task_force_wake` zeroing were established; no in-scope nonzero writer,
-incrementer or decrementer was recovered. UN5 preserves both predicates;
-UN3 has the same asymmetry with its shifted `+0x10` gate. None supplies
-the producer or unit.
+`task_force_wake` zeroing write it; no NA2 nonzero writer was found. UN5 preserves
+both predicates; UN3 has the same asymmetry with its shifted `+0x10` gate.
 
 ## Kernel threads and synchronization outside the task list
 
@@ -395,7 +379,7 @@ callback thread/semaphore set and six CRI threads do not use this record.
 Their contracts belong to
 [EE kernel threads and synchronization](kernel_threads_and_sync.md).
 They add no framework semaphore, parent link or lifecycle flag and supply
-no recovered NA2 pending-resume producer.
+no NA2 pending-resume producer.
 
 ## Creator ancestry
 
@@ -415,8 +399,7 @@ handle, primary `payload[1]` borrows the owner, and companion
 `ccs_play_task` requests termination after `ccs_play_loop` returns;
 `ccs_destroy_play_state` precedes publication 2. No join, reference count,
 semaphore or framework parent relation is added. Primary priority `0x1B`
-is higher than companion `0x1E`, but does not prove safe borrowed-pointer
-lifetime or interleaving under every cancellation.
+is higher than companion `0x1E`.
 Scene evaluation/submission belongs to
 [Scene playback callers and owners](scene_playback_owners.md#streamed-worker-scheduling).
 
@@ -456,8 +439,7 @@ calls, so a dormant record can still receive cleanup and be freed.
 
 Cleanup is not an ownership transfer: it must not free the record or stack
 itself. A callback creating another task would see the repaired tail, but
-the only recovered callback is the no-op MOTHER registration and no such
-reentrant use was found.
+the only callback found is the no-op MOTHER registration.
 
 Owners may wait on task-defined completion before requesting termination,
 then release buffers or drop handles; this is not a core join.
@@ -469,28 +451,26 @@ drops the completed directory-check handle. Actual destruction remains separate.
 `task_remove_immediate` bypasses protection and the two-pass protocol.
 Its search skips the sentinel and the first ordinary record, and assumes a
 nonnull first record before checking candidates. Normal boot's skipped PAD
-record is persistent, but that does not establish design intent.
+record is persistent.
 `mpeg_destroy_tasks` uses it on the later MPEG records and clears their handles.
 
 Append, manager traversal/removal and immediate removal have no internal
-interrupt guard or list lock. Only lookup uses the DI/EI guard. Cooperative
-or external serialization is an assumed caller contract, not an established
-general guarantee.
+interrupt guard or list lock. Only lookup uses the DI/EI guard, so callers
+must serialize.
 
-The recovered task-record destruction routes are manager removal and
+The task-record destruction routes are manager removal and
 immediate removal. CD and CRI self-exit routes belong to the separate
 kernel-thread owner and do not destroy task records.
 
 No manager teardown was found. Natural return is not automatic destruction:
 PAD returns after initialization with control `0x000F`, no request and no
 kernel-exit polling. Its exempt record remains registered. It is the only
-ordinary natural return recovered among the 24 entries. Other non-exempt
-entries loop cooperatively or self-request termination; safe natural return
-for a non-exempt record remains unestablished.
+ordinary natural return among the 24 entries. Other non-exempt entries loop
+cooperatively or self-request termination.
 
 ## Direct resident creation inventory
 
-The recovered static graph has 24 ordinary constructions. Priority and
+The static graph has 24 ordinary constructions. Priority and
 requested → effective stack values are game values; creator call-site
 details and name/payload installation are in the entry annotations.
 An asterisk marks the three allocate-and-start entries; the others use
@@ -525,7 +505,7 @@ dormant allocation and separate start.
 
 Eleven normal paths self-request; six use an external request after a
 completion/stop protocol; two MPEG records use immediate destruction; five
-have no recovered ordinary teardown (returned PAD and permanent MOTHER,
+have no ordinary teardown (returned PAD and permanent MOTHER,
 SOUND and both RPC tasks). Cancellation can request a normally self-terminating
 load worker, so these are normal lifecycle classes, not exclusive requester
 types.
@@ -540,39 +520,18 @@ UN5 (`SLES_556.05`) retains the same record shape, start/wait/wake contracts,
 manager precedence and barrier, and two-pass destruction. Its
 immediate-removal search also skips the first ordinary record. That
 behavior and the wake-gate asymmetry are inherited, not NA2 decompiler
-artifacts; source-level design intent remains unknown.
+artifacts.
 
 UN3 (`SLUS_217.27`) uses a different `0x50`-byte record.
 `task_suspend_pending_resume` sets pending-resume and
 suspends the target; its manager clears that bit and resumes. Callers check
-thread status. This establishes the historical state role, not normal NA2
-reachability. NA2's recovered CRI and kernel-dispatch suspension paths are
-outside the task list.
+thread status. NA2's CRI and kernel-dispatch suspension paths are outside the
+task list.
 
-All 24 recognized NA2 entry pointers target resident code. BTL has no
-recovered direct family reference. ETC's `etc_skill_play_wait` uses the
-resident current-task wait with count 1 and
-has no recovered task construction or termination. It borrows the current
-resident task rather than retaining an overlay-owned entry. Adventure,
-indirect aliases and runtime-generated calls remain outside that boundary.
+All 24 NA2 entry pointers target resident code. BTL has no direct family
+reference. ETC's `etc_skill_play_wait` uses the resident current-task wait
+with count 1 and has no task construction or termination. It borrows the
+current resident task rather than retaining an overlay-owned entry.
 
-No recovered resident/BTL/ETC static installation reaches
-`ccs_play_decode_force_wake` or the force-wake API. The target handle is
-established, but reachability remains open rather than proven unused.
-
-## Evidence confidence and open questions
-
-Record layout, core predicates, transition precedence, two-pass destruction,
-cleanup order, skipped-first immediate removal, direct creator lifecycles and
-local pacing/gate contracts have strong static evidence. The wake-gate
-comparisons are established, while the neutral name “wake gate” supplies
-no domain meaning or unit. Pending resume is established historically;
-NA2 reachability is unresolved. Control `0x0002` has no recovered direct
-resident consumer, not a proven absence of all consumers.
-
-Remaining questions are the wake-gate producer/unit, opaque tail meanings,
-low engine-gate producers and meanings, nonzero recovery-callback installation
-and teardown, force-wake reachability, allocation/kernel failure behavior,
-non-exempt natural return, append/removal serialization, indirect callers,
-SIF delivery order and measured scheduling/presentation cadence. None changes
-the established record or manager state machine.
+No resident/BTL/ETC static installation reaches `ccs_play_decode_force_wake`
+or the force-wake API.

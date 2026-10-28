@@ -3,8 +3,8 @@
 ## Research coverage
 
 Established: archive compatibility, compiled records, construction routing,
-update gates, selected prop states, the bounded summon switch/return path,
-the per-stage camera, combo-anchor, route, intensity and music tables, Stage
+update gates, selected prop states, the summon switch/return path,
+the per-stage camera, combo-anchor, route, intensity, screen glare and music tables, Stage
 Select preview and name assets, record translation evidence from the shared
 stages, the archive conversion rules those stages show, S04's stage-specific
 handlers, the landing-tree reaction, the glare's draw order, S02's faded-pillar
@@ -17,12 +17,12 @@ and bed, S06's crash boundaries and steam, S11's sandstorm, their shared
 jutsu-resource particle gates and NA2 factory correspondence, S12's dome,
 the giant and hanging spiders, the water ripples, the breakables' and
 training dolls' hit and break effects, sounds and item drops, the rising
-leaves' actions, and every scene comparison outside the records. Open:
-other prop states/teardown, full scene binding, mode/effect meanings,
-texture-pixel sharing, complete NA2 equivalence and Stage Select
-name-sprite rectangles.
+leaves' actions, S06's bamboo debris flag, and every scene comparison outside
+the records.
 Names and layouts come from
 `@annotations/UN3`; NA2 comparison names come from `@annotations/NA2`.
+Open: the complete token formats and update-state equivalence of the subtype
+correspondences supported only by labels and resources.
 
 This document owns retail UN3 (`SLUS-21727`) battle-stage behavior and
 correspondence with retail NA2 (`SLPS-25837`). NA2 implementation belongs to
@@ -42,13 +42,10 @@ Coverage includes all 28 UN3 and 24 NA2 archives and all 27 UN3 scene tables.
 Content comparisons covered every NA2/UN3 archive pair; texture comparisons
 used raw payload hashes only. Construction coverage includes every authored
 subtype. Complete state/derived-cleanup coverage is limited to
-`0x801/0x871/0x803/0x813/0x81C/0x81D`; other parser comparisons are bounded.
-The summon branches do not prove every battle mode, upstream scene binding
-or indirect destruction path. Local invocation counts do not establish time.
+`0x801/0x871/0x803/0x813/0x81C/0x81D`. Local invocation counts are not time.
 
 Resident CCS types belong to
 [Resident CCS object-type identities](../../game/files/ccs_object_types.md).
-UN3 `RPGSTAGE/` was not examined.
 
 ## Archive set and CCS format
 
@@ -117,9 +114,7 @@ model sections, and dummy positions gives these pairs:
 | `S24` (23 / 4) | `S09` (8, 短冊街, Tanzaku Town) | 5 of 5 hit meshes; 83 identical dummies; line counts below |
 
 No pair is an identical copy: every pair also has differing models,
-animations, and dummies. Texture sections were compared only by raw
-payload hash, and none matched; whether texture pixels are shared was not
-established. No match of
+animations, and dummies. No texture section's raw payload hash matched. No match of
 this kind was found for UN3 `S01`, `S02`, `S04`, `S05`, `S06`, `S08`, `S11`,
 `S12`, `S17`, `S19`, or `S20`, nor for NA2 `S01..S07`, `S11`, `S12`, or
 `S17..S22`.
@@ -219,6 +214,32 @@ front and three back `cl` lines.
 descriptor's `+0x28` and `+0x24`, the fields NA2's factory 17 sets from its
 tokens 0 and 1: 0.45/0.35 for S01 and 0.2/0.45 for S04.
 
+Every scene also has a screen glare, set from code rather than a record.
+`stage_apply_scene_glare` (`0x007C6810`) passes the scene index to
+`stage_glare_apply_scene_row`, which copies row `scene_index` of
+`stage_scene_glare_rows` (BATTLE `0x009298F0`, 16 bytes: enable byte, packed
+colour, float amount, packed second colour) into the scene's glare effect
+(`+0x200`): enable to `+0xA4`, the rest to `+0x84..+0x8C`, mode 1. These are
+the values NA2's factory-11 glare records carry (tokens alpha, red, green,
+blue, amount, second red, green, blue, mode, parameter); NA2 S08 and S16 hold
+UN3 S07's and S13's rows exactly. All twenty normal scenes are enabled:
+
+| Scene | Glare tokens | Scene | Glare tokens |
+| --- | --- | --- | --- |
+| S01 | `70,200,255,5,-0.5,110,125,255` | S11 | `50,120,120,120,-0.8,50,60,60` |
+| S02 | `50,200,250,0,-0.5,80,130,255` | S12 | `80,90,50,30,1,0,0,0` |
+| S03 | `75,16,21,21,0,255,255,255` | S13 | `65,0,70,160,-0.5,90,90,0` |
+| S04 | `50,70,60,50,-0.05,128,128,255` | S14 | `47,81,41,99,0.04,32,255,55` |
+| S05 | `128,128,128,128,-0.24,255,255,255` | S15 | `30,255,120,60,-0.1,100,160,160` |
+| S06 | `60,128,128,128,-0.5,100,120,255` | S16 | `20,200,200,100,-0.15,150,150,100` |
+| S07 | `20,170,255,225,-0.25,85,250,156` | S17 | `60,40,6,10,0,0,0,0` |
+| S08 | `30,255,200,0,-0.4,35,35,255` | S18 | `70,130,130,130,-0.35,90,200,250` |
+| S09 | `100,100,150,0,-0.4,70,140,250` | S19 | `60,120,120,120,-0.3,0,20,40` |
+| S10 | `120,120,120,120,-0.5,30,100,255` | S20 | `30,125,130,115,-0.1,255,255,250` |
+
+In a capture of S12 the glare is the frame's last full-screen pass, the
+framebuffer copy drawn additively (`ALPHA 0x48`) at `RGBAQ 0x501E325A`.
+
 Two resident byte/word tables are also indexed by `scene_index`:
 
 | Table | Contract | S04 |
@@ -255,7 +276,7 @@ different shots from the big previews.
 
 `TEX_mapname` holds the English names; S04's is "Hero's Memorial Monument"
 on two lines, and S03's "No.44 Exercise Ground" over "The Forest of
-Death". Which code selects each name's rectangle was not traced. For
+Death". For
 scenes 0..5, 7, 10, 11, 13, 16, 18 and 19, the grid's cell at column
 `s % 4` and row `s / 4` shows the same stage as the big preview.
 
@@ -282,6 +303,14 @@ stage slots; two characters share scene 22. `battle_request_summon_scene`
 accepts precisely the eight IDs and publishes the scene, request bit and
 side plus one in `un3StageBattleContext`.
 
+A summon starts from an Ultimate Jutsu record whose skill is 1.
+`ultimate_jutsu_record_presentation_flags` gives such a record bit 4, and
+`ultimate_jutsu_presentation_select` then replaces presentation selector
+`0xD` with `0x10` or `0x11`, so `summon_sequence_update` runs instead of a
+film (`ultimate_jutsu_skill_play_class` never starts one for skill 1). The
+sequence plays the record's intro, clears the contest damage total and sets
+the outcome effect to -1, so the record's effect is not applied after it.
+
 `summon_sequence_update` (`0x002E4900`) preloads before publication.
 State 2 at `un3SummonSequence.counter == 85` maps the character and calls
 `battle_preload_stage_archive`. It waits for `archive_queue_busy` to
@@ -301,7 +330,7 @@ Handles are `stage_tracked_archives` (`0x00945910`); extra names are
 `ccs_find_container` and `ccs_require_container` normalize names; absence
 returns zero in the former and traps in the latter. Neither inspected lookup
 increments an ownership counter. `ccs_destroy_container(handle, 1)`
-unlinks, destroys and frees the archive. Retaining a handle does not establish
+unlinks, destroys and frees the archive, so a retained handle is not
 reference-counted ownership. The index-taking helpers and resident preloader
 skip null table pointers but do not range-check indices.
 
@@ -325,8 +354,7 @@ skip null table pointers but do not range-check indices.
    does not queue the saved archive again.
 
 The constructor uses the same scene index. These branches establish selection,
-preload, publication, switching and restoration ordering; complete scene
-binding and all destruction paths remain open.
+preload, publication, switching and restoration ordering.
 
 ## UN3 scene-record dispatch
 
@@ -349,7 +377,7 @@ optional owners, walks records through `stage_category_dispatch`
 | 10 | `stage_parse_player_nodes` | `プレイヤー１/２`; token 3 names `DMY_pp1_010`/`DMY_pp2_010`. |
 | 11 | `stage_parse_line_nodes` | Front/back token 3 names `DMY_line_010`/`DMY_line_020`; token 5 counts family nodes. |
 | 12 | none | Skipped; `0xC0A` occurs in three stages. |
-| 13 | `stage_parse_lighting` | First resource is light animation (always `ANM_stalig00`); names follow `LGT_dis_%d`. |
+| 13 | `stage_parse_lighting` | First resource is light animation (always `ANM_stalig00`), played with player flag bit 0 so all its lights join the render environment's list; for each index below token 5 it registers `LGT_dis_%d`, `LGT_drc_%d` (both given flags 6), `LGT_spo_%d` or `LGT_omn_%d`. The light code it feeds (`render_environment_build_light_matrix`, `0x0010BBD0`; `omni_light_evaluate`, `0x0014E0D0`) matches NA2's. |
 | 14 | `stage_parse_cl_lines` | Front/back token 5 counts `DMY_{f,b}_cl_N_*` lines. |
 
 Every authored category-3..8 type has a construction branch. Census counts
@@ -392,8 +420,7 @@ when a battle context exists, can set:
 | `0x20` | Another global owner's `+8` child exists with word `+0x10 == 2`. |
 | `0x40` | Context `transition_reason` nonzero. |
 
-Bits `0x8..0x40` additionally require the mode owner. The meanings of all
-conditions are not established. Category-8 construction sets the opt-in, so
+Bits `0x8..0x40` additionally require the mode owner. Category-8 construction sets the opt-in, so
 those objects remain eligible under restrictions, subject to outer gates.
 Local counters count invocations: rotating sky adds `0.98 * angular_speed`
 directly, while frame animation advances by `playback_step`; neither
@@ -437,8 +464,7 @@ The emitted pillar and aura material packets both retain depth comparison
 TEST is `0x5130B`, and the aura's is `0x51001`. Fading does not disable depth:
 the later foreground pillar blends over aura colour already in the frame.
 This ordering, rather than opacity alone, permits the aura to remain visible
-through the pillar. These capture observations do not establish every effect's
-environment or every stage's foreground order.
+through the pillar.
 
 ## UN3 object parsers and concrete comparisons
 
@@ -484,8 +510,7 @@ which can create several objects from one record.
 
 ## UN3 reactive-object states and derived cleanup
 
-These states cover `0x801/0x871/0x803/0x813/0x81C/0x81D`; other category-8
-state machines and derived cleanup remain open.
+These states cover `0x801/0x871/0x803/0x813/0x81C/0x81D`.
 
 `stage_breakable_prepass` resolves contact only with
 `stage_contact_mode_blocked` false and a receiver contact present.
@@ -493,7 +518,7 @@ state machines and derived cleanup remain open.
 `flags & 0x00F00000`, `flags & 2` or `secondary_flags & 0x02000000`.
 Acceptance marks contact and unregisters the receiver; completion clears
 the mark. The prepass also produces a triangular pulse and latches render
-contact. The predicate's full mode meaning remains open.
+contact.
 
 `stage_breakable_trigger` accepts contact only with remaining count not -1.
 Count below 2 becomes -1, selects the broken animation if present, enables
@@ -523,13 +548,30 @@ Broken objects can select their later animation and seek to the configured
 pose; this seek is not a periodic increment. Types `0x801/0x871` share
 `stage_breakable_vtable` and this update.
 
+Breakables, S06's boundaries and S12's dome share one debris set.
+`stage_break_debris_parse` (`0x007D29D0`) binds four models, token 7's
+object and its `%s_a1`..`_a3` siblings, and 20 fragments sized by token 8.
+`stage_break_debris_launch` (`0x007D3010`) starts each at the origin with
+speed size×0.1 + 42 + 0, 10 or 20, elevation 50..70 degrees, a random
+azimuth within ±π, scale min(size×0.02, 1.2) on the two horizontal axes, and
+random spin rates ±0.4, ±0.6 and ±0.5. `stage_break_debris_update`
+(`0x007D3670`) adds gravity 9.8×0.6 to the vertical speed, floors it at -90,
+moves by 0.6 of each speed, and spins only the first and third rotation
+angles, wrapping each into ±π; the middle rate is never applied. While
+falling, opacity is height / 300 clamped to 0..1; the set finishes when every
+fragment reaches 0. `stage_break_debris_draw` (`0x007D3BE0`) writes each
+fragment's opacity to its model's `+0x88` (and `+0x84` unless the model's
+`+0x8C` bit 0 is set), sets its transform and submits it at factor 1 in the
+current draw environment. NA2's `bg_break_debris_piece_update`
+(`0x00394C70`) also spins only those two angles and wraps them into ±π.
+
 A broken prop drops an item (`stage_breakable_drop_item`, vtable `+0x20`):
 one from `stage_breakable_item_distribution` (pool 3 at 20, pool 1 at 20,
 pool 2 at 60) through `field_item_amount_apply`, with two extra code-9
 items, one on the bells (subtype `0x13`) and none on subtype `0x3F`;
 code 9 is `field_item_random_select`'s fallback, as NA2's 4 is NA2's.
-`item_metadata` makes codes 1 to 3 health of 5, 10 and 15%, 6 to 8
-chakra of 5, 10 and 15 and 9 chakra of 0.75. A broken doll
+`item_metadata` (`0x00490930`) makes codes 1 to 5 health of 5, 10, 15,
+10 and 15%, 6 to 8 chakra of 5, 10 and 15 and 9 chakra of 0.75. A broken doll
 (`stage_training_doll_drop_item`) drops one from
 `stage_doll_item_distribution` (pool 0 at 10, 1 at 20, 2 at 50, 3 at 20)
 and one time in five a second. NA2's factories 50 and 41 drop one item
@@ -759,7 +801,8 @@ plain animation object in the animation-props list.
 
 S05's `0x55E` uses `stage_directional_wind_parse` (`0x007FA980`) and
 `stage_directional_wind_update` (`0x007FAAB0`), separate from the alternating
-`0x518` wind. Parse chooses one direction and sets a five-second initial
+`0x518` wind. Parse chooses one direction (`prng_inclusive(1)`, stored at
+`gp-0x505C`) and sets a five-second initial
 hold. The unsigned strength is sin(phase / 2 degrees), with 360 phases.
 At phases 90, 180 and 270 each update draws a hold of rand(0..3) seconds;
 at phase 360 it resets phase and rests 30 seconds. The sign stays fixed
@@ -976,8 +1019,7 @@ UN3's ring grows from 0.01 to 1 over 37 frames and fades from frame 29.
 UN3's fish rings (`stage_fish_spawn_ring`) play the same ring at scale 1.
 S04's pond (`E0E090`) does not trigger these; its own `0x59A` record makes
 its ripples. Of S01–S06, S08, S11, S12, S14, S17, S19 and S20, the hit
-meshes give S03 and S14 `E0A000` water and S17 `E0E000`; the other stages
-were not checked.
+meshes give S03 and S14 `E0A000` water and S17 `E0E000`.
 
 ## Hidden Leaf Hot Spring boundaries and ambient objects
 
@@ -989,8 +1031,11 @@ final wall transition lowers the section's first pair and linked navigation
 and collision endpoints to height 40. The bamboo extends its last projection
 pair to x1260, moves the last collision endpoint to x1300, changes its separate
 `ANM_s6atake00` backdrop to `ANM_s6atake01` and rebuilds navigation. The
-wall launches its debris on each crash, the bamboo on its final one and,
-under a global flag not identified, on its first. The bamboo's final
+wall launches its debris on each crash, the bamboo only on its final one: its
+first crash launches debris only when `hot_spring_bamboo_first_crash_debris_flag`
+(`SLUS_217.27` `0x006A3BE4`) is nonzero, and that byte is zero in the image
+with no writer in `SLUS_217.27` or `BATTLE.BIN`, so the first crash only
+swaps the bamboo player to the animation at record `+0x64`. The bamboo's final
 transition, and the wall's on a forward crash (substates 3F/40/44), play
 common sound `0x3B` at the crashing fighter, whose samples are NA2's
 program `0x25`; the wall's final transition on a backward crash (42/43/45)
@@ -1086,8 +1131,7 @@ NA2's corresponding factory entries 29, 67 and 69 at `0x008CD264`,
 `0x008CD2FC` and `0x008CD304` lead to empty arms at `0x00774308`,
 `0x0077459C` and `0x007745B4`. None allocates or constructs an actor.
 The resource-specific particle gates therefore have no actor counterpart
-in retail NA2. Playable NA2 Guy's different resources 140/141 do not establish
-a replacement for these checks. NA2's
+in retail NA2; playable NA2 Guy uses different resources, 140/141. NA2's
 `interaction_reset_sphere_caches_update` (`0x0077E6B0`) does publish its
 current resource from actor `+0x56C`, but adding the donor's numeric checks
 would not supply the missing actors.
@@ -1102,11 +1146,17 @@ and height at most500; substates42/43/45 allow x500..1100 and height600.
 `earth_dome_crash` (`0x0080A5C0`) selects the damaged then broken animation.
 The final hit selects front CL and DMY variant1 and rebuilds navigation;
 the variant nodes are `DMY_f2_cl_*` and `DMY_line_0101*`. It launches the
-dome's debris, plays common sound `0x3B` without a position and scatters15
-item9 and three random items3..5; the first crash plays and launches
-nothing. `earth_dome_update` eases opacity by0.1 toward0.3
-when a back-section fighter is beyond x600, otherwise toward1; its draw
-uses the third environment while faded.
+dome's debris, plays common sound `0x3B` without a position and scatters
+(`earth_dome_scatter_items`, `0x0080A420`, through `item_field_publish`,
+without the Items setting) 15 code-9 chakra items and three health items
+of codes 3..5; the first crash plays and launches
+nothing. While the dome is unbroken, `earth_dome_update` eases opacity
+by0.1 toward0.3 when a back-section fighter is beyond x600, otherwise
+toward1; once broken it keeps its last opacity. `earth_dome_draw` writes the
+opacity only to the player's `+0x88`, whose `+0x84` stays 1, so the faded
+dome draws at vertex alpha `0x26`; it uses the third environment while faded
+and the second otherwise, and draws its debris after restoring the caller's
+environment.
 
 The dome registers its initial animation's collision environment during parse.
 The first crash unregisters the old environment, binds the damaged animation

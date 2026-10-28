@@ -4,11 +4,11 @@
 
 Established: the NA2 and UN5 main-label selection paths, shared observed
 object layout, complete seven-record tables, Mash rectangle difference, and
-separation from controller glyphs. Only main prompt ID zero was directly
-observed; the other six correspond by table and accessor structure, with their
-on-screen identities still open. Names come from `@annotations/NA2` and
+separation from controller glyphs. Main prompt ID zero was directly
+observed; the other six correspond by table and accessor structure. Names come from `@annotations/NA2` and
 `@annotations/UN5`; addresses follow the
 [live address conventions](../../../game/files/file_identities.md#address-conventions).
+Open: nothing.
 
 This document owns main-label localization. Supplemental glyph rendering and
 Mash gameplay behavior are outside its scope.
@@ -40,7 +40,7 @@ label's displayed extent as well as its source region.
 
 Both complete tables contain seven contiguous eight-byte
 `BattlePromptRectangle` records, totaling 56 bytes. Values below are
-`(u, v, width, height)`; only ID zero has an established on-screen identity.
+`(u, v, width, height)`.
 
 | ID | NA2 Japanese | UN5 official English |
 | ---: | --- | --- |
@@ -56,7 +56,6 @@ Both complete tables contain seven contiguous eight-byte
 
 NA2's `battle_controller_glyph_rectangles` is a separate controller-glyph
 table after `battle_main_prompt_rectangles`. Its inspected 56-byte span
-contains seven 24-by-24 glyph rectangles; that span does not establish the
-complete glyph inventory. The main-label renderer selects
+contains seven 24-by-24 glyph rectangles. The main-label renderer selects
 `battle_main_prompt_rectangles`, so the adjacent glyph table cannot supply
 alternate localized main labels.

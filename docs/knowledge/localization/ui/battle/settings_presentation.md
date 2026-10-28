@@ -5,9 +5,9 @@
 Established: retail NA2 settings geometry, viewports, resource bindings,
 scrolling, title/cell separation, cursor/arrow gates, Handicap and footers;
 UN5 footer and VS prompt comparisons. Names come from `@annotations/NA2`
-and `@annotations/UN5`; addresses are live. Open: complete menu lifecycle,
-every animation phase/configuration, and the model stream attribute mapping.
-Prior object/resource observations establish the layouts within those bounds.
+and `@annotations/UN5`; addresses are live. Prior object/resource
+observations establish the layouts.
+Open: nothing.
 
 Addresses follow the
 [Game binary address conventions](../../../game/files/file_identities.md#address-conventions).
@@ -93,14 +93,11 @@ into `CcsModelDrawContext`; it does not copy their payload.
 emits source DMA references in batches of up to 48 four-byte elements.
 The referenced stream is therefore read when DMA consumes it.
 
-The earlier settings resource interpretation identifies part `+0x1C` as
-vertex colors and `+0x20` as UVs, with the former borrowed into scratch
-`+0x238`. The current declarations name these pointers
-`CcsRuntimeModelPart.uv_words` / `auxiliary_attributes` and
-`CcsModelDrawContext.uv_words` / `auxiliary_attributes`. Their offsets
-and borrowing are verified; the conflict in final attribute meaning remains
-open, so those authored names are retained without treating them as proof of
-color/UV semantics.
+Part pointers `+0x1C` and `+0x20` are declared
+`CcsRuntimeModelPart.uv_words` / `auxiliary_attributes` and are borrowed into
+`CcsModelDrawContext.uv_words` / `auxiliary_attributes`, the former at
+scratch `+0x238`. Their stream contents belong to
+[Model runtime](../../../runtime/rendering/model_runtime.md#ordinary-geometry-and-strip-conversion).
 
 In retail NA2 `PRAC.CCS`, `MDL_prac_cel_a1`, `MDL_prac_cel_b1` and
 `MDL_prac_title` share `MAT_char_prac` and neutral `0x80808080` vertex
@@ -181,8 +178,7 @@ UN5 loads both Select positions directly as `200`; nominal OK/Back
 positions `400`/`470` receive regional additions `-12`/`-8` before
 submission. NA2 has no equivalent additions. UN5's
 `button_icon_submit` returns without drawing for icon `3`, so its Select
-request coordinates do not establish an emitted icon; the companion sprite
-has a separate draw. The VS confirmation prompt has its own draw owner and
+request emits no icon; the companion sprite has a separate draw. The VS confirmation prompt has its own draw owner and
 does not belong to either Settings footer.
 
 ## Battle rows and Handicap

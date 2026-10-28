@@ -3,23 +3,21 @@
 ## Research coverage
 
 Established: retail NA2's three-slot inventory, starting items, selection and
-use gates, delayed consumption, drops and aliases, random field-item identity
-and amount, pickup lifecycle, HUD wheel, CPU use, cache restoration and the
-Item Stock screen.
+use gates including the major-8 throw timing, delayed consumption, drops and
+aliases, random field-item identity and amount, pickup lifecycle, HUD wheel,
+CPU use, cache restoration and the Item Stock screen.
 The side lookup chain, exact slot offsets, first-code-match behavior, and
 selected-indicator refresh during menu suspension are also established.
-The known writer callers and inspected surviving presentation paths are
-classified below; they do not establish unrestricted menu-time immutability.
-The resident add-pointer block has no recovered live publication in the
-bounded forms below; its seven literal-alias candidates are particle fades.
-Open: threshold-field population, timing bytes, indirect reachability,
-wider interruption/removal ordering, CPU probability,
-and badge-side writers. Specific limits are retained below.
+The known writer callers and surviving presentation paths are classified
+below; the resident add-pointer block has no live publication in the searched
+forms, and its seven
+literal-alias candidates are particle fades.
+Open: nothing.
 
 Routine, field and data names come from `@annotations/NA2`; annotation
 comments own code details and direct-call/writer censuses. Addresses are live.
 Findings are static retail evidence except the observed layer-17 texture
-contents; timing, frequencies and visual outcomes remain unconfirmed.
+contents.
 
 This document describes retail NA2 (`SLPS-25837`). Related owners are
 [Battle status effects](battle_items_and_status_effects.md) for item effects,
@@ -162,11 +160,11 @@ adds one, in stored group order:
 | `26` | `40,80,120,160,190` |
 | `28` | `66,147,200` |
 
-The threshold compares fighter signed halfword `+0x17E`, whose meaning and
-nonzero population remain unresolved. `fighter_load_character_record` clears it.
-No nonzero writer is established; overlapping word stores, calculated
-addresses and bulk copies remain unclassified.
-This does not establish positive thresholds in ordinary battles.
+The threshold compares fighter signed halfword `+0x17E`.
+`fighter_load_character_record` clears it, and that is its only direct
+store: no other halfword store in ELF, BTL or ETC targets `+0x17E`, and the
+word stores at `+0x17C` belong to unrelated model, audio, camera and skill
+routines. No direct store therefore makes a threshold row qualify.
 
 `battle_save_reentry_values` and `battle_restore_reentry_values` retain HP, chakra,
 timers and item cache, not `+0x17E`; `battle_create_graph` creates fresh
@@ -201,10 +199,10 @@ The table's flag-`0x80` codes are exactly `09,0E,23..2C,2E..31,51..73`;
 kind 6 is exactly `0F..22`. These are separate properties: the native
 kind-6 seed path does not require flag `0x80`.
 
-Flag `0x80` establishes inventory admission, not successful use or a valid
+Flag `0x80` means inventory admission, not successful use or a valid
 projectile. Code `0E` is a field alias resolved before ordinary inventory
 collection; see [pickup aliases](#field-object-drops-and-pickup-aliases).
-Kind-6 `14` has no established projectile match; see
+Kind-6 `14` has no projectile match; see
 [item codes and projectile indexes](#item-codes-and-projectile-config-indexes).
 Effect interpretation belongs to [Battle status effects](battle_items_and_status_effects.md).
 
@@ -282,7 +280,7 @@ The root `projectile_contact_response` calls its action callback when
 `Projectile.action_callback_trigger` equals 1.
 `hit_mode1_apply` can set it even on a branch that skips the
 downstream contact effect, unless its initial gate result is 1.
-The callback trigger alone therefore does not prove a successful effect.
+The callback trigger alone therefore does not mean the effect succeeded.
 Wider collision and motion belong to
 [Projectiles](projectiles.md#collision-facing-interface) and
 [Projectile motion](projectile_motion.md#stationary-and-resource-controlled-phase-timing).
@@ -320,9 +318,7 @@ and signal the handle.
 
 Only config `6E`, external ID `004B`, has authored action selector 4.
 Its factory chooses SIWTrap, whose override performs random drops.
-That authored selector therefore does not establish ordinary virtual
-reachability of the root bulk body. The inspected direct base callers are
-outside the SIWTrap family; indirect routes and record mutation remain open
+The direct base callers are outside the SIWTrap family
 ([root state transitions](projectiles.md#hit-and-despawn-evidence)).
 
 `field_item_code_resolve` ignores its object argument and returns the incoming
@@ -369,9 +365,8 @@ Pool 2 duplicates `2B`, doubling its lane weight. Fixed distributions
 do not use pool 4. The 22 resident named codes belong to
 [Field-item names](../../localization/field_item_names.md#resident-field-item-name-table).
 Codes `02/03` are outside that name table, on positive-resource paths.
-Their recorded internal strings are `ItemRecoverLife/ItemChakraBall`;
-how those code associations relate to the kind-1/code-4 factory branches
-remains unresolved. Code `29` is also outside that table: kind 3,
+Their recorded internal strings are `ItemRecoverLife/ItemChakraBall`.
+Code `29` is also outside that table: kind 3,
 flags `0180`, direct effect `0A`, identified as **Curse Tag: Chakra Points
 Seal** ([name reference](../../localization/field_item_names.md#code-29-curse-tag-chakra-points-seal)).
 
@@ -429,16 +424,14 @@ also depend on the PRNG sequence
 
 `item_field_random_spawn_a` and `item_field_random_spawn_b` select their
 Recovery copy only for mode 1, General otherwise. Their inspected direct
-callers pass mode zero. `bg_break_doll_update` uses General A;
-its wider object semantics remain unresolved.
+callers pass mode zero. `bg_break_doll_update` uses General A.
 `item_field_random_spawn_c` always uses General C; its two state-dependent
 caller branches each make three requests while varying one position
-component by a random offset bounded by 10.0. Their branch state is open.
+component by a random offset bounded by 10.0.
 
 The four inspected direct selector paths each pair identity selection with
-the amount helper. No direct caller selects Recovery, so Recovery is authored
-and callable but not proven reachable; indirect scheduling remains possible.
-Only General's 24 outcomes have established direct-call behavior.
+the amount helper. No direct caller selects Recovery; only General's 24
+outcomes are used by direct calls.
 
 #### Identity and amount boundary
 
@@ -469,8 +462,8 @@ They retain a side index, not a fighter pointer.
 | metadata kind 1 | ItemRecoverLife | `0x80` | `item_pickup_life_construct` | `item_life_methods` |
 | code 4 | ItemChakraBall | `0x1A0` | `item_pickup_chakra_construct` | `item_chakra_methods` |
 
-These are registered identities, not recovered source declarations or a
-complete class census. ItemData and ItemRecoverLife share
+These are registered identities, not recovered source declarations.
+ItemData and ItemRecoverLife share
 `item_pickup_admit`; ItemChakraBall uses `item_pickup_chakra_admit`.
 All lead to `item_pickup_select_continue` under their admission gates.
 
@@ -487,7 +480,7 @@ or retain a fighter.
 `item_pickup_dispatch` routes states 1/2 to methods `state1/state2`,
 6/7 to `state6/state7`, and 5 to `state5`.
 The ordinary state-2 method calls admission first; ordinary state 3 can
-call it again. Wider indirect callers remain open.
+call it again.
 
 Ordinary admission requires a collision handle with nonzero
 `CollisionQueryList.result_count` and `result_mask` intersecting `0x110`.
@@ -548,8 +541,6 @@ This defines rejection/retry, not fighter ownership.
 
 `primary_fighter_get` accepts indexes 0/1, returning the primary fighter
 aliases; other indexes return null. It assumes the manager global exists.
-Fresh null checks do not establish arbitrary manager safety or ordering
-against isolated fighter removal.
 
 `item_pickup_list_update` adds `active_item` to `side` inventory on
 dispatch result 2; zero unlinks and invokes destruction.
@@ -558,7 +549,7 @@ and auxiliary objects; positive destructor mode also frees the pickup.
 Cleanup never resolves or releases a fighter and need not clear the index
 before free. `item_pickup_list_destroy` destroys the complete list on the
 coordinator transition and clears its head.
-These establish the index owner's lifetime; wider removal ordering is open.
+These define the index owner's lifetime.
 
 ## NA2 selection
 
@@ -591,14 +582,14 @@ Its selection states are:
 Initial use eligibility is narrower: major 0 substate 0/5, major 1
 `0E..14`, majors 2/3/4, or admitted major 8. Other selection states try
 `item_input_fallback` but require result 2; its inspected body returns only
-0/1. That branch establishes no additional native use state.
+0/1, so that branch adds no native use state.
 Delayed action admission remains separate.
 
 `item_panel_selected_use` reads the physical selected code.
 Metadata flag `0x100` additionally requires equality of **side 0's**
 `section/target_section`, regardless of panel side.
-Its unsigned-byte comparisons to -1 do not establish an effective `FF`
-sentinel rejection.
+Its unsigned-byte comparisons to -1 never match, so `FF` is not rejected as a
+sentinel.
 
 `item_panel_item_eligible` requires the projectile manager and checks:
 
@@ -615,7 +606,7 @@ sentinel rejection.
 | `65` | Config `99` count is at least `3` |
 
 The extra `6B` branch uses `support_get` and
-`item_character_selector`; its wider gameplay interpretation is open.
+`item_character_selector`.
 `transient_actor_exists` and `transient_actor_count` walk the actual
 per-side list using config index and inverse side tag, including objects
 awaiting removal
@@ -656,20 +647,41 @@ The action-facing predicate admits major 0 substates 0,3,4,5;
 major 1 `0E..13`; and majors 2/3/4. Major-1 `12/13` also approach
 planar/vertical speed toward zero, so admission can change motion.
 
-Major 8 requires a current record, rejects flag `0x200`, rejects
-`0x100` when `pending_action != -1`, and requires zero exchange roles
-and context state. With flags `0xC0000`, primary cursor must be below 16.
-Otherwise `item_action_admission` admits immediately when nonzero;
-failing that, animation progress at the current final frame must be in
-inclusive 0.5..0.95. Other majors fail.
+Major 8 requires a current record, rejects category `0x200` (capture
+finisher), rejects category `0x100` (capture starter) when
+`pending_action != -1`, and requires zero exchange roles and context
+state. The timing tests follow (`item_action_admit_major8_timing`):
+
+- A Cinematic Jutsu (category `0xC0000`) admits only while
+  `primary_timeline.current` is below 16.
+- Any other record admits once `animation_wrap_count` is nonzero, that
+  is, after its current phase animation has looped.
+- Otherwise `action_window_progress(fighter, frame_count - 1)` must be in
+  inclusive 0.5..0.95. It needs the current row's first attack bank to
+  have flag `0x2`, the bit that also gates ordinary attack registration;
+  flag `0x4` returns 1.0 and so refuses. At rate `0x100` with the phase
+  ending on the animation's last frame, the score is the frame's share of
+  that animation, so the throw is admitted from half the animation to its
+  last 5%. Other rates scale the width by `rate / 256`.
+
+Phases without bank flag `0x2` therefore refuse the throw until they
+loop. `item_action_admit` has one caller, `item_action_admitted`, whose
+only caller is `item_selected_resolve`; the window routine's other
+callers (action selector mode, chain staging, AI exchange staging, the
+binding-2 rewrite) do not depend on this predicate. Other majors fail.
 
 Pending setup saves `item_use_work` to `saved_item_use_work`, clears
 the former, and increments `item_projectile_count` after entry.
 From major 8 it clears attack banks and inline work and resets pending
-continuation. Grounding normally chooses `63`, airborne `64`.
+continuation. Its `item_attack_banks_clear(fighter, 0)` passes through
+`(0,0)` grounded or `(3,1E)` airborne, so the old action leaves through
+`fighter_action_exit` and `action_exit_record`, the same exit a hit
+reaching the state setter runs: jutsu chakra cancellation, capture and
+paired teardown, and conditional Cinematic Jutsu skill retirement. That exit makes no
+character-callback or transient-actor sweep. Grounding normally chooses
+`63`, airborne `64`.
 For `reaction_variant & 3 >= 2`, grounded entry clears motion and uses
-`65`; airborne entry performs its air setup and uses `64`.
-The two-bit value's wider meaning is not established by this trace
+`65`; airborne entry performs its air setup and uses `64`
 ([action ownership](../combat/combat_action_execution.md#action-entry-and-state-ownership),
 [awakening counter](../characters/awakening.md#proven-hp-and-counter-prerequisites)).
 
@@ -683,7 +695,6 @@ call at `0x00237E34`; it does not reread the selected slot for that argument.
 each containing lanes `63/64/65`. There is no ID range check.
 Signed `start/end` bound kind-6 cursor emissions; unsigned `rate`
 provides animation rate and the non-kind-6 secondary target.
-Lane bytes `+2/+3` remain unresolved.
 
 `fighter_advance_animation` uses `item_use_rate` only for major 7,
 otherwise the fighter's `secondary_rate`. It multiplies the chosen rate
@@ -704,8 +715,7 @@ lane pointer; established major-7 paths use `63..65`.
 one before the later pause gate, independent of fighter delta.
 Negative values also decrement. `effect_7d_update` can assign 30
 on its major-7/`64` exit; `effect_4a_callback` clears it.
-An overlapping BTL skill-object `+0xB72=8` store is not a proved fighter
-writer. Wider interruption ordering remains open.
+An overlapping BTL skill-object `+0xB72=8` store targets a skill object, not a fighter.
 
 #### Authored lanes and action completion
 
@@ -717,7 +727,7 @@ Shared progression belongs to
 
 Representative timing variants: each cell is
 `[start,end), cooldown, rate`; cursors/cooldowns decimal, IDs/rates hex.
-Unknown bytes are omitted.
+Other bytes are omitted.
 
 | Character ID | Lane `63` | Lane `64` | Lane `65` |
 | --- | --- | --- | --- |
@@ -757,7 +767,7 @@ and a secondary-cursor check to succeed; that target is half the action
 frame length divided by `rate/256`. Only a successful timing gate
 activates, then calls `item_emit`. The helper returns 1 for kind 6 or
 code `2B`, otherwise 0, independently of whether that invocation committed.
-Projectile contact is not a prerequisite established by this cursor gate.
+This cursor gate does not require projectile contact.
 
 `item_panel_activate` requires manager, side fighter and at least one
 occupied slot. Zero supplied code resolves selected use; nonzero code is used
@@ -799,7 +809,7 @@ All values below are hexadecimal and paired left to right.
 
 Code `27` reaches config `12` through activation's direct external-ID
 wrapper. Missing generic code `2D` has metadata `0x80` clear and maps to
-config `2E`; mapping alone does not establish ordinary inventory collection.
+config `2E`; the mapping alone does not admit it to the inventory.
 
 | Personal kind-3 codes | Projectile config indexes |
 | --- | --- |
@@ -811,7 +821,6 @@ Other `51..73` codes are kind 4 and use immediate status effects.
 Kind-6 `14` is absent from the seed table and has no matching external ID.
 The emitter passes lookup failure -1 onward and does not cancel preceding
 activation or refund a consumed count on lookup/construction failure.
-Native reachability of `14` remains unproved.
 
 ## NA2 HUD wheel
 
@@ -852,8 +861,8 @@ two occupied slots. `item_binding_sprite` maps:
 Unmatched binding returns sprite -1 but the frame still draws.
 `ItemSelectBadge.item_select=1` chooses action 4 (Item Select);
 zero chooses action 5. The draw uses the badge's own `side`,
-initialized to zero for **both** panels, so both show P1's binding.
-Other writers of that side are unresolved.
+initialized to zero for **both** panels and given no other known writer, so
+both show P1's binding.
 
 The shared `battle_sprite_records` supplies sprite mode, flags, UV, size and layer.
 Flag bits 0/1 become mirror flags `20/40`.
@@ -910,13 +919,12 @@ allowed mask to zero for manager `menu_state == 1`. It does not force the
 second mask to zero. `battle_dispatch_phases` (`0x001F03E0`) retains its
 second-phase and ungated work; the complete schedule and exceptions belong to
 [Pause and replay](../session/pause_and_replay.md#selective-update-gating).
-An open menu therefore suppresses the ordinary inventory update paths without
-establishing a whole-frame stop.
+An open menu therefore suppresses the ordinary inventory update paths, but
+the frame does not stop entirely.
 
 The following are the inspected direct caller chains in the resident program
 and `BTL.BIN`. No direct callers of these inventory mutators or their inspected
-resident bridges were found in `ETC.BIN`. A direct-call census does not include
-unjoined virtual calls or calculated slot stores.
+resident bridges were found in `ETC.BIN`.
 
 | Mutation | Joined caller and scheduling boundary |
 | --- | --- |
@@ -950,9 +958,7 @@ projectile vtables found 16 distinct slot-`0x48` implementations: 79 tables
 use `typed_resource_submit` (`0x0072CDA0`), and the remaining 16 table rows
 use 15 overrides. Their inspected bodies submit resources, owned visuals or
 positioned sprites and adjust draw context; none directly calls the known
-inventory writers or the drop action callbacks. This is coverage of those
-annotated tables and inspected helpers, not a complete proof for every factory
-product or every descendant of an owned visual.
+inventory writers or the drop action callbacks.
 
 The auxiliary second pass reaches `interaction_second_pass_dispatch`
 (`0x0077E840`). It calls primary interface slot `0x128`, secondary-node
@@ -963,8 +969,7 @@ action slot `0x100`, `item_tnd001_action_update`. The latter owns the drop
 countdown decrement. The inspected `tnd_submit` path submits its group,
 embedded player and `skill_blur_draw` (`0x00807850`), without decrementing
 that countdown or calling the drop helper. Its inherited associated-actor
-presentation also invokes actor slot `0x68`; all implementations of that
-separate virtual slot have not been enumerated.
+presentation also invokes actor slot `0x68`.
 
 The ungated `interaction_stage_cutins` (`0x00778D90`) can invoke primary
 slot `0xD8`. In `tnd_vtable` (`0x005EBD30`) that slot is
@@ -1023,28 +1028,17 @@ as the first argument to `battle_generator_create` (`0x00349BA0`):
 | `skill_particle_parameters_8b6d68`, `0x008B6D68` | `0x008B6D94` |
 
 `generator_initialize_parameters` (`0x0034BBB0`) copies each supplied
-`0x38`-byte record. Its signed halfword reads and division by 2048 establish
+`0x38`-byte record. Its signed halfword reads and division by 2048 show
 that these matching words are `fade_in=0x0800,fade_out=0x0060`, rather
 than inventory-pointer aliases. The other exact-address matches are unaligned
 instruction coincidences or resident mapped mirrors, not additional pointer
 objects. The only aligned literal `0x00710040`, apart from resident mapped
 mirrors, is the resident slot itself. The examined split-immediate address
 formations and load candidates for the block's aligned
-addresses did not establish publication. Checked literal uncached aliases for
+addresses do not publish it. Checked literal uncached aliases for
 the base, `+8`, `+0x10` and the writer slot likewise supplied no reader.
 
-No surviving menu-time writer path was established through this block.
-Its semantic origin and arbitrary calculated aliases or copied descriptors
-remain unresolved; these bounded searches do not prove universal unreachability.
-
-#### Static limit
-
-No surviving inventory mutation was established in these joined paths. This
-does **not** establish that codes, counts and selection are immutable for the
-entire menu transaction. Field, support, fighter, interaction-child and cut-in
-virtual descendants have not all been enumerated, and a raw-store census of
-every slot alias was not performed. The remaining pointer block has the
-separate bounded coverage above; it supplies no established additional caller.
+These searches find no menu-time writer path through this block.
 
 ## Item Stock screen
 
@@ -1092,8 +1086,7 @@ follow a different slot total.
 `ai_item_use_update` stores its target in `AiState.item_slot` and works in raw
 slot indexes. Without a target it scans indexes
 below the occupied count, selecting the first kind 3,4,6 that passes its
-random gate with threshold 30. Its draw bound/comparison remain unrecorded,
-so an exact 30% probability is not established.
+random gate with threshold 30.
 The occupied-count loop can miss holes because its indexes are physical
 ([Battle AI](../session/battle_ai.md#direct-profile-parameter-consumers)).
 

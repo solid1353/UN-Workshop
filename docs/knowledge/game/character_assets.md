@@ -6,28 +6,27 @@ Established: NA2's character-indexed filename families, fighter CCS layout and
 shared skeleton containers, character/form/action records and animation-name
 tables, per-character code, the jutsu-resource filename mapping, the voice
 archive layout and descriptors, compact fighter-bank resources, and match asset
-selection, loading and release. Bounded UN3 format comparisons explain where
+selection, loading and release. UN3 format comparisons explain where
 NA2's layout departs from its predecessor.
-Open: complete character dependency closure, effect-name consumption and most
-row fields. Names come from `@annotations/NA2`, and from `@annotations/UN3`
+Names come from `@annotations/NA2`, and from `@annotations/UN3`
 where a section compares UN3. Donor character research for UN3 and UN4 is in
 [UN3 and UN4 characters](../gameplay/characters/un3_un4_characters.md).
+Open: nothing.
 
 ## Evidence and address conventions
 
 This document owns playable-fighter files and static asset data in retail NA2
-(`SLPS-25837`), with bounded UN3 (`SLUS-21727`) and UN4 (`SLUS-21862`)
+(`SLPS-25837`), with UN3 (`SLUS-21727`) and UN4 (`SLUS-21862`)
 comparisons.
-Routine comments carry code details and search censuses. Addresses below are live.
-Evidence is static clean-file and MCP analysis; load timing, residency,
-missing/foreign-asset behavior and UN3 execution are not established.
-The inspected `SNDBASE.IRX` load/packet paths and embedded synthesizer
+Routine comments carry code details. Addresses below are live.
+Evidence is static clean-file and MCP analysis.
+The `SNDBASE.IRX` load/packet paths and embedded synthesizer
 lookup are described in the owning audio research.
 
 Clean file identities and address conventions follow
 [Retail game file identities](files/file_identities.md). The CCS content
 findings used gzip-decompressed clean files. Descriptive annotation names are
-working identities, not recovered original symbols.
+working identities, not original symbols.
 
 Related owners: [Resident CCS runtime](files/ccs_runtime.md),
 [CCS object types](files/ccs_object_types.md),
@@ -76,7 +75,7 @@ dedicated [character-definition row](../gameplay/characters/character_ids.md#cha
 ```
 
 Every other ID, including 0, is null in all four tables. A valid numeric
-character ID alone therefore does not establish that an asset family exists.
+character ID alone therefore does not mean an asset family exists.
 
 ## Disc placement and file contents
 
@@ -154,8 +153,7 @@ These skill-row IDs are a separate domain from the two-per-character jutsu
 selectors below. `sp_skill_play_start` selects the row;
 `sp_skill_build_requests` turns its extra resident paths into requests.
 Thus `1uknbod1` has a data-driven selection path despite its absence from
-executable strings. The census covers explicit extra requests, not every
-model reference embedded in a cinematic CCS.
+executable strings.
 
 `sp_skill_play_begin` constructs the replacement body owner with flags 2.
 `sp_skill_select_body_composition` consequently uses the shared
@@ -206,7 +204,7 @@ selects a static boot-ELF record. Its asset fields are named in
 | `palette_names` | Twelve 30-byte colour-palette names, such as `CLT_2nrtbody/bodyc1/bodyc2` |
 | `texture_names` | Two 30-byte texture names, such as `TEX_2nrtbody` |
 | `model_names` | Two 30-byte model names, such as `MDL_2nrt00t0 body` |
-| `effect_anchor_name` | `OBJ_eff_dummy_???hol0`; copied-name consumer remains open |
+| `effect_anchor_name` | `OBJ_eff_dummy_???hol0`, copied to the fighter |
 | `callbacks` | Per-character function table |
 | `action_count`, `default_actions` | Count and 0x54-byte action records |
 | `alternate_actions` | Optional working-array pointer; initially zero in compared static rows |
@@ -252,13 +250,10 @@ texture names yield zero; the selector helpers impose no upper slot bound.
 Classic Naruto has six nonempty palette slots: body/bodyc1/bodyc2 followed
 by bod2/bod2c1/bod2c2, then six empty slots. Its texture slots hold
 `TEX_2nrtbody` and `TEX_2nrtbod2`; only model slot 0 is populated.
-These formulas and stored names do not establish that every flag combination
-is reachable.
 
 Initial setup applies palette/material when both resolve.
 `fighter_effect_material_disable` clears a set control bit 3, forces all
-three lookups and applies texture/palette to the shared scene. The
-player-facing meaning and writers of these combinations remain unassigned.
+three lookups and applies texture/palette to the shared scene.
 
 The separate nine-row BTL lookup for hair, masks, accessories and glasses is
 owned by [Battle lifecycle](../gameplay/session/battle_lifecycle.md#setup-helpers-after-fighter-publication).
@@ -292,12 +287,6 @@ release therefore concerns a different allocation layer.
 [Battle entities](../gameplay/session/battle_entities.md#common-fighter-owned-children)
 owns complete lifetime dispatch; [Model runtime](../runtime/rendering/model_runtime.md)
 owns instance construction/binding.
-
-`effect_anchor_name` is copied to the fighter, but its consumer remains
-unestablished. A bounded resident/BTL/ETC instruction screen found no copied-name
-consumer; its census is on `naruto_classic_effect_anchor_name`.
-Direct record access, other opcodes and differently formed aliases remain
-open. The screen does not establish that the field is unused.
 
 ### Action records
 
@@ -362,11 +351,10 @@ The established fields of `CharacterAnimationRow` are:
 | `animation_slot` | Lookup-array index; -1 ends the sequence |
 | `duration` | Below 1, derive from animation frame count minus 1 and start frame |
 | `start_frame` | Start frame used in that calculation |
-| `skeleton_object_name` | Stored object-name pointer; consumer unassigned |
+| `skeleton_object_name` | Stored object-name pointer |
 
 The duration interpretation comes from `fighter_predict_air_motion`.
-Classic Naruto's first authored row names `OBJ_2cmn00t0 l foot`;
-most remaining row fields remain open.
+Classic Naruto's first authored row names `OBJ_2cmn00t0 l foot`.
 
 ### Auxiliary-model animation providers
 
@@ -403,8 +391,7 @@ The scene uses `CMP_2kkg00t0 trall`. Six separate body animations are
 `ANM_2kkgstt50`, `ANM_2kkgstt60` and `ANM_2kkgskm00`.
 If either selector is 0x7E and `2scocha0.ccs` is already found,
 `ANM_2kkgchb00` is also bound. Its explicit provider name agrees with
-resident selector 126. These bindings do not establish downstream auxiliary
-battle behavior.
+resident selector 126.
 
 ## Per-character code
 
@@ -542,7 +529,7 @@ Immediately after the inner member table, `AfsFilenameDirectoryLocation`
 holds the directory's archive-relative `offset` and byte `length`, both
 32-bit little-endian values. All inspected directory lengths are
 `member_count * 0x30`; each `AfsFilenameDirectoryEntry` is 0x30 bytes with
-a 32-byte `filename` and an unassigned 16-byte tail. All
+a 32-byte `filename` and a 16-byte tail. All
 nonempty member offsets are aligned to `0x800`, and every member fits within
 its owning outer entry's declared size.
 

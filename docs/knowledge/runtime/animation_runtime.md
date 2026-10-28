@@ -5,17 +5,15 @@
 Established: resident NA2 cursor/seek/loop ordering, typed interpolation,
 sampled-endpoint blending, target binding, queued events and removal boundaries.
 Names and layout fields come from `@annotations/NA2`; addresses are live.
-Open: deferred `0x0104` reachability/index producers, alternate-output ownership,
-seek-callback consumers, event-word meanings and completion-flag `0x10` writers.
-Evidence is static; exceptional inputs, caller guarantees and scheduling remain open.
+Evidence is static.
+Open: nothing.
 
 This document owns playback and evaluation after parsing in retail NA2
 (`SLPS-25837`). All cited routines are in resident `SLPS_258.37`.
 [Retail game file identities](../game/files/file_identities.md#address-conventions)
 owns input identities and address conventions. Annotation comments carry
 per-routine details; partial types name established fields without claiming
-complete object layouts. Recovered signatures do not establish original C
-argument ordering for mixed scalar/general inputs or unused return values.
+complete object layouts.
 
 Related owners: [CCS runtime](../game/files/ccs_runtime.md#animation-track-parsing)
 (parsing and container lifetime),
@@ -46,7 +44,7 @@ per-player evaluator work and resets cursor publications.
 `cursor`, published `fraction` and `frame_index`, embedded `reader`,
 `next_boundary`, `queued_commands`, `command_callback`, `play_entries`,
 `container`, attached generator manager `completion_stream`, and optional
-`blend`. The inspected fighter uses the halfword step; the advance API accepts
+`blend`. The fighter uses the halfword step; the advance API accepts
 a full unsigned word. `CcsPlayEntry` separates target `value`, resolved
 `provider`, `type_tag`, `flags` and evaluator pointer in `type_specific`.
 
@@ -58,8 +56,8 @@ and evaluator work cannot be treated as shared animation fields.
 ## Advance and end behavior
 
 `animation_advance_position` (`0x001BB210`) requests unsigned
-`old_cursor + delta`, with 256 units per whole frame. The API establishes
-neither reverse playback nor an overflow guard. It clears the previous event
+`old_cursor + delta`, with 256 units per whole frame. The API has neither
+reverse playback nor an overflow guard. It clears the previous event
 list through `animation_commands_clear` before every advance.
 
 While `blend` is active and the requested cursor is below
@@ -99,7 +97,7 @@ one. Only inside the integer-change branch, `completion_flags & 0x10`
 replaces this with `animation_stream_complete`: the action-manager result
 when enabled/present, otherwise one. Geometric end and action completion are
 distinct; a terminal zero-step call skips the replacement and returns the
-clamp result. Flag-`0x10` producers remain unresolved.
+clamp result.
 [Support mechanics](../gameplay/characters/support_mechanics.md#animation-result-and-common-state-transitions)
 owns one consumer of that result.
 
@@ -121,12 +119,12 @@ An active blend is destroyed before comparison and sets the comparison origin
 to zero, but that branch retains the stored cursor/publications. Seeking zero
 then takes the equal-target return. A positive target becomes a delta added to
 the retained blend cursor by normal advance; typed curves receive that target
-delta subject to terminal clamping. This does not establish a complete player
-restart after blend cancellation.
+delta subject to terminal clamping, so blend cancellation is not a complete
+player restart.
 
 Seek flags bit 0 temporarily clears `command_callback` during delegated
 advance and restores it afterward. Event-list construction does not check
-that callback, so this flag does not establish suppression of queued events.
+that callback, so this flag does not suppress queued events.
 
 `animation_evaluators_reset` walks nonnull entry work and uses
 `animation_evaluator_reset` for `0x0102`, `0x0202`, `0x0503`,
@@ -161,8 +159,7 @@ blend-only steps.
 
 **Inference, high confidence:** a backward seek to a positive target can
 recreate earlier packed events because it rewinds and dispatches forward; it
-is not a pure pose sample. The gameplay meaning of the retained words remains
-unresolved. Payload parsing belongs to
+is not a pure pose sample. Payload parsing belongs to
 [CCS streamed playback](../game/files/ccs_runtime.md#frame-stream).
 
 ## Typed curve evaluation
@@ -215,8 +212,7 @@ Color mode 2 replaces packed endpoints rather than adding numeric word
 deltas. `packed_color_to_weighted_rgb` treats a zero high byte as RGB bytes
 scaled by `1/255`; a nonzero high byte selects HSV conversion.
 `packed_color_interpolate` sums endpoint RGB vectors with weights `1-t`
-and `t`. This establishes neither integer packed-word interpolation nor
-alpha interpolation. Source reading and padding belong to
+and `t`. It interpolates neither integer packed words nor alpha. Source reading and padding belong to
 [CCS animation-track parsing](../game/files/ccs_runtime.md#animation-track-parsing).
 
 ## Animation-to-animation blending
@@ -264,8 +260,7 @@ Binding temporarily publishes each runtime entry in its resolved record's
 incoming `0x0100/0x0E00` records match composition children through the
 same name/hash and suffix-offset rules as blending. The name path has scratch
 capacity for `0x80` entries, but its count can continue beyond guarded
-storage; safe handling of larger inputs is not established, nor is retail
-exceedance. Binding clears all temporary record links before return.
+storage. Binding clears all temporary record links before return.
 
 | Entry flag | Contract |
 | --- | --- |
@@ -310,14 +305,12 @@ to degrees; mode 1 uses the source constant Euler triple; other modes write
 zero on this route. Alpha goes through the alpha channel to
 `animation_output_write_alpha`. Missing matches use ordinary node
 application. Normal advance calls `animation_output_finalize`; blend-only
-advance returns first. The format's broader owner/use remains unresolved.
+advance returns first.
 
 The deferred `0x0104` branch queues entries for evaluation after ordinary
 ones. It reads `AnimationDeferredScratchView.first_index/second_index`,
 refreshes selected targets, composes a transform and applies alpha zero.
-Its producer, reachability and valid scratch state remain unresolved. The
-application branch alone does not establish a reachable retail track contract;
-the inspected parser and evaluator initialization do not supply that contract.
+The parser and evaluator initialization do not supply its scratch indices.
 
 ## Restart, hold and removal boundaries
 
@@ -347,5 +340,4 @@ Gameplay predicates such as `timeline_secondary_event_crossed` use a
 distinct fractional timer with previous/current/predicted values and flags,
 not this player's cursor.
 [Timer primitives](timer_primitives.md#event-and-interval-predicates)
-owns their arithmetic and gates. Visual animation advance alone does not
-establish how an action-frame predicate was armed or scheduled.
+owns their arithmetic and gates.

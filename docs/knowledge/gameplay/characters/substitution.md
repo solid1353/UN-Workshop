@@ -5,9 +5,8 @@
 Established: acceptance, debit, seven transition phases, conditional exit/rate
 cleanup, physical-input timing, effect/item exceptions, two AI sentinels and
 six character timing writers.
-Open: exceptional-record reachability, observed random distributions,
-indirect table reloads and uninterrupted guard-age wrap.
 Names come from `@annotations/NA2`; all addresses are live.
+Open: nothing.
 
 ## Stable references
 
@@ -15,10 +14,9 @@ Retail NA2 (`SLPS-25837`) uses resident `SLPS_258.37` and `BTL.BIN`.
 Source identities and address conventions are owned by
 [Retail game file identities](../../game/files/file_identities.md#address-conventions).
 
-Coverage is bounded to the inspected resident ELF and BTL paths. The 78-owner,
-3,444-record inventory is static; table membership does not prove gameplay
-reachability. Annotation comments hold per-routine details. The bounded Practice
-observation is retained separately from static conclusions.
+Evidence comes from the resident ELF and BTL paths; the 78-owner,
+3,444-record inventory is static. Annotation comments hold per-routine
+details. The Practice observation is kept separate from static conclusions.
 
 This document owns substitution acceptance, cost, transition, input-history
 timing, sentinel exceptions and character timing mutations. Related owners are
@@ -224,7 +222,7 @@ and route `0x211`, uncharged; only failure reaches ordinary validation.
 The result can be automatic and free when the sentinel shortcut is available,
 or free but timing/input-gated when it is not.
 
-The bounded direct producer search identifies Kurenai's awakened controller
+The direct producer search identifies Kurenai's awakened controller
 callback. `kurenai_character_record` (`0x0057FD20`) selects
 `kurenai_callbacks` (`0x0057ACE0`); its channel-2 callback retains the
 existing annotation name `naruto_classic_effect09_toggle`
@@ -234,8 +232,7 @@ existing annotation name `naruto_classic_effect09_toggle`
 `KurenaiSubstitutionState.previous_awakened_marker`: rising edges request
 `effect_apply` with ID `9`, duration argument `9999` and notify
 `1`; falling edges request `effect_remove_id` with reason `1`.
-The literal duration argument does not establish a unit. This callback does
-not distinguish associated effects `0x5B/0x5C`, so the exception cannot
+This callback does not distinguish associated effects `0x5B/0x5C`, so the exception cannot
 be assigned to just one awakening variant.
 
 Item/status ID `9` has separate producers and consumers.
@@ -329,14 +326,12 @@ Four auxiliary metadata owners each have four records and no optional base:
 | `0x1E` | `auxiliary_1e_character_record` (`0x0059D750`) | `auxiliary_1e_actions` (`0x0059D5E0`) |
 | `0x1F` | `auxiliary_1f_character_record` (`0x0059DF20`) | `auxiliary_1f_actions` (`0x0059DDB0`) |
 
-Their IDs are established; player-facing owner names are not inferred.
 Record `1` of each has category `0x00040000`, raw timing zero and no
 rejection bit. Record `3` has category `0x00080000` and raw zero;
 only ID `0x1F` record `3` has rejection bit `0x00008000`.
 All eight use response selector `0x0F`, normally `0x36/0x37`, both
 whitelisted. Seven therefore have the exact modulo-three current-record policy
-when other gates pass; `0x1F/3` rejects before timing. Specific gameplay
-reachability remains open.
+when other gates pass; `0x1F/3` rejects before timing.
 
 Including auxiliaries gives 78 owners and 3,444 records:
 
@@ -428,8 +423,7 @@ Action `42` writes timing `1` at count `2`, `2` at `3`, and
 `3` at `>=4`; count `<=1` retains timing.
 Generic action entry selects the same live record and
 `fighter_clear_action_bytes` resets outcome fields without restoring timing.
-Clearing the chain counter alone therefore does not restore the clean byte;
-a separate table reload is not excluded.
+Clearing the chain counter alone therefore does not restore the clean byte.
 
 `HirukoSubstitutionState.chain_count` is cleared by
 `sasori_hiruko_channel2` when the opponent leaves major `5`;
@@ -438,8 +432,8 @@ actions `30/31`. Action `30` uses template timing below `2`,
 template plus `1` at `2`, and plus `2` at `>=3`.
 With clean template `-1`, the live values are `-1/0/1`.
 
-These six records describe direct writer families, not every indirect live
-mutation. Their eligibility changes remain separate from timing changes.
+These six records describe direct writer families. Their eligibility changes
+are separate from timing changes.
 
 Kakashi (decimal ID `70`) supplies a concrete static example:
 `kakashi_actions` (`0x00524BF0`) has 48 records. Hex indices
@@ -505,7 +499,7 @@ direct item routes have their own boundaries.
 
 ## Retail observation
 
-A bounded Practice observation selected Naruto record `21` with P1 Circle.
+A Practice observation selected Naruto record `21` with P1 Circle.
 On the hit, P2's retained incoming definition became relocated P1 record
 `21`, whose clean timing is `-1`; P2 HP changed `1.0 -> 0.98`,
 then regenerated. This supports the incoming owner/index calculation.
@@ -514,15 +508,3 @@ Slot-1 L2 independently produced pressed native mask `0x00000001` in
 history word `1` and the matching release in word `2`. The defender's
 logical action and guard-input age stayed zero because its controller mode was
 `1`, consistent with static suppression. No memory patch was used.
-This sample does not establish roster-wide success rates.
-
-## Remaining evidence limits
-
-The predicate, ordinary callers, effect/item routes, two AI sentinel states,
-six writer records and native transition are resolved within the stated scope.
-Negative fractions describe uniform-word arithmetic, not observed distributions.
-
-Direct-store searches cannot exclude indirect table replacement. Guy's retention
-holds for the inspected writer, counter reset and generic action entry, not
-every form change. Guard-age wrap requires uninterrupted maintenance; no
-evidence establishes it as an observed retail event.

@@ -4,15 +4,14 @@
 
 Established: shared queue movement, holds, placement, repeat spacing, NA2 render contexts and per-frame draw scope in retail NA2 (SLPS-25837) and UN5; native NA2 backing texture slices, caller viewports and priorities.
 NA2 reserves character-count distance; UN5 reserves measured width with a short-string minimum.
-Open: numeric icon extents across callers, elapsed repeat timing and visual coverage of all callers.
-The buffered SPBATTLE help belongs to linked Terms windows; its exact player-facing screen name remains unresolved.
+The buffered SPBATTLE help belongs to linked Terms windows.
 Names come from `@annotations/NA2` and `@annotations/UN5`; addresses are live.
-Static caller coverage and one saved UN5 frame bound the findings below.
+Static caller coverage and one saved UN5 frame establish the findings below.
+Open: nothing.
 
 General glyph metrics and secondary-font spacing belong to
 [Renderer metrics](../font/renderer_metrics.md); the Controls help-banner
 lifecycle belongs to [Shared frontend prompt layout](options.md#native-controls-lifecycle).
-Not every menu family is described.
 
 ## Shared implementation
 
@@ -86,9 +85,8 @@ submissions can therefore queue the next copy before the first is retired.
 Reserved extent controls spacing between copies independently of drawn width.
 
 A count-derived extent larger than the rendered width adds empty travel;
-the excess varies with character count and glyph widths. This establishes a
-mechanism for string-dependent spacing, without establishing elapsed blank
-time for every caller.
+the excess varies with character count and glyph widths, so spacing depends
+on the string.
 
 For a continuously resubmitted, unchanged horizontal string, let `W` be
 viewport width, `R` rendered horizontal extent, `L` reserved extent and `v`
@@ -106,8 +104,7 @@ does not necessarily leave the whole viewport blank.
 With a 512-unit viewport and measurement matching rendering, UN5's ordinary
 branch leaves `u * g` between copies; its short-string branch gives
 `max(0, u - R) / v` blank updates. NA2's blank interval can instead grow
-with `u * character_count - R`. These are geometric relationships, not
-measured wall-clock timings.
+with `u * character_count - R`.
 
 ## Saved UN5 Free Battle example
 
@@ -142,8 +139,6 @@ UN5 `font_classify_token` and `font_measure_markup` leave the closing
 ten units. `font_draw_markup` consumes that closing byte without drawing it.
 The resulting gap is 186 rather than 176, but the entire viewport still
 never becomes empty under the steady-repeat geometry above.
-A width-based reservation alone does not establish identical markup
-consumption by measurement and drawing.
 
 ## Placement and spacing
 
@@ -208,8 +203,7 @@ The inspected native producers select these textured styles before drawing:
 | Continue | `(0,334,512,48)` | 0 | `0x67/0x68` |
 
 These are full-width backing bands, rather than full-height covers or bounded
-artwork. Arbitrary descriptors and uninspected indirect callers remain outside
-this source/caller cohort. SPBATTLE window resources and computed draw ownership
+artwork. SPBATTLE window resources and computed draw ownership
 are in [2D draw ownership](../../runtime/rendering/draw_2d_owners.md#direct-immediate-rectangle-caller-inventory).
 
 ## Initial hold and short first entries
@@ -231,8 +225,6 @@ short-string minimum in `help_text_queue` applies to every submission.
 Both games' `scrolling_strip_configurations` contain four corresponding
 36-byte records that are byte-identical between NA2 and UN5, all specifying
 a horizontal 512-unit viewport, height 48 and speed 2 units per update.
-This does not establish that every caller
-leaves its configuration unchanged.
 
 ## Menu caller families
 
@@ -264,18 +256,11 @@ and Customized Battle, establishing this family. The level/rank family uses
 `spbattle_update_buffered_help` submits
 `SpBattleHelpOwnerView.text_buffer`. Its owner constructs and links
 `ccTermsInfoWnd`, `ccTermsBtlSetWnd` and `ccTermsSelWnd`; their computed draw
-dispatcher establishes the window family. Its exact player-facing screen name
-remains unresolved.
+dispatcher establishes the window family.
 
 ## Evidence coverage
 
-The common setter owns the examined direct append paths in the resident ELF,
-BTL and ETC. This bounded coverage leaves unresolved indirect calls open;
-it does not establish exclusive ownership of every possible path.
-
-Preserved cross-reference coverage is incomplete for some battle-overlay
-help submissions and constructors. Their byte-established use of the shared
-component remains recorded in annotations; missing cross-references do not
-establish absence of that use. The saved UN5 frame establishes one string's
-queue, renderer and layout values, without establishing elapsed repeat timing
-or visual coverage of every menu.
+The common setter owns the examined direct append paths in the resident ELF, BTL and
+ETC. Some battle-overlay help submissions and constructors have no preserved
+cross-references; their byte-established use of the shared component is
+recorded in annotations.

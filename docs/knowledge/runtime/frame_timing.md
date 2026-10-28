@@ -6,9 +6,9 @@ Established: display-count pacing, its writers/readers, output mode and flips,
 the direct engine-counter consumers, battle draw callbacks that change state,
 whole-frame streamed rates, and soundtrack coupling.
 Evidence is static across the resident ELF, BTL and ETC; ADV is excluded.
-Open: wide/computed counter reads, RCNT0 snapshot readers, enabled viewer requests,
-CRI stream-mode semantics and measured hardware cadence; register meanings are inferences.
+Register meanings are inferences from hardware convention.
 Routine, field and data names come from `@annotations/NA2`; addresses are live.
+Open: nothing.
 
 This document owns the relation between engine updates, display interrupts
 and subsystem clocks in retail NA2 (`SLPS-25837`). The root wait, manager
@@ -29,8 +29,7 @@ second with NTSC output.
 The root releases one manager pass when `display_counter` reaches
 `display_divisor`; `engine_root_update` clears the counter at the start of
 the pass. At the retail divisor 2, this permits at most one engine update per
-two VBlanks, nominally 29.97 updates per second. Static code establishes the
-maximum rate, not whether each update finishes within its budget.
+two VBlanks, nominally 29.97 updates per second.
 
 **There is no catch-up.** The wait accepts `count >= divisor`, and the next
 pass resets the count to zero. After an overrun the following wait can return
@@ -42,13 +41,12 @@ stores its halfword count in `EnginePadContext.rcnt0_snapshot` when
 `frame_gate & 7` is clear. `engine_root_allocate` configures RCNT0 with mode
 `0x83` ([Startup](../game/startup.md#sdk-prelude)). **Inference from the timer
 register layout:** this counts horizontal blanks, making the snapshot roughly
-the scan lines spent between update start and the end of its tail. No reader
-of the snapshot was recovered.
+the scan lines spent between update start and the end of its tail.
 
 ### Threshold writers
 
 `engine_set_display_divisor` writes the divisor and clears the display
-counter. The four recovered writers establish this lifetime:
+counter. Its four callers establish this lifetime:
 
 | Owner | Value | When |
 | --- | ---: | --- |
@@ -63,8 +61,8 @@ select 1 and restore the saved value. The movie lifecycle is owned by
 
 ### Threshold readers
 
-`engine_get_display_divisor` returns the divisor byte. The recovered consumers
-use it in different units:
+`engine_get_display_divisor` returns the divisor byte. Its consumers use it in
+different units:
 
 | Consumer | Contract |
 | --- | --- |
@@ -78,9 +76,11 @@ The viewer helpers are selected by `ccs_viewer_update` inside the optional
 branch of `ccs_play_loop`: request flags must contain a bit in `0x60` and
 have `0x100` clear, and the viewer-control update requires
 `CcsContainer.play_control & 1`. This branch uses raw pad input and changes
-`CcsContainer.rate` in `0x40` steps. It is a pad-controlled scene viewer;
-which retail requests enable it remains open. It does not establish divisor
-scaling for ordinary battle or front-end movement.
+`CcsContainer.rate` in `0x40` steps. It is a pad-controlled scene viewer that
+retail never enables: the sole `ccs_play_start` caller,
+`ccs_play_decode_worker`, passes `CcsStreamPlayer.play_flags | 4 | index << 16`,
+and `ccs_stream_player_construct` clears `play_flags` in the only store to it.
+The viewer's divisor scaling therefore applies to no retail movement.
 
 ## Display output and buffer flip
 
@@ -105,10 +105,8 @@ lines. At divisor 1, each field would come from a different update.
 ## Engine update counter readers
 
 `EnginePadContext.update_counter` advances once per engine update through
-`engine_root_update`. The recovered direct word-load consumers are below;
-wide or computed-address reads remain outside this inventory. ETC has no
-accepted reader in that bound, and same-offset loads from other BTL objects
-are excluded. The annotation comments retain the load inventory.
+`engine_root_update`. Its direct word-load consumers are below; ETC has none.
+The annotation comments retain the load inventory.
 
 | Consumer | Clock-dependent behavior |
 | --- | --- |
@@ -211,12 +209,11 @@ retail rate.
 
 | Coupling | Start | Continuation |
 | --- | --- | --- |
-| Ultimate Jutsu soundtrack | `ccs_stream_player_run` requests `audio_request_skill_soundtrack`; music preset 9 opens the skill's stereo stream on slot 1 in mode 1 through `audio_start_streamed_music`. `sound_rpc_task` reaches `audio_start_skill_soundtrack_on_frame`, which requests unpause at cinematic frame 1 when `sp_skill_play_get_progress` succeeds, the stream identifier is below `0x9351` and the selected skill is nonnegative. | Sound-side playback continues in real time; no later stream-position/cinematic-frame comparison was recovered. At stream end, `audio_finish_skill_soundtrack` stops slot 1 and requests battle music under its battle/suppression gates. |
+| Ultimate Jutsu soundtrack | `ccs_stream_player_run` requests `audio_request_skill_soundtrack`; music preset 9 opens the skill's stereo stream on slot 1 in mode 1 through `audio_start_streamed_music`. `sound_rpc_task` reaches `audio_start_skill_soundtrack_on_frame`, which requests unpause at cinematic frame 1 when `sp_skill_play_get_progress` succeeds, the stream identifier is below `0x9351` and the selected skill is nonnegative. | Sound-side playback continues in real time. At stream end, `audio_finish_skill_soundtrack` stops slot 1 and requests battle music under its battle/suppression gates. |
 | Ultimate Jutsu cinematic frames | `ccs_play_loop`, one step per manager wake through `task_yield_updates(task, 1)` | Damage, sound-effect cues and camera rows in `sp_skill_play_frame` follow equality with `CcsContainer.frame`, independently of the soundtrack |
 | Ultimate Jutsu intro voice | State 0 of `jutsu_presentation_update` starts a mono voice and stops battle music | Engine-update countdowns select later states; state 3 stops the voice |
 | Movies | Movie creation selects divisor 1 ([threshold writers](#threshold-writers)) | Video/audio follow MPEG timestamps and audio hardware ([Disc files](../game/files/disc_files.md#pss-full-motion-video)) |
 
-Mode 1 is the game's paused-start contract; the CRI-side meaning of
-`cri_set_stream_mode` remains unclassified. The same persistent play path is
+Mode 1 is the game's paused-start contract. The same persistent play path is
 used by the ETC Collection viewer: `etc_skill_play_start` calls
 `sp_skill_play_start`.

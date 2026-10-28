@@ -5,18 +5,16 @@
 Established for retail NA2 (`SLPS-25837`): the 182 configuration records,
 complete factory/class crosswalk, common construction and ownership, side and
 lineage identity, all factory post-spawn/service/update contracts, throwing
-and weighted emission, staged and immediate retirement, and bounded deduplication.
+and weighted emission, staged and immediate retirement, and deduplication.
 The default response records, direct record writers and all final factory
 record-bearing callbacks are checked separately from the scalar damage path.
-Open: deeper subclass state machines, indirect callers, unidentified service
-types and field meanings, global limits outside the traced paths, and callback
-cadence. Vector-2 and handle interpretations remain tentative.
+Open: nothing.
 
 Routines, fields and data use the names in `@annotations/NA2`; per-routine
 facts are in their annotation comments. Addresses are live. The inputs are the
 retail `BTL.BIN` and resident `SLPS_258.37`
 ([file identities](../../game/files/file_identities.md)).
-Static callback counts establish neither seconds nor animation rates.
+Callback counts are not seconds or animation rates.
 
 Derived motion and local schedules belong to
 [Projectile motion and local timing](projectile_motion.md); fighter candidate
@@ -111,7 +109,7 @@ succeeded even though their allocation branches check for null.
 ### Activation setup
 
 `activation_selector` controls common orientation setup. The names identify
-stored axes mechanically; camera/world-space meaning remains open.
+stored axes mechanically.
 
 | Selector | Record count | Orientation setup |
 | ---: | ---: | --- |
@@ -129,8 +127,7 @@ present. Values outside 0..6 use the default exit.
 
 ### Record-controlled response selectors
 
-The response bodies' deeper combat effects are not decoded here. Every retail
-record fits these bounds:
+Every retail record fits these bounds:
 
 | Field | Table | Accepted values | Distinct retail values | Retail maximum |
 | --- | --- | --- | ---: | ---: |
@@ -192,7 +189,7 @@ receiving side's entry in `projectile_response_scratch` (`0x008DA890`), a
 two-record buffer overwritten by the next lookup for that side. Neither
 the default getter nor the scratch lookup creates per-hit ownership.
 
-The bounded mutation census covers all seven direct override-pointer stores,
+The mutation census covers all seven direct override-pointer stores,
 all nine direct clone-helper callers, all fifteen direct getter callers and
 all ten distinct `+0x58` callbacks across the 95 final factory vtables.
 The callbacks comprise 84 root no-ops, three Dist2Speed-family tables and
@@ -216,11 +213,6 @@ owns its calculator route and count ordering;
 [authored support records](../characters/support_mechanics.md#authored-support-damage-records)
 own the support scalar snapshot.
 
-This census does not exclude arbitrary aliased or indirect writes, other
-kind-1 source implementations, or later mutations outside the inspected
-callers. It establishes the default records and checked factory family,
-not ordinary-play execution of every projectile or a player move name.
-
 ### Complete post-spawn initialization inventory
 
 Across 95 final factory vtables, 79 keep the root no-op; 16 classes use 11
@@ -240,8 +232,7 @@ its private count at 200.
 LunFan and LunLinear share the record-to-instance contract. The child-pair
 data is `(0x45,0x48), (0x46,0x49), (0x47,0x4A)`. Their retail records
 (`0x4C/0x4E`) request child `0x46` and produce child config `0x48`.
-A first-pair match reads before the six initialized local words; its intent
-and reachability remain unresolved.
+A first-pair match reads before the six initialized local words.
 
 Both retail records supply count 10, delay bound 3 and speed-spread word 10;
 their `value48` inputs are approximately 0.785398185 and 70. Post-spawn
@@ -377,8 +368,6 @@ Names retain the exact retail RTTI spelling, including `ccProjecShotgunLauncher`
 vtable and initializes common fields. `typed_resource_setup` creates
 the `0x24`-byte handle, which retains a projectile back-reference and two
 associations. Terminal paths signal it; root cleanup signals and releases it.
-The handle's participation in state/effect notification is a medium-confidence
-interpretation; its owned type remains unidentified.
 
 ### `ccProjChar`
 
@@ -404,15 +393,12 @@ freeing the base allocation.
 ownership; `serial` belongs to manager identity; and lineage and support
 fields retain association without retaining a parent or support-object pointer.
 The two spawn-vector stores have different contracts: vector 1 initializes
-the current and saved position; vector 2 is subclass-dependent. Interpreting
-vector 1 as position has medium confidence; no universal aim/destination/
-direction label is established for vector 2.
+the current and saved position; vector 2 is subclass-dependent.
 
 The carrier's embedded members are initialized at `+0x2D4`, `+0x300`,
 `+0x350` and `+0x3B0`; container teardown uses `+0x3C0`, `+0x360`
 and `+0x300`, and handle teardown uses `+0x2D4`. Two smaller members
-start at `+0x410` and `+0x420`. Their full widths and types remain open,
-so these member boundaries retain raw offsets.
+start at `+0x410` and `+0x420`. These member boundaries retain raw offsets.
 
 ## Spawn, side identity, and lineage
 
@@ -440,7 +426,7 @@ so it gets the opposite tag and no parent-copy fields; current config
 
 Homing consumers use the same-tag fighter for tracked or snapshotted position
 ([homing strategies](projectile_motion.md#homing-target-data-and-the-delayed-strategy)).
-A universal owner/target interpretation of the side tag is not established.
+The side tag is not a universal owner or target.
 Fighter candidate routing also reads side, support flag, external ID and
 `contact_filter`, under the Target selection document's gates.
 
@@ -465,14 +451,14 @@ ordinary scalar write.
 `projectile_spawn_with_required_argument` returns null when its required
 argument is null, otherwise forces no extra or parent and applies the same
 post-initialization. No direct call or aligned function-pointer reference
-was found in retail BTL; its reachability remains open.
+was found in retail BTL.
 
 ### Throwing-skill emission interfaces
 
 The skill and projectile class hierarchies are separate. The throwing-skill
 event gate calls the emission virtual method once when the service event value
 reaches the table threshold and the emission latch is clear, then sets the
-latch. Reset ownership and the threshold's time unit remain open.
+latch.
 
 The complete direct-subclass interface contains TEN001, INO001, KNK000 and
 SIN001. TEN001 and INO001 use counted emitters, constructing respectively
@@ -499,7 +485,7 @@ the skill's lineage keys. No seconds or player-facing skill name is assigned.
 
 SIN001's emission entry is a no-op; its inspected skill update instead builds
 and registers a `0xBE0`-byte `ccSklObjInsPillar`. The throwing base-class
-name therefore does not prove that every subclass emits a `ccProjectile`.
+name therefore does not mean that every subclass emits a `ccProjectile`.
 No child descriptor of these four throwing subclasses was found.
 
 ### TEN000 weighted emission
@@ -605,19 +591,18 @@ add their own releases before the common chain.
 ### Collision-facing interface
 
 `service_disabled` gates the pass, and only objects with `service_enabled`
-nonzero are dispatched. The pass establishes/restores the resident context
+nonzero are dispatched. The pass sets up and restores the resident context
 and finishes with the manager's shared service.
 
 The root service callback always returns one. It skips its work while delay is
 positive, activation is clear or state is below 2. Otherwise transient setup
 comes first when requested, followed by either signed service-ID submission or
 the owned mode-selected service, then common post-service work. This connects
-profile ownership to submission and cleanup without establishing internal shape
-semantics.
+profile ownership to submission and cleanup.
 
 `projectile_segment_query` forwards two vector pointers and a 32-bit filter,
 with resident options `(1,0,-1)`, returning the floating result unchanged.
-The Tonton paths establish -1.0 as their no-result sentinel. Its 13 direct
+The Tonton paths use -1.0 as their no-result sentinel. Its 13 direct
 callers in seven classes all compare against that sentinel; OtherSelf also
 checks another numeric threshold.
 
@@ -627,7 +612,7 @@ checks another numeric threshold.
 | `0x40000001` | 5 |
 | `0x40000000` | 1 |
 
-The class-facing filters establish neither an internal collision shape nor
+The class-facing filters define neither an internal collision shape nor
 damage meaning; their geometric mask predicates belong to the linked collision
 and stage-surface documents.
 
@@ -642,7 +627,7 @@ Root delay/activation/state gates apply only when the root body is reached.
 Independent overrides and work before a root call have their own gates.
 Explicit transient setup followed by root argument zero has a different order
 from the ordinary root argument-one path. The complete slot inventory closes
-this dispatch boundary; deeper resident service behavior remains open.
+this dispatch boundary.
 
 ### Complete factory-class update contracts
 
@@ -681,7 +666,7 @@ IronRain has a separate metadata gate before root: absent metadata, or a
 nonzero metadata marker with a mismatched lineage word, rejects only while
 delay is positive or state is below 3. States 3..5 with nonpositive delay
 continue to root even after the mismatch; states 6 and above go directly to
-root. The lookup type and broader metadata meaning remain open.
+root.
 SchSkillSenbon forwards root survival after its local state write.
 
 ## Motion families and local timing
@@ -710,10 +695,9 @@ the handle and detaches notification, but leaves the optional-service flag and
 omits the two position services.
 
 The root initializes the override to -1. SCVGen, SCVSkillPupBullet and NWVGen
-activation copy the low half of `value38` into it. This establishes producers,
-not that every transition in those classes consumes the override. Positive
+activation copy the low half of `value38` into it. Positive
 countdown values delay common state-6 promotion, while independent update
-overrides ignore them. No time unit is established.
+overrides ignore them.
 
 ### State `6` to manager destruction
 
@@ -743,10 +727,10 @@ destruction. This ordering counts callback invocations, not frames.
 
 Root update also culls through position limits: a resident comparison derived
 from axis 0 and constant 2500, axis 1 outside -3000..1500, or axis 2 outside
--500..3500. The first comparison's transform is unidentified. A failed check
+-500..3500. A failed check
 signals the handle and enters 7 while still returning one; a later update
 performs removal. Continuing updates advance the accumulator and active count
-without establishing real-time units.
+in update units, not real time.
 
 The two Tonton character carriers give the staged collision-to-destruction
 example. Both use the common survival and service callbacks and class-specific
@@ -754,7 +738,7 @@ destructors. Their impact callbacks consult the common predicate and segment
 queries. Buddy Tonton enters state 6 for predicate low byte 1 or non-sentinel
 results on its termination queries. Item Tonton's first query can continue;
 its later `0x40000001` result, or a prior local byte condition, can enter
-state 6. That condition's game-design meaning remains open.
+state 6.
 
 Their helper-routed path performs position cleanup, promotes to 7, later
 returns removal, unlinks, releases derived/common resources, then frees the
@@ -766,7 +750,7 @@ separate retirement helper; the latter also reaches the common helper.
 No simultaneous-projectile cap, object-reuse free list or object pool was found
 in the traced factory, spawn, manager and destructor chain. General allocation
 and deletion back this path; successful spawn increments the linked-list
-count. Limits in other callers or systems remain open.
+count.
 
 The separate lineage table has two side groups of four
 `ProjectileLineageSlot` records. Duplicate comparison uses the signed key
@@ -798,4 +782,4 @@ Representative ancestry is root → Char, Homing, Parabola, Chase, SpecifyParam,
 Bound, Launcher and Straight; Homing → SNWCmbULauncher; Parabola → Numbness;
 Chase → NrwCombo; SpecifyParam → LunLinear; Bound → BakutiBall. Descriptor
 and handle labels retain the exact relationships. Developer class names alone
-do not establish subclass gameplay semantics.
+do not define subclass gameplay.

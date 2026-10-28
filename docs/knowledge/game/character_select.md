@@ -3,18 +3,15 @@
 ## Research coverage
 
 Established: both fighter rows, both sides' input and state flow, appearance,
-fixed choices, restoration, support/Linked Mode selection, display and handoff.
+fixed choices, restoration, support/Linked Mode selection, the Linked Mode
+window's geometry and drawing, display and handoff.
 All 31 roster pairs, 15 entry/update records, 62 recommendations and 96 portraits are covered.
-The bounded UN4 ID-9/NA2 ID-89 comparison covers Orochimaru's selector
-atlas/name rows, filename publishers and auxiliary descriptor-array entry.
-Open: recommendation byte 7, seven spare support slots, random categories 2..5
-and the complete visual matrix of fighter, fixed-choice and cancellation states.
-Routine, field and data names come from `@annotations/NA2`, `@annotations/UN4`
-and `@annotations/UN5`.
+Routine, field and data names come from `@annotations/NA2` and
+`@annotations/UN5`.
+Open: nothing.
 
-This records retail NA2 (`SLPS-25837`) and the named retail comparisons.
-The evidence is bounded static code and data, not proof of every caller or
-visual state. Imported startup code
+This records retail NA2 (`SLPS-25837`) and the named UN5 comparisons.
+Imported startup code
 and former split BTL boundaries required byte corroboration; details are in
 annotations. Resident BSS pointers `battle_manager` (`BattleManager *`) and
 `support_owner` (`SupportOwner *`) are annotated in `SLPS_258.37`; Character
@@ -282,8 +279,45 @@ result. `character_selector_sample_support` scans 40 slots, excludes the
 current support and applies availability/recommendation plus compatibility.
 Both use `prng_inclusive(count - 1)` and the native setter. Sampling occurs
 every second eligible invocation, at most once per update; no candidates
-leave the choice unchanged. Fighter categories 2..5 exist but the inspected
-Triangle path sets only 1; their reachability remains open.
+leave the choice unchanged. Fighter categories 2..5 exist, but Triangle
+sets only 1.
+
+## Linked Mode window
+
+Each selector owns its own `UiPanel` in `linked_window`, so both sides can
+have the window open at once, each over its own half of the screen.
+`character_selector_construct` sets it from
+`character_select_linked_window_rectangles` (`0x005B4030`, indexed by side):
+style 1, X 40 or 292, Y 90, 180 by 110. It puts the panel in render group
+`0x95` and forces it closed.
+
+`character_selector_enter_8` opens it and `character_selector_update_8`
+enters 9 once it is open. States 10 and 11 close it
+([durations](../runtime/ui_animation.md#character-select-presentation-values));
+their updates wait for the closed panel, then
+enter 12 or 5. Entries 6, 8 and 11 request support presentation 1, entry 2
+requests 4 (none) and entry 12 requests 2; `character_selector_advance`
+plays the side's support-panel animations for a changed request other
+than 4. Entries 2, 6 and 12 force the window closed.
+
+`character_selector_draw` calls `character_selector_draw_linked_mode` on
+every draw. That routine draws text only while the panel is open, then
+always calls `panel_draw`, which advances the open or close animation. Text
+positions are window-local and centred on half the inner width:
+
+| Element | Y | Drawing |
+| --- | ---: | --- |
+| Title `character_select_linked_title` | 12 | `panel_draw_text_positioned`, black |
+| Rule | 34 | `gradient_axis_segment_color_first_draw` from X centre - 40, length 80, axis argument 0, colour `0xFF404040`, in the panel's content context |
+| Row 0 Manual, row 1 Auto | 48 + 26 × row | Current row through `panel_draw_text_row` (selected style), the other through `panel_draw_text_positioned`, black |
+
+`character_selector_handle_linked_input` reads the selector's own
+snapshot, taken from the controller that drives it: newly pressed Circle
+(`0x20`) plays common cue `0x34`, requests sound member
+`side + support * 2` of group 12 for a resolved support below `0x22`, and
+enters 10; newly pressed Cross (`0x40`) plays cue `0x33` and enters 11;
+repeated Up (`0x1000`) and Down (`0x4000`) play cue `0x35` and wrap the
+byte 0..1.
 
 ## Scrollable support roster
 
@@ -298,8 +332,7 @@ The 40-byte source is:
 ```
 
 Only the first 33 bytes are active; the producer fills the remaining capacity
-through 39 with sentinel 24/state 7. The purpose of those spare slots remains
-open. UN5's same-named producer (`0x003CDE30`) and table
+through 39 with sentinel 24/state 7. UN5's same-named producer (`0x003CDE30`) and table
 (`0x005DD710`) have the same bound, capacity and active list.
 NA2's No Support sentinel 25 is used in Story Mode and is absent here.
 
@@ -397,10 +430,9 @@ The separate support-object loop creates 34 entries through
 IDs 0..21 and returns display record 0 for unmatched/larger IDs.
 `character_selector_draw_support_name` and
 `character_selector_draw_support_portrait` resolve sentinel 26 through
-recommendation 0. The inspected large support portrait uses
+recommendation 0. The large support portrait uses
 `fighter_portraits` indexed by resolved display ID and positions it from
 the support-panel attachment; it does not read `support_portraits`.
-Broader use of the separate support array remains unestablished.
 `battle_driver_child34_release` destroys both arrays and both selectors;
 `character_selector_release` destroys its owned panels, animations and
 sprite groups.
@@ -413,15 +445,14 @@ requested candidate byte from the first match, or 0 with no match. It does
 not bounds-check the requested index.
 
 The 62 fighter IDs exactly cover the 62 nonzero base-roster cells. Each row has
-three recommendation bytes and a fourth byte that is zero throughout; that
-last byte's purpose remains open.
+three recommendation bytes and a fourth byte that is zero throughout.
 
 `character_selector_support_recommended`, fighter confirmation, both
 support-confirmation branches, random selection, navigation and support-cell
 drawing compare indices 0..2. Recommendations permit locked selections while
 compatibility remains independent. Default support and sentinel 26 name/portrait
-resolution use index 0. The bounded BTL consumers likewise use index 0 for
-special-support resolution; they establish no fourth-field meaning.
+resolution use index 0. The inspected BTL consumers likewise use index 0 for
+special-support resolution.
 
 Duplicates are valid: fighter 04 recommends 09/0A/09, fighter 0A recommends
 00/02/00. Naruto 39 recommends 01/02/18 while linked partners include 08/20.

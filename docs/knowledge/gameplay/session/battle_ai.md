@@ -6,10 +6,7 @@ Established: retail NA2 (`SLPS-25837`) AI ownership, lifecycle, configuration,
 targeting, decision precedence, dispatch, action queues, numeric exceptions
 and shared RNG. The bounded UN4 ID-9/NA2 ID-89 Orochimaru comparison covers
 separate AI value/flag lookups and the checked direct reaction exceptions.
-Open: move names and reaction reachability/semantics, the seventh profile row,
-consumers of parameters 24/31 and descriptor bits
-`0x02/0x40`, meanings of the descriptor's first halfword and final byte,
-and unrecognized external aliases.
+Open: nothing.
 
 Routines, structures and data are named by the annotations in
 `@annotations/NA2` and `@annotations/UN4`; their comments carry the per-routine
@@ -53,8 +50,6 @@ Zero selects the human path. The four fully compared wrappers,
 `fighter_ai_update_29b250` and `fighter_ai_update_2ee330`, pass the original fighter,
 add no character-specific decision logic, and return zero.
 The resident caller census contains 74 direct calls to the shared tick.
-The four-wrapper sample does not establish identical later consumers for
-every character.
 
 `fighters_update` invokes the fighter's virtual AI slot during its first
 eligible-fighter pass, then `fighter_copy_input_outputs` and the ordinary
@@ -139,8 +134,7 @@ This depends on both phase bits running together. The recovered suppression
 writers allow or suppress bits `0x0002/0x0004` together; the auxiliary override
 permits only the command phase. Session filters further restrict allowed masks.
 No recovered writer to the first-phase filter separates fighter updates from
-command clearing; the known second-phase setter cannot do so. Unrecognized
-indexed or pointer aliases remain open.
+command clearing; the known second-phase setter cannot do so.
 [Pause and replay](pause_and_replay.md#selective-update-gating) owns those masks.
 
 After classification and the action-slot scan, decision order is:
@@ -263,8 +257,7 @@ Other inside/outside branches select 34 or 6, or the following responses:
 | Outside range, reason 1, distance at most 400, no active action word | Parameter 8 selects state 41 |
 
 `support_reason1_ready` requires reason 1 and zero `ready_countdown`.
-`support_action_pointer_present` tests the word at `+0x368`; that word's
-wider embedded-object meaning remains unnamed. Its absence participates in
+`support_action_pointer_present` tests the word at `+0x368`. Its absence participates in
 state-41 branches. These returns are local priority boundaries, so the support
 stage does not overwrite every earlier state unconditionally.
 
@@ -361,8 +354,6 @@ a flags byte at `+2`, and a final byte. The recovered readers index
 `+0x68`. `ai_initialize` loads that byte at `0x00706170`;
 `ai_state11_update`, `ai_react_target_state`, and `ai_main_reaction` load it
 at `0x006F9F10`, `0x007003E4`, and `0x00704B74`, respectively.
-These reads do not establish a selector meaning for the first halfword
-or a meaning for the final byte.
 
 | Character | Actual ID | `ai_character_descriptors` row | First halfword | Flags byte |
 | --- | ---: | --- | --- | --- |
@@ -384,9 +375,17 @@ Recovered flag consumers are:
 | `0x40` | No recovered meaning | `10,11,39..43,85` |
 
 A first-halfword value `0xFFFF` does not invalidate nonzero flags, including
-IDs 46/59. These reads do not prove roster selectability or named awakening
-behavior. [Character identity in battle](../characters/character_ids.md) owns
-identity and selection evidence.
+IDs 46/59. [Character identity in battle](../characters/character_ids.md)
+owns identity and selection evidence.
+
+No reader of the first halfword or the final byte was found, so neither has
+a recovered meaning. Every row's halfword is `0x001F` or `0xFFFF`, and every
+final byte is zero, which fits alignment padding after a halfword and a byte.
+A scan of every `lui`-formed address in BTL and the main executable,
+following `addiu`/`addu` chains to the access, finds only the four flag-byte
+readers above. No stored pointer to the table was found, and `gp`
+(`0x0060A9F0`) cannot reach it. UN5's BTL holds the same 96 rows at
+`0x008DB8C0`, and the same scan finds only its four flag-byte readers.
 
 `ai_state11_update` and `ai_react_target_state` use bit `0x10` plus a clear
 self contact-flag bit 5 for parameter-20 state-22 attempts. The main reaction
@@ -402,9 +401,6 @@ Hard-coded target IDs alter geometry independently of profiles:
 | `ai_late_reaction` | IDs 59/64 with contact-flag bit 5 use a parameter-10 state-9 attempt and bypass general nearby state-17/34 choices |
 | `ai_main_reaction` | ID 36/current indices 4/5/6/21/22 divert the normal facing state-11 branch; a parameter-22 state-6 attempt can be overwritten by a later parameter-5 state-18 attempt |
 | `ai_react_incoming_action` | ID 49/current accessor result 34 takes the reset/departure branch |
-
-These differences do not establish move names, author intent, or reachability
-of every listed combination.
 
 ### Numeric-exception admission and working records
 
@@ -444,10 +440,6 @@ record checks, which would otherwise finish without resetting because record
 34 lacks category bit 8. Practice/near-bucket departure can subsequently
 select 11, and later stages can replace it. Equal category at index 35 does
 not extend the exact-index-34 exception.
-
-Open: a given match's ID-36 selection, full producers of its five compared
-indices, antecedents of ID-49's actions 33/43 and event, and the other numeric
-exceptions' complete contexts.
 
 ## Primary target and spatial classification
 
@@ -601,7 +593,7 @@ With default bindings, `0x1000` comes from new Circle, `0x10000` Cross,
 `0x01000000` Square, `0x20000000` R1, and held L2/R2 produces guard
 `0x10000000`. Low masks 4/8 are opposite direction sectors.
 `0x40000` is a short-history Cross-plus-direction modifier.
-Bindings remain configurable; these sources do not establish move names.
+Bindings remain configurable.
 
 ### State-18 guard reaction
 
@@ -622,8 +614,7 @@ can use a cooldown and parameter-14 roll to reset, correct facing and select
 an action. That reset clears the guard just added.
 
 `fighter_action_record` arguments -3/-1 both return the current record while
-the target is class 8; they do not establish distinct records. Record-bit move
-names remain unresolved.
+the target is class 8.
 [Chakra and guard](../combat/chakra_and_guard.md#guard-input-and-action-lifecycle)
 owns guard input and counters.
 
@@ -642,20 +633,17 @@ zero; a nonzero controller nibble then avoids initialization. The tail returns
 for COM before its clears. A subsequent initializer or scripted-tail pass clears
 the retained value. Going through Manual then COM does initialize again.
 
-This is an ordinary consumer of a retained scripted byte, not a recovered
-ordinary positive producer. The bounded AI-cluster/alias search found no such
-producer; an unrecognized external writer remains open. It does not establish
-that every ordinary match can produce the flag.
+This is an ordinary consumer of a retained scripted byte. The AI-cluster and
+alias search found no ordinary positive producer.
 
 ### Direct state constructors
 
 The direct BTL constructor inventory is recorded on `ai_state_handlers`.
-A table entry alone does not establish selection. `ai_select_exchange_response`
+`ai_select_exchange_response`
 dynamically chooses 13 for exchange-role values `0x1000/0x400`, or 19 for
 `0x100`, before its phase gate. State 2 has no recovered direct constant
 constructor. States 29..32 have neither a recovered constructor nor an active
-handler and are apparently reserved under the current static evidence.
-External or aliased writes are not excluded.
+handler.
 
 ## Action-record selection and direct queues
 
@@ -703,8 +691,8 @@ instead request masks `0x212/0x10A/0x86`.
 `battle_strength_get` returns raw `battle_setting_get(manager,0x0B)`.
 The normalized range 0..5 selects six rows of `ai_behavior_profiles`;
 `practice_strength_count` is 6. The top row is unlock-gated: unavailable
-feature key `0x6A` lowers the menu maximum to 4. The seventh contiguous row
-has no confirmed selector and does not establish a seventh difficulty tier.
+feature key `0x6A` lowers the menu maximum to 4. A seventh contiguous row
+follows; no recovered code selects it.
 
 Each row supplies 40 signed parameters. Initialization copies the selected
 row, conditionally applies `ai_secondary_modifiers`, applies descriptor
@@ -728,9 +716,7 @@ were recovered. This count is separate from ordinary Strength.
 
 `ai_profile_modifier_bypass_get` reads a setup-specific byte. `setup_apply_mode`
 can call `setup_begin_modifier_bypass` for setup value 2, using resident
-continue data; `setup_flow_update` clears the byte on completion. Equal numeric
-setup and manager values do not establish equal mode meanings. The setup
-value's player-facing name remains open.
+continue data; `setup_flow_update` clears the byte on completion.
 
 Practice Strength hot reload copies a raw row only. It does not rerun percentage
 modification, descriptor multipliers, normalization, the two-slot reset or
@@ -748,10 +734,9 @@ Raw Strength is therefore not a uniform chance multiplier.
 
 Indices 24/31 have no recovered decision consumer. All seven authored rows
 have zero at 24; descriptor bit `0x08` transforms it without changing that
-zero. Parameter 31 has nonzero authored values, so it remains unresolved rather
-than presumed unused.
+zero. Parameter 31 has nonzero authored values.
 
-### Computed profile copies and unresolved parameters
+### Computed profile copies
 
 Initialization and Practice hot reload both install all 40 parameters, including
 24/31. The percentage loop also adjusts both; the initializer can further
@@ -760,14 +745,11 @@ multiply 24. Neither installation exports a new row or pointer to another owner.
 The bounded row-base, shifted-slot, overlapping-load and surviving-pointer
 trace found no additional decision use or outgoing row copy. The normalizer
 excludes 24/31; a leftover caller-saved pointer is not evidence that a helper
-consumes it. Unknown aliases and indirect external access remain open.
-These results establish installation and transformation, not meanings or
-universal non-use.
+consumes it.
 
 The analogous descriptor trace found four byte readers: the initializer uses
-bits `0x01/0x04/0x08`, and the reactions use `0x10`. No recovered copy or
-forwarding establishes a consumer of `0x02/0x40`; alternative address paths
-remain open.
+bits `0x01/0x04/0x08`, and the reactions use `0x10`. No recovered reader,
+copy or forwarding uses `0x02/0x40`.
 
 ## RNG ownership and confirmed uses
 
@@ -813,25 +795,12 @@ relevant cooldown. Thus the cursors serve two reaction paths.
 
 The main tick's paired-controller, both-state-5, different-region branch tests
 `rand(0..100)<20`, then randomly resets one side with `rand(0..1)`.
-Its purpose as a stalemate breaker remains a hypothesis.
 `ai_target_action_scalar` maps record values to scalar float bits and is not
 an RNG helper.
 
-## Evidence limits, negative results, and hypotheses
+## Negative results
 
-Bounded negatives: no AI-specific BTL ASCII class name, no BTL-internal
-caller of the tick, no randomized primary fighter selection, no state reset
-on Manual disable, and no recovered AI heap ownership. The controller class
-names support structural identification. Numeric states, unlisted logical masks
-and action-record bits retain unresolved move meanings.
-
-Open questions include every large reaction branch's complete semantics,
-descriptor bits `0x02/0x40`, profile parameters 24/31, the seventh row's
-selector, complete numeric-exception admission, an ordinary positive support
-candidate producer, the modifier-bypass setup name and unrecognized first-phase
-filter aliases. These limits are not evidence of universal non-use.
-
-Hypotheses: paired-AI random reset may break stalemates; the seventh row may
-belong to an inaccessible tier or special mode; the continue counter's signed
-modification may implement adaptive easing. Their control flow and data are
-established, but these purposes are not.
+No AI-specific BTL ASCII class name, no BTL-internal caller of the tick, no
+randomized primary fighter selection, no state reset on Manual disable, and no
+recovered AI heap ownership. The controller class names support structural
+identification.

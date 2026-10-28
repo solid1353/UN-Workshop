@@ -122,14 +122,38 @@ address	kind	name	type	comment
 0x007325D0	function	ai_point_route_update		UN3 ai_point_route_update counterpart (0.67): near distance 40 instead of 10 on scenes 0, 12, 13; scene 13 special case.
 0x00734A20	function	ai_route_section_gate		Scenes 10/6 with fighter +0x7A6 == 0 (scene 15 == 1): route kinds 0x25/0x37 replan.
 0x0073DF60	function	ai_route_reactions		Scenes 10/6: COM below 2.5 chakra in route states 3..5, 9, 0x18, 0x1A, 0x1C, 0x1D (or 2 at step 5) replans and picks a random reaction (UN3 ai_water_chakra_gate).
+0x00746150	function	ai_fighter_update		Shared COM tick; every fighter's vtable +0x1C gate (about 33 SLUS callers) calls it while control bits 5..8 are nonzero.
+0x007563D0	function	jutsu_create_from_command		Command kind 0x8003 with value 0x100..0x147 creates jutsu resource value-0x100; other values go to 0x0076B980.
+0x00756450	function	jutsu_create_for_resource		Resource below 0x48: allocate and construct through jutsu_factory_table.
+0x007574D0	function	jutsu_create_bound		Resource 0xD returns 0; else create, register in the battle actor list and run jutsu_actor_init.
 0x00757820	function	jutsu_get_camera_index		Active participant controller +0x344, or -1.
+0x00758D20	function	battle_update_jutsu_actors		Updates the four jutsu actors at battle +0x1048; gp-0x6F70 = resource index (+0x31C) of the last active one, else -1
+0x0075BFF0	function	jutsu_base_construct		Common jutsu base, vtable 0x0055C3A0 at +0x30.
 0x0075DC60	function	jutsu_participant_get_stage_section		Fighter +0x7A6, alternate participant +0x130, or 0.
+0x00763D80	function	jutsu_actor_init_shared		Stores resource index param_2 at +0x31C without loading
+0x00763DF0	function	jutsu_actor_init		Loads 2???cha?.ccs resource param_2 and stores the index at +0x31C
 0x0076B8B0	function	jutsu_participant_set_stage_section		Set fighter +0x7A6 and the other fighter's opponent-section cache +0x264.
+0x0076B980	function	jutsu_actor_dispatch_event		Non-resource 0x8003 values go to the side's live jutsu actor vtable +0x104.
 0x00770BE0	function	ai_water_fall_check		Scenes 6/10: battle-context +0x260 object in state 1 and fighter height <= -10 -> 0x00331EA0(obj, 0).
+0x0077C880	function	rotation_jutsu_construct		Shared class for resource 15 (2nejcha1) and 70 (2hnxcha1): alloc 0x4C0, vtable 0x0055AF80; binds generic e0xchak/e06shk02 names present in both files.
+0x007B2970	function	nine_tailed_naruto_jutsu0_construct		Resource 65 (2nrxcha0): common jutsu base 0x0075BFF0, vtable 0x00559110, +0x3A0/+0x3A4 = -1, +0x3A8 = 0.
+0x007B2A60	function	jutsu_nrx_jry_update		Steps attacker participant +0x90 through phases 0..2 (+0x13C) while +0x188 is set.
+0x007B3670	function	jutsu_nrx_jry_bind_animations		Resource-65/28 class setup: attacker animations ANM_pnrxcha01/02 for resource 65 (0x41), ANM_pjrycha11/12 otherwise.
+0x007B9870	function	jutsu_participant_construct		Intermediate jutsu base (vtable 0x00558930) shared by nine jutsus incl. resource 66 and Byakugan Hinata jutsu 0.
 0x007BA710	function	fighter_pair_scene_rectangles		Per scene and fighter +0x7A6: rows of fighter_pair_rectangles; inside x/height moves to target row point by partner side; -1 drops placement. Scene 0 nonzero: rows 14/15.
 0x007BB190	function	fighter_pair_scene_heights		Pair heights: scene 11 -> 50; scene 10 with +0x7A6 nonzero -> 60; scene 8 in two rectangles -> 365.
 0x007BB410	function	fighter_pair_place		Places fighter and partner (+0x2A0) for states 3,0x15,0x32,0x3D..0x40,0x42 by ground probes at per-state distances; scene rectangles first (fighter_pair_scene_rectangles), heights after (fighter_pair_scene_heights).
+0x007BE3C0	function	jutsu_participant_event		Hit receiver via vtable +0x1B8 with event kind; receiver voice events 9+3*min(e,2)+rand3, 5 -> 9..11, 10 -> 15..17 and finishing flag +0x3E0; rumble both.
 0x007BEDE0	function	fighter_pair_place_method		Vtable method in ten SLUS fighter vtables; calls fighter_pair_place.
+0x007BEE00	function	nine_tailed_naruto_jutsu1_construct		Resource 66 (2nrxcha1): base 0x007B9870, vtable 0x00558760, tables 0x0083D1D0/0x0083D1F0/0x0083D210 at +0x34C/+0x350/+0x354.
+0x007BF110	function	nine_tailed_naruto_jutsu1_event		jutsu_participant_event, plus event 15 marks finish and plays one of five sounds.
+0x007C54C0	function	byakugan_hinata_jutsu0_construct		Resource 69 (2hnxcha0, 8 Trigrams 64 Palms), alloc 0x760: jutsu_sequence_base_construct, vtable 0x00557910, table 0x00827F80 at +0x34C.
+0x007C62D0	function	byakugan_hinata_jutsu0_anchor_position		Vtable +0x18: world position of named object 0x0083ADE0 in the actor scene, else +0x2A0.
+0x007E9C40	function	sealed_orochimaru_jutsu0_construct		Resource 55 (2forcha0, Snake Tongue Sucks In), 0xA10 bytes: five 0x50 query shapes +0x3E0, players +0x590/+0x720, charge +0x3A8=0.6, step +0x3B0=0.03628118; ancestor of NA2 ccSkillFOR000.
+0x007EA050	function	sealed_orochimaru_jutsu0_initialize		Binds ANM_pforcha00_1 (played at once on +0x590), 01, 01_1, fortan2, 03, 02, 02_1; base drain +0x3AC = 0.6*action+0x24/63.
+0x007EA500	function	sealed_orochimaru_jutsu0_process		Phases +0x3A0: 0 query from count 8 until contact -> 2; 2 drains below 64 counts (charge input adds 0.0363, damage step*D halved above 1.0), every 15 SFX 0xB2 and condition 0x0E; 3 end; 4 miss.
+0x007EABD0	function	sealed_orochimaru_jutsu0_select_phase		2: pair participants, play 01_1/fortan2 on +0x590/+0x720; 3: release, popup charge*D*0.5; 4: play 02_1.
+0x007EFF10	function	sealed_orochimaru_jutsu1_construct		Resource 56 (2forcha1, Giant Snake: Underworld Dash), 0x6A0 bytes, names 0x0083DE30.
 0x007F1620	function	sealed_orochimaru_jutsu1_setup_participants		Giant Snake: Underworld Dash: participants +0x90/+0x1D0, placed through 0x007F2210.
 0x007F2210	function	sealed_orochimaru_jutsu1_place_participants		field_player_placement starts, or on scene 17 the fixed point (0,750,220) of 0x00829640 in section 1 (0x007F2990).
 0x007F40E0	function	sealed_orochimaru_jutsu1_select_camera		Camera index for 2forcha1 (Giant Snake: Underworld Dash); scene 0 section 1: shot 7 at 500<x<1000, 8 at -1000<x<-500, height 300..800.
@@ -149,6 +173,12 @@ address	kind	name	type	comment
 0x00820E60	data	stage_falling_leaves_forces		Spin (0.1,0,0.1), fall -7, fall -2; equal to UN3 0x00917880.
 0x00821690	data	stage_flying_leaves_generator		0x38-byte row; token 8 -> +0x18; lifetime +0xC 30.
 0x008216D0	data	stage_flying_leaves_force		0x20-byte force row (0,0,-10,1); x rewritten from wind.
+0x00826990	data	jutsu_resource_filenames		72 jutsu resource filenames 0..71; 65/66 = 2nrxcha0/1 (Nine-Tailed Naruto).
 0x00826AB0	data	fighter_pair_rectangles		32-byte rows: two points; rectangle rows test x and height, target rows hold the two placements.
+0x00827F80	data	byakugan_hinata_jutsu0_table		Data table at actor +0x34C of byakugan_hinata_jutsu0_construct.
 0x00829670	data	sealed_orochimaru_jutsu1_ichiraku_camera_rectangles	float[4][4]	Two corner pairs: x 500..1000 / -1000..-500, height 300..800; strict bounds.
+0x0083B8F0	data	jutsu_resource_flags		One word per resource; bit 0x80 sets actor +0x28 = 2 when the owner fighter is a form (jutsu_actor_init).
+0x0083BBD0	data	jutsu_selector_resource_table		68 signed selector-to-resource words; selectors 0/1 = -1; 62/63 -> 65/66 (owner 31).
 0x0083C150	data	fighter_pair_rectangle_targets		Halfword target row per rectangle row; -1 drops the placement.
+0x0083C180	data	jutsu_factory_table		72 switch targets of jutsu_create_for_resource; 65 -> 0x00756FA0 (alloc 0x3C0, 0x007B2970), 66 -> 0x007564D8 (alloc 0x410, 0x007BEE00).
+0x0083DCC8	data	sealed_orochimaru_jutsu0_names		{0,1} then ANM_pforcha00_1..02_1 and OBJ_hit_dummy01..05.

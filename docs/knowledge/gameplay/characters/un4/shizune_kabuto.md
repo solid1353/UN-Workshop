@@ -9,8 +9,8 @@ jutsu against NA2's retained `2KBTCHA0` and playable resource 184; selected type
 effect providers; compact and streamed voices; power effects; and the four shared
 Ultimate Jutsu films, whose timelines, camera payloads and hit rows match while
 selection metadata and other scene bytes differ.
-Open: contact-mask and receiver-action translation, effect admission, enclosing
-provider lifetime, and the films' nested geometry and wrapper lifetime.
+Open: whether the complete UN4 Shizune and Kabuto jutsu actors and their
+helper-generated effects are silent.
 
 Names come from `@annotations/UN4` and `@annotations/NA2`; addresses are live. Shared format comparisons are in [UN3 and UN4 characters](../un3_un4_characters.md).
 
@@ -238,9 +238,10 @@ code-selected roots without closing their full provider graph.
 
 **Established differences:** setup side-0 contact words are donor
 `{0x40,0x410900}` versus NA2 `{0x80,0x88900}`; side 1 uses
-`{0x800,0x208048}` versus `{0x800,0x44090}`. Donor
-`jutsu_extra_contact_mask_flag` (`0x00745A30`) can additionally OR
-`0x100000` into the second word; retained NA2 setup has no such branch.
+`{0x800,0x208048}` versus `{0x800,0x44090}`. While a
+reversal game runs (`reversal_game_active_side`, `0x00745A30`, nonzero),
+the donor ORs `0x100000` into the second word; retained NA2 setup has no
+such branch.
 Contact preparation checks effect IDs 0/1 and the same receiver flag bits
 through each game's services. Donor `fighter_has_effect_id`
 (`0x002CF980`) and NA2 `fighter_has_effect` (`0x00306420`) use the same
@@ -249,8 +250,19 @@ bounded list traversal: exact effect ID at node `+0x68`, next node at
 major state 5,
 but donor actions `0x2D..0x33` versus NA2 `0x2F..0x35`, then requests
 effect 0 for 200 ticks, clears the response word and contact helper.
-The selected action ranges' semantic correspondence and complete resident
-effect/mask admission are not established by these matching call shapes.
+NA2's retained copy runs the same algorithm with NA2's values, so it gives
+the translation of this jutsu's donor values:
+
+| Donor (UN4) | NA2 |
+| --- | --- |
+| Side-0 send `0x40`, side-1 send `0x800` | `0x80`, `0x800` |
+| Receive pair `0x400000` / `0x200000` (side 0 / 1) | `0x80000` / `0x40000` |
+| Receive pair `0x10000` / `0x8000` | `0x8000` / `0x4000` |
+| Receive pair `0x800` / `0x40` | `0x800` / `0x80` |
+| Receive pair `0x100` / `0x8` | `0x100` / `0x10` |
+| Reversal-game bit `0x100000` | None |
+| Receiver actions `0x2D..0x33` | `0x2F..0x35` |
+| Effect IDs 0 and 1 | Effect IDs 0 and 1 |
 
 Retained NA2's extra `kabuto_classic_chakra_jutsu_build_contact_record`
 (`0x007F4B60`) clears response fields in the selected side/resource cache,
@@ -520,11 +532,10 @@ in all six banks, authored startup difference, eight resource dialogue rows,
 physical PLVOICE members, selected frame/state dialogue producers and native
 combo command selectors with their other-participant gates.
 
-**Coverage limits:** retained resource-45 concrete methods and helpers are
-compared above; their inherited mask/effect services and selected action-range
-semantics and enclosing CCS provider retention/release remain open.
-The linked audio comparison bounds the selected voice producer paths;
-spoken content remains unestablished.
+**Coverage:** retained resource-45 concrete methods and helpers are compared
+above, and the translation table gives their mask, action and effect values
+in NA2's domain. The linked audio comparison covers the selected voice
+producer paths.
 The donor powers' gameplay payload, consumers and lifetime are established in
 [Power effects](#power-effects);
 their controller entry is in
@@ -842,8 +853,7 @@ For matched target names, alpha changes occur in three records each in
 `D27_20/D28_10` and 24 in `D28_20`; visibility and transform flags agree.
 The outline/tone float differences include small rounding differences:
 `D28_20` frame-zero outline second-field words are donor `0x3F19998A`
-and native `0x3F199991`. They are distinct stored values; their visible
-significance is not established. The mouth material change is larger:
+and native `0x3F199991`. They are distinct stored values. The mouth material change is larger:
 after ID and zero flags, donor `MAT_kbtmou1` has
 `(0.75,0.25,0.25,0.25,0,1)`, native `MAT_kbwmou1` has
 `(0.5,0.75,0.25,0.25,0,1)` for those eight frames.
@@ -1360,9 +1370,8 @@ additional character-bank selector.
 **Evidence limits:** these conclusions cover the selected primary methods,
 joined participant callbacks, frame/state producers and checked helpers.
 They do not assert silence for every fighter or global effect reached during
-a battle. Code and archive indices establish candidate recordings and
-request opportunities; their spoken meaning and audible equivalence remain
-unestablished.
+a battle. Code and archive indices establish candidate recordings and request
+opportunities.
 
 ### Shizune and Kabuto selected cinematic rows
 

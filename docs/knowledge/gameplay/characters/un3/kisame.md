@@ -4,12 +4,14 @@
 
 Established for UN3 Kisame 24 against NA2 Kisame 72: equal action counts with
 164/166 phase rows and 148/147 names, different chains, callbacks and jutsu;
-Water Shark and Mad Dance ownership, resources and cleanup roots; twenty-four
-Ultimate Jutsu records selecting six films; effects and prerequisites; marked
-providers; compact, PLVOICE and six startup intros; AI values.
-Open: Water Shark and Mad Dance executable closure, film conversion, typed
-descendants, end-demo ring publication, remaining voices, effect consumers,
-input and contact semantics, and ID-dependent services.
+Water Shark and Mad Dance ownership, overridden methods, contact definitions
+and ID-24 particle branches; input admission graph; twenty-four Ultimate
+Jutsu records selecting six films, with their soundtracks, cue rows and
+Water Clone palettes; effect `0x25` consumers; typed provider and film
+closure, including the end-demo ring's unloaded definition; compact,
+PLVOICE, SOUND intro/end-demo and common SFX selections; AI values.
+Open: what the running game shows where a definition is never loaded
+(the end-demo ring).
 
 Names come from `@annotations/UN3` and `@annotations/NA2`; addresses are live. Shared format comparisons are in [UN3 and UN4 characters](../un3_un4_characters.md).
 
@@ -160,7 +162,6 @@ impact player/path placement and releases two auxiliary actor handles.
 randomized contact presentation under its private flag.
 `kisame_water_shark_projectile_destroy` (`0x0090FE30`) destroys the
 seven shapes and private shape, common water state, base and allocation.
-Its inherited damage/response and remaining effect descendants remain open.
 
 Donor resource 38 constructs through `kisame_mad_dance_construct`
 (`0x008A9B50`) and installs `kisame_mad_dance_vtable`
@@ -174,14 +175,46 @@ Participant update `0x008AA800` advances charge stages at approximately
 `0.33/0.66/1`, corrects placement and synchronizes auxiliary objects.
 Update/input/state roots are `0x008AAFE0/0x008AA640/0x008AC820`;
 contact/follow-up roots are `0x008A9E50/0x008AA000`.
-The contact route selects response variant `0x58` for source ID 24,
-`0x52` for ID 11, and `0x51` otherwise, and consumes separate
-charge-dependent interaction definitions. Shape update `0x008AC340`
-uses its typed shape bank and common spine/trall anchors.
+At the final combo stage (`+0x69C` 3), `kisame_mad_dance_contact` sets
+response `0x12` when contact state `+0x130` is 5 and `0xFF` for states
+other than 1; state 1 instead spawns `battle_particle_create_fields`
+(`0x002FFA90`) at the contact point, writing particle halfword `+0x238`
+`0x58` when the source fighter is ID 24, `0x52` for ID 11 and `0x51`
+otherwise. A repeat count above 1 also emits a follow-up. Shape update
+`0x008AC340` uses its typed shape bank and common spine/trall anchors.
+`kisame_mad_dance_update` (`0x008AAFE0`) plays common control `0x16` at
+combo-stage frames 13/28/22/0/21 with keys `0x37/0x3C/0x32/0x32/0x37`
+and runs per-state actions from `0x00941CE0`.
 `kisame_mad_dance_destroy` (`0x008A9C40`) validates and marks its
 three emitted actors for deletion, restores participant state and releases
-the auxiliary handle, timer, shapes and base. Complete contact/damage,
-effect descendants and interruption behavior remain open.
+the auxiliary handle, timer, shapes and base;
+`kisame_mad_dance_finish` (`0x008AB110`) runs the common finish and resets
+its private mode.
+
+Every other slot of the three final vtables points to shared UN3 jutsu
+actor and projectile code; only these slots are Kisame's:
+
+| Vtable | Kisame-owned slots |
+| --- | --- |
+| `kisame_water_shark_vtable` (`0x0068E110`) | `+0x10` sword transform, `+0xF0` update, `+0x224` destroy, `+0x228` begin (halfword 10 at `+0x5A2`), `+0xC4` projectile-present test, `+0x230` `0x0090FA80`; `+0xE8/+0xEC/+0x148` are empty |
+| `kisame_water_shark_projectile_vtable` (`0x0068E080`) | `+0x8` destroy, `+0x10` update, `+0x3C` contact effect, `+0x58` auxiliary draw, `+0x18/+0x24/+0x88/+0x8C` (`0x009070D0/0x0090F9E0/0x00905AF0/0x00907420`) |
+| `kisame_mad_dance_vtable` (`0x0069A4B0`) | `+0xA4` contact, `+0xE8` participant update, `+0xEC` draw, `+0xF0` update, `+0x148` `0x008AB100`, `+0x1A4` input, `+0x224` destroy, `+0x228` begin, `+0x22C` finish, `+0x240` shape update |
+
+Both actor vtables keep the shared `jutsu_actor_common_update`
+(`0x008899C0`) at `+0x138`. Contact uses `interaction_publish_resource_contact`
+(`0x0087F270`) with `jutsu_resource_contact_definitions` (`0x00923274`):
+Water Shark (37) has one `0x44`-byte definition at `0x00921284`, Mad Dance
+(38) two at `0x009212C8`. Read through `interaction_record_from_definition`
+(`0x0086C0F0`):
+
+| Definition | `+0x8 / +0xC` | Response `+0x14` | `+0x12` | `+0x18` | Flag blocks `+0x1C/+0x20/+0x24` | Attack scalar `+0x28` | Repeat `+0x2C` |
+| --- | --- | ---: | ---: | --- | --- | --- | ---: |
+| Water Shark | `0x40000 / 0xC005` | 14 | 14 | 1.0 | `4 / 0x200 / 0x300` | 1.0 | 1 |
+| Mad Dance 0 | `0x80000 / 5` | 4 | 4 | 1.0 | `0 / 0x84000001 / 7` | 1.0 | 1 |
+| Mad Dance 1 | `0x40000 / 5` | 4 | 4 | 0 | `0 / 0 / 0` | 0 | 1 |
+
+The working record's attack value is the definition scalar times the
+source action's `+0x24` value.
 
 Native resource 146's `kisame_stealth_shark_construct` (`0x007E39F0`)
 calls `skill_tyo_base_construct`, installs interface `0x005EFD50`
@@ -189,8 +222,10 @@ at `+0x110`, and clears tail words `+0x1114/+0x1118`.
 Resource 147 uses `skill_primary_construct` (`0x00785410`), installs
 `0x005E7770` at `+0x110`, and calls `kisame_shark_shotgun_reset`
 (`0x00846DB0`) to clear three emitted pointers and private counters/flags.
-These checked construction differences do not establish equivalence of
-their unvisited methods to either donor actor.
+They are different jutsus on NA2's skill bases, with the interface at
+`+0x110` and `0x1120/0x1010`-byte objects, while the donor actors put
+their vtable at `+0x28` in `0x5C0/0x6B0`-byte objects. Neither native class
+implements either donor jutsu.
 
 ### Providers and identity services
 
@@ -206,19 +241,37 @@ CHA0 wrapper 51 targets marked 52, `OBJ_2ksmswd` under
 `#c\2ksm\max\2ksmswd.max`; donor body local object 66 defines it
 as tag `0x0100`. With the body and donor common providers, all CHA0/1
 marked keys match. CHA1's marked common keys also match the checked
-native common set. This does not equate typed geometry or lifetime.
+native common set. Typed check: every directory ID without its own section
+in the body, CHA0/1, eye and portrait files resolves to a defining section
+of its prefix's type: body 38 and CHA0/1 30 each from `CMN/2CMNBOD1`, CHA0's
+sword from the body, eye 58 from `1KSMBOD1`. `1KSMBOD1` and the portrait
+have no external names.
 
 Donor eye animations are `ANM_3ksmwin00/10`. Of 59 marked keys,
 58 match `1KSMBOD1`; the remaining `OBJ_1ksm00t0 ring` is under
 `#c\1ksm\max\1ksmring.max`. Eye wrappers 74/162 target marked 75.
 A census of all 2,400 clean donor CCS TOCs finds its exact local definition
 in `DOLL/IFKSM`, tag `0x0100`, object 68, model ID 377.
-Publication of that provider into the eye/end-demo context is unestablished.
+The only executable reference to `ifksm.ccs` in the ELF and the three
+overlays is Kisame's `doll_figure_catalog` row (`0x004BCFC0`:
+`Kisame Hoshigaki`, character 24), listed by
+`doll_figure_catalog_build_list` (`0x002D2780`) for unlocked characters.
+The end demo's `end_demo_request_eye_container` (`0x0028AC80`) requests
+only the eye file, and `battle_request_selected_character_ccs`
+(`0x00279720`) only `1CMNBOD1`, bodies, jutsu archives and the portrait.
+The five direct callers of `doll_figure_catalog_row` (`0x00372D70`) are
+the catalog list and unlock routines at `0x002D2780..0x002D3378`; none of
+the checked battle or end-demo requests loads the ring's only definition.
 The donor 1BOD contains one animation; the portrait contains none.
 
 UN3 `ai_tick` (`BATTLE 0x00825260`) indexes the actual fighter ID
 with stride eight in `ai_character_descriptors` (`0x0093ADF0`).
-Kisame's row at `0x0093AEB0` stores words `{1,5}`.
+Kisame's row at `0x0093AEB0` stores words `{1,5}`. `ai_tick` copies
+them to the side's AI state `0x00945CD4/0x00945CD8`: `0x0081C4D0`
+compares word 0 with the AI state word `0x00945CE0` (an equal value, or
+word 0 of 3 against values 4/5, takes the `0x00818030` exit), and `0x0081F710`
+uses word 1 as a percentage (`rand(100) <` word 1) when choosing a target
+from its candidate list.
 The [native per-character lookup](../../session/battle_ai.md#per-side-state-block)
 instead indexes `ai_character_values` (`BTL 0x008C3460`) with stride four.
 NA2 Kisame 72 selects `kisame_ai_character_values` (`0x008C3580`),
@@ -289,7 +342,32 @@ Native `kisame_hit_response` (`0x002CDA90`) instead returns
 `{-1,0x27,0x28,0x29,0x2A,0x2B,0x30,0x3C,0x3D,0x40,0x51}`
 through its own differently numbered branches.
 Equal callback position or numeric response does not establish equal behavior.
-Physical-input admission and complete indirect descendants remain open.
+
+### Input admission
+
+UN3's selector, signature bits and continuation rules are in
+[Guy input admission](guy.md#guy-input-admission-and-action-chaining).
+Kisame's action records store category `+0x10`, flags `+0x14`,
+continuation byte `+0x18` (`-1` root, `-2` current action, otherwise the
+preceding action), signature `+0x1C` and cost `+0x20`:
+
+| Branch | Actions (signature) |
+| --- | --- |
+| Neutral ground Circle chain | 20 (`0x100012`) → 21 → 22 (`0x100112`) |
+| After 22: Up / facing 14 / Down / facing 15 | → 23 (`0x100212`) / 24 (`0x104012`) / 25 (`0x100412`) / 26 (`0x108012`) |
+| Up root, then neutral Circle | 27 (`0x100212`) → 28 |
+| Down root, then neutral Circle | 29 (`0x100412`) → 30 |
+| Opponent selector 6 root, then neutral Circle | 31 (`0x101012`) → 32 |
+| Selector 7 capture root, automatic follow-up | 33 (`0x102012`, category `0x100`, flags `0x4041`) → 34 (`0x08000011`, category `0x200`) |
+| Air Up / Down roots, then neutral Circle | 35 (`0x100214`) → 36; 37 (`0x100414`) → 38 |
+| Air capture root, automatic follow-up | 39 (`0x102014`, flags `0x4042`) → 40 (`0x08000014`) |
+| Air neutral Circle | 41 (`0x100114`) → 42 |
+
+Actions 20..42 cost zero. Jutsu actions 1 and 3 use signatures
+`0x110012/0x120012` with costs 3.6/3; Ultimate Jutsu actions 4/5/6 use
+categories `0x100000/0x200000/0x400000`, signature `0x100112` and costs
+5/10/15. The ground graph matches Guy's numbered topology; Kisame's air
+neutral branch has two actions where Guy's has three.
 
 ## Ultimate Jutsu and effects
 
@@ -311,12 +389,14 @@ mode-1 default at `0x0047BE00` selects 314.
 | 319 / Water Style: Clinging Grand Whirlpool Jutsu | `0x70` | 129,115,136 | 113 | `0xFFFF` | 40 |
 
 Records 320..325, 326..331 and 332..337 repeat these six skills with
-title suffixes 2/3/4 and different metadata/stat adjustments. These are
-six cinematic timelines, not 24 distinct films. Donor record `+6` is
-prerequisite count and `+8..+0xC` holds prerequisite IDs; bytes
-`+0xE..+0x11` have not been assigned NA2 category semantics.
-The six signed stat adjustments at `+0x18..+0x22` vary across the list;
-their consumer's full stat interpretation remains open.
+title suffixes 2/3/4; they differ from 314..319 only in the six stat
+adjustments at `+0x18..+0x22`, which only the selection menu displays.
+These are six cinematic timelines, not 24 distinct films. Donor record
+`+6` is prerequisite count and `+8..+0xC` holds prerequisite IDs. Field
+meanings are in [Guy UJ/effects](guy.md#ultimate-jutsu-and-effects):
+in all 24 records `+0xE` is 0 and contest kind `+0xF` is 1; chakra code
+`+0x10` and displayed level `+0x11` are 0/0, 1/1, 1/1, 1/1, 2/2, 2/2 for
+skills `0x6B..0x70`, so their chakra level indexes are 0, 1, 1, 1, 2, 2.
 
 Native list `0x005ACF80` contains four records 161/162/163/164;
 default `0x005AFE40` selects 161. `kisame_ultimate_jutsu_records`
@@ -335,8 +415,19 @@ Cinematic resources and donor placement/substitution tables belong to
 
 Donor `kisame_ultimate_effect_record` (`0x00474D1C`, effect `0x25`)
 has an empty name, null factory, duration 600, flags 2 and stored factors
-`{1.5,1.1,1.1,1.25,1,1,1,0,1,0.3}`. The inspected factory-binding
-routine supplies no custom factory for this effect. Native effect
+`{1.5,1.1,1.1,1.25,1,1,1,0,1,0.3}` at record `+0x10..+0x34`. The inspected
+factory-binding routine supplies no custom factory for this effect. With the
+field consumers in
+[UN3 effect record fields](guy.md#un3-effect-record-fields-and-effect-0x21),
+it gives attack 1.5, defense 1.1, action rate 1.1 and fighter `+0x104`
+factor 1.25 for 600 ticks; HP/chakra gain stay 1.0 and construction and
+expiry add no HP or chakra, since `+0x38..+0x44` are zero. The 0.3 at
+`+0x34` (node `+0x98`) has no `lw`/`lwc1` reader at offset `0x98` in the
+SLUS effect routines. `fighter_status_effect_add` (`0x002326B0`) admits
+IDs `0x0D..0x39` without its participant check; flag 2 applies the effect
+to the owner when the caller routes it, and flag 4 (clear here) would add it
+to the opponent too. The UJ outcome path applies it only when the defender
+survives. Native effect
 `0x4B`, `effect_4b_definition` (`0x0059FFF0`), is the established
 **Samehada Mode** association for Kisame 72. Duration, flags and first nine
 factors agree after the layout shift; its tenth factor is `0.05`,
@@ -349,9 +440,6 @@ The inspected UN3 form getter `0x0028BFF0` only maps effects
 `0x3D..0x46` to identities 47..56, so donor `0x25` requests no
 replacement identity through UJ completion. The checked native
 character-to-form map likewise gives Kisame 72 no linked form.
-Neither result proves every effect-entry, stat or material consumer.
-Remaining donor ordinary-mode admission, effect-factor consumers,
-cleanup and identity-service branches are open.
 
 ## Cinematics
 
@@ -369,29 +457,37 @@ are `0x0066FD00/20/40/60/80/A0`; stream pairs are
 `0x0066EB10/30/50/70/90/B0`, pointing to the preceding stream strings.
 The clean outer section walks reach decompressed EOF:
 
-| Skill / title | Resident / stream pair under `STR/` | Marked stream keys | Camera ID / `0x0502` frames | Missing with native common providers |
+| Skill / title | Resident / stream pair under `STR/` | Marked stream keys | Camera ID / `0x0502` frames | Distinct names missing with native common providers |
 | --- | --- | ---: | --- | ---: |
-| `0x6B` / Hidden Mist | `D24_101E / D24_101` | 189 | 852 / 331 | 20 |
+| `0x6B` / Hidden Mist | `D24_101E / D24_101` | 189 | 852 / 331 | 19 |
 | `0x6C` / Water Clone | `D24_102E / D24_102` | 208 | 599 / 271 | 16 |
-| `0x6D` / Diminishing Slash | `D24_103E / D24_103` | 170 | 484 / 271 | 21 |
-| `0x6E` / Appetite Slash | `D24_104E / D24_104` | 177 | 614 / 276 | 25 |
-| `0x6F` / Water Shark Bomb | `D24_105E / D24_105` | 203 | 762 / 329 | 24 |
+| `0x6D` / Diminishing Slash | `D24_103E / D24_103` | 170 | 484 / 271 | 20 |
+| `0x6E` / Appetite Slash | `D24_104E / D24_104` | 177 | 614 / 276 | 21 |
+| `0x6F` / Water Shark Bomb | `D24_105E / D24_105` | 203 | 762 / 329 | 23 |
 | `0x70` / Clinging Grand Whirlpool | `D24_301E / D24_301` | 223 | 913 / 361 | 2 |
 
 Every stream has one `CAM_camera01`, the stated number of nonterminal
-frame markers and one terminal marker. No outer tag `0x0108` appears.
+frame markers and one terminal marker. A census of every 4-byte-aligned
+word in all twelve decompressed files finds no `0xCCCC0108` section, outer
+or nested, so the films carry no scene commands.
 All marked stream and resident keys match the matching resident companion,
 donor `1KSMBOD1`, `1CMNBOD1`, `STRMCMN` and `CMN/EFFECT0X`.
-Matching exact namespace/name keys is not full typed-record or lifetime closure.
+Each of those external names (directory IDs without a section of their
+own, apart from the section-less `MDL_*_0` names retail NA2 films also
+carry) resolves to a defining section of the type its prefix names
+(`OBJ` 0x0100, `MAT` 0x0200, `TEX` 0x0300, `CLT` 0x0400). Resident files
+take 0..3 such names, all from `EFFECT0X`; each stream takes 55 from
+`1KSMBOD1`, 65 from `1CMNBOD1`, 21..87 from its resident companion,
+0..19 from `EFFECT0X` and 0..6 from `STRMCMN`.
 
 The last column keeps the donor companion/body but replaces the three
 common providers with native `PL/1CMNBOD1`, `STRMCMN` and
 `CMN/EFFECT0X`. Every film then lacks common-1 objects
-`OBJ_1cmn00t0 joe01/cloth3`; the first five also lack selected donor
-effect textures/objects. Examples shared across the first five are
-`TEX_e0yline06` and `TEX_e0ycolor01`. The Whirlpool film's only two
-missing keys are the common-1 objects. Equal common-provider basenames
-therefore do not establish this set's destination dependencies.
+`OBJ_1cmn00t0 joe01/cloth3`. The first five also lack the resident
+textures `TEX_e0ycolor01`, `TEX_e0ywhite01` and `TEX_e0yline06` (Water
+Clone uses only the first and third) and 12..18 stream effect objects
+named `OBJ_e0y*` or `OBJ_e00*`. Equal common-provider basenames therefore do
+not establish this set's destination dependencies.
 
 `kisame_cinematic_auxiliary_entries` (`0x0047C3F4`) selects
 request-ordinal arrays `0x006A10B0/B4/B8/BC/C0/C4`.
@@ -416,20 +512,47 @@ signed-short frame thresholds and defender-ID-indexed signed XYZ triples:
 selects the corresponding six-byte XYZ triple and constructs a translation.
 The checked defender-1 values do not describe every defender.
 All six appearance-script pointers at `0x0047C8D4` and camera-admission
-range entries at `0x0047C1BC` are null. Palette/substitution pairs at
-`0x0047D088` are zero except Water Clone: pointer `0x0047CD10`, count 3.
-Its three records at `0x005F49F0/5F4A20/5F4A50` name
-`EXT_2ksm02t0 body`, `EXT_2ksm00t0 body`, and `EXT_2ksm03t0 body`,
-with `CLT_2ksmbodyc1` and `CLT_2ksmbodyc2` at `0x005F49C8/D8`.
-Their full consumer interpretation and typed model/palette chains remain open.
+range entries at `0x0047C1BC` are null, so each film's camera is its own
+`CAM_camera01` alone. Kisame's six skills match none of the hard-coded
+stream codes in `sp_skill_apply_appearance_substitutions` (`0x00294CF0`).
+Its `sp_skill_palette_record_lists` entries are zero except Water Clone:
+pointer `0x0047CD10`, count 3. The three records at
+`0x005F49F0/5F4A20/5F4A50` are `{null container, target, CLT for flag 1,
+CLT for flag 4}`: targets `EXT_2ksm02t0 body`, `EXT_2ksm00t0 body` and
+`EXT_2ksm03t0 body`, palettes `CLT_2ksmbodyc1` and `CLT_2ksmbodyc2`.
+They apply only when the attacker's appearance flags masked with 5 are
+nonzero; `ultimate_jutsu_presentation_update` (`0x002E36D0`) passes the
+side's battle-manager value `+0x64/+0x65`, with values above 1 becoming 4.
+`sp_skill_apply_object_palette_record` (`0x00294BE0`) then looks the palette
+up in the request's main container `D24_102E`, which holds
+`CLT_2ksmbody`, `CLT_2ksmbodyc1` and `CLT_2ksmbodyc2`, and binds it to the
+target's model. The clone bodies `OBJ_2ksm02t0/03t0` are stream objects;
+`OBJ_2ksm00t0` is in `D24_102E`.
 
+### Cinematic damage and audio
+
+The shared mechanism is in
+[UN3 cinematic damage and audio](itachi.md#un3-cinematic-damage-and-audio).
+Kisame's `skill_cinematic_cue_descriptors` (`0x00387E10`) entries:
+
+| Skill | Soundtrack members (English / Japanese) | Length at 30 frames/s | Cue rows: frame / control |
+| --- | --- | --- | --- |
+| `0x6B` Hidden Mist | 106 / 246 | 11.03 s = 331 frames | 120/`0x0C`, 214/`0x11` |
+| `0x6C` Water Clone | 107 / 247 | 9.03 s = 271 | 77/`0x0D`, 90/`0x0E`, 118/`0x0F`, 138/`0x0C`, 163/`0x11` |
+| `0x6D` Diminishing Slash | 108 / 248 | 9.03 s = 271 | 90/`0x0C`, 127/`0x0F`, 147/`0x11` |
+| `0x6E` Appetite Slash | 109 / 249 | 9.20 s = 276 | 51/`0x00`, 135/`0x0F`, 199/`0x11` |
+| `0x6F` Water Shark Bomb | 110 / 250 | 10.97 s = 329 | 97/`0x0F`, 131/`0x10`, 208/`0x0C`, 224/`0x11` |
+| `0x70` Grand Whirlpool | 111 / 251 | 12.03 s = 361 | 275/`0x11` |
+
+All rows use request ordinal 1. The soundtracks are stereo 48,000 Hz ADX;
+each voice-set pair has equal length but different bytes, and each length
+equals its film's frame count at 30 frames per second.
+Controls `0x00` and `0x0C..0x11` select programs 0 and 12..17, key `0x3C`,
+of the defender's bank. NA2's own cinematic rows use the same
+`0x0C..0x14` control range
+([authored cinematic frame rows](../../session/battle_audio.md#authored-cinematic-frame-rows)).
 The six startup intros are separately joined to donor SOUND members
 108..113 in [Kisame voice](#voice).
-`sp_skill_play_frame` (`0x002952B0`) only delegates camera auxiliary
-update in the inspected UN3 code. The six skills' own cinematic damage
-and spoken-cue scheduler remains open, as do nested scene commands,
-full camera semantics, participant substitutions and typed descendants.
-Absence of an outer event tag does not prove silence or absence of damage.
 Complete file identities are in
 [Kisame inputs](../../../game/files/file_identities.md#kisame-comparison-inputs).
 
@@ -483,8 +606,47 @@ requests `0x79`/9 at key `0x3C`, and its six-update motion interval requests
 `0x35` at key `0x46`. Channel 3's action-38 marker 7 requests control
 `0x28` through the default-key helper. These are SFX table indices,
 distinct from the fighter voice table and from effect factory IDs.
-Physical SFX samples, remaining ordinary-jutsu/direct commands and
-audible/spoken-content comparisons remain open.
+These controls emit bank-0 (common bank, `SNDDATA.BIN` offset 0) programs
+equal to their index. The selected samples, compared over each VAG's full
+length with NA2's common bank, are:
+
+| UN3 control / program | Sample file offset / bytes / rate | Identical NA2 common sample |
+| --- | --- | --- |
+| 9 | `0x0001B350` / 2,944 / 8,000 Hz | program 9, `0x00010AC0` |
+| `0xB` | `0x0004E3A0` / 3,216 / 8,000 Hz | program 11, `0x000398E0` |
+| `0x28` | `0x0003D580` / 5,872 / 8,000 Hz | none |
+| `0x35` | `0x0009A760` / 6,800 / 8,000 Hz | program 55, `0x00071640` |
+| `0x79` | `0x00072DB0` / 9,392 / 22,050 Hz | none |
+
+NA2's `sfx_common_controls` (`0x003FC9A0`) has 93 rows, so it has no
+index `0x79`, and its other rows do not follow the UN3 table.
+
+The ordinary jutsu's streamed lines come from `dialogue_voice_rows`
+(`BATTLE 0x0093D3D0`), indexed by jutsu resource, through
+`dialogue_voice_produce` and the PLVOICE queue. Water Shark (37) has
+`{104,-1,-1,-1}`; its tick row in `dialogue_voice_frames` (`0x0093D830`)
+is `{0,-1,-1,-1}`, so `jutsu_actor_common_update` (`0x008899C0`) queues
+member 104 on the actor's first tick. Mad Dance (38) has
+`{100,101,102,101}` and no automatic ticks; its own code queues cue 0 or 1
+(100/101, random) when charge is released or full, cue 3 (101) at charge
+tick 10, and cue 2 (102) on the finishing state 6, all in
+`kisame_mad_dance_participant_update` (`0x008AA800`) and
+`kisame_mad_dance_combo_update` (`0x008ABD00`). The combo update also plays
+compact control 8 through `jutsu_participant_emit_voice_index` at combo
+stage 3; Kisame's index table (`0x0093D770`) maps 8 to 8, program 8, which
+exists in both UN3 Kisame banks and in the NA2 Kisame bank.
+
+The win end demo, `end_demo_update` (`0x002E2120`), plays one random member
+of `end_demo_quote_lists` (`0x0047F140`); Kisame's list is 102..106, played
+from SOUND descriptor 2 (outer 2), or 16 (outer 16) for Japanese voices:
+
+| Member | Outer 2 offset / bytes | Outer 16 offset / bytes |
+| --- | --- | --- |
+| 102 | `0x12095800 / 35995` | `0x252E5800 / 35933` |
+| 103 | `0x1209E800 / 34094` | `0x252EE800 / 29674` |
+| 104 | `0x120A7000 / 28461` | `0x252F6000 / 26190` |
+| 105 | `0x120AE000 / 23958` | `0x252FC800 / 23392` |
+| 106 | `0x120B4000 / 31261` | `0x25302800 / 27066` |
 
 Donor PLVOICE descriptors `0x00388B38/0x00388CF8` declare 209 slots
 and select physical outer entries 23/79. The two archives begin at
@@ -502,12 +664,13 @@ The checked physical members 100..105 are:
 | 104 | `0x00AB4000 / 28156` | `0x01ADB000 / 22705` |
 | 105 | `0x00ABB000 / 25987` | `0x01AE1000 / 22917` |
 
-These six members' physical existence does not establish each film's cue
-producer or timing. Native PLVOICE descriptor `0x003FE228` declares 42
-physical members; outer entry 71 starts at `0x00DE3000`, size 571,392,
-and all members 0..41 are populated. Native's 42-entry suffix list at
-`0x003FF280` contains none of 100..105. Directly copying a donor sparse
-index into that physical bank would select a different domain.
+Members 100, 101, 102 and 104 are the ordinary jutsu lines above; no
+checked film routine requests PLVOICE members. Native PLVOICE descriptor
+`0x003FE228` declares 42 physical members; outer entry 71 starts at
+`0x00DE3000`, size 571,392, and all members 0..41 are populated.
+Native's 42-entry suffix list at `0x003FF280` contains none of 100..105.
+Directly copying a donor sparse index into that physical bank would select
+a different domain.
 
 The selected donor UJ startup intro selectors 108..113 use SOUND family
 9 or 23 through `audio_request_sound_member_for_voice_set`
@@ -526,7 +689,7 @@ Native selected intros 140..143 use family 7, independent of PLVOICE:
 Native family-7 intro 140/141/142/143 offsets and sizes are
 `0x0842F800/11566`, `0x08432800/14429`, `0x08436800/13969`,
 and `0x0843A000/35860`.
-The UN3 cinematic damage/spoken-cue scheduler remains open;
-the startup join does not establish all later dialogue.
+Film audio after the intro comes from the soundtracks and cue rows in
+[Kisame cinematics](#cinematic-damage-and-audio).
 Complete SNDDATA/PLVOICE identities and donor SOUND outer identities
 are already recorded in [File identities](../../../game/files/file_identities.md).

@@ -4,10 +4,13 @@
 
 Established for UN3 Green Beast against NA2 Classic Naruto: its own class and
 moves, Guy-derived jutsu (sharing Guy's actors), the Green Impact cinematic,
-voice banks, the cross-CHA anchor, and the common muffler and effect providers
-NA2 lacks.
-Open: typed asset descendants, effect consumers, ID-dependent services, dialogue
-voice mapping, and input and contact semantics.
+voice banks with the jutsu dialogue clips, the cross-CHA anchor, the common
+muffler and effect providers NA2 lacks, both record words that differ from
+Classic Naruto, every UJ record field, ability-80 admission, and effects
+`0x2B/0x3C`.
+Every file reference NA2 lacks is traced to its last typed descendant.
+Open: ID-dependent services, which wait on the chosen destination ID, and
+input and contact comparison against Classic Naruto.
 
 Names come from `@annotations/UN3` and `@annotations/NA2`; addresses are live. Shared format comparisons are in [UN3 and UN4 characters](../un3_un4_characters.md).
 
@@ -46,8 +49,14 @@ destruction, with deleting-flag free; no private allocated child is released.
 
 Only two words differ in the raw record parameter region `+0x58..+0xDB`:
 `+0x60` is float 26 versus 20, and `+0xCC` is float 1 versus 1.2.
-Their full gameplay meanings were not established; this comparison does not
-assign them speculative movement or damage names.
+The record loader copies the record to fighter `+0x80`. Fighter `+0xE0`
+(record `+0x60`) is the grounded planar target speed of
+`fighter_update_ground_planar_speed` (`0x001A83E0`) and
+`fighter_planar_speed_ratio` (`0x001A95E0`), so Green Beast runs faster.
+Fighter `+0x14C` (record `+0xCC`) is read only by
+`fighter_status_effect_resolve_lifetime`: for status effects `0x00..0x0C`
+it scales the lifetime by the factor, or by 2 − factor, as the ID's jump-table
+case selects (`0x0050E960`).
 
 The first twelve vtable words are
 `{0,0,207370,1D39C0,1D3AD0,1D3C60,1D3D20,2073F0,1D5870,1D3C50,1D3D10,1D3E40}`
@@ -183,9 +192,18 @@ The donor body has 38 marked common-2 keys, all present in UN3's
 are `OBJ_2cmn00t0 muffler/muffler1/muffler2/muffler3`, donor directory
 IDs 1101/1103/1105/1107. These are referenced by local tag-`0x0A00`
 wrappers 1100/1102/1104/1106, whose parent chain is
-1079 → 1100 → 1102 → 1104 → 1106. This is an actual typed
-dependency, not just four unused directory names.
-Both jutsu files' 25 marked common-2 keys occur in NA2's common provider.
+1079 (`spine1`) → 1100 → 1102 → 1104 → 1106. All five wrappers belong to one
+animation, `pnrzhtn3`; no other body animation targets the common mufflers.
+In UN3's `CMN/2CMNBOD1` the four objects (local 58/60/62/64, plus a fifth,
+`muffler d`, 1503) form a chain from `spine1` (24) and each binds a
+zero-part model (1499..1502, 1504): they are transform nodes with no
+geometry, material or texture. NA2's copy has `spine1` but no muffler
+record. Green Beast's own mesh has a separate chain of zero-part bones,
+`OBJ_2nrz00t0 muffler..muffler3` and `muffler d` (local 211..214, 279), in
+`2NRZBOD1`. An unresolved marked key keeps runtime sentinel 4
+([cross-container references](../../../game/files/ccs_runtime.md#cross-container-references)).
+Both jutsu files' 25 marked common-2 keys occur in NA2's common provider,
+and their only other marked key is CHA0's anchor below.
 
 CHA0 local wrapper 51 `OBJ_eff_dummy_guycha1` targets marked key 52
 `OBJ_eff_dummy_nrzcha1` under
@@ -195,9 +213,14 @@ inter-file transform-anchor dependency. The eye file's 66 marked keys
 resolve against the donor's `1NRZBOD1`; it contains
 `ANM_3nrzwin00/10`, while the 1BOD and portrait contain no animations.
 These checks bound the providers. The selected shared Lotus auxiliary,
-surface-particle and common hit/landing chains are established above;
-complete Green Beast body, other jutsu tracks and cinematic geometry,
-and provider load lifetime remain open.
+surface-particle and common hit/landing chains are established above, and
+the CHA and common provider lifetime is in
+[Guy's Lotus cleanup](guy.md#shared-lotus-local-geometry-and-surface-particles).
+Every other marked key of the body, CHA and eye files resolves against the
+donor's own files or NA2's `CMN/2CMNBOD1`, so the four common mufflers and
+the film keys below are everything NA2 lacks. All six files have container
+version `0x123` and read in NA2 as in UN3, as recorded for
+[Guy's files](guy.md#guy-asset-bindings).
 Complete source identities are in
 [Green Beast inputs](../../../game/files/file_identities.md#green-beast-comparison-inputs).
 
@@ -233,15 +256,23 @@ Receiver scale writes at `+0x8F0/+0x8F8/+0x8FC` occur only when
 the callback mode is 2. Action 19 phases 0/1/2 return `2C/2B/2C`;
 late phases 3/4 select `3B` if receiver `+0x8E0 == 0x306`, otherwise
 `3A`, and use vertical factor 1.25 in mode 2.
-The annotation retains the other inspected branches; the meaning of the
-auxiliary count helper has not been assigned.
+The annotation retains the other inspected branches. Its only callees are
+`fighter_current_action_index` and the count helper
+`fighter_action_repeat_for_receiver`, described under
+[Guy callbacks](guy.md#callbacks). Every returned destination has a checked
+NA2 number in
+[Guy's reaction translation](guy.md#guy-phase-consumers-and-reaction-number-translation):
+`27/29/2B/2C` unchanged, `2D/2E/30/31/36/3A/3B` → `2F/30/32/33/38/3C/3D`.
 
 NA2 Classic Naruto's table at `0x00408320` is
 `{0,252C20,252C30,2536C0,2539E0,0,0}`.
 It includes an additional channel-5 callback. Different callback roots,
 action numbering and class layouts prevent equating the donor's events
-with native Naruto's equal numeric slots. Native callback-body equivalence,
-all indirect descendants and input reachability remain open.
+with native Naruto's equal numeric slots. Channel 3 calls only
+`fighter_current_action_index`, `timeline_event_crossed`,
+`fighter_request_sound_effect`, `fighter_request_voice` and
+`audio_emit_spatial_sfx_control`. Native callback-body equivalence and
+input reachability are not compared here.
 
 ## Ultimate Jutsu and effects
 
@@ -262,14 +293,20 @@ The `0x24`-byte records begin at
 | 370 / Chakra Release | `0xFFFF` | 80 | -1 | `0x3C` | 0 |
 
 The prerequisite count is 1 at record `+6`; the first ability ID is 80
-at `+8`. It is not NA2's category field. Record
-`+0xE..+0x11` bytes are `00 01 01 01`, `00 01 02 02` and
-`00 01 04 00`; their full selection semantics remain open.
-The six stored stat adjustments are
-`{10,-10,-20,20,0,0}`, `{30,-10,-20,20,0,0}` and all zero.
-`ultimate_jutsu_record_stat_adjustment` (`0x0028BD00`) reads them
-from `+0x18..+0x22`; individual stat meanings were not established.
-Thus the two Green Impact records select one timeline and differ in metadata.
+at `+8`. It is not NA2's category field.
+`ultimate_jutsu_record_abilities_available` asks `ability_unlocked`
+(`0x00276E40`) for each ID: mode 0 tests the save data's unlock bitset
+(jump-table case 11, save `+0x190C8`), mode 1 the battle manager's bitset
+`+0x54C`; the record must have exactly the counted number unlocked, and the
+normal default record bypasses the check. Record `+0xE..+0x11` bytes are
+`00 01 01 01`, `00 01 02 02` and `00 01 04 00`, and the six stored stat
+adjustments are `{10,-10,-20,20,0,0}`, `{30,-10,-20,20,0,0}` and all zero;
+their readers are in
+[Guy UJ fields](guy.md#ultimate-jutsu-and-effects): contest kind 1, chakra
+codes 1/2/4 (level index 1/2/0, so Triangle staging targets level 2/3/1),
+menu chakra levels 2/3/1, and stat adjustments shown only in the menu.
+Thus the two Green Impact records select one timeline and differ in chakra
+level and menu figures.
 
 NA2 Classic Naruto's list at `0x00604320` contains only records 1/2.
 At `0x005AEC54/68`, they select authored skills 1/2,
@@ -283,11 +320,22 @@ The inspected UN3 effect-to-form getter `0x0028BFF0` accepts only
 `0x3D..0x46`, producing IDs 47..56. Neither selected Green Beast
 effect `0x2B/0x3C` returns a replacement identity.
 `sp_skill_play_end` (`0x00295E00`) consequently receives form zero
-for these records through that getter. This bounds the checked UJ completion
-route; it does not establish every roster/form helper or the complete
-stat, material and mode behavior of these two effects.
-Their effect implementations, ability availability and other ID-dependent
-awakening services remain open.
+for these records through that getter.
+
+Neither effect has a custom factory: the factory pairs at `0x00473D00`
+list `0D,0E,0F,10,13,15,19,1B,21,24,26,27,1A,1E,4F` only, so both build the
+generic status node, whose fields are consumed as in
+[UN3 effect record fields](guy.md#un3-effect-record-fields-and-effect-0x21).
+Both records have lifetime 600 and flags `0x02`; all other fields are 1
+(factors) or 0:
+
+| Effect | Record | Attack | Defense | Action rate | `+0x1C` (fighter `+0x104` factor) | `+0x20` (response motion factor) |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| `0x2B` (Green Impact) | `0x00474FA8` | 1.2 | 1.1 | 1.2 | 1.0 | 1.1 |
+| `0x3C` (Chakra Release) | `0x004756D4` | 1.0 | 1.0 | 1.5, capped 1.25 | 1.5 | 1.0 |
+
+Neither changes HP, chakra or size, and neither sets flag `0x10`, `0x20`,
+`0x40` or `0x80`.
 
 ## Cinematics
 
@@ -337,9 +385,18 @@ in donor `CMN/EFFECT0X`:
 | `TEX_e0yline07` | 2464 / `0x0300` |
 
 The corresponding exact names are absent from NA2's checked
-`CMN/EFFECT0X`. This establishes marked-name provider closure for
-the donor set, with typed definitions for these four additional keys;
-it does not establish full material/model descendants or destination lifetimes.
+`CMN/EFFECT0X`. Their complete typed closure in UN3 `EFFECT0X` is:
+
+| Stream key | Object → model (part) → material → texture → palette |
+| --- | --- |
+| `OBJ_e0yline04`, `TEX_e0yline04` | 1046 → `MDL_e0yline04` 2445 (part 2446, 8 vertices) → `MAT_e0yline04` 2447 → 157 (256 × 256 PSMT4) → `CLT_e0yline04` 2553 |
+| `OBJ_e0yline07`, `TEX_e0yline07` | 2458 → `MDL_e0yline07` 2461 (part 2462, 4 vertices) → `MAT_e0yline07` 2463 → 2464 (128 × 128 PSMT4) → `CLT_e0yline07` 2556 |
+
+Neither object has a parent. The objects use namespaces
+`e\0y\max\e0yline04.max` / `e0yline07.max` and the textures
+`e\0y\tex\e0yline04.bmp` / `e0yline07.bmp`; a provider must match that text.
+The resident E file and the stream are loaded for the film's duration by
+`sp_skill_build_requests`; `EFFECT0X` is resident from startup.
 
 `green_beast_cinematic_defender_positions` (`0x005E9630`)
 has count 5, frame list `0x005E8F20 = {1,97,145,231,254}`, and
@@ -364,11 +421,12 @@ inclusive frame range 232..253. Only defenders
 `sp_skill_play_frame` (`0x002952B0`) delegates camera auxiliary
 update, without the own audio/hit-row loop found in NA2's frame callback.
 
-**Open:** the UN3-specific producer and scheduling of cinematic damage
-and spoken cues; all typed geometry/material/effect descendants; the full
-participant face/body substitutions and camera payload semantics.
-Neither matching file framing nor the absence of outer event tags proves
-that a cinematic is silent or has no damage events.
+Film damage and audio follow
+[UN3 cinematic damage and audio](itachi.md#un3-cinematic-damage-and-audio).
+Green Impact's descriptor (`skill_cinematic_cue_descriptors` + `0x79` × 8)
+selects `STREAM.AFS` soundtrack 120 (140 + 120 with Japanese voices) and
+rows `0x00387A20`: frame 117 control `0x0C`, 152 `0x0D`, 254 `0x11`, all
+request ordinal 1, played on the defender's compact bank.
 Complete file identities are in
 [Green Beast inputs](../../../game/files/file_identities.md#green-beast-comparison-inputs).
 
@@ -435,8 +493,21 @@ Member 6's absolute payloads are `0xC97000`, 19526 bytes, SHA-256
 and `0x1C45000`, 22922 bytes, SHA-256
 `B835585D39289C8F30AB2869BC41513886C6E3348EBAD8C8337C3557D2232207`.
 Equal nested indices do not identify equal clips across games or languages.
-Primary Lotus emits dialogue selectors 0/1 through its source participant;
-the selected physical member for those selectors remains unestablished.
+
+The shared Entry and Lotus actors' dialogue cues are compact controls, not
+PLVOICE members, through the route in
+[Guy jutsu dialogue](guy.md#guy-jutsu-dialogue). Green Beast's pair
+`0x00920188` selects base table `0x0093D770` for both members, so cue *n*
+is always control *n*: program *n*, key `0x3C`. Ultimate Entry emits cue
+0..2 (begin: `rand % 3`); Primary Lotus emits cue 1 entering state 1 and
+cue 0 entering state 2. Each program has one split, keys 12..119,
+velocity 1..127:
+
+| Program | VAG | Set-0 sample offset | Set-1 sample offset |
+| ---: | ---: | --- | --- |
+| 0 | 0 | `0xD68800` | `0x1DA1000` |
+| 1 | 1 | `0xD69110` | `0x1DA1910` |
+| 2 | 2 | `0xD69EC0` | `0x1DA26C0` |
 
 Both selected Green Impact records use SOUND intro member 122.
 `audio_request_sound_member_for_voice_set` (`0x0018A1C0`)
@@ -451,5 +522,4 @@ each declaring 149 members. The physical payloads are:
 The compact and PLVOICE base identities are already owned by
 [File identities](../../../game/files/file_identities.md); SOUND outer
 identities are under [Guy inputs](../../../game/files/file_identities.md#guy-comparison-inputs).
-The donor UJ dialogue/damage cue scheduler and spoken-content comparison
-against NA2 Classic Naruto remain open.
+The film soundtrack and defender cues are under [Cinematics](#cinematics).

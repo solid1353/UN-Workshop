@@ -1,0 +1,2 @@
+address	kind	name	type	comment
+0x006C28F0	function	home_film_viewer_wait		Film viewer playback loop: release the stream hold, then pad-0 Triangle (pressed 0x10) plays sound 0x33 and latches request 2 to end the film; then destroys skill play and restores the viewer.

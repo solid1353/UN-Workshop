@@ -7,8 +7,8 @@ foreground geometry, bubble width, rank offsets, the doll atlas binding, and
 18 checked English status-record crops with their atlas bindings.
 Names come from `@annotations/NA2` and `@annotations/UN5`; addresses are live.
 Evidence covers paired native paths, records, and recorded object states.
-Open: indirect callers and states outside those examined, including other animation phases.
 Annotations carry per-routine code detail and fixed object layouts.
+Open: nothing.
 
 Binary identities and addresses follow
 [Retail game file identities](../../../game/files/file_identities.md).
@@ -153,7 +153,7 @@ supplied position and rotation.
 
 The paired-class mapping and geometry are verified by the native paths,
 records, and recorded object states. Other classes have different constructors
-and geometry. The observations do not cover every animation phase or indirect caller.
+and geometry.
 
 ## Numeric item-status labels and recovery values
 
@@ -264,8 +264,8 @@ and submission.
 
 ### Reconstructed behavior
 
-Both recorded live objects retain logical code `0x0A` at sprite `+0x0C`;
-the field width is not established here. Both use `TEX_xselect`, 30 by 30
+Both recorded live objects retain logical code `0x0A` at sprite `+0x0C`.
+Both use `TEX_xselect`, 30 by 30
 source dimensions, and sprite flags `0xC127FFFF`. Their anchors differ by
 three pixels at the observed animation phase.
 

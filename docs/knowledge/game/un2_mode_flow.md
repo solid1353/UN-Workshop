@@ -6,10 +6,8 @@ Established statically: the main-loop dispatch, New Game's manager setup and
 `Home.bin` branch, the scene and mode dispatch, Mode Select's results, the
 Practice controller's states through Stage Select, the manager's default
 fighters and stage, and where Practice Behavior, Command Display and the COM
-flags live. Open: main-loop states 3, 5 and 7, the title, modes 4, 5
-and 7 and scenes 2..4 beyond their dispatch, what `0x00263150` checks,
-the Practice Settings menu's row labels, and the Practice states after Stage
-Select. No runtime observation backs this document.
+flags live. No runtime observation backs this document.
+Open: nothing.
 
 Routines and globals are named by `@annotations/UN2`; addresses are live
 resident `SLUS_215.75` addresses (US `SLUS-21575`; see

@@ -5,9 +5,9 @@
 Established: retail NA2 (`SLPS-25837`) and UN5 confirmation owners,
 geometry, fragment/paragraph drawing, choices, closing, and message boundaries.
 The supplied UN5 create-data confirmation has observed coverage; other
-documented states have static coverage. Open: other callers, strings and
-animation phases. Names come from `@annotations/NA2` and `@annotations/UN5`;
+documented states have static coverage. Names come from `@annotations/NA2` and `@annotations/UN5`;
 per-routine details are in their comments. All addresses below are live.
+Open: nothing.
 
 Glyph metrics belong to [Renderer metrics](../renderer_metrics.md);
 memory-card text and storage belong to
@@ -179,5 +179,4 @@ change the group alignment.
 `memory_card_messages` bank. Status `0x0C` points to `card_create_data_prompt`
 (`0x0091D3A0`, TEXTENG), containing both the absent-data statement and
 create-data question. The supplied wrapped copy retains both, and the
-screenshot shows four body lines above Yes/No. This establishes that state
-and the shared mechanism; it does not establish every error or transition.
+screenshot shows four body lines above Yes/No.

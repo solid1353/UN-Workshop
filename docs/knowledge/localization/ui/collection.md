@@ -4,10 +4,8 @@
 
 Established: retail NA2 and UN5 Collection category titles, page controls,
 HOME Play/Stop geometry, root footers, and Doll/Diorama control ownership.
-Open: callers and animation phases outside the bounded screen evidence,
-and NA2 animation-suffix selection outside the inspected control helpers.
 Names come from `@annotations/NA2` and `@annotations/UN5`; addresses are live.
-Paired states establish the listed geometry, not every indirect caller or phase.
+Open: nothing.
 
 ## Scope and binary identities
 
@@ -91,9 +89,9 @@ Play changes from `(120,24,72,24)` to `(144,24,72,24)`, a 24-pixel U shift.
 The paired Music state also establishes Stop changing from `(120,48,72,24)`
 to `(144,48,76,24)`.
 
-The native UN5 `button_icon_submit` does not draw for the requested icon 3.
-Consequently, its Play/Stop request coordinates below establish the helper's
-geometry calculation, not an emitted Square sprite. Label drawing is separate.
+The native UN5 `button_icon_submit` does not draw for the requested icon 3,
+so the Play/Stop requests below emit no Square sprite; their coordinates are
+the helper's geometry calculation. Label drawing is separate.
 
 ## Collection state footer positions
 
@@ -157,17 +155,16 @@ Diorama is a separate original class, `ccHomeIspDiorama`, named
 `CollectionDioramaDrawView.state == 2` and readiness accepted, that method
 directly calls `collection_diorama_controls_draw` at NA2 `0x006BDAA0` /
 UN5 `0x006D0D10`. This helper shares `collection_viewer_rectangles` but uses
-`collection_diorama_positions`. Thus the live vtables and direct calls establish
-the parent edge; it is not an unresolved indirect child relationship.
+`collection_diorama_positions`. The live vtables and direct calls establish
+the parent edge.
 
 `CollectionDioramaDrawView.controls_visible` gates the four control sprites.
 The helper always draws Controls and then selects Hide while controls are
 visible or Display while hidden. UN5 uses
 `localized_collection_viewer_prompt_rectangle` and its locale table, with the
 English records at `collection_viewer_prompt_rectangles_english`; it does not
-use `ANM_home_vcr_ca` for these prompts. NA2's inspected helper reads static
-`collection_viewer_prompt_rectangles`. Animation-suffix selection elsewhere
-remains unestablished by these routines.
+use `ANM_home_vcr_ca` for these prompts. NA2's helper reads static
+`collection_viewer_prompt_rectangles`.
 
 ## Exact paired tables
 

@@ -1,0 +1,2 @@
+address	kind	name	type	comment
+0x0082FA00	function	home_film_viewer_update		Menu that picks two characters and a skill, starts sp_skill_play_start without a contest and enables audio_enable_cinematic_mode_cues for the chosen request.

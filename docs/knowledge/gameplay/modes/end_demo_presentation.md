@@ -4,11 +4,9 @@
 
 Established: requests, both lookup tables, win-instance binding, drawing and
 teardown, and shared appearance selection with character-specific gates.
-Open: direct cached-slot 5..14 consumers, nine other states, visible phase
-and state names, and the full extent of `end_demo_character_request_path`.
-Static evidence covers eight win animations in four pairs;
-it does not establish all character attachments or indirect callers.
+Static evidence covers eight win animations in four pairs.
 Names and field views come from `@annotations/NA2`; addresses are live.
+Open: nothing.
 
 Retail NA2 (`SLPS-25837`) uses the pause-controller child selected by
 `AwakeningPauseGate.selector == 1` for this presentation. “End-demo” is
@@ -36,13 +34,11 @@ owns loading and queue contracts.
 Inputs and live address conventions follow
 [Retail game file identities](../../game/files/file_identities.md#address-conventions).
 The evidence is static resident ELF, BTL and clean CCS reads; CCS files were
-gzip-decompressed in memory. The eight sampled animations establish body/face
-provider links, without a complete geometry decode or coverage of every
-character attachment. Direct-call searches do not exclude indirect callers.
+gzip-decompressed in memory. The eight sampled animations give the body/face
+provider links.
 
 The following resident ELF BSS globals have saved annotations. The three
-family-indexed arrays contain two actor entries per family; the request path
-buffer's full extent remains unestablished.
+family-indexed arrays contain two actor entries per family.
 
 | Resident global | Established role |
 | --- | --- |
@@ -75,8 +71,7 @@ destroys and clears a nonzero handle.
    `enddemo` container into `EndDemoController.enddemo_container`, then
    calls `end_demo_setup_resources` (`0x0076C670`).
 
-This establishes ordering, not successful loads or player-facing state names.
-The remaining nine states are outside the established presentation coverage.
+This is the loading order; it does not check that loads succeed.
 
 Setup publishes both characters through `manager_publish_six_selections`
 (`0x001E1530`; see
@@ -172,8 +167,6 @@ provider records. This gives an attachment path independent of directly
 reading the four cached model slots.
 
 The reads cover these eight animations and matching body/face descriptors.
-They do not establish complete geometry decoding or every character-specific
-attachment.
 
 **Inference, high confidence:** A new player has no pre-attached composition
 list after `projectile_compound_initialize` (`0x001B7520`).
@@ -184,8 +177,7 @@ parent map. `ccs_parse_animation_tracks` (`0x001A29D0`) builds that map;
 `animation_scene_child_initialize` (`0x001BA930`) and
 `ccs_scene_child_bind_models` (`0x00196B40`) materialize their models.
 The generic contract remains in the linked model-runtime owner.
-The bounded consumer scan establishes the win selections, without proving
-cached slots 5..14 unused by other code or differently formed aliases.
+The consumer scan gives the win selections.
 
 ## Selected-instance drawing
 

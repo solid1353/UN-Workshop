@@ -6,10 +6,8 @@ Established for retail NA2 (`SLPS-25837`): selection, Linked Mode, request/gauge
 gates, common lifecycle, contact exits, notifications, manager passes, teardown,
 ordinary attack-record construction and selected `0x0A/0x3F` script/effect
 interfaces. Orochimaru 89's indexed recommendations, exclusions, code/recharge
-overrides and linked-attack admission are established; a donor UN4 equivalent
-is not established. Open: full subclass payloads, scheduler-gate meanings,
-resource lengths/event streams, character names for
-numeric IDs, notification frequency, and retained-source lifetime safety.
+overrides and linked-attack admission are established.
+Open: nothing.
 
 Names come from `@annotations/NA2`; annotation comments carry per-routine
 details. Timing counts eligible calls, not seconds.
@@ -65,7 +63,7 @@ address `1`, not a default. Practice's `practice_settings_load` /
 holds `selected_support` and resolved `support_selector`.
 `support_config_copy_swap` swaps primary/support pairs together when
 side-order byte is nonzero. `support_config_pair_side1` installs support
-sentinel `0x26` for side 1. Names of `0x24/0x25/0x26` remain unestablished.
+sentinel `0x26` for side 1.
 
 Selection `0x26` is deterministic. `support_config_resolve` (`0x00885C30`)
 canonicalizes primary via `character_to_base`, retaining original on `-1`,
@@ -221,8 +219,8 @@ drain, initially failed re-request. Reason `1` alone is insufficient under
 Auto, which can immediately latch `3`.
 
 Resident handling clears `paired_hit_marker` only for manager `1/2`, but
-returns its own `1` after resident gates even for manager `0`, so it does
-not prove creation. Absent manager wrappers return no object/request zero,
+returns its own `1` after resident gates even for manager `0`, so `1` does
+not mean an object was created. Absent manager wrappers return no object/request zero,
 skip unsafe selector and recharge; resident return can still be `1`.
 
 ### Animation result and common state transitions
@@ -253,7 +251,6 @@ All five reason overrides retain common states.
 
 Writing `3` in branch `0` does not execute it immediately.
 Completion transitions `1/2` return early, deferring zero-gauge checks.
-Lengths and subclass positioning remain open.
 
 ### Contact-triggered exit and contact-list activation
 
@@ -271,8 +268,8 @@ reason `1/2`. Query interfaces belong to
 
 Kind `0` needs opposite primary to pass `downed_override_allowed` (nonnull
 fighter/hub), have `current_record`, record flags `0x4000` clear.
-False continues scan. This bounded support rule does not inspect action in
-the resident leaf or establish a whole-game hurtbox rule.
+False continues scan. This support rule does not inspect action in the
+resident leaf.
 
 `contact_activation_countdown` starts zero; initialization sets `90` after
 registering/deactivating main list. Eligible lifecycle-zero calls decrement
@@ -293,8 +290,7 @@ Child-list overrides call common update first with no extra state/completion wri
 `support_contact_exit_update` positions/emits at substate `0`, sets `1`,
 then completion requests `3`. Lifecycle: entry `0 -> 1`, attack
 `1 -> 2 -> 3`, contact exit `1/2 -> 4 -> 3`. Only reason-1 substates
-`1 -> 2 -> 0` reopen query; attack completion departs. Completion does not
-establish damage/statuses/payloads. [Character assets](../../game/character_assets.md#selector-to-resource-mapping)
+`1 -> 2 -> 0` reopen query; attack completion departs. [Character assets](../../game/character_assets.md#selector-to-resource-mapping)
 owns separate jutsu IDs, which do not identify support classes.
 
 ### Request preconditions and identifiers
@@ -364,8 +360,7 @@ record, and hit notification copies it into the retained one.
 
 The returned record is shared, overwritable side storage, not a per-hit
 allocation. Source-header access precedes the copy and has no indexed-handle
-generation check. The bounded route establishes how the record is selected,
-but not the lifetime safety of every retained source pointer. Source ownership
+generation check. Source ownership
 and broader targeting rules belong to
 [Target selection](../combat/target_selection.md).
 
@@ -393,14 +388,13 @@ integer-to-float conversion. Command `+0x0C` selects the response, and
 float `+0x14` supplies knockback. Flags start at `0x6000`; command bit
 `0x4000` becomes record bit `0x8000`, and command bits `0x80000`,
 `0x100000`, `0x400000` and `0x800000` pass through. The command leaves
-category, repeat count and row unchanged. It does not establish that a
-collision is admitted or that the later ordinary damage event occurs.
+category, repeat count and row unchanged.
 
 `support_script_load_scalars` (`0x0088B600`) resolves the separate
 `BIN_%s%dscr` blob and requires marker `0x101` at resolved blob `+0x08`.
 Its first float at blob `+0x0C` becomes `support_scalar` without the sentinel
 fallback used for two subsequent fields. The two selected retail resources both supply
-scalar `1`. Their complete bounded attack-command walks give these inputs:
+scalar `1`. Their complete attack-command walks give these inputs:
 
 | Code / resource | Base payload | Attack opcode-6 position and weight |
 | --- | --- | --- |
@@ -411,10 +405,8 @@ These bytes come from `2NEWBDY1.CCS` and `2YMTBDY1.CCS` under retail
 `BUDDY`. Base chunk headers are at decoded offsets `0x272D0` and
 `0x12354`; attack chunk headers are at `0x272F0` and `0x12374`, with
 payload lengths `396` and `172`. Both native-width walks reach the exact
-end of their payload, including the two-word terminator. This establishes
-positive authored raw expressions, not measured HP or every reached
-position. Numeric support codes and resource tokens do not establish
-their character display names.
+end of their payload, including the two-word terminator. These are
+positive authored raw expressions.
 
 `support_spawn_transient` (`0x0088B040`) and
 `support_spawn_transient_scatter` (`0x0088D880`) copy the current side
@@ -441,7 +433,7 @@ First-pass mask `2` also uses these shared gates:
 | Gate | Established predicate |
 | --- | --- |
 | A | `battle_footprint_gate` and `battle_control_resource_blocked` read `ChakraControlState.enabled` / `active`. |
-| B | The caller requires resident auxiliary slot `battle_input_phase_override` nonnull, then `support_global_gate_b` tests the supplied object's word `+0x32D0 & 0x14` for zero. That word's domain meaning remains open. |
+| B | The caller requires resident auxiliary slot `battle_input_phase_override` nonnull, then `support_global_gate_b` tests the supplied object's word `+0x32D0 & 0x14` for zero. |
 | C | `battle_nested_state_is_3` tests the hub's derived registry/coordinator state. |
 
 Mask `2` is disabled by `(A && B) || (C && !(fighter0.node_flags & 2))`.
@@ -478,7 +470,7 @@ callback bits `2/4`. It retains the objects and their lifecycle state.
 Every final class preserves the common reason-1 handling, which clears
 attack/contact bindings and movement and selects the waiting animation.
 Auto can immediately leave `ready_countdown == 3`, so reason `1` alone does
-not establish request availability.
+not mean a request is available.
 
 The resident accepted-extra-hit boundary calls this before
 `exchange_set_roles`. The paired transition calls it after setting both
@@ -521,7 +513,6 @@ Code `0x0A` acquires its indexed effect at attack position `2`.
 Reason `4` requests retirement with `(0, 0, 5)` and resets a valid handle;
 an invalid handle skips that reset. Other reasons reset the handle without
 those retirement writes. Its destructor follows the ordinary common wrapper.
-These differences do not establish a leak or a visible survival duration.
 
 ### Selected resource commands and callback routes
 
@@ -552,7 +543,7 @@ position. Playback and descriptor ownership belong to
 | `18` | Nonzero sets contact-exit suppression bit `4`; zero clears it. Other lineage flags are preserved. |
 
 Both selected `atk` resources have type `0x2400` and leading word `0x101`.
-Their bounded native-width walks establish these schedules:
+Their native-width walks give these schedules:
 
 | Resource | Authored command positions |
 | --- | --- |
@@ -560,11 +551,9 @@ Their bounded native-width walks establish these schedules:
 | `ymt1` | Position `1`: attack entry `0`, radius `100`, attachment `OBJ_hit_dmy01`. Attack activation at `21/24/27`, deactivation at `30`; terminator position word is `33`. |
 
 The selected `ent/wit/ext` scripts contain only their header and terminator.
-The attack scripts also contain opcode `1`, whose full audio interpretation
-remains outside this bounded result. Opcode `6` and its selected raw inputs
-are established above. Authored positions do
-not establish seconds, all positions actually reached, resource animation
-length, or departure timing. A terminator position is not a departure event.
+The attack scripts also contain opcode `1`. Opcode `6` and its selected raw
+inputs are established above. Authored positions are not seconds, and a
+terminator position is not a departure event.
 
 Binding names remain borrowed resource bytes, not copied strings or cached
 scene objects. Reset clears six attack bindings and three secondary contact
@@ -575,7 +564,6 @@ Separately, `fighter_event_dispatch` forwards event `0x8002` through
 fighter's side and invoke the occupied support's stream callback.
 The selected `0x0A/0x3F` classes use `support_stream_event_noop`; that callback
 does not execute their state-script commands or indexed-effect operations.
-Other consumers and the full animation event stream remain open.
 
 ### Indexed animation binding and attachment sampling
 
@@ -590,8 +578,7 @@ Code `0x3F` reason `2`, after old-handle release, binds
 mode `2`, and transfers playback step. Changed attack position `14` in
 substate zero sends four `support_cmp_ymt_names` descriptors to
 `effect_descriptor_spawn` (`0x002F9010`) at the retained origin. Those
-descriptor effects have separate ownership from the indexed handle;
-their full payload behavior remains open.
+descriptor effects have separate ownership from the indexed handle.
 
 `support_attack_samples_from_indexed` validates the handle and type-1 player,
 then resolves every nonnull attack attachment name with `resource_find_model`
@@ -625,9 +612,6 @@ Zero gauge requests departure; only an enabled manager pass advances terminal
 state and clears occupancy. Linked Mode changes request/entry behavior, not
 selection or slot count.
 
-Shared completion establishes lifecycle transitions, not damage or subclass
-payload outcomes. Notification counts and remembered identifiers are
-bookkeeping, not availability gates. Full subclass effects, scheduler-gate
-meanings, borrowed-pointer lifetime guarantees and actual callback frequency
-remain unestablished. All derived timing in this document counts eligible
-invocations.
+Shared completion drives lifecycle transitions. Notification counts and
+remembered identifiers are bookkeeping, not availability gates. All derived
+timing in this document counts eligible invocations.

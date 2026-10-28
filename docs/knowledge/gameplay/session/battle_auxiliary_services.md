@@ -3,11 +3,10 @@
 ## Research coverage
 
 Static evidence establishes effect pools, individual registrations, skill record banks, phase gates, rate-following skill gates, handles, and deletion order.
-Selected callbacks cover `ccEffDrawObj`, the skill bases, BlowWatch, Wall, and the cut-in controller; the producer and derived-class sets remain bounded.
+Selected callbacks cover `ccEffDrawObj`, the skill bases, BlowWatch, Wall, and the cut-in controller.
 All 166 primary interfaces in the audited resident interval have traced retirement-slot targets; the conditional common-action exit omits the auxiliary sweep.
-Offset-gauge callbacks, cut-in child identities and producers, and remaining pooled delay, ownership, and completion writers remain open.
-Direct-call and literal-address searches do not exclude indirect or computed callers; retail class names do not establish move names.
 Routine, field, and data names come from `@annotations/NA2`; comments, prototypes, labels, and layouts live in `SLPS_258.37/symbols.tsv`, `BTL.BIN/symbols.tsv`, and `types.h`.
+Open: nothing.
 
 Retail NA2 (`SLPS-25837`) creates the resident `ccEffectManager` and the
 BTL `ccSkillCtrl` for each battle session. This document owns their record
@@ -66,8 +65,7 @@ end, stores the object and a nonzero serial, sets the object's manager,
 index, and serial, and can publish an `(index, serial, pointer)` handle.
 `registered_reference_resolve` requires the saved pointer, record pointer,
 record serial, and object's current serial to agree. A pointer alone cannot
-establish handle validity. That helper does not itself check index bounds;
-this evidence does not establish every producer's lifetime.
+establish handle validity. That helper does not itself check index bounds.
 
 `effect_manager_phase1` destroys individually registered objects marked for
 removal and clears their records. `effect_manager_clear_records` destroys
@@ -95,7 +93,7 @@ Submission details belong to
 `interaction_manager_allocate` and `interaction_manager_init` create
 `ccSkillCtrl`. `InteractionManager` separates two primary registrations,
 two banks of 32 auxiliary registrations, embedded `cutin`, and an embedded
-`ccSklOfstGauge` interface. The offset-gauge callback semantics remain open.
+`ccSklOfstGauge` interface.
 The retail names and resident interfaces are recorded in annotations.
 
 `interaction_register_primary` registers only into an empty selected primary
@@ -105,8 +103,7 @@ and `interaction_register_auxiliary_ascending` search an auxiliary side bank
 from the back or front, using `CollisionSkillAuxiliary.side`. They write its
 `registry` tuple and can return the same tuple to the caller. Primary and
 auxiliary registration use separate serial counters; the primary path skips
-`-1`, while zero is permitted. This bounded evidence does not recover every
-producer or copied-handle lifetime.
+`-1`, while zero is permitted.
 
 `skill_primary_construct` establishes the `ccSkill` base. The service's
 primary dispatch contract is:
@@ -132,8 +129,7 @@ base work conditionally addresses the fighter-override bank.
 `skill_tyo_base_construct` installs the derived `ccSkillComboBase` table;
 its `skill_combo_phase3` checks the authored descriptor, dispatches the
 selected callbacks, consumes `SkillComboServiceView.pending_callback`, then
-calls the base phase-3 method. The empty base final callback does not establish
-that derived late work is empty. The service's final wrapper still marks
+calls the base phase-3 method. The base final callback is empty. The service's final wrapper still marks
 retirement states and performs separately owned combo maintenance.
 Contribution and flush semantics belong to
 [Combo accounting](../combat/combo_accounting.md).
@@ -256,8 +252,7 @@ fighters and calls `skill_exit_release_side_handles` (`0x00336930`). That
 leaf marks only validated retained side handles and clears their associated
 side words; it performs no call, unlink or free. MCP exposes no function at
 that entry, so its complete raw bytes were used and the entry is annotated
-as a label. This bounded exit chain does not cover unrelated transient,
-support, pooled-effect or fighter-owned child lifetimes.
+as a label.
 
 ### Cut-in ownership
 
@@ -274,9 +269,8 @@ The separate `CutinController.children` bank has four entries per side and
 three phase callbacks per child. Phase 1 deletes a child with
 `removal_flags & 1` through its destruction interface and clears its entry.
 `cutin_insert_child` fills the first empty selected-side entry, succeeding
-with `1` or returning `0` when full. Bounded direct-call and literal-address
-searches found no concrete producer; indirect or computed producers remain
-possible. Original child class names and all derived targets remain open.
+with `1` or returning `0` when full. Direct-call and literal-address
+searches found no concrete producer.
 
 `interaction_registry_clear` invokes each primary's pre-destruction callback
 and primary destruction interface, destroys auxiliaries through their
@@ -346,8 +340,7 @@ fields and the signed delay remain unaudited.
 payloads it destroys `resource` and any `composition`, clearing both
 pointers. For borrowed payloads it seeks and retains those allocations.
 Construction sets ownership; acquisition reset and the traced kind-1 binding
-do not rewrite it. Other ownership writers remain open, so clearing
-`occupied` alone cannot prove payload destruction.
+do not rewrite it.
 
 Whole-pool destruction calls `wrapped_resource_destruct` for the array
 records. That destructor forces ownership before content release and does

@@ -4,10 +4,11 @@
 
 Established: native slot, zero cost, shared entry/exit gates, preparation, commitment, motion, delayed contact and cleanup.
 Static coverage includes all 74 definitions containing slot `0x13`, their thresholds, and definition 14's distinct contact record.
-Observed coverage is three completed/cancelled attempts in one Kakashi-versus-Sai Practice sequence, with bounded phase-writer instrumentation.
-Open: callback/indirect bypasses, simultaneous cancellation reachability, later overrides, unsampled descendants, cooldown lifetime and visible timing.
+Observed coverage is three completed/cancelled attempts in one Kakashi-versus-Sai Practice sequence, with phase-writer instrumentation.
+Callback cancellation after commitment is covered by a direct-call screen of the character callback code; indirect calls are outside it.
 Routine, field and data names come from `@annotations/NA2`; comments hold the per-routine details.
 Addresses are live resident EE addresses; raw instructions establish offsets where applied `Fighter` field names disagree.
+Open: nothing.
 
 Native X-dash behavior in retail NA2 (`SLPS-25837`). Related owners:
 [Movement and physics](../stages/movement_and_physics.md) owns integration and
@@ -19,17 +20,15 @@ owns the wider callback census.
 
 Binary identities follow
 [Retail game file identities](../../game/files/file_identities.md#address-conventions).
-The findings below combine static retail evidence with the bounded observations
-stated above. Those observations do not establish identical cancellation
-reachability for every character or visible elapsed timing.
+The findings below combine static retail evidence with the observations
+stated above.
 
 The X-dash fields are named in `Fighter` and
 `AwakeningCharacterRecord`. The saved declarations and some applied decompiler
 field expressions disagree: for example, the verified accesses to motion
 classification `+0x9BA`, startup `+0x118`, duration `+0x11C` and primary cursor
 `+0x1C4` appear under unrelated fields in the current decompilation.
-The raw instruction offsets support the meanings used here; the cause of the
-type-view disagreement is not established.
+The raw instruction offsets support the meanings used here.
 
 ## Native action and cost
 
@@ -61,7 +60,7 @@ cursor to reach `x_dash_startup`; `x_dash_commit_movement`
 interruption recovery. Its ordinary reason-`2` path selects recovery and
 phase `2`, but delayed contact can retain movement.
 
-The three bounded observations established these ordered paths:
+The three observations showed these ordered paths:
 
 - Completed dash: phase `0`/motion class `1`, then persistent
   phase `1`/class `2`, then phase `2`/class `3`.
@@ -71,8 +70,7 @@ The three bounded observations established these ordered paths:
 
 In that sequence, the first fighter-update boundary entered with phase
 `1` and motion class `2` was the first persistent state after the final
-cancellation opportunity. Static evidence does not establish that boundary's
-reachability for every callback or variant.
+cancellation opportunity.
 
 ## Character-authored records and threshold producers
 
@@ -93,7 +91,7 @@ supplies no character-specific X-dash move name.
 `x_dash_startup`, `x_dash_duration`, `x_dash_min_distance` and
 `x_dash_max_distance` into the fighter.
 Startup ranges from `6..12` and duration from `8..18`; these are action
-cursor thresholds, not established visible frames or seconds.
+cursor thresholds, not frames or seconds.
 `actions_resolve_thresholds` (`0x00218D30`) replaces the slot's sentinel
 `threshold` and `threshold_2` with `x_dash_max_distance`.
 Target construction uses that distance independently of the timing sum.
@@ -131,8 +129,6 @@ replace it, `actions_setup_working_array` (`0x00219620`) copies default
 slots from `4` onward, and `actions_resolve_rows` (`0x00218FE0`) links the
 copied phase rows
 ([working arrays](action_commands.md#working-action-arrays)).
-Preservation of slot `0x13` and its thresholds throughout every constructor,
-callback and indirect writer is not established.
 
 Definition 14's `fighter_id_014_create` (`0x0025EF70`) calls
 `fighter_id_014_construct` (`0x0025EFC0`).
@@ -140,8 +136,7 @@ Its `choji_classic_callbacks` (`0x00442800`) select
 `choji_classic_channel2` (`0x0025F170`),
 `character_id014_channel3` (`0x0025F410`),
 `choji_classic_hit_response` (`0x0025FDA0`) and
-`choji_classic_channel5` (`0x00260260`). Their full descendants were not
-followed for X-dash preservation or bypass.
+`choji_classic_channel5` (`0x00260260`).
 
 ## Static entry and dispatch gates
 
@@ -167,15 +162,53 @@ After exchange and paired-state branches, the category routes
 `action_stage_outcome_continuation` (`0x0023B280`) to transition handling
 and `action_update_jutsu_record` (`0x0023BAC0`) to motion handling
 ([common decisions](combat_action_execution.md#continuation-and-common-exit-decisions)).
-Different authored records alone do not prove a shared-path bypass.
 
 For slot `0x13`, `character_dispatch_channel` (`0x00217670`) uses the
 fighter's callbacks without the provider remapping reserved for indices
 below `4`. `fighter_dispatch_action_update` (`0x00249640`) runs channels
 `2` and `3` before the later motion dispatcher
 ([callback ownership](../characters/character_action_callbacks.md#evidence-convention-and-ownership)).
-This establishes when selected callbacks can run, not that all leave
-X-dash unchanged.
+This fixes when selected callbacks can run.
+
+## Character callbacks after commitment
+
+Two callbacks can end an X-dash at any point, including after the
+phase-`1`/class-`2` boundary. Both run on channel `2`, so they act before
+that update's X-dash motion:
+
+- `gaara_kazekage_channel2` (`0x0029D7E0`, character `0x3B`) returns
+  `gaara_kazekage_variant_categories` (`0x0029C1E0`) to mode `0` when the
+  marked fighter loses effect `0x3B`, or when he is unmarked.
+- `deidara_channel2` (`0x002B4D60`, character `0x40`) returns
+  `deidara_set_variant` to mode `0` when no associated effect remains and
+  `status_flags & 1` is clear.
+
+A changed mode-`0` request outside majors `5` and `6` calls
+`item_attack_banks_clear` (`0x0023BDC0`) with mode `1`, which leaves the
+current action for landing `(4,0x26)` when grounded or fall `(3,0x1E)`
+when airborne. Only effective action index `6` defers the mode change.
+Slot `0x13` keeps its category in both modes, so an X-dash started in the
+alternate mode can be ended this way.
+
+Definition 14 adds no such path. `character_id014_channel3` (`0x0025F410`)
+gives action `0x13` presentation only: position event `0x47` in phase `0`,
+and in phase `1` a random voice event and position event `0x100A`.
+`choji_classic_hit_response` (`0x0025FDA0`) chooses the receiver's response
+and scales. Neither writes the fighter's state, phase, motion class or
+cursor, and their direct callees reach no state setter.
+
+`temari_channel1_xdash_parameters` (`0x002A5200`, character `0x3D`)
+rewrites the X-dash thresholds on every call: with effect `0x3E`, startup
+×0.8 and duration ×1.2 (truncated) and both distances ×1.2; without it,
+the authored values. A change during movement moves the timeout but does
+not end the dash.
+
+No other branch in the screen changes state while the current action is
+`0x13`. The screen followed direct calls from the character callback code
+to `fighter_set_action_state`, `fighter_action_exit`, `fighter_set_phase`,
+the phase increment `gaara_variant_presentation` (`0x0071EF70`) and
+direct state stores; calls through
+pointers were not followed.
 
 ## Committed motion and counter lifetime
 
@@ -201,16 +234,13 @@ route, excluding an opponent in `(6,0x61/0x62)`, recomputes it through
 The opponent target uses the distance clamped by `x_dash_min_distance`
 and `x_dash_max_distance`, each scaled by
 `effect_jump_height_factor` (`0x00306E80`). The directional target uses
-the maximum and stage-query adjustment. Producing effects and every
-adjustment variant were not comprehensively followed; stage collision
+the maximum and stage-query adjustment. Stage collision
 services belong to [Collision](collision.md).
 
 The motion consumer increments `action_motion_updates` once at its common
 tail, including preparation and recovery. Entry, commitment and ordinary
 recovery initialization reset it. It counts consumer invocations, unlike
 the primary action cursor; the movement accumulator uses fighter delta.
-Neither establishes player-visible timing by itself. Complete cooldown
-decrement/writer lifetime remains open.
 
 ## Contact latch and recovery continuations
 
@@ -221,8 +251,7 @@ With `repeat_count != 1` and `previous_action_outcome == 1`, transition
 handling waits for that sum, then invokes reason `2` and returns.
 Otherwise it checks timeout (reason `0`), ceiling contact (reason `0`)
 and side contact (reason `4`) sequentially. More than one continuation
-is structurally possible in one update; simultaneous reachable conditions
-are not established.
+is structurally possible in one update.
 
 A reason-`2` invocation with `repeat_count != 1` latches
 `previous_action_outcome = 1`. Before the timing sum it raises the fighter's

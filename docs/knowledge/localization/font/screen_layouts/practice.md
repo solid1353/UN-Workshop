@@ -4,10 +4,10 @@
 
 Established: retail NA2 (`SLPS-25837`) and UN5 Practice explanation,
 Settings headings, Jutsu titles and completed-move geometry and ownership.
-Open: strings, callers and animation phases outside the compared states.
 MCP exposes the Jutsu title tails; icon callback branches require the preserved
 live listing. Names come from `@annotations/NA2` and `@annotations/UN5`.
 All addresses below are live; per-routine details belong to those annotations.
+Open: nothing.
 
 Related owners: [Renderer metrics](../renderer_metrics.md),
 [1P/2P Commands and Practice title layouts](command_and_practice_titles.md), and

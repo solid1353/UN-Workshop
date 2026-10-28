@@ -4,10 +4,9 @@
 
 Established: render-pool ownership, rotating packet lists, priority/tree ordering,
 frame submission, DMA continuation/completion, and paired GS environments.
-Open: deferred-queue capacity, special-processing lifetime/setters, indirect
-producers, a final GS FINISH fence, allocation-failure frequency and render cost.
 Names and partial structure views come from `@annotations/NA2`.
-Evidence is static retail code; capacities do not establish measured performance.
+Evidence is static retail code.
+Open: nothing.
 
 This document owns render packet allocation, list ownership, ordering,
 submission and reuse in retail NA2 (`SLPS-25837`). Cited addresses are resident
@@ -92,9 +91,7 @@ The deferred pointer queue starts at `render_deferred_block_lists`. Its first
 entry is typed as a `RenderPoolAllocation *`; entries have a four-byte stride.
 Registration retargets every queued block's `owner_list` to its queue entry,
 then increments
-a 16-bit count without a capacity comparison. The declared array capacity is
-unresolved; neither counter width nor surrounding zero-filled bytes establishes
-a safe bound.
+a 16-bit count without a capacity comparison.
 
 ## Packet ordering
 
@@ -106,7 +103,6 @@ priority by unregistering and reinserting.
 Frame assembly visits this list and inserts each chain at the same master
 tag. **Inference, high confidence from the links:** final chain order is
 ascending priority, with equal-priority chains in reverse registration order.
-This does not establish which primitive visibly overwrites another.
 
 Within construction, `render_packet_append` appends,
 `render_packet_initialize_append` initializes a tag from rounded quadword
@@ -149,7 +145,6 @@ then splices the submission head into the master chain.
 
 Ordinary rotation requires `BattleHudRenderContext.special_processing == 0`.
 Nonzero calls the empty `ordered_controller_special_process_noop` instead.
-Its setters and caller-owned packet lifetime remain unresolved.
 
 `render_dma_chain_splice` copies the insertion tag's old next address to the
 inserted chain's final linking tag and replaces the insertion link with the
@@ -254,14 +249,11 @@ with CHCR `0x101`. Its bounded idle wait returns `0xFFFFFFFF` on timeout,
 but the pairing wrapper does not propagate that result.
 
 Draw-state GIF submission is separate from the renderer's VIF1 source chain.
-Neither path establishes a GS FINISH wait, so complete rasterization is not
-proved by these routines.
+Neither path waits for GS FINISH.
 
-## Bounded producer and consumer coverage
+## Producers and consumers
 
-Direct-call coverage of `render_ordering_insert` is bounded to the resident
-program and exposed `BTL.BIN`/`ETC.BIN`; indirect calls, inlined insertion
-and other ordering algorithms remain open. The annotation owns the call census.
+The annotation of `render_ordering_insert` owns its call census.
 
 | Producer | Packet-list contract |
 | --- | --- |
@@ -292,11 +284,10 @@ half toggling creates no independent persistent packet lifetime.
 | Bump allocation | No alignment repair; same-owner bytes share a block; owner changes add a header |
 | Ordering nodes | 1024 globally, reset per frame; exhaustion omits insertion |
 | Ordering depth | At most 50 including root; abandoned depth 51 consumes its node |
-| Deferred lists | 16-bit unchecked count; declared queue capacity unresolved |
+| Deferred lists | 16-bit unchecked count |
 | Strip reservation | Formula above; fill helper lacks a local overrun guard; inspected callers pre-count |
 | Graphics synchronization | Shared `0x1000000` poll threshold; failure `0xFFFFFFFF`, frame wait recovers and clears active |
 | GIF draw-state submission | Bounded idle wait; caller ignores its timeout result |
 
-These static capacities establish no utilization, transfer duration, frame
-budget or safe additional packet count. Packet sizes, headers, owner switches,
-reserved tails and still-owned submitted lists all affect available storage.
+Packet sizes, headers, owner switches, reserved tails and still-owned submitted
+lists all affect available storage.

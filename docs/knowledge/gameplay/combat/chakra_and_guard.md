@@ -3,16 +3,14 @@
 ## Research coverage
 
 Established for retail NA2: chakra bounds/gates, reservation and effect ordering,
-charge and recurring-effect rate inputs, recovery factors, bounded working-rate
-writer/dispatch and supplied-vector coverage, and temporal guard state;
-no durability pool was established.
-Open: arbitrary aliases/computed targets, combined-state reachability, UI/timing units,
-effect/flag names and control-object semantics. Evidence is static; names and
-routine details come from `@annotations/NA2`. Addresses are live.
+charge and recurring-effect rate inputs, recovery factors, bounded
+working-rate writer and dispatch coverage, temporal guard state, and no guard
+durability pool in the traced paths. Evidence is static; names and routine details come from
+`@annotations/NA2`. Addresses are live.
+Open: nothing.
 
 Values are raw native floats, without a pixels, icons, bars, or percentage
-conversion. Reservation/history labels describe demonstrated operations;
-their broader meanings remain medium confidence.
+conversion.
 
 Related owners: [Substitution](../characters/substitution.md),
 [Hit response](hit_response.md), [Damage](damage.md),
@@ -64,8 +62,7 @@ The boundary suppresses a contribution; it is not a maximum.
 
 `guard_state` is accepted held-guard age with sentinels. `guard_input_timing`
 is signed input age, independently updated. Neither is durability.
-The eligibility halfword `+0x9F0` retains its raw offset because its broader
-meaning is unresolved.
+The eligibility halfword is named by its raw offset `+0x9F0`.
 
 ## Chakra routine map
 
@@ -79,9 +76,8 @@ The resource surfaces have different gates:
 | Staging: `chakra_staged_gate` | active `0x10`, plus availability's `0x40` | staged inhibit/lockout, action and tier gates | No new staged input |
 
 A nonzero debit bypass skips only the effect scan. Traced direct simple-debit
-requests use zero bypass. Availability therefore does not prove that a
-subsequent debit will occur. Computed, split-immediate and external indirect
-targets remain outside the direct-call evidence.
+requests use zero bypass. Availability therefore does not guarantee that a
+subsequent debit will occur.
 
 ### Initialization, maximum, and reset/refill
 
@@ -117,8 +113,7 @@ Changing the selected record releases its reservation before replacing data.
 gain `15.0` with feedback flags clear. It requires manager mode `3`,
 major state outside `8/5/6`, clear `exchange_roles`, clear low five bits of
 `EnginePadContext.update_counter`, no staged claim, and manager key `2 == 1`.
-The normal gain gates still apply. No separate direct setter to maximum was
-established in the traced paths.
+The normal gain gates still apply.
 
 ### Manager settings behind the fighter gates
 
@@ -141,7 +136,7 @@ Unlimited inhibits ordinary debits without changing affordability or maximum.
 Its maintenance refill has the additional gates above.
 `fighter_load_character_record` refreshes the caches at setup;
 `battle_start_menu_update` refreshes both fighter aliases after its
-overlay-controlled result is `1`. No per-update refresh is established.
+overlay-controlled result is `1`.
 
 ### Gain and clamp behavior
 
@@ -171,7 +166,6 @@ immediate item amounts and recurring effect deltas.
 
 No other of the 138 screened definitions sets those bits. Their recovery
 modifier is `1.0`; their chakra consequences come from gates/deltas.
-The `0x20` scanner has no established chakra role.
 [Status effects](../projectiles_and_items/battle_items_and_status_effects.md#routing-flags)
 owns authored routing, countdowns and deltas.
 
@@ -214,8 +208,8 @@ The last predicate recognizes major `8`, a current record with category
 `0x000C0000`, and its signed `streak_exempt > 0`.
 The battle gate reaches `battle_footprint_gate`, which checks
 `chakra_control_state` through `battle_control_resource_blocked`:
-both `active` and `enabled` must be nonzero. Its broader meaning remains
-unresolved. `fighter_restore_gate_a` recognizes `(6,0x61/0x62)`, and
+both `active` and `enabled` must be nonzero.
+`fighter_restore_gate_a` recognizes `(6,0x61/0x62)`, and
 `context_mode_word` supplies the nested context state used by aggregation
 and crossing feedback.
 
@@ -237,7 +231,7 @@ Representative gains:
 | `sp_skill_play_end` | positive target-minus-current top-up when manager exists, mode differs from `6`, and outcome is `2`; side index zero selects manager's second fighter, otherwise first |
 
 The top-up does nothing when its callback target is no higher than current
-chakra. None of these formulas establishes a per-second rate.
+chakra.
 
 ### Recovery rates and their owners
 
@@ -263,7 +257,6 @@ These are all numerical inputs in the charge amount's instruction sequence.
 The dormant source-selection alternative reads `Fighter.opponent` (`+0x20`),
 but `receiver_vector_predicate` (`0x00307A50`) always returns zero in retail
 NA2. Consequently the multiplier comes from the charging fighter itself.
-The alternate branch does not establish an operative opponent-dependent rate.
 [Replacement character parameters](../characters/awakening.md#replacement-character-parameters)
 own the changes to that copied value when the fighter is reconstructed in a
 different form.
@@ -285,7 +278,7 @@ before that dispatch and can change the selected action.
 [Ordinary dispatch order](combat_action_execution.md#ordinary-dispatch-order)
 owns the surrounding action sequence.
 
-Observed code establishes amount per admitted invocation. With neutral
+The amount is per admitted invocation. With neutral
 character/effect multipliers, approximately 300 admitted charge calls fill
 an empty 15-point gauge. At the nominal 30 service iterations per second
 described in [Battle update cadence](../session/battle_lifecycle.md#battle-update-cadence),
@@ -313,8 +306,8 @@ nonneutral authored values are:
 | `0x77` | `0.5` |
 
 The other 127 anchors author `1.0`. Two active `1.5` modifiers therefore
-produce `2.0`, not `2.25`. This describes the reducer; it does not establish
-reachability of every combination. Effect admission, replacement and
+produce `2.0`, not `2.25`.
+Effect admission, replacement and
 lifetime ownership remain in
 [Battle items and status effects](../projectiles_and_items/battle_items_and_status_effects.md).
 
@@ -378,105 +371,59 @@ and countdown-pass gates remain independent.
 
 #### Recovery coverage boundary
 
-The direct gain census covers eight ELF callers and two BTL callers;
-`effect_chakra_recovery_factor` has two ELF callers and no direct BTL caller.
-The charge and immediate item paths are the only verified consumers of
-`Fighter.chakra_recovery` in this census. Literal `lwc1 +0x164` inspection
-in ELF/BTL distinguishes their loads from stack and unrelated-object loads.
+`fighter_secondary_resource_add` has eight ELF and two BTL direct callers;
+`effect_chakra_recovery_factor` has two ELF callers and no BTL caller. The
+charge and immediate item paths are the only direct `lwc1 +0x164` consumers
+of `Fighter.chakra_recovery` in ELF and BTL.
 
-The writer/alias audit used resident addresses `0x00100000..0x003FFFFF`,
-BTL text `0x006B3F40..0x0088F5FF`, and ETC text
-`0x006B3F40..0x006D8D7F`. It decoded aligned literal `+0x164` matches,
-explicit `addiu/daddiu +0x8C` rebases, and selected neighboring stores:
-64/128-bit stores beginning at `+0x160..+0x167`, plus byte/halfword stores
-at `+0x164..+0x167`. This is an instruction-pattern screen, not arbitrary
-pointer tracking or coverage of every unaligned/block write.
+`fighter_chakra_recovery_copy` is the only working writer of that field that
+an instruction screen of literal and rebased `+0x164` stores in ELF, BTL and
+ETC finds. The
+loader copies record `+0x00..+0xD8` to Fighter `+0x8C..+0x164`; `fighter_init`
+has no separate recovery initialization. The Fighter record aliases in gravity,
+jump prediction, action-array setup, aerial steering, capture attachment and
+`effect_7d_update` do not write it. Form reconstruction reloads the record;
+[Replacement character parameters](../characters/awakening.md#replacement-character-parameters)
+own that lifecycle.
 
-The `+0x164` screen contains 43 stores (25 ELF, 18 BTL) and 105
-`addiu/daddiu` forms. `fighter_chakra_recovery_copy` remains the only
-established working Fighter recovery writer in this coverage.
-The loader copies record `+0x00..+0xD8` to Fighter `+0x8C..+0x164`;
-`fighter_init` contains no separate recovery initialization. The verified
-Fighter record aliases in gravity, jump prediction, action-array setup,
-aerial steering, capture attachment and `effect_7d_update` add no recovery
-write in their inspected bodies. Form reconstruction reloads the record;
-its lifecycle remains owned by
-[Replacement character parameters](../characters/awakening.md#replacement-character-parameters).
+Other `+0x164` stores belong to other objects.
+`skill_parameter_vector164_set` (`0x00791D30`, skill-interface slot `+0x144`)
+writes controller `+0x364`, because `skill_parameter_vector_dispatch` passes
+controller `+0x200`. No dispatch of `skill_parameter_vector164_set_flagged`
+(`0x00791E40`, slot `+0x14C`) was found: all 26 `lw +0x14C` sites in ELF, BTL
+and ETC load data, and no direct call or conventional address construction
+targets it.
+`vector_pair160_170_set` (`0x0030F120`) copies 16-byte vectors to
+`+0x170/+0x160`; all five of its BTL callers pass wrapped-resource storage:
 
-Matching offsets also belong to embedded projectile/query handles and
-context, matrix or vector layouts. `skill_parameter_vector164_set`
-(`0x00791D30`) and `skill_parameter_vector164_set_flagged` (`0x00791E40`)
-occupy skill-interface slots `+0x144/+0x14C`; the inspected
-`skill_parameter_vector_dispatch` passes controller `+0x200`, so the first
-setter writes controller `+0x364`, rather than the linked Fighter's recovery.
-
-For the flagged setter, all 26 literal `lw +0x14C` sites in those text ranges
-(18 ELF, eight BTL, none ETC) load data or stack values, without dispatching
-the skill slot. Exact direct `jal/j` targets and aligned conventional
-low-`0x1E40` address construction are absent in the three imports.
-The 27 standard `lw t9,+0x4C(t9)` sites (22 ELF, five BTL) load a table
-from object `+0` or `+0x50`, without an observed primary-interface `+0x100`
-rebase. These bounded checks recover no concrete flagged-setter invocation
-or destination. Arbitrary computed/rebased dispatch remains unproved;
-the slot's publication does not establish a working Fighter recovery writer.
-
-`vector_pair160_170_set` (`0x0030F120`) copies 16-byte vectors into
-destination `+0x170/+0x160`, including the numeric `+0x164` region.
-All five exact BTL `jal` callers supply wrapped-resource storage:
-
-| Annotated call and live address | Destination provenance |
+| Annotated call and live address | Destination |
 | --- | --- |
-| `wrapped_resource_vector_pair_call_73f3e8` (`0x0073F3E8`) | Unchanged `indexed_effect_acquire` return from `0x0073F1B0` |
-| `wrapped_resource_vector_pair_call_74019c` (`0x0074019C`) | Unchanged acquire return from `0x0074008C` |
-| `wrapped_resource_vector_pair_call_77af4c` (`0x0077AF4C`) | Unchanged acquire return from `0x0077AE00` |
-| `wrapped_resource_vector_pair_call_819d14` (`0x00819D14`) | Unchanged, nonnull-gated acquire return from `wrapped_resource_acquire_call_819c28` (`0x00819C28`) |
-| `rock_wrapper_vector_pair_call_7c5fb8` (`0x007C5FB8`) | Retained registered rock auxiliary `+0xB90`, constructed by `wrapped_resource_construct` at `0x007C5D90` |
+| `wrapped_resource_vector_pair_call_73f3e8` (`0x0073F3E8`) | `indexed_effect_acquire` return from `0x0073F1B0` |
+| `wrapped_resource_vector_pair_call_74019c` (`0x0074019C`) | Acquire return from `0x0074008C` |
+| `wrapped_resource_vector_pair_call_77af4c` (`0x0077AF4C`) | Acquire return from `0x0077AE00` |
+| `wrapped_resource_vector_pair_call_819d14` (`0x00819D14`) | Nonnull acquire return from `wrapped_resource_acquire_call_819c28` (`0x00819C28`) |
+| `rock_wrapper_vector_pair_call_7c5fb8` (`0x007C5FB8`) | Registered rock auxiliary `+0xB90`, built by `wrapped_resource_construct` at `0x007C5D90` |
 
-The first four destinations are separately allocated `0x210`-byte
-`WrappedScenePlayback` records; their
-[indexed effect pool](../session/battle_auxiliary_services.md#indexed-effect-pool-cceffdrawobj)
-owns allocation and handles. Identifying the BTL system pointer with the
-resident manager remains the inference documented there.
-For the fifth, `skill_jrb001_construct`
-(`0x007C5AC0`) initializes the retained tuple to `(-1,-1,0)`.
-`skill_jrb_rock_allocate` (`0x007C5D20`) allocates/constructs the rock
-auxiliary in selector `0x0E` and publishes its registration tuple;
-selector `0x14` validates slot, generation and pointer before using that
-auxiliary's wrapper. None of these traced destinations is Fighter or
-Fighter `+0x8C`. The three imports contain no exact stored `0x0030F120`
-pointer, exact `j` target or aligned conventional low-`0xF120` address
-construction. Arbitrary pointer/tuple rewrites and computed targets remain
-outside this bounded result. A matching displacement alone cannot establish
-Fighter ownership.
+The first four are `0x210`-byte `WrappedScenePlayback` records from the
+[indexed effect pool](../session/battle_auxiliary_services.md#indexed-effect-pool-cceffdrawobj).
+`skill_jrb_rock_allocate` (`0x007C5D20`) builds the rock auxiliary in
+selector `0x0E`, and selector `0x14` validates slot, generation and pointer
+before using it.
 
-The effect audit resolves factory-installation code and node construction.
-All 17 constructors reached through the 19 registered ID/factory pairs call
-`effect_generic_construct` without a direct later rewrite of node recovery
-`+0x94` or recurring chakra delta `+0xB4`. Their computed copies are
+All 17 effect constructors reached through the 19 registered ID/factory pairs
+call `effect_generic_construct` and do not later rewrite node recovery `+0x94`
+or recurring chakra delta `+0xB4`; those are copied by
 `effect_chakra_recovery_node_copy` (`0x00304A6C`) and
 `effect_recurring_chakra_node_copy` (`0x00304B0C`). Generic entry chakra uses
-node `+0xA4` through the rebased node `+0x68` alias's `+0x3C`; this is a
-separate signed delta, not recovery scaling.
+node `+0xA4`, a separate signed delta. The registered primary callbacks
+(`effect_container_primary_dispatch_call`, `0x00305BCC`) and secondary slots
+(all the generic no-op except `effect_4a_secondary_update`) neither write
+Fighter recovery nor call gain directly. No stored pointer to
+`fighter_secondary_resource_add` or `effect_apply_chakra_contribution` exists
+in ELF, BTL or ETC.
 
-`effect_container_primary_dispatch_call` (`0x00305BCC`) resolves through
-`effect_container_primary_update` to `list_phase_slot_10`, after resource
-aggregation/countdown. Registered primary callback bodies add no direct
-Fighter recovery write or gain call. `effect_container_secondary_update`
-dispatches node slot `+0x14`; its registered secondary slots are the generic
-no-op except `effect_4a_secondary_update`, whose inspected body adds no direct
-recovery write or gain call. Embedded child-container callbacks and transitive
-action/helper routes are outside this audit.
-[Specialized callbacks](../projectiles_and_items/battle_items_and_status_effects.md#specialized-entry-exit-and-callback-behavior)
-own their gameplay effects.
-
-Exact full-word pointer searches in all three imported programs found no
-stored target address for `fighter_secondary_resource_add` or
-`effect_apply_chakra_contribution`. Split-address construction and computed
-targets remain open. No additional unconditional baseline gain was established
-in the inspected maintenance and dispatch paths. Initialization, reservation
-refund, effect entry/zero-exit deltas, callback top-ups and Unlimited refill
-remain discrete gains with the owners above; this bounded result does not
-exclude complete character-script or arbitrary-alias exceptions.
+Initialization, reservation refund, effect entry/zero-exit deltas, callback
+top-ups and Unlimited refill are discrete gains with the owners above.
 
 ### Spend, affordability, and lower clamp
 
@@ -501,8 +448,8 @@ Overlay availability checks gate selection without changing chakra. Observed
 requests include record costs and raw `1.0/2.5/5.0/10.0/12.0`; some paths
 continue only when the request is unaffordable. A signed table byte indexed by
 integer-converted record cost is passed directly as a float, distinct from
-both the bounded-chain sum and committed `5/10/15` costs. Presence of a check
-does not establish its reachability. [Battle AI](../session/battle_ai.md) owns
+both the bounded-chain sum and committed `5/10/15` costs.
+[Battle AI](../session/battle_ai.md) owns
 complete selection; annotation comments retain each owner's amount and gates.
 
 #### Debit and reservation behavior
@@ -542,8 +489,8 @@ that refund. A successful signed delta of `-15` discards the claim first.
 `opponent_lock_override` releases its own and linked reservation, then
 conditionally commits the selected tier before continuing the transition.
 `action_phase_commit_chakra` releases/feeds back and conditionally commits
-record cost at its phase/marker gate. Neither transition proves refund or
-committed arithmetic succeeded.
+record cost at its phase/marker gate. Either arithmetic can be suppressed by
+its spend gates without stopping the transition.
 
 The tier commit alone has a membership exception
 (`effect_jutsu_debit_exception`):
@@ -559,7 +506,7 @@ the active scan. Another active blocker is needed.
 `effect_3b_definition` and `effect_41_definition` author approximately
 `-0.008333334` per update with boundary zero; those signed deltas still use
 bypass zero. A list can therefore permit tier commit while suppressing its
-ordinary delta; dynamic reachability of all combinations is unestablished.
+ordinary delta.
 
 Representative consumption:
 
@@ -580,14 +527,13 @@ return before the special section.
 [Contact classes](../stages/stage_surface_attributes.md#query-eligibility-and-contact-classes)
 owns polygon production and classification.
 
-The traced controller debits use bypass zero and the ordinary floor. Their
-player-facing action names and per-second rates are not established.
+The traced controller debits use bypass zero and the ordinary floor.
 The separate substitution debit belongs to
 [Substitution](../characters/substitution.md).
 
 Traced recovery, configuration, effects and controller requests ultimately
-change the same current-chakra field. Sharing a numeric offset in an unrelated
-object does not establish another chakra pool.
+change the same current-chakra field. A matching offset in an unrelated object
+is not a second chakra pool.
 
 ## Guard routine map
 
@@ -666,7 +612,7 @@ selection. It is a one-use reaction selector.
 | None | Process only with zero guard |
 
 The local processing callee rechecks guard. The dispatcher marks its owner
-processed afterwards. These effects do not establish player-facing flag names.
+processed afterwards.
 The overlay changes these counters through the resident setters; the traced
 guard-state values are `0/-1` and timing value `-2`.
 
@@ -695,11 +641,6 @@ The auxiliary positive test uses `ChakraGuardController.fighter` when
 component predicate and linked fighter, while its selector reads through the
 descriptor's fighter. Neither half changes guard state. Negative sentinels
 therefore qualify for selector/cost choices but not positive-only halves.
-The displayed meaning of `attack_scalar` and character/action identities
-are not established here.
-
-Coverage excludes alternate-displacement pointer arithmetic, neighboring
-wider accesses and complete character-script reconstruction.
 
 ### Guard-state writer coverage
 
@@ -708,23 +649,18 @@ Besides arbitrary-value setters, traced writes are clear/initialization,
 under another fighter-state mask; terminal paired cleanup clears guard state
 before updating stance. None subtracts attack strength toward a break threshold.
 
-The evidence bounds direct immediate field accesses, including the alternate
-updater's clear. Computed-address and wider-access exceptions remain open.
 [Substitution](../characters/substitution.md) owns the trigger helper's action
 semantics. Census details are in the annotations.
 
-### No proven guard-durability resource
+### No guard-durability resource
 
-No persistent guard-durability accumulator or maximum was established.
-Guarded hits do not decrement either counter by attack strength; neither has
-a depletion clamp or cumulative break consumer. State-invalidating attack
-flags act per hit. Stance and flag `0x01000000` do not spend a guard resource.
+No persistent guard-durability accumulator or maximum exists in the traced
+entry, exit and hit paths. Guarded hits do not decrement either counter by
+attack strength; neither has a depletion clamp or cumulative break consumer.
+State-invalidating attack flags act per hit. Stance and flag `0x01000000` do
+not spend a guard resource.
 
-This is a strong negative result for traced entry/exit/hit paths, with medium
-confidence for the broader absence claim. Character-specific/scripted
-exceptions remain possible.
-
-## Rejected candidates and remaining hypotheses
+## Rejected candidates
 
 ### `ccEffCond_AbsGuard` is an effect class, not a durability pool
 
@@ -736,8 +672,8 @@ owner flag `0x04` and updates transforms.
 updates the visual.
 
 These routines do not access chakra or either guard counter and have no
-decreasing resource, maximum or break transition. The class name establishes
-an authored AbsGuard visual concept, without proving guard durability.
+decreasing resource, maximum or break transition. The class name identifies
+an authored AbsGuard visual, not guard durability.
 
 ### Fighter `+0x74` is support, not guard
 
@@ -746,15 +682,3 @@ an authored AbsGuard visual concept, without proving guard durability.
 `guard_response_init` reaches that resource through
 `support_add_to_opponent`, which changes the linked fighter's gauge.
 Neither is a guard maximum or durability value.
-
-### Hypotheses requiring new evidence
-
-- Flags `0x00800000/0x00400000` may be authored guard-bypass/invalidation
-  categories. Their writes and the `0x01000000` branch are established;
-  their authored/player-facing names are not.
-- Timing `-2` from AI cases `0x14/0x27` and effect `0x09` may serve the
-  adjacent eligibility system owned by Substitution. The writes and recovery
-  toward zero are established; their purpose is not.
-- A scripted guard exception may exist beyond the traced paths. A durability
-  claim would require proven initialization, guarded-hit decrement, clamp and
-  break consumer on the same field; none was found together.

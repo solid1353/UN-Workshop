@@ -8,9 +8,11 @@ differences; Needle Jizo and the resource-aware Rasengan against NA2's jutsu,
 their labels and helper dependencies; two ordinary films and their bindings; the
 Gamabunta controller, stage, attacks, shadow, particles and voices; the timed
 power effect's lifetime and factors; Rasengan's compact control and Needle Jizo
-cue 89, which has no PLVOICE member.
-Open: remaining indexed identity services; unassigned scalar fields, whose
-stored values a conversion preserves.
+cue 89, which has no PLVOICE member; the constructor's input-synthesis
+parameters; and the AI, support, roster, jutsu-admission, presentation and
+actual-ID services for IDs 21 and 83.
+Open: NA2's lookup for compact program 37, and the meaning of the action
+records' unknown fields.
 
 Names come from `@annotations/UN4` and `@annotations/NA2`; addresses are live. Shared format comparisons are in [UN3 and UN4 characters](../un3_un4_characters.md).
 
@@ -41,12 +43,28 @@ body strings are `2jrybod1.ccs` and `2jrwbod1.ccs`. Record bytes
 not moves or construction. The UN4 constructor assigns embedded names,
 actions and rows at fighter `+0xED0/+0x1138/+0x2330`, through record
 `+0x4C/+0x30/+0x40`, before calling `fighter_load_character_record`
-(`0x001FC390`). It then initializes a `un4FighterControlBlock` and
-publishes it with `value_10 = 2`, `value_12 = 16`, replacing the tail
-initializer's default value 12. `fighter_control_block_publish`
-(`0x00231E10`) copies all twelve halfwords to `+0xB30..+0xB46` and
-mirrors them at `+0x908..+0x91E`. Their individual gameplay meanings remain
-unassigned.
+(`0x001FC390`). It then initializes a `un4FighterControlBlock`, the
+input-synthesis parameters, and publishes it with `multi_press_threshold = 2`
+and `multi_press_distance = 16`, replacing the default distance 12.
+`fighter_control_block_publish` (`0x00231E10`) copies all twelve halfwords to
+`+0xB30..+0xB46` and mirrors them at `+0x908..+0x91E`. Every fighter tick,
+`input_synthesize_multi_press` (`0x00237500`) counts binding-1 presses in the
+last distance + 1 input records through `input_history_count_binding`
+(`0x0023E990`); more than the threshold sets controller logical bit `0x8000`.
+Jiraiya therefore needs more than two presses within 17 records instead of
+13. `input_synthesize_hold_release` (`0x002375E0`) stays disabled, because
+the progress cap `+0xB3A` keeps its default zero. These are the same contracts
+as NA2's [hold/release and multi-press synthesis](../../combat/action_commands.md),
+whose fields lie `0x10` higher. NA2 Jiraiya 83 is not among the constructors
+that widen the window, so it keeps distance 12.
+
+The other record scalars need no interpretation for a conversion. Record bytes
+`+0x58..+0xDB` agree exactly. A UN4 `0x64`-byte action has four more display
+pointers than NA2's `0x54`-byte action. In the following 68 bytes, from the
+packed owner/selector word to the row word, every typed field of both games'
+action declarations (owner, selector, category, flags, continuation,
+signature, cost, response selector, both thresholds, row) lies exactly `0x10`
+further in UN4, so a conversion copies that region unchanged.
 
 NA2's constructor additionally finds `ANM_pjrwfrg01` in its body provider,
 stores it at `+0x548C`, constructs a separate `0x120`-byte scene at
@@ -125,11 +143,8 @@ are separate from the donor's hair-transform logic. Ultimate Jutsu and
 linked-form selection are recorded in
 [Jiraiya Ultimate Jutsu selection](#ultimate-jutsu-and-effects).
 
-Both concrete AI virtuals call their game's common AI updater. The checked
-current-ID descriptor shorts are `{2,5}` at UN4
-`BATTLE:jiraiya_ai_character_values` (`0x00853C34`) versus `{1,30}` at
-NA2 `BTL:ai_character_values + 83*4` (`0x008C35AC`). Complete
-Jiraiya-specific AI exception coverage is not established by those rows.
+Both concrete AI virtuals call their game's common AI updater. AI and the other
+identity-indexed services are in [Indexed services](#indexed-services).
 
 ### Jutsu construction and authored resource commands
 
@@ -688,3 +703,100 @@ Smpl 40 / Vagi 21; sample-region offsets are `0x1C0F0/0x1E1A0`,
 rates 11,025 / 22,050 Hz. Keys 12..119 and velocities 1..127 are admitted
 by the stored split/sample records. These shared banks are separate
 dependencies from the fighter voice bank.
+
+## Indexed services
+
+This compares the services that index **UN4 Jiraiya ID 21 (`jry`)** in
+`SLUS_218.62` / `BATTLE.BIN` with those for **retail NA2 Jiraiya ID 83
+(`jrw`)** in `SLPS_258.37` / `BTL.BIN`. Each is a separate table or gate
+keyed by fighter ID; constructing the fighter does not supply any of them.
+
+### AI
+
+UN4 `battle_ai_update` reads `jiraiya_ai_character_values`
+(`BATTLE 0x00853C34`) for actual ID 21: **`{2,5}`**. NA2 ID 83's per-tick
+row at `BTL 0x008C35AC` is **`{1,30}`**. Both first values take the same
+50-roll branch and the second values are different alternate-target
+thresholds, as explained in
+[Orochimaru AI services](orochimaru.md#un4-orochimaru-and-na2-orochimaru-ai-services).
+
+UN4 `jiraiya_ai_flags` (`BATTLE 0x008538E5`) is **`0x10`**. NA2
+`jiraiya_ai_character_descriptor` (`BTL 0x008C319C`) is halfword `0x001F`
+with flags **`0x10`**. Neither sets initializer multiplier bits `1/4/8`;
+bit `0x10` selects the state-22 gates described in
+[Battle AI](../../session/battle_ai.md#character-descriptors-and-hard-coded-exceptions).
+
+UN4 `ai_react_incoming_action` (`BATTLE 0x006E4F10`) lists target IDs
+4/57/64, 35/48/53/60/73 and 18/19/39/47/54/61/77; ID 21 takes the default
+bucket-below-3 rule. NA2 ID 83 also takes the default rule. Neither ID is in
+either game's late-reaction exception for IDs 59/64 or main-reaction
+exception for ID 36.
+
+### Actual-ID gates
+
+UN4 code that tests actual ID 21:
+
+- `jiraiya_channel5` chooses the shared ponytail or the foreign head node,
+  as described in [Callback and identity-dependent behavior](#callback-and-identity-dependent-behavior).
+- `jiraiya_reversal_bind_animations` binds `ANM_4jryact12` only for ID 21.
+- `character_has_reversal_controller` (`0x003261B0`) returns 1 for IDs
+  50/25/21/16/14/9/7, the keys of `reversal_definition_table`.
+  `battle_request_reversal_transition` (`0x0031BD80`) does nothing for
+  other IDs. `battle_queue_fighter_ccs` (`0x00316140`) uses it to preload
+  `modename/ktys_smok.ccs` under load mask `0x20`.
+
+In NA2, every `li reg,0x53` in `SLPS_258.37` and `BTL.BIN` was checked in
+fighter, projectile, support and playback code. Only Jiraiya's own action-30
+frog code compares a fighter's ID with 83: channel 3, `jiraiya_channel5`
+(`0x002ED9D0`) and `jiraiya_frog_motion_update` (`0x002EC700`). The other
+checked hits compare jutsu resources, substates, effects, record fields,
+event values or sound and voice selectors. Hits in rendering, text,
+surface-audio and response-substate routines were not classified.
+
+### Roster and availability
+
+UN4 `jiraiya_character_select_roster_entry` (`0x005824E0`) is row 20 of the
+63-row roster source: `{ID 21, category 0, list row 2}`. Own-game
+`roster_character_valid` and `character_is_transformed` return zero for 21,
+and the forward form map has no Jiraiya pair. Availability is bit 0 of
+**profile `+0x7F5`** through `profile_roster_available`.
+
+NA2 ID 83 passes `roster_character_valid` (`0x001F7AA0`) and
+`roster_secondary_filter`, and has no base form.
+`character_select_fighter_available` therefore needs only bit 0 of
+**profile `+0x95B`**. NA2's filter rejects ID **21**, which is a definition
+slot without a dedicated fighter.
+
+### Jutsu admission
+
+NA2 `jutsu_native_owner` (`0x00307ED0`) treats a selector as a fighter's own
+only when `selector >> 1` equals the fighter ID and the selector's action
+owner halfword equals it too. Under that rule selectors 166/167 belong to 83,
+and numbers 42/43 belong to ID 21. Other selectors need the cross-character
+route. NA2 ID 83's row in
+`jutsu_character_exclusions`, `jiraiya_jutsu_exclusion_mapping`
+(`0x005C13C8`), selects list 4, the same list as Orochimaru 89. The shared
+special-selector set and `profile_ability_get` then apply as described in
+[Orochimaru fighter and jutsu admission](orochimaru.md#orochimaru-fighter-and-jutsu-admission).
+
+### Support
+
+These are NA2 relationships; no UN4 support table was identified.
+
+| Service | NA2 data for fighter 83 |
+| --- | --- |
+| Candidates | `jiraiya_support_candidates` (`BTL 0x008D2830`): `0x00,0x19,0x00`, Naruto 57 and Tsunade 84; setup uses Naruto |
+| Own support identity | `jiraiya_support_identity` (`0x008D28E8`): support `0x18` maps character 83 |
+| Exclusions | Supports `0x17` (`0x008D1A10`) and `0x18` (`0x008D1A26`) |
+| Support codes | No fighter-83 override; every support uses its wildcard code |
+| Recharge | 29 rows. Class 4 (×1.2) for `0x00`/`0x19`; class 1 (×0.9) for `0x0F`; class 3 (×1.1) for `0x01..0x07`, `0x10..0x16`, `0x1A`, `0x1F`; class 0 (×0.8) for `0x0B..0x0E`, `0x17`, `0x18`, `0x1C..0x1E`, `0x21`; absent `0x08..0x0A`, `0x1B`, `0x20` keep class 2 (×1.0) |
+| Linked Ultimate Jutsu | No `support_cinematic_admission_table` row has fighter 83 or support `0x18` |
+| Linked jutsu | None for fighter 83. As a support, `0x18` gives Tsunade 84 `jiraiya_tsunade_linked_jutsu` (`0x008D2892`): ordinary selector `0xA8` becomes `0x3D` |
+
+### Presentation and file names
+
+| Service | UN4 ID 21 | NA2 ID 83 |
+| --- | --- | --- |
+| Portrait | `jiraiya_character_select_display` (`0x0058218C`) `{3,0,0,52,96,80}`: `TEX_purecharsel04`, atlas origin (0,0) | `jiraiya_character_select_portrait` (`0x005D4AD4`): bank 5 (`TEX_purecharsel06`), x 168, y 336, 168 × 168 |
+| Name rectangle | `{53,97,78,30}` after the copy's +1/+1/−2 adjustment | `jiraiya_character_select_name_rectangle` (`0x005D5108`): `{53,97,78,30}` |
+| File-name rows | `0x0057A1F4/0x0057A334/0x0057A474/0x0057A5B4`: `2jrybod1`, `1jrybod1`, `3jry3eye`, `3jry3pct` | `0x0040223C/0x0040285C/0x00402E7C/0x0040349C`: the `jrw` names |

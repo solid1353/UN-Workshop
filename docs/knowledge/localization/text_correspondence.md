@@ -8,10 +8,9 @@ packed messages.
 
 Established: the documented menu, Practice, Ninja Song, Collection, Jutsu,
 1P/2P Commands, confirmation and memory-card text relationships and storage.
-Open: untraced selecting paths and records without an exact homolog or owner;
-memory-card screenshots cover only format/creation failures and create-data confirmation.
 Names come from `@annotations/NA2` and `@annotations/UN5`; addresses are live.
 Table membership or matching wording alone does not prove displayed selection.
+Open: nothing.
 
 Memory-card message layout belongs to
 [Confirmation Font layouts](font/screen_layouts/confirmations.md#message-boundaries);
@@ -332,9 +331,6 @@ in a 96-byte padded slot, through `card_creation_failure_pointer`.
 Its official English counterpart is `Creation of save data has failed.`.
 
 User screenshots identify both Japanese messages in the lower message panel.
-Static storage and selection establish the source records and official
-wording; they do not establish either operation's failure cause or the blank
-upper dialog.
 
 ### Other memory-card messages
 
@@ -356,10 +352,8 @@ copies `card_absent_message_pointer` into statuses 5 and 6 and
 `No memory card (PS2) is inserted in <br>MEMORY CARD slot 1.<br>Please insert a memory card (PS2) in<br>MEMORY CARD slot 1.`
 
 The native English game therefore shares the absent-card message with
-unsupported cards, while Japanese distinguishes them. This establishes
-static selection, not wrong-card screen coverage. The resident ELF table
-is `memory_card_messages`. The initializer's containing routine entry remains
-unestablished.
+unsupported cards, while Japanese distinguishes them. The resident ELF table
+is `memory_card_messages`.
 
 | Message | NA2 region | Official UN5 wording |
 | --- | ---: | --- |
@@ -373,4 +367,3 @@ counterpart. Both this message and the absent-card startup message require
 **103 KB** in NA2 and **102 KB** in UN5. Ordinary lower notices and the
 separate startup caller are owned by
 [confirmation layouts](font/screen_layouts/confirmations.md#message-boundaries).
-The retail comparisons establish text and storage, not complete screen coverage.

@@ -5,10 +5,12 @@
 Established in retail UN4 (`SLUS-21862`): record and request layouts,
 tier selection, ordinary streamed playback and damage, branch thresholds,
 form-result mapping, optional palette/script/position/filter interfaces,
-and the separate authored-ID-1 presentation, stage
-transition and seven-controller route. Open: complete resource and method
-closure of each selected move, and the authored damage/repeat/reaction choices
-in each special controller's concrete attack sets.
+the separate authored-ID-1 presentation, stage transition, seven-controller
+route and attack-pattern layout with every controller's descriptor values;
+the Naruto, Jiraiya, Tsunade and Orochimaru films' and summon stages'
+external providers against NA2's files; no UN4 film uses the transformed
+filter bank. Each move's own resources and methods belong to its character
+comparison. Nothing shared remains open.
 
 This document owns the checked UN4 contracts. The corresponding NA2 owners
 are [Ultimate Jutsu](../ultimate_jutsu.md),
@@ -65,8 +67,17 @@ at `+0x0C`, effect at `+0x0E`, and damage percent at `+0x10`.
 `jutsu_record_classify_playability` (`0x003CC6E0`) maps authored ID
 `0xFFFF` to classification `0xFF`, ID 0 to 3, and ID 1 directly to 4.
 Other IDs are searched in the per-character classification data relocated
-from SINF. `jutsu_record_playable_skill` returns zero for classifications
-below 2 or equal to 5; otherwise it returns the authored ID.
+from SINF, for characters 1..77: each character's pointer selects a
+`0xE`-byte row `{signed halfword count, six skill bytes, six class bytes}`,
+and the first matching skill gives its class. `jutsu_record_playable_skill`
+returns zero for classifications below 2 or equal to 5; otherwise it
+returns the authored ID. UN4's playable films are class 3; class 5 marks
+films no record plays. The checked class-5 skills `0x68..0x6D`,
+`0x70/0x71` and `0x85` have a one-row placeholder hit descriptor
+`{frame 1, weight 32768}` and empty English `STREAM.AFS` soundtrack
+members.
+NA2's SINF uses the same row layout, with class 4 for its playable films
+and class 5 for films no NA2 record selects.
 `sp_skill_play_classify` (`0x00330860`) independently returns 0 for skill 0,
 2 for skill 1, and 1 for other skills.
 
@@ -104,10 +115,15 @@ directory ID 16, and contains the `0x3274`-byte SINF at `0x348C`.
 `un4SpSkillRequestRow` stores display word/name at 0, main path at 4,
 extra/stream counts at 8/9, extra-array index at `0x0C`, and stream-pair
 index at `0x10`. Relocation converts these offsets/indices into pointers.
-The two-byte field at `0x0A` is not assigned a meaning here. UN4 has no
-NA2-style appearance-list pointer at row `+0x14`.
+The two-byte field at `0x0A` has no reader: the only code that reads the
+rows, through `sp_skill_request_rows` or the relocator's own pointer, is
+the relocator, `sp_skill_build_requests` and `sp_skill_play_start`, and
+none of them touches it; `BATTLE.BIN` and `HOME.BIN` reference neither
+pointer. UN4 has no NA2-style appearance-list pointer at row `+0x14`.
 Relocation clears main paths for rows 0 and 1; their authored placeholder
-paths do not establish playback of either row.
+paths do not establish playback of either row. It decodes each row title in
+place by inverting the second byte of every double-byte character; NA2's
+relocator does the same.
 
 `sp_skill_build_requests` (`0x00330590`) emits main and extra requests with
 flags `0x1000`, followed by streams with `0x400` for the first and zero for
@@ -123,7 +139,51 @@ examples below each have one stream.
 | `0x59` | `str/d57_10e.ccs` | `pl/2nrwbod1.ccs`, `pl/1nwvbod1.ccs` | `str/d57_10.ccs` |
 | `0x5A` | `str/d57_20e.ccs` | `pl/2nrwbod1.ccs` | `str/d57_20.ccs` |
 
-These are decoded request identities, not complete typed dependency closures.
+These rows name the request files; the external references those files
+make are below.
+
+`sp_skill_play_start` first asks `sp_skill_resolve_opponent_skill`
+(`0x003304A0`) for a replacement. It searches `sp_skill_opponent_groups`
+(`0x00609818`), relocated from the SINF `SEXC` block, for the defender ID;
+each row holds a replacement skill, the requested skill and a stream path.
+A replacement other than -1 changes the skill before request and hit lookup;
+-1 keeps the skill and lets the row's path override the stream. Retail has
+two groups:
+
+| Defender | Requested skill | Replacement | Stream path |
+| ---: | ---: | ---: | --- |
+| 9 | `0x57` | `0x58` | — |
+| `0x4C` | `0x05` | `0x90` | — |
+| `0x4C` | `0x1C` | `0x91` | — |
+| `0x4C` | `0x0D`, `0x20`, `0x25`, `0x48`, `0x80`, `0x57` | — | one per skill; `0x57` uses `str/d46_12.ccs` |
+
+Anko's record 99 (skill `0x58`, `str/d46_11.ccs`) follows record 98 in her
+list with the same category, so ordinary selection never reaches it; the
+film plays only through the defender-9 replacement.
+
+### External providers against NA2's files
+
+A streamed film binds a `#`-marked directory row by namespace text and
+object name to an already-published container, the newest match winning
+([cross-container references](../../../game/files/ccs_runtime.md#cross-container-references)).
+For the UN4 films `D57_10/20/30`, `D21_20/30`, `D25_10/20` and `D09_20/30`
+(each with its `E` file) and the stages `KTYS_BNT/KTY/MND`, every marked key
+has a typed definition in the film's own pair or in one of these providers,
+except as noted:
+
+| Provider | Used by | Same-named NA2 file |
+| --- | --- | --- |
+| `PL/1CMNBOD1` | Every film, 69 keys | Byte-identical decompressed |
+| `CMN/2CMNBOD1` | The three stages, 34 keys | Byte-identical decompressed |
+| `STRMCMN` | `D57_20`, `D57_30`, 2 keys | Different file; defines both keys |
+| `PL/1NRWBOD1`, `PL/2NRWBOD1`, `PL/1JRYBOD1`, `PL/1TNDBOD1`, `PL/1ORCBOD1` | That character's films | Different file; defines every used key |
+| `PL/1NWVBOD1` | `D57_10`, `D57_30`, 124 keys | Different file; lacks the 55 `OBJ_1kyw00t0*` skeleton keys |
+
+`TEX_sampling00` (`e\0x\tex\sampling00.bmp`) is marked without a stored
+definition in six of the films; both games' `EFFECT0X` and NA2's own
+`D57_20E` mark it the same way. `KTYS_MND`'s four `emnd_smp0` sampling keys
+also have no stored definition, as recorded in the
+[Orochimaru comparison](orochimaru.md#manda-stage-and-code-selected-effects).
 
 `sp_skill_play_start` (`0x003308A0`) resolves a replacement skill before
 request and hit-descriptor lookup. It allocates a `0x301`-byte owner and
@@ -169,7 +229,8 @@ The [UN4/NA2 optional-format comparison](#un4-and-na2-optional-cinematic-formats
 owns the checked field order, name handling, script timing, defender-index
 and CCFM interfaces. Palette row order and basename handling differ;
 position and CCFM serialization agree, with a transformed-filter reader
-difference. Selected payloads and providers remain separate questions.
+difference that no UN4 film exercises. Each move's own payloads and
+providers belong to its character comparison.
 
 ## Ordinary contest, damage and form result
 
@@ -207,6 +268,14 @@ and sound bytes at 2/3, unsigned damage/chakra halfwords at 4/6.
 `sp_skill_play_frame` divides both fractions by 32768. It consumes rows
 only when the next row's frame equals the container cursor; it does not
 catch up a row whose frame was skipped.
+
+The film soundtrack comes from `audio_prepare_skill_soundtrack`
+(`0x001D7850`): for skills 0..145 it requests music preset 9 with
+`STREAM.AFS` member skill for English voices and skill + 146 for Japanese
+(`audio_bank_set_selector`). The checked tracks are stereo 24 kHz ADX
+except English member 111 (48 kHz). NA2's routine (`0x001D5BE0`) uses
+member = skill in a single 184-member bank. There is no separate film cue
+table; each hit row's sound byte is the cue.
 
 Before a nonzero contest total, damage uses `D * fraction`. Once a total
 exists, the remaining fractions redistribute the undealt total. Chakra debit
@@ -280,11 +349,22 @@ For ID 9, the row at `0x00859D10` is `{4,9,22,0}`: the lookup returns entry
 Neither Naruto ID 1 nor ID 57 is a key in this table. That fact does not
 negate Naruto's separate low-HP streamed path.
 
+The resident ELF holds a second copy of the seven keys:
+`character_has_reversal_controller` (`0x003261B0`) returns 1 for IDs
+50, 25, 21, 16, 14, 9 and 7, otherwise 0. It gates
+`battle_request_reversal_transition`, and in `battle_queue_fighter_ccs`
+(`0x00316140`) resource-mask bit `0x20` loads `modename/ktys_smok.ccs`
+only for such a character when that file is not already published.
+The table and this check are separate copies of the same key set.
+
 ### Rebuild, active phase and return
 
+When the manager exists and that check passes,
 `battle_request_reversal_transition` sets manager flag `0x80`, pending
 stage byte `+0xFE` to the entry's resource index and side byte `+0x4F5`
 to `side + 1`. `battle_rebuild_for_pending_reversal` (`0x0031D2E0`)
+first saves both fighters' HP and chakra through
+`battle_save_fighter_hp_chakra` (`0x003236C0`, side -2, mask 3), then
 tears down the session, saves previous stage `+0xFC` into `+0xFD`, adopts
 the pending stage and queues it. `battle_select_stage_submode`
 (`0x00322340`) selects submode 2 for stage indices 18..24; otherwise it
@@ -330,8 +410,49 @@ mode-2 floor and ordinary zero clamp.
 
 Thus damage for an admitted ordinary reaction comes from the synthetic action
 record and ordinary factors, separately from the cinematic percentage/fraction
-path. The concrete controllers' authored damage, repeat counts, reaction choices
-and number of admitted contacts remain to be closed for each selected entry.
+path.
+
+#### Attack patterns
+
+Each controller's descriptor, held at controller `+0xF4`, has three
+`0x2C`-byte attack patterns at `+0x0C` and CPU weights at `+0x98`.
+`reversal_game_pattern_for_state` (`0x00749D80`) selects pattern 0 for
+state 3, 1 for state 1 and 2 for state 2. Pattern 0 contacts use collision
+group `+0x60`; patterns 1 and 2 use `+0x84`.
+
+| Pattern offset | Field | Consumer |
+| --- | --- | --- |
+| `+0x00..+0x10` | Five attack-name pointers, one per UI language | `reversal_bind_hit_descriptor` copies the `ui_language_index` entry to action `+0x04` |
+| `+0x16` | Voice trigger count | State-count voice dispatch |
+| `+0x18` | Final reaction | Last contact |
+| `+0x1A` | Intermediate reaction | Earlier contacts, with response multiplier 1 |
+| `+0x1C` | Damage, float | Action `+0x34`, times controller `+0x1D4` |
+| `+0x20` | Final response multiplier, float | Last contact |
+| `+0x24` | Contact cap | Action repeat `+0x3E` |
+| `+0x26 / +0x28` | Two signed halfwords | When `+0x26` is positive, each contact adds both to controller counter `+0xAA`, `0x7FFF` counting as 1 |
+
+`reversal_game_check_attack_contact` stops checking once the pattern's
+contact count reaches the cap, and the damage consumer divides action
+damage by the same cap. A pattern whose every contact is admitted therefore
+deals its damage value once in total, before ordinary factors. Controller
+code can rewrite the bound action afterwards; the
+[Jiraiya](jiraiya.md#gamabunta-summon-controller),
+[Tsunade](tsunade.md#katsuyu-stagecontroller-ultimate-jutsu) and
+[Orochimaru](orochimaru.md#reversal-entry-4) comparisons record entries
+2, 3 and 4 with those rewrites.
+The other descriptors hold:
+
+| Entry / descriptor | Pattern | Damage | Cap | Final / intermediate reaction | Final multiplier | Voice trigger |
+| --- | ---: | ---: | ---: | --- | ---: | ---: |
+| 0 `shukaku_reversal_descriptor`, `0x00858310` | 0 / 1 / 2 | 0.02 / 0.035 / 0.05 | 2 / 1 / 6 | `0x10/0x00`, `0x10/0x10`, `0x10/0x10` | 12 / 6 / 8 | 24 / 4 / 4 |
+| 1 `soutourou_reversal_descriptor`, `0x008585A0` | 0 / 1 / 2 | 0.02 / 0.035 / 0.05 | 1 / 9 / 18 | `0x10/0x01`, `0x10/0x10`, `0x10/0x10` | 4 / 10 / 10 | 16 / 4 / 4 |
+| 5 `sakura_reversal_descriptor`, `0x00858F90` | 0 / 1 / 2 | 0.005 / 0.035 / 0.05 | 1 / 1 / 1 | `0x04/0x01`, `0x13/0x01`, `0x10/0x01` | 1 / 4 / 12 | 8 / 4 / 8 |
+| 6 `chouji_reversal_descriptor`, `0x008591F0` | 0 / 1 / 2 | 0.02 / 0.02 / 0.05 | 1 / 1 / 1 | `0x10/0x01`, `0x10/0x01`, `0x13/0x01` | 12 / 12 / 12 | 1 / 4 / 4 |
+
+Their initializers, at vtable `+0x40`, are `shukaku_reversal_initialize`
+(`0x00730BF0`), `soutourou_reversal_initialize` (`0x00733870`),
+`sakura_reversal_initialize` (`0x007404F0`) and
+`chouji_reversal_initialize` (`0x00742FF0`).
 
 `reversal_game_request_voice` (`0x00730600`) uses streamed family 6,
 with entry-specific cue bases `{0,16,20,24,8,4,12}` plus phase 0..3.
@@ -346,14 +467,14 @@ releases its input locks and graph through `reversal_game_destroy_current`
 
 These observations establish a temporary interactive battle phase with a
 separate lifetime, rather than an alternative ordinary cinematic hit script.
-They do not establish every concrete controller's authored attack set or
-complete asset dependencies.
+Entries 2, 3 and 4 have their resources, methods and code-side rewrites in
+the Jiraiya, Tsunade and Orochimaru comparisons.
 
 ## UN4 and NA2 optional cinematic formats
 
 This comparison uses retail UN4 `SLUS_218.62` and NA2 `SLPS_258.37`.
-It establishes the shared readers' interfaces, independently of the selected
-character payloads below. CCS frame commands and camera records remain owned
+It establishes the shared readers' interfaces; each film's payloads belong
+to its character comparison. CCS frame commands and camera records remain owned
 by [CCS runtime](../../../game/files/ccs_runtime.md#frame-payloads).
 
 ### Resident palette rows and appearance flags
@@ -432,8 +553,8 @@ defender entries. NA2 fills entries through ID 93 after a short table with
 a shared cleared `0xC0`-byte buffer; it does not map same-name fighters
 between games. NA2 then applies its independently authored
 [position dispatch](../ultimate_jutsu_cinematics.md#defender-specific-draw-and-placement-dispatch).
-The selected Shizune/Kabuto tables below demonstrate both changed ID
-coverage and changed same-name position values.
+The [Shizune/Kabuto tables](shizune_kabuto.md#shizunekabuto-offsets-filters-and-resident-scripts)
+show both changed ID coverage and changed same-name position values.
 
 ### CCFM filter payloads and consumers
 
@@ -480,10 +601,11 @@ Renderer ownership and viewport publication belong to
 One reader difference is established by UN4 instructions
 `0x0039A69C..0x0039A6C0`: it allocates the transformed bank's threshold
 array and skips the source threshold bytes without copying them. NA2
-copies those bytes. This establishes a reader difference, not a nonempty
-donor bank, a shipped failure or equal filter output. The selected
-byte-identical Shizune/Kabuto and Tsunade payload comparisons remain
-bounded to their named films.
+copies those bytes. No UN4 film exercises it: every one of the 143 CCFM
+`BIN_strfilter_*` payloads in the English `STR` folder has a zero
+transformed record count, so both readers consume only that bank's
+four-byte header. `BIN_strfilter_d47_10` is the one `STR` filter blob
+that is not CCFM.
 
 Version `>= 0x200` adds a fifth block through `ccfm_read_child_timeline`
 (UN4 `0x00399130`, NA2 `0x0036FA50`): unsigned 32-bit child count
@@ -519,7 +641,6 @@ the integer cinematic frame; ordinary stepping uses the retained fixed-point
 rate. Release frees the generated mode-2 arrays and runtime payload;
 mode-1 words remain borrowed from the serialized input.
 
-Thus the checked CCFM serialization and binding interfaces agree. This
-comparison does not establish complete packet-byte equivalence, every
-selected provider/target or participant-wrapper lifetime. Those depend on
-the exact film and are separate from the format reader contracts.
+Thus the checked CCFM serialization and binding interfaces agree. Each
+film's payload bytes, targets and participant wrappers belong to its
+character comparison.

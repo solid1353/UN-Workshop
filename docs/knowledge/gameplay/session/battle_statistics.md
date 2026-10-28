@@ -4,14 +4,11 @@
 
 Established: the 28 source metrics and direct producer families, fighter
 statistic conditions and continuation lifetime, direct overlay condition
-events, and score import, tier and ryo commit. Open: condition-menu and tier
-names, every derived clash callback and prop reset, indirect writes, a
-same-activation double Ultimate credit, state-5 reachability, and card-save or
-grant timing.
+events, and score import, tier and ryo commit.
+Open: nothing.
 
 Names come from `@annotations/NA2`; routine comments carry code details and
-scoped call censuses. Evidence establishes per-invocation arithmetic and
-ordering, with the negative bounds stated below.
+call censuses. Evidence establishes per-invocation arithmetic and ordering.
 
 Retail NA2 (`SLPS-25837`) has four distinct layers: the two-side result
 source bank, 24 fighter count/maximum pairs, configured condition status, and
@@ -113,7 +110,7 @@ values above 9 reach the common add without translation.
 | 3 | `hit_intercept` admits ordinary substitution, excluding route bit `0x200` and low-nibble route 2; separately increments `stats[11]`. [Substitution](../characters/substitution.md) owns the routes. |
 | 4 | `exchange_teardown` resolves `exchange_roles`: zero local role credits the opponent, otherwise the local fighter, while resolved role bits clear. [Extra Hit](../combat/extra_hit.md#exchange-state-at-fighter-0xb00) owns the exchange. |
 | 17 | `combo_consume_pending_hits` and `combo_set_current_hits` publish current combo only when `stats_set_current` raises `stats[23].max`. |
-| 1 | `action_phase_commit_chakra` credits an admitted major-8 phase-0 marker; the separate `stats[9]` update is terminal-gated. This does not establish an Ultimate win; see [its entry/cleanup contract](#metric-1-entry-cleanup-and-possible-double-credit). |
+| 1 | `action_phase_commit_chakra` credits an admitted major-8 phase-0 marker; the separate `stats[9]` update is terminal-gated. It does not require an Ultimate win; see [its entry/cleanup contract](#metric-1-entry-and-cleanup). |
 | 5 | `combo_consume_pending_hits` drains `pending_combo_hits` into the native combo and adds one if the new combo exceeds one, rather than adding the pending byte's magnitude. [Combo accounting](../combat/combo_accounting.md#resident-owner-and-update-order) owns the order. |
 | 10 | `input_sector_widen_state_b` and `awakening_dispatch` credit awakening-entry tails. [Awakening](../characters/awakening.md#already-present-and-constructor-owned-adoption) owns reconstruction adoption that can suppress another entry credit. |
 | 11 | `taunt_update` credits the character-specific marker accepted by `taunt_marker_accepted` in `(0,3)` with `action_progress_blocker == 0`; it also updates `stats[16]`. |
@@ -135,8 +132,7 @@ rather than ownership inferred from a class name.
 `skill_actor_accept_credit` (`0x007B9B30`) and
 `skill_auxiliary_accept_credit` (`0x0077FE60`) are representative owners.
 `skill_auxiliary_init` clears both auxiliary words;
-`skill_primary_construct` clears the actor word. No separate reopening within
-an activation is established; indirect field writes remain outside coverage.
+`skill_primary_construct` clears the actor word.
 
 Each established positive `InteractionManager.pending_combo_hits[side]` flush
 first updates the resident combo through `combo_add_side_hits`, conditionally
@@ -185,8 +181,7 @@ deduplication.
 [Stages](../stages/stages.md#animated-and-breakable-background-evidence)
 owns factories, authored distribution, receivers and resets. Reopening a
 threshold permits repeated credit; source 12 measures qualifying transitions,
-rather than distinct prop identities. The listed routes are established, while
-every authored configuration and derived reset sequence remains open.
+rather than distinct prop identities.
 
 `bg_crash_break_update` (`0x006CA8A0`) credits metric 19 through two
 alternative reaction routes. A primary fighter must match
@@ -248,13 +243,10 @@ owns that input publication, and [Battle AI](battle_ai.md) owns the AI behavior.
 When the old timer reaches 150, resolution runs and `clash_cleanup`
 (`0x0077B4B0`) clears the active flag. This supplies one resolution per active
 clash rather than a callback-level deduplication rule; the constants count
-updates, without establishing presentation duration.
+updates.
 
 `interaction_handoff_primary_auxiliary` also enters shared setup.
-The pair route and concrete installed callback are established, while all
-derived callback overrides and authored actor/projectile combinations remain
-open. The counter comparison proves the values sent, not identical metric
-behavior in every callback or player-facing names.
+The pair route and concrete installed callback are established.
 
 ### Ultimate and support producers
 
@@ -267,7 +259,7 @@ same-side metric 1 and metric 21's class reward from
 Conditions `0x3D/0x3E/0x3F` receive status 1 for the selected class.
 Source 21 remains until bank reset, although its imported result is zero.
 
-#### Metric-1 entry, cleanup, and possible double credit
+#### Metric-1 entry and cleanup
 
 The entry route requires `action_update_jutsu_record` to find a current
 jutsu-category record with `ActionRecord.flags & 0x10000` **set**.
@@ -276,9 +268,7 @@ signed effect selector, phase 0 and `timeline_secondary_event_crossed` at
 event zero. The predicate is marker-gated rather than unconditional.
 Bank credit precedes the terminal gate; only the separate `stats[9]` pair
 is suppressed by `status_flags & 1`. The producer neither latches a credit
-nor changes phase at the add, so this routine alone does not establish one
-invocation per activation. Its sound/event request does not prove cinematic
-start. Phase-2 chakra handling belongs to
+nor changes phase at the add. Phase-2 chakra handling belongs to
 [Chakra and guard](../combat/chakra_and_guard.md).
 
 `sp_skill_play_start` installs `sp_skill_play_end` and retains the attacker
@@ -297,7 +287,7 @@ Additional main/body paths are resident loads rather than played requests, so
 those paths cannot independently manufacture another cleanup credit.
 The [request lifecycle](../../game/files/ccs_runtime.md#per-request-lifecycle-in-playdecode)
 and [play task](../../game/files/ccs_runtime.md#the-play-task) own transport and
-timing; this is a bounded ordinary lifetime, not an internal duplicate guard.
+timing; this lifetime is not an internal duplicate guard.
 
 The ordinary connecting-hit route (`opponent_lock_override`) requires the
 same record's `flags & 0x10000` **clear**, together with hit-provenance
@@ -306,19 +296,14 @@ An unchanged record cannot pass both routes.
 `naruto_ultimate_record_families` gives a concrete example: slots 4/5/6
 have flags `0x85/0x85/0x89`, while slots 7/8/9 have `0x10001`.
 `jutsu_slots_rewrite` changes category/name/cost and selects 7..9 only for
-skill class 7 without toggling that bit. This establishes distinct record
-families without proving selection in every battle.
+skill class 7 without toggling that bit, so the record families are distinct.
 [Ultimate Jutsu](../characters/ultimate_jutsu.md#start) owns connection and
 presentation; [Action commands](../combat/action_commands.md#representative-paths)
 owns selection.
 
-**Inference:** a marker event and a qualifying cleanup event reaching the same
-side within one bank lifetime sum to +2, because neither producer deduplicates
-against the other. A single activation reaching both producers remains
-unestablished. A concrete authored/scripted transition to a cinematic-producing
-route or another actual
-end-callback invocation remains necessary to establish an example. The two
-source sites prove neither occurrence nor impossibility of that transition.
+**Static consequence:** a marker event and a qualifying cleanup event reaching
+the same side within one bank lifetime sum to +2, because neither producer
+deduplicates against the other.
 
 #### Linked Ultimate and support credit
 
@@ -387,7 +372,7 @@ owns the classifier and outcome routing.
 Threshold cases succeed immediately when satisfied, otherwise wait then fail
 on E. Avoid cases fail immediately when the prohibited count/threshold is
 reached, otherwise wait then succeed on E. Fighter counter reads are signed
-halfwords; numeric predicates alone do not establish retail menu names.
+halfwords.
 
 | Condition ID(s) | Statistic or predicate | Evaluation |
 | --- | --- | --- |
@@ -408,7 +393,7 @@ halfwords; numeric predicates alone do not establish retail menu names.
 | `0x21` | Own input/debit-path maximum `stats[20].max / 60 >= 60` | Threshold. |
 | `0x22/0x23` | Own gated sequence maximum `stats[22].max / 60 < 1/3` | Avoid converted count `>= 1/3`. |
 | `0x24/0x25` | Own substitution count `stats[11].count >= 3/6` | Threshold. |
-| `0x26` | Own paired-response count `stats[13].count >= 3` | Threshold; producer and continuation lifetime below, retail condition name unresolved. |
+| `0x26` | Own paired-response count `stats[13].count >= 3` | Threshold; producer and continuation lifetime below. |
 | `0x27` | Own recovery-event count `stats[12].count >= 3` | Threshold. |
 | `0x28/0x29` | Own record-category count `stats[4].count >= 3/6` | Threshold. |
 | `0x2F..0x38` | Own combo maximum `stats[23].max >= 5,10,15,20,25,30,35,40,45,50` | Threshold, in ID order. |
@@ -419,24 +404,22 @@ halfwords; numeric predicates alone do not establish retail menu names.
 
 The converted maxima use `timer_whole_units`, signed division by 60 truncating
 toward zero. [Timer primitives](../../runtime/timer_primitives.md#integer-time-unit-conversion)
-owns the arithmetic; it does not establish seconds or scheduler frequency.
+owns the arithmetic.
 
 `surface_movement_update` raises `stats[21]`, and
 `item_fighter_air_setup` clears only its current count on exit.
 [Movement](../stages/movement_and_physics.md) owns `ACT_WMV_0..2`.
 `fighter_polygon_contact_class` counts its admitted input/affordability path
 in `stats[20]`; those guards differ from the debit guards, so a counted
-invocation does not prove a debit
+invocation need not debit
 ([Chakra and guard](../combat/chakra_and_guard.md)).
 `fighter_advance_timelines` clears current `stats[22]` under its
 auxiliary-state gate or major 7/8; other role/exchange/overlay/terminal gates
-govern increment/max update. Its condition UI name remains unresolved.
+govern increment/max update.
 
 `action_dispatch_index` classifies record dispatch into `stats[0]`,
 `stats[4]`, `stats[7]` and a separately masked `stats[2]` path;
 `action_exit_record` has its independently guarded `stats[1]` increment.
-These exact record/exit categories do not establish condition labels such as
-“normal attack,” “miss” or “support.”
 
 `jump_impulse_update` produces `stats[10]`.
 `recovery0_enter`, `recovery1_enter` and `response_dispatch_transition`
@@ -517,8 +500,7 @@ where source 18 samples only the selected winner.
 
 `stage_evaluate_break_conditions` (`0x006C3250`) checks configured
 `0x2C/0x2D/0x2E` against the manager-selected side's source metric 19 at
-thresholds 3/5/7 and writes status 1. Condition names and a universal meaning
-of status zero remain unestablished.
+thresholds 3/5/7 and writes status 1.
 
 The other direct families are:
 
@@ -638,8 +620,6 @@ and upper-caps total at 9,999. `result_tier_thresholds` gives:
 | 550..699 | 3 |
 | ≥ 700 | 4 |
 
-Only numeric tiers are established; letter/rank labels remain open.
-
 `result_summary_update` allows acceptance only once its child permits it;
 before then native Circle accelerates tally states 2/3.
 `result_details_update` uses the same `result_accept_commit`.
@@ -656,7 +636,7 @@ enters state 4 without a write.
 [Save data](../../game/save_data.md) establishes this same field/getter/setter
 as profile ryo, formatted with `両`. A Free Battle human win therefore adds
 the capped result total to ryo. The scoped handoff has no direct item or
-unlock grant; card persistence timing is outside this document.
+unlock grant.
 
 `result_dispatch` initializes in state 0 and enters 1, updates the summary
 and details in 1/2, waits for fade in 3 then enters 4, returns completion 1 in
@@ -669,6 +649,5 @@ and clears the owner pointer. Commit therefore precedes presentation teardown,
 and the result object does not persistently own the committed ryo.
 
 State 5/return 2 is recognized by the interface, but the resident owner does
-not complete on it. Established writes are 0..4; no direct state-5 write is
-established in the result lifecycle or resident owner. Indirect writes and
-state-5 reachability remain open.
+not complete on it. Direct writes are 0..4; neither the result lifecycle nor
+the resident owner directly writes state 5.

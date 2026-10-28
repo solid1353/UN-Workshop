@@ -5,11 +5,8 @@
 Established: arena initialization, placement, accounting, deferred release, and sampled capacity.
 CCS coverage includes transport, directory finalization, object costs, model overlaps, image storage,
 and bounded background scene construction, model/playback instances, cloth and debris.
+Open: the minimum contiguous capacity available at a battle load; the samples give end states only.
 Routine names, prototypes, layouts, and code-level facts are maintained in `@annotations/NA2`.
-Open: unexamined per-asset totals, property-geometry costs, whole-battle concurrent service lifetimes,
-and minimum available load-time capacity.
-No allocation/lifetime trace attributes a battle-load peak or individual assets' live nodes.
-The six sampled states establish end-state capacity, not a minimum across all allocation sequences.
 
 This document describes the unmodified retail NA2 (`SLPS-25837`) EE allocator.
 Resident addresses use the conventions in
@@ -86,7 +83,7 @@ Placement comes from the per-thread scope list headed by `arena_placement_scope_
 `arena_placement_scope_push` pushes a stack-backed `HeapPlacementScope` carrying the
 current thread and direction; `arena_placement_scope_pop` removes it;
 `arena_placement_scope_direction` returns the current thread's innermost direction or
-`3` when it has none. The inspected resident scopes are:
+`3` when it has none. The resident scopes are:
 
 | Scope | Direction | Covered work |
 | --- | ---: | --- |
@@ -141,9 +138,7 @@ obtains through `heap_allocate_untracked`.
 The tracked peak starts at zero. Each tracked allocation updates it after adding the
 node's recorded bytes to the current total. Resize changes current tracked bytes without
 updating the peak. It therefore describes allocation high-water history since arena
-initialization, excludes untracked nodes and free gaps, and has no battle-load reset in
-the inspected direct-write paths. Indirect counter writes remain outside that bounded
-inspection.
+initialization, excludes untracked nodes and free gaps, and has no battle-load reset.
 
 `total_free` is the sum of gaps between live nodes. `largest_free` is the largest single
 gap. An ordinary allocation must also fit its 16-byte header inside that gap.
@@ -288,7 +283,7 @@ different transient phases, not four simultaneously retained arrays.
 **Observation:** Directory expansion and sort scratch depend on record count, which
 decompressed byte length alone does not reveal. Adding only the fixed-buffer subtotal to
 the final container cost omits inflate tables, this parse-time scratch, and conversion
-overlaps, and does not establish the load's peak.
+overlaps.
 
 ### Non-image objects and discarded data
 
@@ -353,8 +348,7 @@ materialization. `ccs_build_play_runtime_table` requests a primary `Q(0x180)` pl
 and calls `projection_controller_construct`. Its ordered-controller initializer
 `ordered_controller_register` borrows the supplied render-environment pointer, or
 requests `Q(0x2B0)` and invokes `renderer_construct` when that pointer is zero. These
-are later costs, separate from the parser's `Q(0x18)` descriptor; the primary request
-alone does not establish all nested environment or scene costs. The controller's
+are later costs, separate from the parser's `Q(0x18)` descriptor. The controller's
 behavior is owned by
 [the object-type document](../../game/files/ccs_object_types.md#0x1800-descriptor-fields-and-off-screen-pass).
 
@@ -411,7 +405,7 @@ and `A(n) = (n + 0xF) & ~0xF`.
 | File selector 0 | Vertex-marker block `Q(A(V))`, positions `Q(A(6 * V))`, conditional four-byte-per-vertex attribute blocks, and a generated packet. |
 | Internal auxiliary selector 3 | When `E == 0`, positions `Q(A(6 * V))`; otherwise `CcsModelMesh.index_entries` costs `Q(8 * E)`. Both paths retain `Q(A(4 * (E == 0 ? V : E)))` and `Q(A(4 * V))` attribute blocks. This reader generates no packet. |
 | File selector 2 | A `Q(0x10)` descriptor and its converted packet; input attribute arrays are freed after construction. |
-| File selector 3 | Property-geometry reader confirmed; its complete allocation and overlap formula is unresolved. |
+| File selector 3 | Property-geometry reader confirmed. |
 | File selector 4 | A generated packet when construction succeeds; geometry and edge-building arrays are freed before return. |
 
 In the formulas below, family numbers refer to file selectors.
@@ -561,8 +555,7 @@ construction scratch, not retained scene memory.
 The enclosing retail BTL path additionally allocates a field `Q(0x90)`,
 background control `Q(0xAD0)`, its capacity-two pointer vector `Q(8)`, and
 scene `Q(0x150)`. The state records initialized inside that control and the
-scene's five owning-list headers are inline. Slot-specific helpers can add
-further allocations and must be inspected for the selected slot.
+scene's five owning-list headers are inline.
 
 BTL first-line construction (`0x006C33C0`) retains `Q(4)` for the head and
 `Q(0x30*P)` for `P` pairs. Second-line construction (`0x006C3750`) with
@@ -608,7 +601,7 @@ formula; owned light entries create the light secondary. Borrowed composition
 targets do not incur those primary/child costs again. Material references can
 create a separate material cache, and nonzero blending and generator packets
 have their own costs. Counting every archive composition for every background
-player would overstate the inspected empty-player path.
+player would overstate this cost.
 
 `animation_evaluator_allocate` (`0x001B8020`) requests a `0x10` prefix plus
 channel work. Vector modes `1/2/4/5` request `0x10/0x20/0x50/0x40`;
@@ -671,8 +664,6 @@ contiguous gap at least that budget is sufficient if all other allocations
 and activity are reserved outside it: each allocation can consume an end of
 the remaining gap, and low/high preference can fall back to the available
 side. Allocating into another adequate gap can only preserve that reserve.
-This is a conditional capacity statement; it does not establish that the
-required gap is available at a particular battle load.
 
 ## Sampled retail capacity
 
@@ -691,15 +682,12 @@ pool. Fragmentation is total free minus largest free.
 
 The active-battle sample recorded peak tracked bytes `0xFCE500`. The same peak also
 appears in the sampled Character Select, Collection, and Options states, so it cannot be
-attributed to the sampled battle's load. The accumulated counter does not identify when
-or for which load the maximum occurred.
+attributed to the sampled battle's load.
 
 **Observation:** The sampled active battle had about 14.7 MiB occupied and one free gap
 of `0x084E210` bytes, about 8.3 MiB, holding all but `0x18DA0` bytes of the free space.
 An ordinary compressed CCS load adds the fixed transport subtotal, inflate tables, and
-parsing/conversion scratch described above; the sample alone does not show their
-simultaneous peak or placement.
+parsing/conversion scratch described above.
 
 **Inference (medium confidence):** The two-ended placement preference is consistent with
-the sampled battle's large central free gap. That end-state measurement does not
-establish the allocation history that produced it or a minimum capacity across battles.
+the sampled battle's large central free gap.

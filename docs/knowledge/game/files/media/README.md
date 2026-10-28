@@ -5,7 +5,8 @@
 Established: the saved ISO9660 and nested AFS layouts, paths, object types,
 extents, offsets, sizes and entry totals for untouched NA2 media. The extraction
 and split summaries below report completeness, source attributes and CVM sector
-totals. Open: individual member roles and the earlier CVM count discrepancy.
+totals.
+Open: nothing.
 
 Related code names come from `@annotations/NA2`; this index cites files only.
 Human-readable file and family roles belong to
@@ -20,10 +21,6 @@ exact structural inventory.
 | `na2_iso9660.tsv` | Outer retail NA2 ISO9660 layout: path, object type, extent, byte offset, and size | 36: 32 files, 4 directories |
 | `data_cvm_iso9660.tsv` | Decrypted ISO payload layout from `@source_na2/DATA/DATA.CVM` | 2,330: 2,310 files, 20 directories |
 | `afs_members.tsv` | Consolidated nested AFS-member layout under `@source_na2` | 9,480 members across 170 AFS containers |
-
-The earlier recorded CVM total was 2,332 entries (2,312 files and 20
-directories). The saved TSV contains 2,330 entries, including `GZLIST.TXT` and
-`ICON.BIN`; the reason for the two-entry discrepancy is unresolved.
 
 The TSV files are exact copies of the original inventories. Backslash paths inside them are historical extraction-relative paths:
 

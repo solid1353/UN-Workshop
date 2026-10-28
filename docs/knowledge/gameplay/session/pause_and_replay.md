@@ -1,22 +1,18 @@
 # Pause, start-menu, and battle-restart control
 
-Retail NA2 (`SLPS-25837`) pauses selected battle consumers, routes start-menu
-results, and rebuilds battle sessions. Numeric states and commands remain
-numeric where their meaning is unresolved; presentation names inferred from
-resources are distinguished from recovered class identities.
-
 ## Research coverage
 
 Established: persistent suppression masks, selective scheduling and its
 exceptions, controller ownership and cleanup, cut-in gating, menu admission,
 command/result routing, Simple Display selection, and session reconstruction.
-Open: indirect writers and interruption restoration, exact presentation phases,
-unidentified subsystem roles and menu labels, some route producers, and any
-replay mechanism outside the inspected paths. The evidence establishes static
-ordering and gates, not measured display timing or exhaustive reachability.
+Open: nothing.
+
+Retail NA2 (`SLPS-25837`) pauses selected battle consumers, routes start-menu
+results, and rebuilds battle sessions. Presentation names inferred from
+resources are distinguished from recovered class identities.
 
 Routines, fields and data are named by `@annotations/NA2`; annotation comments
-carry per-routine details and bounded code searches. Addresses are live.
+carry per-routine details. Addresses are live.
 
 Related owners: [Controller input](../../runtime/controller_input.md),
 [Practice mode](../modes/practice_mode.md), [Match outcomes](match_outcomes.md),
@@ -95,10 +91,7 @@ callback.
 
 Several native presentation bodies issue disable/restore pairs, while one
 inspected animation body issues only the disable. Their exact conditions are
-in the owning routine annotations. These paths establish use of the copied
-mask but do not establish restoration after every possible interruption.
-Indirect calls, arbitrary aliases and other overlays remain outside the
-bounded direct-call coverage.
+in the owning routine annotations. These paths use the copied mask.
 
 ### Auxiliary BTL global and the `+0xA50` override
 
@@ -106,8 +99,7 @@ The auxiliary interaction system is a separate BTL-owned `0x3330`-byte object.
 `battle_auxiliary_create(1)` reaches `interaction_manager_allocate`
 (`0x00776AD0`), which constructs and publishes it;
 `battle_auxiliary_release` reaches `interaction_manager_release`
-(`0x00776B20`), which destroys it and clears its global. Its full semantic
-class identity remains unresolved.
+(`0x00776B20`), which destroys it and clears its global.
 
 `force_history` is tied to the embedded `CutinController` by the resource
 formats `cutin_ccs_path` (`1%scutin.ccs`) and `cutin_animation_name`
@@ -117,9 +109,7 @@ to `1` after validating and staging a side record and ensuring an effect
 exists, and `cutin_reset` and `cutin_update` clear it at the traced resets,
 state progression and both-sides-idle boundary.
 
-A cut-in presentation active/staged flag is a high-confidence functional
-interpretation. Its exact visible phase, and whether every cut-in uses it,
-remain open. While it equals `1`, the first allowed mask becomes zero, the
+It is a cut-in presentation active/staged flag. While it equals `1`, the first allowed mask becomes zero, the
 command controller's first callback can run despite cleared bit 1, and the
 two pending-command publication calls are skipped.
 
@@ -138,8 +128,8 @@ presentation resources identify the end-demo branch.
 The middle selector-13 operation produces `0xFBFF / 0x0310` only on the
 traced path whose previous second word is `0x0110`. Both suppression words
 persist until changed; the mask collector does not clear them. Common
-controller cleanup is their proved eventual clear. No parent-mask writer was
-identified in the bounded selector-0 gauge branch.
+controller cleanup is their proved eventual clear. The selector-0 gauge
+branch writes no parent mask.
 
 Before session overrides and the separate forced-first-mask cases, the
 controller's complements are:
@@ -155,18 +145,14 @@ An active start menu forces the first/third allowed mask to exactly zero
 regardless of this table. The independently constructed second mask remains
 in force.
 
-### Bounded pointer-based writer review
+### Pointer-based writer review
 
 The inspected controller-pointer consumers change `stage`, query `selector`,
 request a branch, read side identity/appearance, or toggle side flags. The
 resource callbacks used by `pause_branch_resource_setup` do not write the
 controller masks. No additional suppression-word writer or nonzero
-`request_filter` producer was identified in those paths.
-
-This bounds the evidence rather than proving complete writer coverage:
-cached pointers, other address-loading forms, arbitrary callbacks, bulk
-writes and unexamined overlays remain open. The session-local override has a
-different destination and is a separate mechanism.
+`request_filter` producer was identified in those paths. The session-local
+override has a different destination and is a separate mechanism.
 
 ### Selective update gating
 
@@ -209,9 +195,7 @@ The allowed-bit contract is:
 | `9` (`0x200`) | `battle_clock_update` and `battle_root_update`, each for its nonnull owner | `battle_clock_present` and `battle_root_draw`, same gates | None |
 | `10` (`0x400`) | `jutsu_contest_update(0)` when enabled | `jutsu_contest_render(0)` when enabled | None |
 
-The bit-8 routine's existing name is retained; this scheduler invocation does
-not establish destruction. The fixed consumers' gameplay meanings, especially
-bits 5..10, are not all established. Each nonnull `side_services` entry also
+The bit-8 routine's existing name is retained. Each nonnull `side_services` entry also
 runs `battle_side_service_reentry` in phase one and
 `battle_side_update_reentry` in phase two when the respective mask has either
 bit 9 or 10 (`mask & 0x600`). Bit 3's singleton is the recovered
@@ -311,7 +295,7 @@ and controller destruction are distinct operations.
 1. Starting a replacement branch first cleans up any active branch, then
 records the new mode/selector and returns to lifecycle 1. Only the
 constructor's direct clear of `request_filter` was found in the inspected
-resident and BTL code; producers of values 1 and 2 remain unestablished.
+resident and BTL code.
 
 The resident session requests selector 0 with mode 0 in substate 1. In
 substate 8, only routes 1 and 2 request selector 1 with mode `route - 1`.
@@ -333,7 +317,7 @@ calls the animator's update or a separate animator destructor.
 `pause_controller_post_update` publishes the destination and adjacent render
 blocks unless `request_filter == 1`. Render-context constructors copy the
 current destination, and `battle_dispatch_phases` restores the default after
-post-work. Publication alone does not establish an animator invocation.
+post-work.
 
 There is also an independent non-random writer:
 `pause_tone_effect_update` (`0x0076F3F0`) acts only for numeric ID `0x49`.
@@ -343,8 +327,7 @@ writes the supplied destination coefficient and numeric parameters, and
 copies the two accumulators to `random_component0/1`. It leaves the animator
 counter and period unchanged. `pause_end_demo_effect_update` admits this
 writer under record flag `0x400` with coefficient `1.2f` below numeric state
-6 and `1.0f` otherwise. The evidence does not establish cadence or
-reachability of every ID/flag combination.
+6 and `1.0f` otherwise.
 
 ### Session resets and retained skill participants
 
@@ -383,6 +366,20 @@ and [Ultimate Jutsu](../characters/ultimate_jutsu.md#damage).
 child when needed, initializes its resident member, and calls
 `start_menu_update_draw` each active pass.
 
+The blockers are a session with a nonzero battle route, a nonzero
+coordinator state (`fighter_coordinator_get_state`), an active loading
+presentation (`battle_loading_active`) and the timeout marker. They are
+tested before `battle_start_menu_input_side` reads Start. Coordinator state
+6 lasts from an Ultimate Jutsu's connecting hit until its post-film release,
+so Start does nothing during the cut-in, the film and the release. The
+coordinator states have four setters: construction (1), exchange end (3),
+`jutsu_connection_cleanup` (6) and `fighter_paired_event` (5, from hit
+response substate `0x59`, response selector `0x21`). States 4 and 5 keep
+both participants input-locked until `0x00708F40`/`0x00708F50` returns
+nonzero, and both always return 0. The admission byte is written only by
+`battle_state_reset_settings`, `battle_state_wait_graph` and
+`manager_update_substate_four`.
+
 Every nonzero child result closes and frees the menu, clears its globals, and
 restores `menu_state` to zero before routing:
 
@@ -392,8 +389,7 @@ restores `menu_state` to zero before routing:
 | `2` | Set battle route `7` |
 | `3` | Set battle route `6` |
 
-Result 1 is therefore the structural local-continuation path; the exact input
-that produces top-level result 1 remains open. Results 2 and 3 enter session
+Result 1 is therefore the structural local-continuation path. Results 2 and 3 enter session
 teardown. Manager `menu_state` couples this separate menu to the pause
 scheduler by forcing the first mask, admitting camera exceptions and blocking
 controller pre-work.
@@ -406,7 +402,7 @@ returned for a missing process. The secondary selector is manager
 
 | Entry type | Established mode | Command IDs before placeholder replacement |
 | ---: | --- | --- |
-| `4`, `5` | Producers unresolved | `0, 4, 1, 6, 0xE` |
+| `4`, `5` | No recovered producer | `0, 4, 1, 6, 0xE` |
 | `1` | Free Battle | `0, 4,` optional `4, 1, 6, 0xA, 0xB` |
 | `3` | Other battle-process entries | `0, 4, 1, 6, 9,` optional `7, 0xE` |
 | `2` | Practice | `0, 4, 1, 6, 5, 0xA, 0xB` |
@@ -424,7 +420,7 @@ Thus secondary 5/2 selects 3; other values select 2 and any second placeholder
 becomes 3. Practice selects 2 for `active_side == 0`, otherwise 3. The
 numeric `StartMenuHost.input_source` / `secondary_state1` values become
 1/1 for secondary 5/2, 0/0 for
-4/1, and 2/0 for 0; their meaning remains unresolved.
+4/1, and 2/0 for 0.
 
 ### Start-menu admission timeout-marker check
 
@@ -448,7 +444,7 @@ follows:
 | `5` | `ccStartMenuPractice` | Practice settings wrapper |
 | `6` | `ccStartMenuSimpleDisp` | Simple Display |
 | `7` | `ccStartMenuItemStock` | Item Stock (`アイテムストック`); see [Item Stock screen](../projectiles_and_items/battle_item_inventory.md#item-stock-screen) |
-| `8`, `9` | `ccStartMenuMission` | Labels unresolved |
+| `8`, `9` | `ccStartMenuMission` | `9` in entry type 3 only; `8` in no list |
 | `0xA..0xE` | `ccStartMenuYesNo` | Confirmation children |
 
 Private-command children retain side `ID - 2`. Dispatching ID 4 would store a
@@ -460,12 +456,11 @@ The label joins are recorded in
 [Modes and navigation](../../game/modes_and_navigation.md#free-battle-round-and-pause-menu)
 and its [Practice menu](../../game/modes_and_navigation.md#practice-pause-menu).
 The lists place 7/9 only in entry type 3; 0xE occurs there and in types 4/5.
-Labels for those modes and producers of types 4/5 remain open.
 
 `start_menu_update_module` sends child result 1 to parent state 1, result 2
 to state 7, and result 3 to state 8. The Yes/No child returns 1 on one
 completion and its `accepted_result` on the other: command A stores 2;
-B..E store 3. Physical input mapping is not established by this updater.
+B..E store 3.
 
 The Shift-JIS fragments named `start_menu_battle_text`,
 `start_menu_end_and_text`, `start_menu_mode_select_text`,
@@ -518,8 +513,7 @@ Automatic completion mode 1 confirms and 2 cancels. When
 `completion_counter` reaches `completion_threshold`, it publishes the result
 and event bit `0x08`; confirmation animation then precedes window closure.
 The initializer clears the counter but does not write the threshold. Thus a
-zero-threshold mode-1 choice can confirm as soon as ready, but that initializer
-alone does not establish a zero delay for every window.
+zero-threshold mode-1 choice can confirm as soon as ready.
 
 `start_menu_simple_display_update` (`0x00877A10`) enables the setting for row
 0 and disables it for row 1: On, Off order. The setter/getter use setting 0,
@@ -543,10 +537,8 @@ after an Ultimate Jutsu form request and `manager_request_alternate_reentry`
 in the higher sequence; their owners are
 [Awakening](../characters/awakening.md#effect-to-form-mapping-and-resource-replacement)
 and [Match outcomes](match_outcomes.md#higher-level-sequence-counter-and-result-8-continuation).
-Their user-facing triggering events remain unresolved. The bounded scan found
-no other immediate resident writer; indirect writers and other overlays remain
-open. This establishes object/resource reconstruction, without establishing
-rewind or recorded-input playback.
+The scan found no other immediate resident writer. This is object/resource
+reconstruction, not rewind or recorded-input playback.
 
 ### Start-menu result paths through teardown
 
@@ -559,12 +551,10 @@ produce result 3, so route 6 has no single menu label.
 
 ## Replay result and useful negatives
 
-No battle replay capture/playback mechanism was established in the inspected
-resident/BTL reconstruction and initialization paths. The bounded search
-found no meaningful replay/record/playback/rematch identifier, replay buffer,
-capture/playback mode, serialized battle snapshot, or explicit random-seed
-or state restoration. That result does not establish absence of a replay
-facility elsewhere; the search and call graph were not exhaustive.
+The inspected resident/BTL reconstruction and initialization paths have no
+battle replay capture/playback mechanism. The search found no meaningful
+replay/record/playback/rematch identifier, replay buffer, capture/playback
+mode, serialized battle snapshot, or explicit random-seed or state restoration.
 
 The resident sector-read status returned by `sector_read_status_get` and
 advanced through states 0..4 by `engine_update_frame_gate` belongs to

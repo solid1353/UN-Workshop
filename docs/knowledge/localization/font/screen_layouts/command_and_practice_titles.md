@@ -4,9 +4,9 @@
 
 Established with high confidence: retail NA2 (`SLPS-25837`) and UN5 title
 ownership, compared origins, fit denominators and thresholds, and separation
-from Practice explanations. Open: strings, callers and animation phases outside
-the compared states. Names come from `@annotations/NA2` and
+from Practice explanations. Names come from `@annotations/NA2` and
 `@annotations/UN5`; their comments hold per-routine details. Addresses are live.
+Open: nothing.
 
 Related owners: [Renderer metrics](../renderer_metrics.md) for boxed
 measurement and glyph metrics, and [Practice Font layouts](practice.md) for

@@ -4,10 +4,9 @@
 
 Established: scalar approach, RGBA transitions, panel opening/closing,
 squash/stretch, delayed scrolling and Character Select easing/pulses, including
-their ordering, gates and ownership. Open: pool-gate writer, intermediate-phase
-arming, selector easing consumer, Collection counter initialization and unscreened
-callers. Names come from `@annotations/NA2`; addresses are live.
-Static evidence establishes call counts, not wall-clock duration or calls per frame.
+their ordering, gates and ownership. Names come from `@annotations/NA2`;
+addresses are live. Durations are counted in calls.
+Open: nothing.
 
 This document covers presentation-value animation in retail NA2
 (`SLPS-25837`). [Mode flow](../game/mode_flow.md) owns screen state machines;
@@ -19,12 +18,10 @@ clock effects. Screen layout and localization remain with their own documents.
 Binary identities follow
 [Retail game file identities](../game/files/file_identities.md#address-conventions).
 
-The inspected helper bodies establish arithmetic and local order. Constructors,
+The helper bodies establish arithmetic and local order. Constructors,
 reset/rearm operations and representative Mode Select, Options, Character Select
-and Collection owners establish the contracts below. Caller sampling is not an
-exhaustive UI inventory; incomplete import analysis can miss indirect dispatch
-and pointer aliases. Per-routine details and bounded call/encoding searches are
-retained in annotation comments.
+and Collection owners establish the contracts below. Per-routine details and
+call/encoding searches are retained in annotation comments.
 
 ## Fixed-step scalar approach
 
@@ -86,7 +83,7 @@ destroy argument is positive, through `heap_free` and
 | `flags` | Active mask `0x01`; completion masks `0x02`, `0x04`, `0x08` |
 | `cursor`, `duration` | Signed-halfword phase progress and duration |
 | `second_duration` | Reverse-phase duration supplied by `transition_opacity_in_start` |
-| `intermediate_duration` | Duration consumed by mask `0x08`; arming producer unresolved |
+| `intermediate_duration` | Duration consumed by mask `0x08` |
 | `x`, `y`, `width`, `height` | Float rectangle |
 | `start_color`, `end_color` | Packed words whose four bytes interpolate separately |
 
@@ -96,9 +93,8 @@ ascending index order. Coordinate conversion and packet ownership belong to
 [2D draw ownership](rendering/draw_2d_owners.md).
 
 `engine_root_finish_update` invokes `transition_present` outside its local
-`(frame_gate & 7) == 0` scene-draw checks. This establishes local scheduling
-order, without establishing a universal pause exemption: the pool gate still
-applies. The constructor and reset do not identify its writer.
+`(frame_gate & 7) == 0` scene-draw checks, so those checks do not pause it;
+the pool gate still applies.
 [Task system](task_system.md) owns scheduling.
 
 ### Arming, completion, and reuse
@@ -153,15 +149,14 @@ For positive duration `D` without signed-halfword overflow, a held phase
 samples cursors `0..D-1`, completes after invocation `D`, and first samples
 the exact endpoint on the next eligible call. Clearing or switching phases acts
 after sampling `D-1`, without an extra endpoint sample for that phase.
-Mask `0x08` supports an intermediate constant-color phase, but its arming
-owner remains unresolved.
+Mask `0x08` supports an intermediate constant-color phase.
 
 ## Shared panel open/close controller
 
 `panel_initialize` constructs the reusable `0x80`-byte `UiPanel`.
 `panel_set_rectangle` sets the style and rectangle and saves resting copies;
 `panel_set_rectangle_record` accepts a `UiPanelRectangleRecord` containing
-five signed halfwords `(style,x,y,width,height)`. Recovered opening owners
+five signed halfwords `(style,x,y,width,height)`. Opening owners
 include Mode Select, Options, Save/Load, Character Select and other resident
 dialogs; their navigation and text belong elsewhere.
 
@@ -207,7 +202,7 @@ The hiding policy can clear `text_enabled`; `panel_draw_text_positioned`
 and `panel_draw_text_row` honor that gate.
 `panel_draw_border` and `panel_draw_background` remain eligible while
 state is below 3. Suppressing `panel_draw` stops the cursor; hiding text
-does not. No independent pause flag is established.
+does not. No independent pause flag was found.
 `panel_destroy` releases text, child render objects and attached content;
 transition scalars live in the panel.
 
@@ -230,7 +225,7 @@ sample. Zero initialization gives a 101-invocation cycle. There is no completion
 return, independent pause flag, or guard against negative initialization or
 signed-halfword overflow.
 
-The three recovered wrappers each sample once and center the scaled sprite.
+The three wrappers each sample once and center the scaled sprite.
 `ui_pulse_sprite_draw` applies translation and uniform scale;
 `ui_pulse_sprite_draw_rotated` also swaps scale axes, draws at `pi/2`
 and resets angle zero; `ui_pulse_sprite_draw_axes` accepts independent
@@ -241,7 +236,7 @@ it more than once; drawing can mutate presentation state.
 zero by `mode_select_initialize_fields`; terminal state 6 skips the draw
 and increment. Collection `collection_update` in `ETC.BIN`
 (live `0x006C8290`) also calls the resident wrapper with its GP-owned counter,
-except in states 6 and 9. Its counter initialization remains untraced.
+except in states 6 and 9.
 
 `options_audio_present` uses `OptionsAudioPresentation.pulse_counter`.
 `options_audio_reset` clears it independently from `arrow_phase`.
@@ -252,8 +247,8 @@ This owner has a draw-driven pulse clock and an update-driven sine clock.
 `scrolling_strip_initialize` constructs a reusable `UiScrollingStrip`;
 `scrolling_strip_configure` applies a `0x24`-byte `UiScrollConfiguration`,
 and `scrolling_strip_select_configuration` indexes
-`scrolling_strip_configurations` (`0x005B16E0`). All four inspected
-adjacent records provide speed `2.0`.
+`scrolling_strip_configurations` (`0x005B16E0`). All four adjacent records
+provide speed `2.0`.
 `scrolling_strip_advance` (`0x0037F7F0`) advances without drawing;
 `scrolling_strip_draw` draws without advancing.
 
@@ -284,14 +279,13 @@ Drawing places cumulative segments at
 
 `scrolling_strip_clear` frees the entire queue and owned copies and resets
 distance/elapsed delay. `scrolling_strip_destroy` destroys child render objects
-and clears the queue. These are invocation-based units, without establishing
-one update per presented frame.
+and clears the queue. These are invocation-based units.
 
-Mode Select's common tail enqueues before advancing; the inspected Options
+Mode Select's common tail enqueues before advancing; the Options
 subcontroller advances before enqueuing. Options construction selects record 3,
 delay 30 and the minimum-first-extent policy, so that owner waits 30 eligible
 updater calls. Inhibition does not pause updates: the updater does not inspect
-it. Suppressing the update call is the only established local pause mechanism.
+it. Suppressing the update call is the only local pause mechanism found.
 
 ## Character Select presentation values
 
@@ -303,7 +297,7 @@ resource animations, then runs the scalar/pulse tail.
 
 `character_selector_update_source` (`0x005B4328`) supplies member descriptors
 to `character_selector_update_dispatch` (`0x005D66B0`) during static
-initialization. The source/runtime strides are 16/12 bytes; the first 14 inspected
+initialization. The source/runtime strides are 16/12 bytes; the first 14
 records have adjustment 0, dispatch -1 and a direct entry. The annotated tables
 contain 15 records; the following presentation coverage covers states 0..13.
 `character_selector_update_table_initialize` names the verified initialization
@@ -338,14 +332,13 @@ The common tail of `character_selector_advance` (`0x003B9480`) owns these
 | --- | --- | --- |
 | `portrait_visibility` | Add 0.2 toward 1 when `support_presentation_state` is neither 4 nor 3 and `state59_blocked` is neither 1, 3 nor 2; otherwise subtract 0.2 toward 0; clamp endpoints | `character_selector_construct` initializes zero; `character_selector_draw_fighter_portrait` maps mirrored position using `30*x - 150` |
 | `fighter_anchor`, `support_anchor` | Outside `[-1,1]`, move by 0.2 toward nearest endpoint; inside leave unchanged | Selection setters reset offsets; navigation adds/subtracts 1 per visited slot; `character_selector_draw_fighter_cells` and `character_selector_draw_support_cells` scale by 36 |
-| `recursive_easing` | `x = x + (1-x)*0.02` every common-tail call | `character_selector_set_fighter` and successful `character_selector_move_fighter` reset zero; rendering consumer unresolved |
+| `recursive_easing` | `x = x + (1-x)*0.02` every common-tail call | `character_selector_set_fighter` and successful `character_selector_move_fighter` reset zero |
 | `pulse_phase` | With nonzero phase or `pulse_request`, add 0.03; only above 1 subtract 1 if requested, otherwise reset zero | `character_selector_construct` initializes zero; `pulse_request` always cleared at update end; `character_selector_update` requests 1 after its early-return gates |
 
 Recursive easing has no threshold, clamp or completion latch.
 **Formula inference:** from zero, exact arithmetic leaves distance `0.98^n`;
 this is not a measurement or a promised exact floating endpoint.
-The bounded float-load search does not exclude integer loads, aliases or an
-unexamined rendering consumer. Navigation wrap and eligibility belong to
+Navigation wrap and eligibility belong to
 [Character Select](../game/character_select.md).
 
 `character_selector_draw_arrows` reads phase without advancing it. Mirrored

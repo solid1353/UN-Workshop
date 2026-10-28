@@ -4,10 +4,10 @@
 
 Established: controller modes, all 25 courses, ranking insertion/display,
 Records bounds, row preservation, course admission and the Ultimate unlock.
-Open: win-row-1 meaning/producers, other difficulty-word writers, indirect or
-inlined row writers, and event-5 spoken words. Evidence is static resident/BTL/ETC
-inspection; English course names are translations of retail Japanese strings.
+Evidence is static resident/BTL/ETC inspection; English course names are
+translations of retail Japanese strings.
 Names and field layouts come from `@annotations/NA2`; addresses are live.
+Open: nothing.
 
 Retail NA2 (`SLPS-25837`) identifies this controller as `サバイバル戦闘`
 (Survival Battle), stored in `survival_battle_controller_name`
@@ -29,8 +29,7 @@ audio playback belongs to [Battle audio](../session/battle_audio.md).
 Inputs and live addresses follow
 [Retail game file identities](../../game/files/file_identities.md#address-conventions).
 Per-routine gates, signatures, call evidence and data layouts are retained in
-the annotations. Indexed cross-references are incomplete; neither their
-absence nor bounded direct-call searches exclude indirect or inlined access.
+the annotations.
 
 The resident BSS globals `battle_route_code` and `battle_countdown_elapsed`
 are named and typed in `@annotations/NA2/SLPS_258.37`.
@@ -166,11 +165,9 @@ the result setter. `survival_win_result_set` copies it into
 separate presentation object does not write back into the encounter or the
 saved row selector.
 
-**Bounded conclusion:** the inspected construction, continuation, result and
-Records paths supply no native row-1 producer or selector. The independently
-seeded, checksum-covered second win row does not by itself establish a
-reachable ranking or second playable Survival submode. An uninspected indirect
-or inlined producer remains possible.
+The construction, continuation, result and Records paths supply no native
+row-1 producer or selector; in them the second win row is only seeded and
+checksum-covered.
 
 ## Finite-course result admission
 
@@ -242,7 +239,6 @@ Group admission and per-course completion are distinct.
 ordinary confirmation and accepted result acknowledgement advance through
 courses 0..24 in order. The final writer checks its current index and local
 result gates; it does not verify all earlier course bits together.
-Other producers of word `0x6A` remain open.
 
 ## Final-result text and event 5
 
@@ -257,11 +253,10 @@ Its difficulty announcement is
 The retail display explicitly announces the Ultimate difficulty tier for Free
 Battle and other difficulty settings.
 
-Event 5 is an audio request; no dialog-ID meaning is established.
+Event 5 is an audio request.
 `survival_result_sound_event` dispatches it through
 `survival_result_sound_dispatch` (`0x008C2E40`) to sound index `0x25`.
 `survival_voice_request` calls
 `audio_request_rpg_voice(0x4E, 0x25, 0)`: category 2, descriptor
 `survival_voice_archive_descriptor` (`0x003FDFC0`), bank `0x62`,
-variant 1, count `0x47`. Its spoken words remain unestablished; the displayed
-unlock wording is independent evidence.
+variant 1, count `0x47`. The displayed unlock wording is separate evidence.

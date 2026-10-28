@@ -112,3 +112,5 @@ address	kind	name	type	comment
 0x0091F8BC	data	collection_ultimate_records	CollectionUltimateRecord[168]	168 records; indices 0..166 metadata/order match NA2; terminal 167 Crystal Ice Mirrors metadata (0xA8, 0, 0).
 0x009209D0	label	temari_moveset_record		Metadata 2F 00 03 00 03 02 2B 00 FF FF FF FF 2D 00 00 00; selects red terminal moveset span.
 0x00920C50	label	konohamaru_moveset_record		Metadata 43 00 01 00 03 01 48 00 FF FF FF FF 23 00 00 00; selects markup moveset title.
+0x00924580	data	movie_subtitles_da2200_eng		English DA2200 caption schedule {start,end,text}; same frames as NA2 movie_subtitles_da2200 (00400020).
+0x00924830	data	movie_subtitles_da3250_eng		English DA3250 caption schedule; same frames as NA2 movie_subtitles_da3250 (004008C0).

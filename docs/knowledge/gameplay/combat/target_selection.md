@@ -7,9 +7,10 @@ This document describes target selection and retention in retail NA2
 
 Established: paired geometry, collision provenance and ordering, copied recovery
 provenance, skill locks, support points, and pickup side selection and recheck.
-Open: exhaustive pointer writers, indirect callbacks, other skill cancellation,
-whole-program lifetime safety, and concrete reads beyond the copied prefix.
+Skill cancellation and participant release outside the final handler are
+bounded by the coordinator state writers and direct lock-bit stores.
 Names and fields come from `@annotations/NA2`; comments hold routine detail.
+Open: nothing.
 
 Related owners: [Battle AI](../session/battle_ai.md#primary-target-and-spatial-classification)
 owns AI opponent binding and navigation points;
@@ -24,8 +25,6 @@ owns pickup lifecycles; [Hit response](hit_response.md) and
 
 Addresses below are live. Binary identities and mappings are in
 [Retail game file identities](../../game/files/file_identities.md#address-conventions).
-Static instructions establish the bounded paths here. Missing direct xrefs and
-incomplete function recovery do not establish whole-program exclusions.
 Fighter field names follow verified raw offsets and the saved declaration;
 some current decompiler expressions disagree with that layout.
 
@@ -143,8 +142,8 @@ allocations. This copy does not replace `response_source`.
 for kind 0 or a fresh self-prefix copy for another kind, pairs it with
 `atk_dummy_record`, and samples grounded bit `contact_flags & 0x80` into
 `recovery_grounded`. It leaves the contact source, response source, and paired
-link intact. This gated refresh establishes no unconditional release or
-object-removal notification.
+link intact. This gated refresh does not release the source or notify object
+removal.
 
 The copy extent limits later-facing claims. `recovery1_motion` can pass a
 nonnull non-kind-0 recovery source unchanged to `response_choose_facing`.
@@ -155,20 +154,16 @@ kind 1 or `support_response_facing` for kind 2. The former reads
 `SupportObject.side` to select its separate record/point storage. Those fields
 are outside the 0x50-byte prefix.
 
-Kind dispatch from a copied prefix therefore does not establish that subsequent
-reads are confined to that copy. Concrete producer/state reachability and the
-values in later receiver storage remain unresolved. The evidence establishes
-neither a stale-pointer failure nor a safe complete-object snapshot. Wider
+Kind dispatch from a copied prefix can therefore read past that copy. Wider
 actor and support behavior belongs to
 [Projectiles](../projectiles_and_items/projectiles.md) and
 [Support mechanics](../characters/support_mechanics.md).
 
 `hit_lookup_record` reads the source kind before `hit_source_record_get` checks
-its marker; neither checks allocation identity or generation. The bounded
-direct-store audit establishes initialization zeroing of `response_source`,
-while collision refresh can leave it unchanged. It excludes adjusted-base
-aliases, bulk copies and other store widths. Dummy-record fallback does not
-establish safe dereferencing of an expired source. Ownership/removal order
+its marker; neither checks allocation identity or generation. Direct stores
+zero `response_source` at initialization, while collision refresh can leave it
+unchanged. The dummy-record fallback does not protect a read of an expired
+source. Ownership/removal order
 belongs to [Battle entities](../session/battle_entities.md), and graph scheduling
 to [Battle lifecycle](../session/battle_lifecycle.md#per-update-dispatch).
 
@@ -198,7 +193,45 @@ Final local substate 4 increments `local_counter` and requires its previous
 value greater than 30 and both participants' `contact_flags & 0x80` set.
 Only then are the input locks and state-local words cleared and both participant
 pointers released. The fighters' paired links remain. No allocation-generation
-check appears in this handler; other interruption/destruction paths remain open.
+check appears in this handler.
+
+Local substate 1 selects 2, 3 or 5 from the outcome control flag and the
+target's `state_flags & 8`. Substate 5 has no case in this handler: it
+returns on every call and releases nothing.
+
+### Release and cancellation outside the final substate
+
+Only `fighter_coordinator_state2` (`0x0024E4D0`) also releases the pair. On
+entry it replaces both participants with `battle_manager.fighters[0]` and
+`[1]`; its local state 2 clears both input locks, returns the coordinator to
+state 0 and nulls both pointers. It runs after state 1, which only
+construction selects.
+
+The other coordinator paths keep the pointers. `fighter_coordinator_set_state`
+is called only by construction (state 1), `fighters_end_exchange` (state 3),
+`fighter_paired_event` (its supplied state) and `jutsu_connection_cleanup`;
+it resets the local words only. States 3, 4 and 5 set the input locks; with a
+missing participant they, like `jutsu_post_cinematic_update`, reset the
+local words and keep the remaining pointer and its lock.
+
+Skill actors have a separate forced retirement
+([skill retirement](../session/battle_auxiliary_services.md#conditional-action-exit-and-skill-retirement)):
+it requests deferred retirement of the selected skills, clears
+`state_flags & 0x80` on both manager primaries and releases the side handles.
+`interaction_manager_remove_update` (`0x00778960`) retires every primary and
+auxiliary skill this way on the first pass after a coordinator state change
+(state other than 0 and 3, local state and counter zero) and whenever
+`battle_timeout_marker_get` is 1. `action_exit_release_skill_control`
+(`0x00776A10`) does the same. A null fighter retires every primary and
+auxiliary skill; these callers pass one:
+`downed_motion_update` at `(6,0x61)` primary event 0,
+`action_stage_outcome_continuation` when `exchange_wait_update` admits an
+Extra Hit record and `paired_binding1_intercept`.
+`projectile_explosion_update` passes a primary fighter in major 8 whose side
+has a primary skill with word `+0x134 == 1`, under the explosion's flag
+gates. None of these paths changes coordinator
+participants or a fighter's action state, and deletion still waits for the
+owning update wrapper.
 
 ## Separate side-index eligibility selector
 
@@ -244,7 +277,7 @@ This recheck applies to single-side branches too, so their flags bypass only
 initial ranking eligibility.
 
 This pickup contract is separate from general combat eligibility. Its state
-exclusions do not establish hurtbox invulnerability; see
+exclusions do not make a fighter invulnerable to hits; see
 [Hit response](hit_response.md#rehit-suppression).
 
 ## Support side selection and point retention

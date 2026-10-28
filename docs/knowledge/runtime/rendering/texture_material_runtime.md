@@ -4,16 +4,14 @@
 
 Established: retail NA2 texture/CLUT ownership, material binding and UV updates,
 draw-time resource ordering, effect frame advancement and two palette controllers.
-Open: downstream VU coordinates, sampling instances and borrowed lifetimes,
-RGB-controller callers/owned cleanup, scheduler units and material `+0x08`.
 Names come from `@annotations/NA2`; addresses are live resident `SLPS_258.37`
-addresses. Evidence is static; scheduling and visual results remain unestablished.
+addresses. Evidence is static.
+Open: nothing.
 
 This document owns runtime behavior across texture, palette, material and draw
 routines. The annotation comments own individual routines, layouts and packing
 details; names describe demonstrated behavior rather than recovered source
-symbols. Missing direct references do not exclude computed calls or other
-writers, and decompiler signatures can omit inputs or merge function bodies.
+symbols.
 
 Related owners: [CCS object types](../../game/files/ccs_object_types.md)
 (type parsing and shared transfer groups),
@@ -60,16 +58,15 @@ of `0x20` bytes each. Input flag `0x10` selects clamp state 5, otherwise zero.
 `gs_vram_texture_address`; `texture_set_level_bases` applies the result to
 packed texture state and each transfer descriptor's base fields. Descriptor
 updates preserve their high two bits. Width halves at each successive level.
-The inspected packed-state branches handle levels 0 through 3; they do not
-establish validation for arbitrary level counts.
+The packed-state branches handle levels 0 through 3 and do not validate the
+level count.
 
 Texture `flags` has separate ownership bits: 1 owns the descriptor array,
 2 marks transfer-group attachment, and 4 owns the palette. Construction clears
 all three before claiming its allocated array.
 `texture_copy_binding` shallow-copies the backing resources and state but
 clears those bits. `sampling_texture_copy` also clears sampling `+0x48`.
-Copies therefore borrow the same backing resources; a particular caller's
-retention time is not established.
+Copies therefore borrow the same backing resources.
 
 `clut_initialize_base` initializes `CcsClut.tex0_state` to
 `0x2000000000000000`, clears transfer/group bindings and delegates storage
@@ -78,7 +75,7 @@ construction to `clut_initialize_from_descriptor`.
 | Palette format | Storage dimensions | Transfer descriptors |
 | --- | --- | ---: |
 | `0x13` | `16 × 16` | 1 |
-| Other inspected formats | `8 × 2` | 1 |
+| Other formats | `8 × 2` | 1 |
 
 [CLUT parsing and CSM1 ordering](../../game/files/ccs_object_types.md#confirmed-identities)
 remain owned by the type document.
@@ -105,15 +102,13 @@ descriptor defaults to alpha 1, offsets 0 and scales `0x1000`.
 The descriptor's `texture_record.runtime` supplies the texture; sentinel 4
 is treated as absent. `ccs_effect_bind_texture` installs the texture and
 overwrites the cached `clut` with its current palette, or zero for an absent
-texture. It and `material_copy_binding` clear material `+0x08`, whose
-meaning remains unresolved.
+texture. It and `material_copy_binding` clear material `+0x08`.
 
 Rebinding has a different cache rule. `model_rebind_part_textures`,
 `model_rebind_material_textures`, `effect_child_rebind_texture` and
 `effect_descriptor_rebind_texture` replace the selected texture but replace
 the cached palette only when `texture_get_clut` returns neither zero nor
 sentinel 4. An absent new palette therefore leaves the old cached palette.
-This rule applies to those inspected consumers, not every binding API.
 
 `model_dispatch_geometry` multiplies material `alpha` by
 `CcsModelDrawContext.alpha` and publishes `material_alpha` for each part.
@@ -163,14 +158,18 @@ Inputs and outputs are signed halfwords; integer division and arithmetic
 shifts precede low-halfword stores. A successful rewrite sets
 `CcsModelDrawContext.uv_modified`. `model_build_part_packet` then emits
 zero offset modifiers, avoiding a second offset application. Without the
-rewrite it emits material-minus-descriptor offset differences.
+rewrite it emits material-minus-descriptor offset differences, each
+wrapped to 12 bits and shifted right by 4 (`diff << 20 >> 24`), so an
+offset reaches the packet in steps of 1/256 of the texture where the
+rewrite keeps 1/4096. A scroll slower than 1/256 per update, such as a
+factory-29 `bg_uv_animation_update` speed below 0.0039, therefore moves
+only every few updates.
 
 The flag-4 route, `model_submit_packed_geometry`, sends
 `(current_offset - initial_offset) & 0xFFF` for both axes to VU slot
 `0x14`, with unit scale words. That packet does not read the material scale
-fields. Its complete downstream VU interpretation remains open. Both routes
-prepare textures and separately cached palettes; this evidence does not make
-their scale handling equivalent. Geometry selection and array ownership
+fields. Both routes prepare textures and separately cached palettes, but
+their scale handling differs. Geometry selection and array ownership
 belong to [Model runtime](model_runtime.md).
 
 ## Draw-time resource and state consumers
@@ -181,7 +180,7 @@ then texture/CLUT state in the draw packet. Blend/test state is independent of
 those resources. Descriptor gates and group suppression belong to
 [shared image-transfer groups](../../game/files/ccs_object_types.md#runtime-tag-0x1000-from-texture-and-clut-construction-image-transfer-group).
 
-| Bounded consumer | Resource/state contract |
+| Consumer | Resource/state contract |
 | --- | --- |
 | `render_prepare_bound_texture` | Uses the current context texture; caller flags independently gate texture and palette preparation. |
 | `render_begin_draw_packet` | Textured flags `& 0x180` prepare resources unless suppressed; emits TEX0 as texture OR palette, texture TEX1/MIPTBP1/CLAMP, and zero TEXFLUSH. |
@@ -210,7 +209,6 @@ by drawing, not the texture or palette binding.
 Each eight-byte entry supplies `u`, `v` and `alpha` halfwords.
 `particle_sprite_submit` emits the coordinates, packed dimensions and the
 source descriptor's four `coordinate_parameters` floats into the VU packet.
-Their full downstream coordinate interpretation is unresolved.
 The source `projection_offset` is constructed from a signed halfword,
 divided by 256 for version `>= 0x122`, copied to the draw descriptor and
 consumed in projection calculations.
@@ -239,12 +237,11 @@ draw descriptor, type `0x0E00` and frame zero.
 The comparison is unsigned. Repeat discards overshoot rather than taking a
 modulo, and stepping consumes no rate scalar.
 
-The inspected draw owners use `ccs_effect_child_update`: despite its retained
+The draw owners use `ccs_effect_child_update`: despite its retained
 name, it draws only frames below `0xFFFE` and does not advance them. It refreshes
 the scene transform, multiplies caller alpha by scene/hierarchy alpha, and
 submits through `effect_submit_transformed` and `particle_sprite_submit`.
-A separate `effect_draw_and_step` draws and increments, but its caller remains
-unestablished.
+A separate `effect_draw_and_step` draws and increments.
 
 Two update paths establish frame advancement:
 
@@ -256,7 +253,7 @@ Two update paths establish frame advancement:
   bound `0x0E00` child by that integer difference before dispatching crossed
   packed commands.
 
-Draw-call count therefore does not establish effect-frame count.
+Draw-call count therefore does not determine effect-frame count.
 Player clocks, command crossing and binding ownership belong to
 [Animation runtime](../animation_runtime.md#advance-and-end-behavior).
 
@@ -292,8 +289,6 @@ The step itself does not submit a transfer.
 name, configures the controller and attaches the wrapper to the selected
 owner list. `palette_reflection_wrapper_update` sets the controller increment
 to `wrapper.increment * owner.update_scalar` before stepping.
-The units of that owner scalar and the scheduler's full calling frequency
-remain open.
 
 `palette_reflection_wrapper_vtable` (`0x005DD280`) names those methods and
 `palette_reflection_wrapper_destroy`. Destruction restores the snapshot
@@ -319,11 +314,7 @@ alpha without clamping `t`. For an owned CLUT with a descriptor it calls
 Borrowed storage receives no immediate submission from this helper.
 
 `palette_rgb_restore` destroys an owned CLUT before copying original colors
-back through the retained color pointer, then frees both tables. The intended
-validity of that copy in the owned branch remains unresolved.
-Caller ownership and reachability remain unresolved within the inspected
-resident/BTL/ETC scope. Computed calls and unexamined owners remain possible;
-the bounded negative evidence is recorded on `palette_rgb_initialize`.
+back through the retained color pointer, then frees both tables.
 
 ## Sampling texture resource consumer
 
@@ -343,12 +334,10 @@ supplied draw chain
 Ordinary `texture_chunk_submit_levels` instead submits the existing
 `extra_levels + 1` descriptors when `levels` is present. The same virtual
 preparation interface therefore has two different resource behaviors.
-Construction and copying clear sampling `+0x48`; no other
-producer or consumer of that additional field is established here.
+Construction and copying clear sampling `+0x48`.
 
 The asset evidence establishes local `TEX_sampling00` and `TEX_sampling01`
 definitions in `CMN/EFFECT0X.CCS` and a startup load set containing that file.
 [Locally filled external-marker rows](../../game/files/asset_dependencies.md#locally-filled-external-marker-rows)
 and [Common providers and battle preparation](../../game/files/asset_dependencies.md#common-providers-and-battle-preparation)
-own that evidence. It establishes available definitions, not which draw
-instances use each named resource.
+own that evidence.

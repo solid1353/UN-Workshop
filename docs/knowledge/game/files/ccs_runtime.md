@@ -4,18 +4,19 @@
 
 Established: retail NA2's container/object lookup, parsing and publication,
 texture and palette storage, cross-container references, reader and caller ownership, load/queue/residency
-lifetimes, stream playback, version gates and retail version census, and the
-bounded UN3 reader, wrapper-binding and cross-container resolver comparisons,
-plus UN4's selected unresolved animation-wrapper/evaluator path.
+lifetimes, stream playback, version gates and retail version census, the
+UN3 reader, wrapper-binding and cross-container resolver comparisons, and
+UN4's animation-wrapper/evaluator path for unresolved records.
 Names and layouts come from
 `@annotations/NA2`, `@annotations/UN3` and `@annotations/UN4`;
-annotations hold the per-routine detail. All addresses are live.
-
-Open: unclassified fields and type-specific consumers, residency activity
-counter production, indirect control writers, the two queued `0x0108` values,
-selective packed material records beyond the scanned assets, complete delegated
-model conversion, downstream animation interpretation, and whole-file
-UN3-to-NA2 loading/playback agreement. Evidence is static and bounded.
+annotations hold the per-routine detail. All addresses are live. Evidence is
+static.
+UN3 models and animations under NA2 are compared through conversion,
+NA2's extra model-mode decoding and the animation work initializers and
+evaluators.
+Open: whether the vector, rotation and word curve readers build the same
+runtime curves from the same input, including the compressed `0x12`/`0x14`
+forms (the scalar reader does).
 
 ## Evidence and scope
 
@@ -24,10 +25,8 @@ This document owns the in-memory resident CCS services of retail NA2
 `SLUS_217.27` parser comparison and a selected UN4 `SLUS_218.62`
 animation-binding comparison. Inputs and address conventions are owned by
 [Retail game file identities](file_identities.md#address-conventions).
-The retail census reads headers; declared-length walks alone cannot establish
-complete consumption because some retail lengths are inaccurate. Selected
-overlay operands and literal strings were checked, without establishing
-caller serialization or every indirect writer.
+The retail census reads headers; some retail declared lengths are inaccurate,
+so consumption follows the handlers.
 
 Related owners: [CCS object types](ccs_object_types.md) (tags and destructors),
 [Resident file and resource services](runtime_services.md) (ROFS/GZLIST,
@@ -36,8 +35,6 @@ transport and gzip), [Allocator and capacity](../../runtime/ee_memory_map/alloca
 [Disc files](disc_files.md),
 [Animation runtime](../../runtime/animation_runtime.md), and
 [Texture and material runtime](../../runtime/rendering/texture_material_runtime.md).
-This document does not claim that a UN3 CCS has been loaded by NA2 or that
-matching reader consumption implies identical runtime results.
 
 ## Handle layers
 
@@ -65,7 +62,7 @@ lifecycle. The important flag contracts are:
 
 | Field | Established bits and state |
 | --- | --- |
-| `reference_flags` | Bit 0 hints at unresolved cross-container records; older containers can retain it after resolution. Bit 1 permits global dependency-group reconciliation. Reset sets bit 1 and no resident clear was found, so that gate remains open in the resident code. |
+| `reference_flags` | Bit 0 hints at unresolved cross-container records; older containers can retain it after resolution. Bit 1 permits global dependency-group reconciliation; reset sets it and no resident clear was found. |
 | `runtime_flags` | Bits 0/1 are parse milestones; bit 3 selects `play_entries`; bits 2/4 mark frame-stream end; bit 5 marks completed play-state teardown; bit 7 marks a held `0x2200` ring batch. |
 | `ownership_flags` | Bit 1 owns `reader`; play bits 0, 2 and 3 own the scene environment, default controller and default extended controller. |
 | `parse_state` | 1 while object blocks are consumed, 2 after terminator finalization. |
@@ -79,7 +76,7 @@ lifecycle. The important flag contracts are:
 it allocates a 0x40-byte `CcsReader` and sets reader ownership. Generic
 destruction closes/frees the reader only under that ownership bit.
 
-Borrowing does not establish a persistent reader lifetime. An ordinary flag-0
+Borrowing does not give a persistent reader lifetime. An ordinary flag-0
 load supplies the wrapper reader and destroys it after parsing, leaving the
 container's reader pointer stale. Whole-buffer/play-stream owners retain their
 wrapper until seeking is finished, then destroy the container before wrapper
@@ -158,8 +155,7 @@ The confirmed exception is the runtime `0x1000` image-transfer group.
 `ccs_image_transfer_group_construct` initializes its image/CLUT lists, one
 name byte and global next link, but writes no record back-pointer.
 `ccs_image_attach_transfer_group` and `ccs_clut_attach_transfer_group`
-can publish that node as a record runtime, so ownership traversal and unload
-invalidation are unproved for this case. Its partial-name and same-name
+can publish that node as a record runtime without a back-pointer. Its partial-name and same-name
 attachment contracts are owned by
 [CCS object types](ccs_object_types.md#runtime-tag-0x1000-from-texture-and-clut-construction-image-transfer-group).
 
@@ -260,8 +256,7 @@ are unchecked.
 Missing containers or objects become zero slots. Fifth-argument bit 0 cannot
 detect those misses for ordinary nonnegative counts: the output count advances
 for every requested row. `ccs_object_vector_clear` frees and resets the
-result. The observed resident batch caller supplies seven direct specs; it
-does not establish use of the indexed form.
+result. The resident batch caller supplies seven direct specs.
 
 ### Wildcards and secondary values
 
@@ -331,8 +326,7 @@ NA2 `animation_attach` (`0x001B99B0`) applies
 animation record/key pair. A zero result initializes the play entry's target,
 provider, type, flags and evaluator to zero. A usable `0x0100` provider can
 instead create a scene child and its model when no existing composition child
-binds it. These are consumer-specific branches, not a promise that every
-unresolved CCS record can be omitted safely.
+binds it. These are consumer-specific branches.
 
 The own-game UN3 comparison establishes the same wrapper-target guard and
 empty-entry branch in `ccs_resolve_external_record_chain` (`0x001123A0`)
@@ -468,7 +462,7 @@ The gates cover every resident version halfword read, including reused model
 comparisons. Per-type gated meanings belong to [CCS object types](ccs_object_types.md).
 **Inference:** NA2 accepts the interval from `0x90` through at least
 `0x123`; with no higher gate, newer versions would take the `0x123`
-branches. That does not establish their layouts.
+branches.
 
 ### Animation-track parsing
 
@@ -530,7 +524,6 @@ Selectors `0x12/0x14` compress the runtime form, not the file into
 halfwords. Initial time precedes loops, and some selector-2 readers fetch an
 initial value before later keys; this is not a malformed/zero-count contract.
 Generated padding and rotation conversion consume no extra file bytes.
-Reader agreement does not establish all downstream interpolation.
 
 Both NA2 ID helpers deduplicate `ID*4+1` in the shared scratch table
 `ccs_animation_track_scratch`. Snapshots store the resulting track index,
@@ -564,15 +557,14 @@ absent target cannot repair the mask shift.
 
 For unchanged bits `b_i`, consumer bytes minus parser bytes are
 `4*(b_0-b_6)` at/after `0x120`, and `4*(b_0-b_2)` before it.
-Equal counts alone do not establish equal field assignment. Six-field patterns
+Equal counts alone do not mean equal field assignment. Six-field patterns
 agree only when bits 0..6 are all equal: zero reads all, all seven set reads
-none. These are static mask consequences, not observations of selective
-authored records. The streamed coordinate formulas are owned by
+none. These are static mask consequences. The streamed coordinate formulas are owned by
 [Texture and material runtime](../../runtime/rendering/texture_material_runtime.md#material-binding-and-coordinate-updates).
 
 #### Authored all-fields snapshots
 
-The bounded scan found 31 real packed `0x0201` records, all flags zero,
+The scan found 31 real packed `0x0201` records, all flags zero,
 confirmed by complete nested-command walks ending at the declared endpoint
 and `0xFF01/-1`. Each payload is eight dwords: ID, flags and six floats.
 
@@ -613,14 +605,11 @@ reader start is descriptor `+0x9C`. This is separate from the final output
 cursor; in-place resize does not move or convert the payload.
 Source material coordinate halfwords `(512,4096,1600,1024)` and
 `(16,4096,1024,1024)` equal the first all-fields tuples after the
-established coordinate formulas. This is byte/arithmetic agreement, without
-establishing author intent or whether frame zero is dispatched.
+established coordinate formulas.
 
-Every confirmed record avoids the shift by selecting all fields.
-A selective record would be misread; none was found in this bounded scan.
-The inspected direct-call census has only the resident packed dispatch and
-streamed dispatch consumers, with no BTL/ETC direct calls; computed calls and
-unexamined payload writers remain outside that bound.
+Every confirmed record avoids the shift by selecting all fields; a selective
+record would be misread. The direct-call census has only the resident packed
+dispatch and streamed dispatch consumers, with no BTL/ETC direct calls.
 
 ### Versions in the retail files
 
@@ -661,9 +650,8 @@ Two model reader pairs were followed through direct reads:
 | `ccs_read_model_mesh_aux` | Zero auxiliary count: one dword then three halfwords per vertex and alignment. Nonzero: eight bytes per auxiliary entry. Both then read one dword per selected entry and one per vertex. |
 
 UN3's first helper has a `0x804` branch without position reads, where
-NA2 traps. Its reachability through the outer model parsers is open.
-`ccs_convert_packed_model_mesh` and special model modes remain only
-partially compared.
+NA2 traps. NA2 never reaches the trap: `ccs_parse_model` sets bit `0x800`
+for no file flag and bit 4 only for packed models, which take another path.
 
 Matching reads still produce these demonstrated runtime differences:
 
@@ -676,10 +664,46 @@ Matching reads still produce these demonstrated runtime differences:
   fills the remaining count with `0xFFFFFFFF`. UN3 stores all declared
   dwords directly. Both consume the declared number of dwords.
 
+### UN3 models and animations under NA2
+
+NA2 converts a UN3 model the way UN3 does, except where NA2 decodes header
+bits UN3 ignores:
+
+- Packed positions, weights, palette indices, list counts and UVs come out
+  the same ([Model runtime](../../runtime/rendering/model_runtime.md#official-un3-comparison)).
+  NA2 splits weighted batches at a slightly different point, which changes
+  only packet boundaries; it does not pass packed extrema to the bounds.
+- `ccs_parse_model` turns the mode halfword's fields `(mode>>6)&7` and
+  `(mode>>9)&7` into runtime bits 21..24; when a field is zero and the file
+  flags give runtime bits `0x804` or `0x80`, it defaults to 1. A nonzero
+  value also sets `0x02000000`, which makes NA2 normalize ordinary and
+  packed strips (unless mode bit `0x2000` sets `0x04000000`). `model_dispatch_geometry`
+  then selects its face-cull variant (geometry selector `+0x48`, strip sign
+  -1 for value 1, +1 for 2). UN3's parser sets none of these bits, and UN3's
+  `model_dispatch_geometry` (`0x00144810`) has no cull variant: its geometry
+  selector is only 0, `0x30` or `0x18`.
+- Mode bit `0x1000` selects runtime `0x10000` in both games; mode bit
+  `0x8000` and the `0x123` extra-byte selector bits are NA2-only.
+
+In the 38 files of UN3's Guy, Green Beast, Kakashi, ANBU Kakashi, Itachi and
+Kisame (their `1`/`2` `BOD`/`CHA` files and the `STR/D20_*` films), 1,701 of
+2,278 model payloads are byte-identical to a model payload in NA2's retail
+files, and every header combination of flags, mode and selector bits also
+occurs there. 36 models get NA2's default cull variant with strip
+normalization: the packed bodies (file flags `0x3804`) and the ordinary models
+with file flag `0x0800` (`0x3801`, `0x3800`), as NA2 does for its own models
+with these headers. All others keep both fields zero, as in UN3. None of these
+models sets mode bits `0x2000` or `0x8000` or the selector bits.
+
+The animation work initializers (`animation_rotation_init`,
+`animation_vector_init`, `animation_scalar_init`, `animation_color_init`) and
+evaluators (`animation_rotation_evaluate`, `animation_scale_evaluate`,
+`animation_vector_evaluate`, `animation_scalar_evaluate`,
+`animation_color_evaluate`) build the same work records and do the same
+arithmetic in both games for every key mode.
+
 **Inference, medium confidence:** agreement extends beyond framing to direct
-outer reads, packed curves and streamed payloads. Complete delegated conversion,
-object interpretation and loading/playback agreement remain unproved.
-Handler consumption, rather than inaccurate length fields alone, is required
+outer reads, packed curves and streamed payloads. Handler consumption, rather than inaccurate length fields alone, is required
 to assess the format.
 
 ## Loading and cancellation
@@ -748,7 +772,7 @@ An inactive worker pointer does not mean the list was freed. Completed nodes
 retain wrappers until callers adopt published containers and clear the queue.
 Normal starts reset the cleanup mode byte to zero, detaching and retaining
 containers. A nonzero cleanup mode would destroy produced containers, but no
-resident writer enabling it was found. Queue cleanup checks no worker state;
+resident code directly enables it. Queue cleanup checks no worker state;
 waiting before freeing nodes is a caller contract.
 
 The residency batch path separately drains state-1 entries and promotes
@@ -792,9 +816,8 @@ The worker's state-5 scan has no ordinary producer leaving such an entry linked.
 `CcsResidencyManager` names its flags, stop/cancel bytes, entry count,
 head/tail, inline entries, cached free entry, active wrapper and signed counters.
 Flag bit 0 serializes a load; bit 2 marks batch activity.
-`activity_count` is initialized to zero and only its positive test in the
-aggregate query is established. No producer was found in the bounded
-resident/BTL/ETC direct-displacement audit; indirect/rebased writes remain open.
+`activity_count` is initialized to zero and tested positive by the aggregate
+query; the resident/BTL/ETC direct-displacement audit found no writer of it.
 `batch_workers` is incremented/decremented by batch start/finish.
 The batch worker uses the singleton manager rather than the start call's
 manager argument. A zero acknowledgement-mode byte waits for external
@@ -822,14 +845,13 @@ destroys the container; the generic destructor does not enforce that order.
 `ccs_destroy_record` dispatches type-specific, direct or virtual destruction.
 Marked reference rows skip dispatch but still clear runtime and secondary,
 leaving the provider object owned by its provider. No generic object retain
-counter was found. The container destructor itself has no matching publication
-lock in this bounded slice.
+counter was found. The container destructor has no matching publication lock.
 
 ## Streamed playback (SP Skill Play)
 
 ### Who plays CCS files
 
-The bounded direct-call census finds one play-builder caller,
+The direct-call census finds one play-builder caller,
 `ccs_play_decode_worker`, and no BTL/ETC/ADV direct caller.
 The persistent player's owner is `sp_skill_play_task`, created by
 `sp_skill_play_start` and reached from BTL and ETC.
@@ -901,8 +923,8 @@ Containers already resident remain resident.
 
 Construction clears `play_flags`, `stop_latch`, `skip_latch` and
 `whole_file`; ordinary skill construction/task setup leaves those values.
-The bounded direct-displacement audit found only the constructor clears of
-play flags and whole-file mode. Indirect/rebased writers remain open.
+The direct-displacement audit found only the constructor clears of play
+flags and whole-file mode.
 Ordinary request construction uses `0x1000/0x400/0`, without requesting
 `0x100` retention.
 
@@ -912,6 +934,23 @@ Decode clears the current-scene stop latch after a request, allowing reuse;
 skip stays latched for the player lifetime.
 Effects are owned by the
 [Ultimate Jutsu presentation state machine](../../gameplay/characters/ultimate_jutsu.md#presentation-state-machine).
+
+Every caller of the latch, found by a call-instruction search of every
+program, is listed below. Battle code latches only for contest status `2`
+(request `1`) or status `4` at the branch frame (request `2`), and never
+for a button. Each film viewer ends its film with request `2` when the
+first pad presses the listed button after the hold point is released.
+
+| Game | Battle caller | Viewer caller, button, sound |
+| --- | --- | --- |
+| NA2 | BTL `jutsu_presentation_update` (`0x00769790`) | ETC `etc_skill_play_wait` (`0x006C0D80`), Cross, `0x33` |
+| UN3 | `ultimate_jutsu_presentation_update` (`0x002E36D0`) | HOME `home_film_viewer_update`, Triangle, `0x53` |
+| UN4 | `jutsu_presentation_update` (`0x00377730`) | HOME `home_film_viewer_wait` (`0x006C28F0`), Triangle, `0x33` |
+| UN5 | BTL `jutsu_presentation_update` (`0x00780F90`) | ETC `etc_skill_play_wait` (`0x006D40D0`), Triangle, `0x33` |
+
+The latch is `0x0018D670` in UN3, `0x001DCA50` in UN4 and `0x001D2F30` in
+UN5. NA2's `ccs_play_loop` also has a pad viewer whose Start stops the
+scene, but only play flags `0x60` enable it, and retail never sets them.
 
 ### Per-request lifecycle in `PlayDecode`
 
@@ -979,8 +1018,7 @@ checkpoint zero. Other supported handlers are:
 
 UN3's `ccs_parse_streamed_block_range` has the same dispatch set and
 all eighteen data handlers agree in reads, masks, counts, alignment and version
-branches, including absent targets. Runtime effects/layouts below describe NA2;
-downstream equivalence is not established.
+branches, including absent targets. Runtime effects/layouts below describe NA2.
 
 **Inference:** frame-tag high bytes identify the animated object families:
 object, material, camera, lights, model, controllers/morpher, draw environment
@@ -999,7 +1037,7 @@ directory runtimes.
 | Tag / handler | Payload after the common ID/flags, unless stated otherwise |
 | --- | --- |
 | `0x0101` / `ccs_frame_tag_0101` | `3F` position when `(flags & 0x0e)==0`; always `3F` Euler degrees; `3F` scale when `(flags & 0x380)==0`; always `F` alpha and `U` visibility. Euler is converted to radians and alpha is clamped to `[0,1]`. All input is consumed before target lookup. |
-| `0x0108` / `ccs_frame_tag_0108` | No flags: exactly `U ID, U value1, U value2`. Creates a 0x18-byte queued node containing both values, current frame, resolved target, and table type (`ccs_play_target_type_unchecked`). Links it into the `CcsPlayContext.queued_commands` or `CcsExternalPlayContext.queued_commands`. The values' command meanings remain unresolved. |
+| `0x0108` / `ccs_frame_tag_0108` | No flags: exactly `U ID, U value1, U value2`. Creates a 0x18-byte queued node containing both values, current frame, resolved target, and table type (`ccs_play_target_type_unchecked`). Links it into the `CcsPlayContext.queued_commands` or `CcsExternalPlayContext.queued_commands`. |
 | `0x0201` / `ccs_frame_tag_0201` | `F` for each clear bit `2`, `4`; version `>=0x120` adds `F` for each clear bit `8`, `0x10`, `0x20`, `0x40`. Defaults are respectively `0,1,1,1,0,1`. Consumption precedes lookup; resulting values update every nonzero material in the target's pointer/count vector. |
 | `0x0502` / `ccs_frame_tag_0502` | With a resolved target and bit 0 clear: `F` position components for clear bits `2,4,8`, Euler degrees for clear bits `0x10,0x20,0x40`, then `F` for clear bits `0x80,0x100`. Bit 0 set reads no following fields. A missing target instead consumes exactly `8F` regardless of flags. |
 | `0x0601` / `ccs_frame_tag_0601` | No ID/flags: one `U` packed color. Its low three bytes become the RGB vector applied at `CcsContainer.ambient_color`. |
@@ -1021,8 +1059,7 @@ Camera fields omitted by flags require a resolved target: the missing-target
 branch still reads eight floats and can consume a following header.
 Mesh counts/vertex counts must agree with the resolved model, whose successful
 branch uses runtime mesh count and copies without a destination-capacity check.
-Numeric light/environment parameters remain unnamed where consumer meaning
-is open; class identities are owned by [CCS object types](ccs_object_types.md).
+Class identities are owned by [CCS object types](ccs_object_types.md).
 
 Marker -1 sets end bits 2/4. Marker -2 does the same, rewinds to checkpoint
 zero, restarts `0x0E00` effects and reinstantiates container generator
@@ -1099,9 +1136,7 @@ type-specific objects.
 
 An optional caller stores `EtcContainerOwner.container` before required
 object lookup. Another caller requires the container as well.
-These names are resident-populated GP globals with no static ETC strings;
-nearby data cannot establish their identities. Adjacent split decompiler
-fragments do not establish a complete C consumer assignment.
+These names are resident-populated GP globals with no static ETC strings.
 
 The mixed owner borrows `EtcSkillCcsOwner.shared` and loads-if-absent
 stream-common/body-common into its other two fields. It destroys only those
@@ -1114,18 +1149,3 @@ The deferred replacement caller releases its previous
 path, starts progress mode zero, waits for inactivity, adopts by name and
 cleans retained queue nodes.
 
-## Negative results and confidence
-
-Lookup, framing, direct consumption, ownership, cancellation, publication,
-retail table bounds and demonstrated teardown order have high static
-confidence. The registry entry owns the observed use count; direct holders
-still depend on caller ownership and explicit reference invalidation.
-
-The NA2/UN3 reader comparison supports the bounded direct paths and exposes
-specific result differences. Full delegated model conversion and downstream
-behavior remain open. Secondary-value names describe demonstrated access,
-without claiming one meaning for every type.
-
-No generic expected-type assertion or object retain counter was found in the
-lookup/record family. Publication/reference resolution is synchronized, but
-caller-side unload serialization is not established.

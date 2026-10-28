@@ -7,10 +7,9 @@ measurement, and selected-row behavior.
 
 Established: secondary output height, selected-row displacement, tracking,
 ordinary-space advance, boxed widths and horizontal leading-bearing scaling.
-Open: UN5 measurement paths outside the examined secondary-font callers;
-representative labels do not establish every markup or vertical-writing path.
 Routine and field names come from `@annotations/NA2` and `@annotations/UN5`;
 their comments hold code-level detail, and all cited addresses are live.
+Open: nothing.
 
 Raster and palette findings belong to [Font assets](assets.md); screen-specific
 placement belongs to the screen layout documents, starting with

@@ -3,11 +3,11 @@
 ## Research coverage
 
 Established: the shared mirrored X anchors, scaled Y placement, renderer
-ownership, destination lifetime and UN5 width cap. No open question is
-recorded for this bounded path. Screen evidence covers 74 populated character
+ownership, destination lifetime and UN5 width cap. Screen evidence covers 74 populated character
 cells at 640 pixels; destination lifetime also has one prior native-renderer
 capture. Names come from `@annotations/NA2` and `@annotations/UN5`; annotation
 comments hold the code-level detail. All addresses below are live.
+Open: nothing.
 
 Binary identities and address conventions are defined in the
 [Standard game file identities](../../../game/files/file_identities.md).

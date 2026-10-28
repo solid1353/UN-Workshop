@@ -5,9 +5,10 @@
 Established: the attack-clash rush HUD's `TEX_xrush` rectangle tables in NA2
 and UN5, including the rock-paper-scissors gear labels, their record roles,
 UN5's per-locale accessor and the shared placement formulas; the five
-accessor callers are all listed below. Open: nothing about the rectangles. Names come from `@annotations/NA2` and `@annotations/UN5`;
-addresses follow the
+accessor callers are all listed below. Names come from `@annotations/NA2` and
+`@annotations/UN5`; addresses follow the
 [live address conventions](../../../game/files/file_identities.md#address-conventions).
+Open: nothing.
 
 The rush is the attack-clash minigame whose art and animations come from the
 stage-selected `N_RASH*.CCS` archive

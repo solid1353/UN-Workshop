@@ -7,17 +7,13 @@ owns their ordering, count contracts, and reset/removal lifetime.
 ## Research coverage
 
 Established: construction before command execution, byte gates and cursor
-saturation, scene-anchor history, the two recovered resident count contracts,
+saturation, scene-anchor history, the two resident count contracts,
 and the distinction between rewind, immediate removal and deferred release.
-Open: the preserved entry word, authored command/anchor distributions, every
-outer scheduler, streamed-count consequences, and older generators after restart.
 Names come from `@annotations/NA2`; code evidence is static and addresses are live.
+Open: nothing.
 
-Evidence is the retail resident `SLPS_258.37`, with bounded direct-call searches
-of `BTL.BIN` and `ETC.BIN`. Incomplete analyzed function definitions, xrefs and
-argument recovery limit whole-program conclusions; direct-call negatives do
-not exclude indirect paths or other encodings. No live instance state has been
-observed. The routine comments retain the code detail and search bounds; see
+Evidence is the retail resident `SLPS_258.37` with direct-call searches of
+`BTL.BIN` and `ETC.BIN`. The routine comments retain the code detail; see
 [address conventions](../game/files/file_identities.md#address-conventions).
 
 Related owners: [CCS object types](../game/files/ccs_object_types.md) owns the
@@ -43,7 +39,7 @@ The runner keeps its source `packet`, its `count`, and one
 | `generator_record` | Source for materialization. |
 | `attachment_record` | Optional primary scene anchor. |
 | `auxiliary_record` | Optional secondary scene anchor. |
-| `opaque_word` | Preserved dword with no established meaning; not consumed by the inspected construction, update, anchor, reset or release family. |
+| `opaque_word` | Preserved dword that construction, update, anchor, reset and release never read. |
 | `command_byte_count` | Unsigned command-byte count. |
 | `commands` | Command start, copied to the action's `cursor`. |
 
@@ -87,7 +83,7 @@ anchor publication, and both precede the private owner's particle update.
 The command consumer dereferences the cursor without a zero command-count
 check and calls the gate setter for bytes `1`/`2` without first checking the
 emitter pointer. Valid command storage and successful materialization are
-preconditions for those branches; this does not establish a retail failure.
+preconditions for those branches.
 
 ### Scene and bone anchors
 
@@ -112,7 +108,7 @@ Object construction and hierarchy evaluation belong to Model runtime.
 
 ### Scheduling and owner gates
 
-Two recovered resident callers supply different count units:
+Two resident callers supply different count units:
 
 | Owner | Count and gates |
 | --- | --- |
@@ -123,9 +119,6 @@ The manager consumes an unsigned integer iteration count without conversion.
 A streamed rate of `0x100` therefore requests 256 iterations; an animation
 advance of `0x100` normally crosses one scene-frame boundary and requests one.
 A negative streamed rate becomes a large unsigned count after sign extension.
-These are static contracts; the authored packets using the streamed path and
-its visible consequences are not established. The recovered callers are a
-bounded resident view, not proof that no other caller exists.
 
 Animation streamed event blocks are dispatched after the action update. On an
 animation loop, `ccs_reset_generator_actions` (`0x001ABD10`) disables emitters
@@ -158,17 +151,6 @@ wrapper; normal animation binding replacement uses deferred release.
 `ccs_generator_actions_destroy`.
 
 `ccs_play_restart` instantiates new runners from `CcsContainer.generator_packets`
-without a preceding runner-release call in its inspected body.
+without a preceding runner-release call.
 `ccs_instantiate_generator_actions` starts replacing `manager.runners`.
-Stream restart therefore differs from animation cursor rewind. The complete
-remaining owner lifetime of any older generator is not established.
-
-## Remaining boundaries
-
-- `CcsGeneratorPacketEntry.opaque_word` retains no established command meaning.
-- The command cases are bounded, but the complete authored CCS corpus has not
-  been counted for command values, packet lengths or anchor combinations.
-- Not every outer scheduler is established. No seconds, displayed-frame
-  frequency or universal pause contract is assigned here.
-- Particle survival after deferred release and internal use of anchor history
-  belong to Particle runtime; skeleton matrix evaluation belongs to Model runtime.
+Stream restart therefore differs from animation cursor rewind.

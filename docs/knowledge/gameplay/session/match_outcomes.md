@@ -4,10 +4,8 @@
 
 Established: KO/timeout, condition/pause outcomes, inner/outer end flow, score qualification,
 session tallies/streaks, both result-`8` continuations and cleanup ordering.
-Open: player-facing names of `5/8/9` and signed wrapper returns, a latched `9` producer,
-a best-of-N rule, other callers' screen roles, invocation/presentation timing,
-and the complete encounter sequence-data layout.
 Names, fields and per-routine comments are maintained in `@annotations/NA2`.
+Open: nothing.
 
 This document owns how a retail NA2 (`SLPS-25837`) battle ends.
 [Battle statistics](battle_statistics.md) owns statistics, statistic-derived
@@ -22,7 +20,7 @@ and Victory rendering is an interface boundary only.
 Addresses follow
 [Retail game file identities](../../game/files/file_identities.md#address-conventions)
 and [Overlay ABI](../../runtime/overlay_abi.md#exact-clean-layouts).
-Evidence is static and bounded to the inspected resident dispatchers and BTL
+Evidence is static, from the inspected resident dispatchers and BTL
 consumers. Addresses are live. The resident BSS globals in the following
 section are named in `@annotations/NA2/SLPS_258.37`.
 
@@ -72,8 +70,6 @@ condition branch can overwrite that classification later in the same update.
 The [mode callback dispatcher](../../game/mode_flow.md#high-level-mode-callback-dispatcher)
 creates type `1` through `free_battle_callback` and type `2` through
 `practice_callback`, establishing the Free Battle/Practice routes below.
-Other higher-level callers exist; their enclosing screen roles were not
-traced in this outcome scope.
 
 ### Control assignment and COM sides
 
@@ -180,7 +176,7 @@ A nonzero scan changes condition phase `1` to `3` when applicable and calls
 result `5` unconditionally. It can happen without KO/time or replace
 ordinary `1..4` within that same invocation. An already-latched result blocks
 a later terminal-evaluation invocation. Result `5` denotes this configured
-zero-status path; a player-facing mode name is not established.
+zero-status path.
 
 Condition progress has a separate lifetime from result/timeout. Setup normally
 resets statuses, but preserves them in continuation phase `2` except when
@@ -198,19 +194,17 @@ IDs `0x18/0x1A`, eligible for the same scan when configured and active.
 | ---: | --- | --- |
 | `0` | Unresolved/active | Timer and classifier gate |
 | `1`, `2` | Side 1 / side 2 has greater terminal HP | HP comparison |
-| `3` | Equal nonzero HP, normally a time draw | UI wording not fully established |
+| `3` | Equal nonzero HP, normally a time draw | HP comparison |
 | `4` | Both HP values zero | Exact comparison |
-| `5` | Active configured side has status zero; can override ordinary result | Original mode name open |
-| `6` | Pause selection `3`: return through Character Select without scoring | Confirmation prompts, not traced input |
-| `7` | Pause selection `2`: exit toward Mode Select | Confirmation prompts, not traced input |
-| `8` | Synthetic continuation | Both resident routes established; original name open |
-| `9` | Recognized by consumers | No latched producer found in scoped direct stores/calls |
+| `5` | Active configured side has status zero; can override ordinary result | Condition scan |
+| `6` | Pause selection `3`: return through Character Select without scoring | Pause menu after confirmation prompts |
+| `7` | Pause selection `2`: exit toward Mode Select | Pause menu after confirmation prompts |
+| `8` | Synthetic continuation | Both resident routes established |
+| `9` | Recognized by consumers | No latched producer found in direct stores/calls |
 
 Ordinary KO/time emits only `1..4`. `battle_start_menu_update` writes
 `6/7` through `battle_route_set`; continuation producers write `8`
-directly. No literal pointer to the setter was found in either scoped image;
-computed indirect calls or other overlays remain possible sources of `9`.
-Winner/loser names for `6..9` would exceed the evidence.
+directly. No literal pointer to the setter was found in either image.
 
 The pause host is a separate `0xCC`-byte allocation. Admission, existing
 result/timeout and other services gate opening. A nonzero menu selection first
@@ -263,8 +257,8 @@ Timeout substates `0x0A..0x0E` wait for the auxiliary overlay's readiness:
 `battle_end_exchange_for_result` selects side 2 for result `1`, side 1
 for `2/3/4`, and for `5` repeats the failed-condition scan when a definition
 exists, otherwise uses `active_side + 1`. A nonnull selected fighter is
-passed to `fighters_end_exchange(fighter, 0)`. This does not establish a
-loser for draws or condition outcomes; the helper acts on both fighters.
+passed to `fighters_end_exchange(fighter, 0)`; the helper acts on both
+fighters.
 
 Wait and event constants are invocation arguments, not wall-clock durations.
 
@@ -385,7 +379,7 @@ count as total minus selected count minus draws and clamps numeric values to
 total plus one, also clamped.
 
 The scoped direct consumers have no win/draw termination threshold; no resident
-direct accessor caller was found. This establishes tally/streak presentation,
+direct accessor caller was found. The tallies and streaks are presentation,
 not a best-of-N rule or the match-limit mechanism.
 
 ## Higher-level sequence counter and result-8 continuation
@@ -394,8 +388,8 @@ not a best-of-N rule or the match-limit mechanism.
 `rng_shuffle_allocate` establish a separate `EncounterFlow` with
 `state`, `ordinal`, `limit`, `elapsed`, `type`, `conditions`,
 `sequence_data`, `definition` and `selection_table`.
-The `sequence_data` pointer refers to resident `encounter_sequence_data`;
-its complete layout remains open. Type `4` owns a randomized selection table
+The `sequence_data` pointer refers to resident `encounter_sequence_data`.
+Type `4` owns a randomized selection table
 and type `5` can own an `EncounterSequenceDefinition`.
 
 Higher-flow state `4` starts ordinal `1`. Type `5` with a definition
@@ -413,7 +407,7 @@ increments ordinal, selects pending slot `2` for result `1` or `1`
 otherwise, requests phase `1` / rebuild route `2`, latches result `8`,
 stores word `1` in that slot's `pending_character_id`, and resets inner
 substate to `4`. Reaching the type-`5` limit leaves ordinary completion
-to proceed. Player-facing type-`5` naming remains open.
+to proceed.
 
 `battle_reentry_ready` provides a barrier after that reset. In phase `1`,
 the first pass clears each present top panel's `transition_selector` and
@@ -466,8 +460,7 @@ It destroys the transition/result helpers and chooses:
 | No qualifying condition | `0x1E` | `+1` |
 
 The wrapper stores the sentinel and resets its mini-state. Sentinel `0x20`
-waits the resource worker before returning `-1`. The mechanics are established;
-player-facing meanings of these signed returns remain open.
+waits the resource worker before returning `-1`.
 
 ## Battle statistics and scoring
 

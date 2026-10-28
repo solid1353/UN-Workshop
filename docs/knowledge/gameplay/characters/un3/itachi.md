@@ -6,10 +6,11 @@ Established for UN3 Itachi 23 against NA2 Itachi 71: equal action counts with
 different rows, names, chains, callbacks and ordinary-jutsu classes; twenty
 Ultimate Jutsu records selecting five films; effect `0x24` against NA2's `0x4A`;
 marked typed providers and the four muffler definitions NA2 lacks; compact
-programs, sparse streamed banks and five SOUND intros.
-Open: input and contact semantics, the Clone Explosion and Haze actors, film
-conversion, typed descendants, effect admission, ID-dependent services and
-remaining voice mapping.
+programs, sparse streamed banks and five SOUND intros; field-by-field action
+and row comparison; both jutsu class hierarchies; how UN3 films deal damage
+and play audio; film placement, camera, screen and palette commands; effect
+`0x24` entry and gate; Haze's spoken cues.
+Open: what the selected clips actually say, which only listening can show.
 
 Names come from `@annotations/UN3` and `@annotations/NA2`; addresses are live. Shared format comparisons are in [UN3 and UN4 characters](../un3_un4_characters.md).
 
@@ -83,9 +84,49 @@ signed duration halfwords, not inferred visible durations.
 
 All unmarked duration pairs in corresponding rows agree. Matching suffixes
 and durations establish authored sequence correspondence, not identical
-animation payloads, movement, contact windows or physical-input admission.
-The callbacks also consume different action indices, as recorded in
-[Itachi callbacks](#callbacks).
+animation payloads. The callbacks also consume different action indices, as
+recorded in [Itachi callbacks](#callbacks).
+
+### Itachi action and row fields
+
+Both games store the `0x54`-byte action record with NA2's `ActionRecord`
+field layout and the `0x4C`-byte row with NA2's `CharacterAnimationRow`
+layout: records 7..9 are byte-identical and 36 matched row chains agree
+field for field. Compared over the matched pairs above:
+
+- **Input.** The `signature` of every matched action 4..46 is identical.
+  Donor records 0/2 are native 2/0 (the non-damaging `chb` belongs to the
+  first pair in the donor, the second in native). Donor record 1's
+  signature `0x00110012` is native record 3's, and donor record 3's
+  `0x08000012` is native record 1's. NA2's `actions_setup_working_array`
+  copies records 0..3 from the selector owner per pair and rewrites the
+  `0xF0000` signature group and continuations by destination pair, so those
+  four records' input follows NA2's selector setup, not their stored slot.
+- **Response selector.** Against NA2's
+  [selector table](../../combat/hit_response.md#ordinary-response-selection),
+  UN3 `response_select_substate` (`0x001C07E0`) gives selectors
+  `0x00..0x05` the same grounded substates and air substates
+  two lower; `0x06..0x13` the substates two lower than NA2's `0x08..0x15`;
+  `0x14..0x1E` the substates four lower than NA2's `0x17..0x21`; and its
+  random families `0x1F..0x24` are NA2's `0x22..0x27`. Every otherwise-equal
+  pair follows this: donor
+  `0x07/0x0A/0x0B/0x10/0x12/0x13` are native `0x09/0x0C/0x0D/0x12/0x14/0x15`,
+  donor `0x16/0x17` are native `0x19/0x1A`.
+- **Guard SFX.** `guard_sfx` is one higher in native in every pair that has
+  one (`0x50..0x5B` → `0x51..0x5C`). Other SFX fields differ only in records
+  whose other fields also changed, so they give no rule.
+- **Row index.** Field `+0x50` holds each game's own row index; it shifts
+  from action 20 on with the different row counts.
+- **Changed moves.** Donor actions 21..32 (native 22..33) and 35 change
+  knockback, response, repeat count, pause/rejection counts, thresholds and
+  SFX. Donor 33 (`kcn12/13`, continuation 32, signature `0x08000011`) has no
+  native record; native 20 (category `0x04000000`, signature `0x02000011`)
+  has no donor record.
+- **Changed rows.** Donor rows name `OBJ_2itc00t0` bones where native names
+  `OBJ_2itw00t0`. Rows of donor actions 20..30, 34, 35, 36, 41 and 42 also
+  differ in motion event, planar/vertical speed, decay, multiplier, rate,
+  and contact-bank frames, radius, offset and bone; donor actions 0, 2, 26,
+  31 and 32 have different row counts.
 
 ### Itachi ordinary jutsu and resources
 
@@ -135,8 +176,34 @@ stored position fallback. `itachi_haze_jutsu_update` (`0x008AF510`)
 advances the helper and dispatches commands `0x2D/0x51/0x6E` to states
 1/2/3; command `0x51` requests dialogue or a common cue 6..8.
 `itachi_haze_jutsu_draw` (`0x008AF740`) scopes the renderer and submits
-the embedded actor. Full inherited state, collision, interruption and
-destruction descendants remain open.
+the embedded actor. `itachi_haze_begin` (`0x008AF7A0`, virtual `+0x228`)
+runs `fanged_pursuit_base_begin`, binds the helper to the fighter, stores
+both participants' positions and emits dialogue cue index 0
+([Itachi audio](#voice)).
+
+Both classes keep the common jutsu base's vtable pointer at actor `+0x28`;
+the base constructor (`0x0087B720`) installs `0x0069E010`. Against that
+table, Clone Explosion's `0x0068DBC0` replaces only eight slots: contact
+`+0xA4`, update `+0xE8`, draw `+0xEC`, contact dispatch `+0xF0`, `+0x148`,
+destructor `+0x224` (`itachi_clone_explosion_destroy`, `0x0090FBD0`),
+`+0x228` (`0x0090A6B0`, forwards to base `0x0087F150`) and finish
+`+0x22C` (`itachi_clone_explosion_finish_cleanup`, `0x0090BF60`). Its
+destructor clears its own members, switches to the compound base vtable
+`0x0068E360` built by `0x00903330`, releases that base's compound player
+and members `+0x5D0..+0x800`, then runs the common base destructor
+`0x0087BE80`. Haze's `0x00699D00` replaces 26 slots: its own
+position/update/draw/begin (`0x008AF400..0x008AF7A0`), fanged-pursuit base
+methods `0x008B44D0..0x008B7DE0`, and shared `0x0088BD00`, `0x009103E0`
+and destructor `0x009110C0`; its capture slots `+0x1FC/+0x200` are the
+fanged-pursuit base's. Every other slot is the common base's, for Clone
+Explosion including capture services `+0x1FC/+0x200`
+(`interaction_begin_capture_services`) and the scene lock `+0x204`
+(`interaction_scene_lock_begin`).
+
+Clone Explosion's contact writes hit-record response selectors `0x12`
+and, on the last hit, `0x0E` (`+0x2C`), and requests sound effects 100 or
+`0x1D`. These are UN3 selector and sound numbers
+([Itachi action and row fields](#itachi-action-and-row-fields)).
 
 Native resource 144's `skill_itw000_construct` (`0x007E5770`) instead uses
 `skill_tyo_base_construct`, installs `0x005EF350`, constructs a private
@@ -158,9 +225,12 @@ threshold semantics are owned by [Battle AI](../../session/battle_ai.md#per-side
 Native initialization and reaction routines independently consume the
 [character descriptor's flags byte](../../session/battle_ai.md#character-descriptors-and-hard-coded-exceptions).
 The fighter AI virtuals retain their control-word gate but call their own
-overlay dispatchers. These entries do not establish complete decision
-equivalence. Remaining availability, support, input admission and indirect
-identity-specific branches are unestablished.
+overlay dispatchers.
+
+Identity checks inside the donor's own code: the dash material and Clone
+Explosion branch on actual ID `0x17`; Haze's command `0x51` compares the
+jutsu selector's owner (selector / 2) with the participant's character
+([Itachi audio](#voice)).
 
 Typed CCS relationships belong to
 [Itachi providers](#typed-providers);
@@ -198,7 +268,6 @@ and transient particles, using `OBJ_2itc00t0` and `OBJ_2cmn00t0`.
 Actions 4/5/6 at phase 1 request compact events 6/7/8 at markers 5/10/6.
 Native channel 3 has its own action numbering and effect-`0x4A` branches;
 it cannot be substituted for the donor's callback by pointer translation.
-The complete per-branch native comparison remains open.
 
 The complete static donor hit-response return set is
 `{-1,0x29,0x2B,0x2C,0x2E,0x30,0x32,0x33,0x36,0x3A,0x3E}`;
@@ -280,8 +349,8 @@ The five cinematic pairs' complete marked-key census belongs to
 [Itachi cinematics](#cinematics).
 
 These checks establish exact provider identity and selected typed payload
-edges. All remaining nested geometry/effect fields, foreign reader behavior,
-participant substitution and simultaneous residency remain open.
+edges. How NA2's reader treats UN3 geometry and effect payloads is owned by
+[CCS runtime](../../../game/files/ccs_runtime.md#un3s-parser-compared-with-na2s).
 
 ## Ultimate Jutsu and effects
 
@@ -307,8 +376,16 @@ intro and effect selections. The fourth group's `0x68/0x69` damage
 percent becomes 35; the other group damage values agree with the base.
 `itachi_ultimate_default` (`0x0047BD7E`) selects 298; the mode-1
 default (`0x0047BDFE`) selects 294. Ability IDs are the donor's prerequisite
-domain, not NA2's UJ categories or fighter identities. Complete admission
-and every stat-adjustment consumer remain unestablished.
+domain, not NA2's UJ categories or fighter identities:
+`ultimate_jutsu_record_abilities_available` (`0x0028B830`) counts how many
+of the three IDs `ability_unlocked` finds in the save-data bitset and
+requires that count to equal the record's signed count at `+6`; a normal
+default record passes without the check. Its three callers are UJ menu
+routines (`0x002C0640`, `0x002C1230`, `0x002C52B0`).
+The six stat-adjustment halfwords (`+0x18..+0x22`) are read only through
+`ultimate_jutsu_record_stat_adjustment`, whose only caller,
+`jutsu_menu_draw_stat_adjustments` (`0x002C5650`), draws them as signed
+numbers; none of the record getter's other callers reads those offsets.
 
 Native `itachi_ultimate_jutsu_list` (`0x005ACF70`, pointer row
 `0x005AD0CC`) has count 4 and records 157..160 at `0x005AF884`.
@@ -329,8 +406,22 @@ that effect through their authored post-film field.
 UN3's `ultimate_jutsu_record_form` (`0x0028BFF0`) returns a replacement
 identity only for effects `0x3D..0x46` → IDs 47..56. Effect `0x24`
 returns zero: the checked Itachi UJ completion route does not replace
-ID 23 with another fighter. This does not prove every donor availability
-or awakening service equivalent to NA2's.
+ID 23 with another fighter.
+
+Effect `0x24` enters through the generic post-film outcome described in
+[UN3 cinematic damage and audio](#un3-cinematic-damage-and-audio):
+`ultimate_jutsu_contest_begin_round` (`0x002D4A20`) copies the record's
+effect into `jutsu_outcome_effect_id`, an interruption clears it to -1, and
+`jutsu_post_cinematic_update` applies it to the attacker through
+`effect_apply_outcome` when the defender survives the damage total. After
+an uninterrupted film (manager `+0x7E == 1`),
+`ultimate_jutsu_presentation_update` also calls
+`effect_state_name_panel_start` (`0x002849D0`) for effects `0x0D..0x3C`: a
+`Situation1` task loads `modename_t` and shows the state-name panel,
+texturing `MDL_mn_panel`'s `MAT_joutai` with `TEX_mn_tuku` from
+`effect_state_name_textures` (`0x0047BE7C`). Byte searches of NA2's
+`SLPS_258.37` for `mn_siki`/`mn_tuku` and of `BTL.BIN` for `mn_tuku` find
+no counterpart.
 
 The separate effect implementations and native owned-player difference
 are in [Itachi effects](#power-effects).
@@ -357,9 +448,16 @@ effect `0x24` independently of the native effect ID.
 `itachi_tsukuyomi_effect_primary_update` (`0x001FF4D0`) selects owner
 through effect `+0x64` and opponent through fighter `+0x20`.
 It writes actor `+0x1A0` to 0.75 for the owner and 0.25 for the opponent
-unless the owner's `0x001CEA50` gate holds, when both become 1.0.
-Exact 1.0 at actor `+0x2F0` becomes 0.99. The same routine controls
-linked response/position paths; the full gate semantics remain unassigned.
+unless `battle_scene_lock_active` (`0x001CEA50`) holds, when both become 1.0.
+That gate is nonzero while the manager's `+0xAC0` scene-lock block has any
+lock reason: `battle_scene_lock_set/clear` (`0x002B7CE0/0x002B7D00`) keep a
+reason mask at block `+0x3C` and its any-set byte at `+0x38`, and the
+common jutsu virtual `interaction_scene_lock_begin` (`BATTLE 0x00888E40`,
+slot `+0x204`, flag 1 of `interaction_begin_capture_services`) sets it for
+both sides. While a jutsu holds the scene lock, both fighters therefore run
+at full rate. Exact 1.0 at actor `+0x2F0` becomes 0.99. Otherwise, the
+opponent in action `(6,0x5D)` gets a new position and is passed with the
+owner to `0x001C15B0`, and an opponent in `(6,0x59)` outside state 8 is moved to `(6,0x5B)`.
 `itachi_tsukuyomi_effect_secondary_update` (`0x001FF710`) owns tint
 helper submission under its opponent-action gate, uses a scene-indexed
 intensity when scene < 28 or `0xBF` otherwise, scopes the rendering
@@ -423,15 +521,45 @@ the following counted, defender-ID-indexed placement descriptors.
 | `0x69` | `0x005E24E0` | 1, 60, 115, 165 |
 | `0x6A` | `0x005E2C20` | 1, 73, 106 |
 
-`sp_skill_play_begin` (`0x002952D0`) selects these descriptors and
-the request-ordinal auxiliary data. `sp_skill_play_update`
-(`0x00294F10`) applies placement; `sp_skill_play_frame`
-(`0x002952B0`) delegates camera auxiliary updating. That frame callback
-has no native-style audio/hit-row loop. The donor's separate cinematic
-damage and dialogue producer/scheduler remains unestablished, including
-its relation to the stored record damage percentages. All exact per-defender
-XYZ triples, camera payload interpretation and timed appearance substitutions
-remain open.
+`sp_skill_play_start` (`0x00296250`) takes each skill's entries from four
+skill-indexed tables, and `sp_skill_play_begin` (`0x002952D0`) and
+`sp_skill_play_update` (`0x00294F10`) apply them:
+
+- **Defender placement** (`sp_skill_defender_position_table`, `0x0047C958`).
+  A descriptor holds the threshold count, a pointer to signed-halfword frame
+  thresholds, then one pointer per defender ID 0..56 (ID 0 null), each to
+  one signed XYZ halfword triple per threshold at a `0x20` stride. Each
+  frame the update picks the latest threshold not after the frame and
+  builds a translation from that defender's triple. For skill `0x66`
+  (`itachi_nightmare_phantom_defender_positions`) the triples are mostly
+  small negative Y values that differ per defender. NA2 stores the same
+  shape in a stream's `_damOffs` blob
+  ([UN4 defender position tracks](../un4/ultimate_jutsu.md#defender-position-tracks)).
+- **Camera rejection** (`sp_skill_camera_reject_ranges`, `0x0047C010`).
+  `sp_skill_defender_camera_admission` rejects the camera auxiliary inside a
+  listed frame range, only for defenders `0x23`, `0x30`, `0x32`, `0x33`,
+  `0x35` and `0x38` (Kidomaru, Second Stage Sasuke, Possessed Gaara, Super
+  Choji, Second Stage Kidomaru, Second Stage Kimimaro). Only skill `0x66`
+  has a list: frames 60..275.
+- **Timed commands** (`sp_skill_timed_command_scripts`, `0x0047C728`).
+  The update runs `{1,frame}` start, `{2,frame}` stop and
+  `{3,frame,side offset,flag}` participant-flag records once the frame is
+  past each record's frame. Start constructs
+  `screen_invert_overlay_construct`'s object, drawn each frame by
+  `screen_invert_overlay_draw` (`0x0010B030`): a full-screen white sprite
+  blended `(Cs - Cd)`, which inverts the picture. Skills `0x66`, `0x67` and
+  `0x6A` invert frames 60..239, 59..224 and 54..72; `0x68/0x69` have no
+  script.
+- **Palette substitutions.** Begin calls
+  `sp_skill_apply_appearance_substitutions` (`0x00294CF0`). Stream
+  `d23_101` (skill `0x66`) is one of four hard-coded stream codes: when the
+  attacker's appearance flags are nonzero, `sp_skill_swap_material_palettes`
+  points 14 materials (`itachi_nightmare_phantom_palette_swaps`,
+  `0x005F3340`: `e23_itc_syutu01`, `e23_ita_nut00`,
+  `e23_itc_nut00/01/_a.._k`) at their `CLT_…c1` palette, or `CLT_…c2` with
+  flag bit 2. Through `sp_skill_palette_record_lists` (`0x0047CD30`), skill
+  `0x6A`'s single record binds `OBJ_e23itc01` to `CLT_e23itc01c1` (flag 1)
+  or `c2` (flag 4). The other skills have no record.
 
 The native comparison's own `STRMCMN.CCS` `BIN_strtbln4` SINF rows
 (payload at decompressed `0x68E7C`) select:
@@ -451,6 +579,80 @@ binds `CLT_e71char01` to `EXT_e71char01`, each with null optional path.
 These checked native request and substitution rows are separate from the
 donor's five scene families. Startup voice belongs to
 [Itachi audio](#voice).
+
+## UN3 cinematic damage and audio
+
+This section covers every UN3 Ultimate Jutsu film; the Itachi values are
+its examples. UN3 films carry no hit rows, and
+`sp_skill_play_frame` (`0x002952B0`) only updates the camera auxiliary.
+
+**Damage.** `ultimate_jutsu_contest_construct` (`0x002D4240`) zeroes
+`jutsu_contest_damage_total` (`0x006A3A74`), and
+`ultimate_jutsu_contest_begin_round` seeds `jutsu_outcome_effect_id`
+(`0x006A13B0`) from the attacker's record. With `D` the record's damage
+percent × 0.01, `ultimate_jutsu_contest_resolve_update` (`0x002D4620`)
+compares the two inputs' scores against a threshold of 2 (4 for contest
+kind 3, 8 for kind 2):
+
+| Contest result | Added to the total |
+| --- | --- |
+| Defender ahead by more than the threshold (interruption) | `0.66 D`, later cleared with the effect set to -1 |
+| Defender ahead | `0.66 D` |
+| Attacker ahead by more than the threshold | `D + 0.08` |
+| Otherwise | `D` |
+
+A total lethal through `damage_calculate` calls `0x002772C0(manager, 0xD, 1)`.
+After the film, `jutsu_post_cinematic_update` (`0x001D49B0`) debits the
+whole total once through `jutsu_apply_damage_total` (`0x001B6110`:
+calculator flag `0x100`, then `fighter_hp_debit`, which in manager mode 7
+stops at 0.01 HP), then applies the outcome effect if the defender
+survives. When the UJ rebuilds a form instead,
+`jutsu_form_rebuild_apply_damage_total` (`0x0027D400`) debits it and turns
+a lethal total into 0.01 HP. The record's damage percent thus scales one
+debit; nothing spreads damage over the film.
+
+**Audio.** Besides the SOUND intro, every film has an entry in
+`skill_cinematic_cue_descriptors` (`0x00387E10`): `{cue rows, soundtrack
+member}`, indexed by skill. When the stream player starts,
+`audio_prepare_skill_soundtrack` binds the rows and requests music preset 9
+with `STREAM.AFS` member `soundtrack_member + 140` when
+`audio_alternate_voice_set_enabled` (Japanese voices), the bare member
+otherwise. `audio_skill_soundtrack_frame_update` (`0x00187DB0`) unpauses it
+at film frame 1 and emits a 12-byte cue row `{frame, request ordinal,
+control, …, key byte +0xB}` when both frame and ordinal match, without
+catch-up. In battle, `audio_emit_cinematic_defender_cue` (`0x00187640`)
+plays the control from `fighter_voice_controls` on the defender's compact
+bank, only when that bank holds the defender (forms `0x2F..0x38` count as
+their base fighters). `audio_enable_cinematic_mode_cues` (`0x0018A020`),
+called only by HOME.BIN's `home_film_viewer_update`, switches to
+`audio_emit_cinematic_mode_cue` (program "defender ID − 1", key from the
+row byte). Battle initialization clears that switch. UN3
+`fighter_voice_controls` (`0x00385440`) and NA2 `battle_voice_controls`
+(`0x003FC350`) rows 0..21 are byte-identical, so a UN3 cue control and an
+NA2 cinematic row's sound byte name the same control.
+
+Each film's per-request scene auxiliary descriptors
+(`sp_skill_auxiliary_table`, read by `sp_skill_auxiliary_update`) hold
+four counted channels with `0x328`, `0x18`, `0x360` and `0x30`-byte
+records, the same blocks as NA2's `CCFM` filter payloads; for every film
+of IDs 20..39 all four counts are zero.
+
+The soundtracks are stereo 48,000 Hz ADX files. The cue rows only play the
+defender's bank, and no checked film routine requests PLVOICE members, so
+any attacker speech during the film comes from the soundtrack. Itachi's:
+
+| Skill | Soundtrack member EN / JP (file offset) | Length | Cue rows: frame / control |
+| --- | --- | --- | --- |
+| `0x66` | 101 (`0x0394B800`) / 241 (`0x08B84000`) | 11.37 s | 210/`0x11` |
+| `0x67` | 102 (`0x039E1800`) / 242 (`0x08C1A000`) | 11.37 s | 87/`0x0C`, 120/`0x0F`, 177/`0x11` |
+| `0x68` | 103 (`0x03A77800`) / 243 (`0x08CB0000`) | 11.53 s | 214/`0x0F` |
+| `0x69` | 104 (`0x03B10000`) / 244 (`0x08D48800`) | 10.03 s | 132/`0x0C`, 202/`0x11` |
+| `0x6A` | 105 (`0x03B94800`) / 245 (`0x08DCD000`) | 13.70 s | 110/`0x0C` |
+
+All Itachi rows use request ordinal 1. Offsets are in the clean
+`DATA/STREAM.AFS`. NA2's `audio_prepare_skill_soundtrack` (`0x001D5BE0`)
+also starts preset 9, passing the skill itself instead of a descriptor
+member.
 
 ## Voice
 
@@ -515,9 +717,25 @@ Native SOUND outer 7 has 189 members and begins at `0x08226000`.
 Its members 136/137/138/139 begin at
 `0x08418000/0x0841C000/0x08421000/0x08425800`, with
 14920/19381/18238/38934 bytes respectively.
-These are startup intros, not complete cinematic spoken-cue schedules.
-The donor Haze update's command `0x51` requests dialogue or common
-cue 6..8; its final physical member selection and admission, all other
-dialogue producers, cinematic damage/audio scheduling and spoken-content
-matches remain open. The executable Haze roots belong to
-[Character assets](#itachi-ordinary-jutsu-and-resources).
+These are startup intros; the film soundtracks and cue rows are in
+[UN3 cinematic damage and audio](#un3-cinematic-damage-and-audio).
+
+Haze's spoken cues go through `dialogue_voice_produce` with
+`dialogue_voice_rows` (`BATTLE 0x0093D3D0`) row 50, the jutsu resource ID
+at actor `+0x3EC`: `{0x60,0x61,0x61,0x61}`. `itachi_haze_begin` emits
+index 0, PLVOICE member 96. Command `0x51` emits index 1, member 97, when
+the jutsu selector's owner (selector / 2) is the participant's character;
+otherwise `jutsu_participant_emit_voice_index` plays compact control index
+`6 + prng_inclusive(2)` from the participant's
+`jutsu_participant_voice_index_tables` row. Clone Explosion's row 49 is
+`{0x62,0x63,0x63,0x63}`, but none of the producer's callers is one of the
+Clone Explosion routines named above. Both members are populated in both
+banks:
+
+| Member | English bank 22 offset / bytes | Japanese bank 78 offset / bytes |
+| ---: | --- | --- |
+| 96 | `0x00A33000` / 16976 | `0x01A78000` / 14484 |
+| 97 | `0x00A37800` / 13482 | `0x01A7C000` / 11546 |
+
+What each clip says is not established. The executable Haze roots belong
+to [Character assets](#itachi-ordinary-jutsu-and-resources).

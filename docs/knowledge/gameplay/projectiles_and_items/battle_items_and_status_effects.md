@@ -8,19 +8,16 @@ the 19-row status dispatcher, exact per-fighter storage, direct application
 and removal owners, every registered constructor/destructor/callback, shared
 field ownership, scoped shared-timeline consumers, the gameplay/presentation
 boundary, and naming coverage for all 138 IDs through notification, character,
-item and form owners.
-Open: fixed retail status names for 37 IDs, indirect reachability, the paired
-pointer lanes, the complete indirect reach of the embedded `26C` timeline,
-pickup-path overlap, selected-use fallback reachability, and the consumer of
-interleaved `65/12`. Findings are static.
+item and form owners. Findings are static.
 Names come from `@annotations/NA2` and, for status labels, `@annotations/UN5`.
 Annotation comments carry routine detail; addresses are live. Donor power-effect
 comparisons are in [UN3 and UN4 characters](../characters/un3_un4_characters.md).
+Open: nothing.
 
 This document owns gameplay status membership and lifetime in unmodified NA2
 (`SLPS-25837`). Numeric IDs remain numeric unless a gameplay consumer
-establishes meaning. UI labels and nearby class names do not establish that
-meaning. [Retail file identities](../../game/files/file_identities.md#address-conventions)
+gives them meaning; UI labels and nearby class names do not.
+[Retail file identities](../../game/files/file_identities.md#address-conventions)
 owns binary identities and address conventions.
 
 Related owners: [Battle item inventory](battle_item_inventory.md) owns panel
@@ -47,7 +44,7 @@ ticks through `effect_tick_lifetime` and removes through `effect_remove_node`;
 
 Gameplay nodes, auxiliary category-1/2 visuals and side-specific Fukidasi
 notifications have separate lifetimes. Inventory counts are a fourth
-structure. A visible notification, retained cache or item count does not prove
+structure. A visible notification, retained cache or item count does not mean
 active gameplay status.
 
 ## Resident effect definitions
@@ -116,7 +113,6 @@ independently of gameplay duration:
 
 Categories 1..3 bypass the ordinary fighter application gate. Only categories
 1 and 2 allocate an auxiliary status visual after successful construction.
-The categories do not establish player-facing meanings.
 
 ### Category-0 effect catalog
 
@@ -124,7 +120,7 @@ All IDs `00..0D` use the generic factory and local route flag `02`.
 `0A` adds flags `70`; `0B` adds `80`. Their record anchors are
 `effect_factory_records` for `00` and `effect_01_definition` through
 `effect_0d_definition`, at `0x0059E308..0x0059E7B8`, stride `0x64`.
-The table names established mechanics, without assigning unproven UI names.
+The table names mechanics, not UI names.
 Neutral means the other generic payload fields retain their authored neutral
 values; it does not mean membership has no specialized consumer.
 
@@ -311,8 +307,7 @@ reaches `ai_action_record_allowed`, `stage_navigation_s13`,
 `projectile_enter_state_two_if_tagged_fighter_ready` (`0x0073CC80`). The last
 owner queries the second wrapper alongside major-state and
 `hit_rejection_active` checks before clearing its private word `+2C0` and
-entering projectile state `2`; that word's wider meaning remains open.
-Full indirect callers and final player-facing names remain open.
+entering projectile state `2`.
 
 `effect_22_construct` (`0x00303780`) and `effect_23_construct`
 (`0x003038F0`) add only their specialized vtables after generic construction.
@@ -321,8 +316,7 @@ only generic cleanup; `22`'s exit requests the
 [successor](#effect-0x22-successor).
 
 Effect `4A` owns an extended `Effect4aNode` and two presentation objects.
-`effect_4a_construct` initializes their ownership and private state. The
-fourth private state word at `+0xDC` has no established scalar meaning.
+`effect_4a_construct` initializes their ownership and private state.
 Its primary `effect_4a_callback` may alter both fighters' rate multipliers
 and linked actions; `effect_4a_secondary_update` performs phase-2 state,
 variant and RNG work. `effect_4a_destroy` restores both multipliers and
@@ -394,8 +388,7 @@ that scaler.
 `hit_effect_chakra_debit` reads the linked fighter's `payload_98` maximum,
 checks record flags and requests a debit on the receiver; there is no paired
 credit. The debit includes record/caller scaling and cannot exceed current
-chakra. Ordinary spend suppression remains. This does not establish that
-every hit reaches the helper.
+chakra. Ordinary spend suppression remains.
 
 The rate fold returns neutral 1 under `fighter_restore_gate_b`, majors 5/6,
 or major 8 with `action_current_category_c0000`. Suppression changes the
@@ -669,7 +662,7 @@ active for that scan. [Ultimate Jutsu](../characters/ultimate_jutsu.md#start)
 owns connection reachability.
 
 `status_family_pointer_choose` uses `0E/0F/10` membership and fighter identity
-to select paired authored pointer lanes; their wider meaning is unresolved.
+to select paired authored pointer lanes.
 Effect 08 gates the
 [separate attack bank](../combat/combat_action_execution.md#character-specific-scene-and-timer-selection).
 `hit_classify_pair` can emit an event from the category predicate and eligible
@@ -718,7 +711,7 @@ These routines use two different first-argument roots:
 `effect_create_node` supplies neither high-level eligibility/routing nor the
 application success tail. It is not an interchangeable version of
 `effect_apply` returning success. `effect_apply` and the removal helpers
-assume valid nonnull input roots; they do not establish fighter liveness.
+assume valid nonnull input roots and do not check fighter liveness.
 `primary_fighter_get` (`0x003769C0`) selects side `0/1` through current manager
 aliases but assumes the manager exists. The alias lifetime belongs to
 [Battle entities](../session/battle_entities.md#manager-allocation-and-alias-slots).
@@ -732,7 +725,7 @@ construction. Categories 0/4 require `status_flags` bit 0 clear and
 
 `context_mode_word` (`0x00216820`) reads `battle_hub->fighters->state`,
 or returns zero when either owner is missing. Passing this application gate
-does not establish a live graph or a safe fighter pointer. The start-menu
+does not check that the graph or fighter pointer is live. The start-menu
 opening predicate uses the separate `fighter_coordinator_get_state` result.
 
 Success alone performs the notification, low-ID positional feedback,
@@ -807,8 +800,8 @@ Zero-count rows are omitted:
 reason 1 before applying `selected_jutsu_effect` with default -1, then
 checks whether the selected ID belongs to the family. This route enforces
 multi-ID exclusivity despite generic different-ID coexistence. IDs `68+`
-are excluded from that loop; those rows establish association rather than
-exclusivity.
+are excluded from that loop; those rows are associations, not
+exclusivity rules.
 
 `input_sector_widen_state_b` and `awakening_reconcile` also use the family
 table. Fighter `19` has explicit `22/23` handling; `3A` can remove `07`;
@@ -828,8 +821,7 @@ requests, let `r` be the requested/default value and `s` be
 | `02,03,05,08,09,0B,0C` | `r * s` |
 | `0D..89` | `r` |
 
-Negative computed values clamp to zero before integer conversion. The broader
-gameplay meaning of this fighter scalar remains unproven.
+Negative computed values clamp to zero before integer conversion.
 
 `-1` never ticks or auto-expires but is replaceable/removable. `-2` also
 blocks replacement and removal reasons 0..3; reason 5 still destroys it.
@@ -919,8 +911,7 @@ IDs 0/1 have caller-enforced paired cleanup with reason 1 from
 `recovery_init` for values `61/62` and from `downed_recovery_enter`, when
 either member is present. The post-cleanup helper runs even after blocked
 removal. Generic application and exact removal still treat the IDs
-independently. Numeric cleanup reasons 1..3 have no established player-facing
-names.
+independently.
 
 ### Native action and form boundaries
 
@@ -996,9 +987,7 @@ code 0D removes exactly 04/06/07/0A with reason 1.
 `item_pickup_callback` resolves the fighter and scaled magnitude, performs
 code-0D removals before common immediate dispatch, then performs code-0C's
 separate resource adjustment or code-06's extra effect. The sequence has no
-rollback. It shares the resident resolver's decisions, but the evidence does
-not establish whether one pickup reaches both or whether they are alternate
-phases; no double-application conclusion follows.
+rollback. It shares the resident resolver's decisions.
 
 | Code | Kind | Flags | Amount | Table effect | Additional proven action |
 | ---: | ---: | ---: | ---: | ---: | --- |
@@ -1032,8 +1021,8 @@ phases; no double-application conclusion follows.
 It excludes delayed kinds 3/6, table-driven flag 10, code 09 and direct
 effect -1. It applies only the metadata effect, with neither the pickup
 path's extra 06 effect nor its resource adjustments. These six records lack
-inventory flag 80, so the branch's static presence does not establish
-ordinary three-slot selection reachability.
+inventory flag 80, so ordinary inventory collection does not admit them to
+three-slot selection.
 
 ### Direct-effect records carried by hit objects
 
@@ -1174,17 +1163,16 @@ Successful construction can use `effect_notification_map` (`0x005B0040`):
 | `0C` | `11` |
 
 Most low-ID interleaved status-table words agree, but the item dispatcher
-does not read them. The `65/12` pair does not establish notification 12:
-the resident map has no 65 entry and the scoped route has no literal
-notification-12 call. Its consumer remains unresolved. Calling it unused
-metadata is an untested hypothesis.
+does not read them. No consumer of the `65/12` pair was found: the
+resident map has no 65 entry and the scoped route has no literal
+notification-12 call.
 
 ### Status identity and naming coverage
 
 The naming census covers all `00..89` IDs. It separates 12 IDs in the
 resident notification map, 77 character/item-qualified ordinary-panel labels,
-12 transformed-character identities, and 37 IDs without an established fixed
-retail status name. The last group includes known mechanics and owners; it
+12 transformed-character identities, and 37 IDs without a fixed
+retail status name in those joins. The last group includes known mechanics and owners; it
 does not mean the effects are unused.
 
 `effect_factory_records` has no fixed title field. Ordinary panels select
@@ -1224,7 +1212,7 @@ Mechanics remain owned by the category-0 catalogue and its linked consumers.
 [Direct-effect hit records](#direct-effect-records-carried-by-hit-objects)
 owns the metadata/object joins through `item_direct_effect_get` and
 `transient_actor_lineage_notify`. The Sleep, Invisible, Substitution Jutsu
-and Chakra Max words do not establish universal action, visibility,
+and Chakra Max words do not imply universal action, visibility,
 substitution or resource semantics. In particular, reused Speed Down feedback
 does not make `06` and `0D` the same gameplay effect.
 
@@ -1360,9 +1348,8 @@ owns reconstruction and the complete selected UJ-record evidence.
 #### IDs without a fixed retail status name
 
 The following table, together with low IDs `01/0D` above, accounts for the
-37 IDs without an established fixed retail status name. The checked scope is
-the complete notification, association, UJ, portrait-label and direct
-condition/item joins. It does not exclude an indirect owner elsewhere.
+37 IDs that no notification, association, UJ, portrait-label or direct
+condition/item join names.
 
 | Effect IDs | Exact checked identity or limit |
 | --- | --- |
@@ -1384,9 +1371,9 @@ condition/item joins. It does not exclude an indirect owner elsewhere.
 | `7E..89` | Condition inputs `49..54`, respectively |
 
 Notification `12` has the English phrase Ultimate Mode! in record `96`.
-It is not established as effect `65`'s label: that ID is absent from
-`effect_notification_map`, and the item's interleaved word has no recovered
-consumer. The similarly named character-panel Ultimate Mode assets are a
+No route found makes it effect `65`'s label: that ID is absent from
+`effect_notification_map`, and the item dispatcher does not read the item's interleaved word.
+The similarly named character-panel Ultimate Mode assets are a
 different presentation route.
 
 ### Auxiliary category-1/2 visuals
@@ -1466,8 +1453,8 @@ Authored UI-record mappings are:
 | `4` | fixed `8E / 8D` |
 
 The source tables are `fukidasi_numeric_records`, `fukidasi_single_records`
-and `fukidasi_paired_records`. Their strings/families establish presentation
-labels rather than gameplay meaning, countdown or stacking.
+and `fukidasi_paired_records`. Their strings and families are presentation
+labels, not gameplay meaning, countdown or stacking.
 
 ## Direct application mappings
 
@@ -1476,8 +1463,7 @@ labels rather than gameplay meaning, countdown or stacking.
 `projectile_record99_callback` (`0x0073FCC0`) applies effect 0D/requested
 150/route 1 for object record 99, queues notification 7, then performs base
 cleanup. Effect 0D is outside the low-ID normalization switch, so 150 is
-retained. Nearby poison-named strings do not establish this callback's
-semantic name.
+retained. Nearby poison-named strings do not name this callback.
 
 ### Other direct numeric mappings
 
@@ -1511,8 +1497,7 @@ and both fighters. Its default-countdown/route-1 mapping is:
 | `0x5B` | `0x39` | explicit |
 
 Routing makes 7D linked plus local and 7E..89 linked-only.
-Code 55 instead writes the other fighter's HP to 0.5. User-facing names for
-these configuration codes remain unproven.
+Code 55 instead writes the other fighter's HP to 0.5.
 
 ### Additional requested effect lifetimes
 
@@ -1532,7 +1517,6 @@ all with route 1:
 Explicit values are requested rather than guaranteed stored countdowns.
 Low-ID requests still normalize; a requested value therefore cannot be
 used as the stored lifetime without the receiver's scalar and status gates.
-These mappings do not establish indirect or dynamically selected reachability.
 
 ### Character callback's random status/resource branch
 
@@ -1556,14 +1540,12 @@ failed application. HP branches instead scale with fighter as both source
 and receiver, apply HP flags 1/0 and separately queue notification 1 if the
 manager exists. They consume no item slot and debit no chakra.
 The status/HP requests are mutually selected inside this callback; that
-does not prevent later coexistence with other effects. Action 3 alone does
-not establish a gameplay name or full native trigger reachability.
+does not prevent later coexistence with other effects.
 
 ## Direct application and removal owners
 
 Live MCP references and the containing bodies recover the following direct
-owners in retail NA2. These lists describe decoded calls; an absent reference
-does not prove that an indirect caller or an unanalysed path is absent.
+owners in retail NA2. These lists describe decoded calls.
 `effect_apply` also calls itself for linked routing.
 
 ### Resident application owners

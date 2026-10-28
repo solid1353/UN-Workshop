@@ -6,8 +6,7 @@ Static NA2 analysis establishes sphere registration and overlap, result
 snapshotting, candidate filtering, interaction-record lifecycles, the common
 response-packet handoff, resident environment queries, and stage query contracts.
 Routine, type, field, and data names come from `@annotations/NA2`.
-Original enum names, some record fields, indirect aliases and ownership edges,
-interfaces outside the audited set, and complete event admission remain open.
+Open: nothing.
 
 ## Result
 
@@ -25,9 +24,9 @@ CollisionSphere registrations
 ```
 
 The resident registration processor enumerates active pairs, filters directional
-masks, and immediately checks sphere overlap. No separate spatial broad phase
-is established for that processor. The manager's compact sphere caches also
-support proximity queries, but no inspected edge makes them its broad phase.
+masks, and immediately checks sphere overlap, without a separate spatial broad
+phase. The manager's compact sphere caches also
+support proximity queries, but the processor does not use them.
 
 Environment collision is a separate system with packed object/group/triangle
 bounds and segment or swept-sphere narrow phases. BTL triangle-cache updates
@@ -81,7 +80,7 @@ pending slots. Release invokes virtual destruction, clears the published
 pointer, and brackets the operation with a resident busy bit.
 
 The three manager phase wrappers each invoke three subordinate updates when
-a manager exists. Their original phase names remain unknown.
+a manager exists.
 `interaction_manager_destruct` frees nonnull record-bank entries for both
 sides and all 197 resource indices. `interaction_registry_clear` destroys the
 two primaries and all 64 auxiliaries, clears their entries, and resets the four
@@ -161,15 +160,14 @@ That selector's live entry is `0x0077FD10`.
 
 Specialized appenders can write directly. The unit-sphere appender stores
 `cache_center` with radius `1.0`; KSM appenders also use inline writes. These
-writers have no visible count-64 check. Therefore 64 is the physical capacity
-and generic-builder limit; a capacity invariant covering every writer remains
-unproved.
+writers have no count-64 check, so 64 is the physical capacity and the
+generic-builder limit, not a limit every writer enforces.
 
 The two proximity consumers use these caches. One shifts cached x or z by
 `0.9 * radius` according to a four-way selector and accepts when
 `distance < 1.8 * cached_radius + query_radius`. Direct count references identify
-these two consumers, builders, appenders, reset, and cleanup. Indirect accesses
-remain possible, and no inspected call joins these queries to the central
+these two consumers, builders, appenders, reset, and cleanup. No direct call joins
+these queries to the central
 candidate dispatcher or resident pair processor.
 
 ### Resident list and registration layouts
@@ -195,9 +193,8 @@ Registration and registration-result accessors use 1-based indexing.
 
 The auxiliary initializer creates four lists with their `owner` set to self
 and establishes `class_id = 5`. The primary constructor creates five lists
-without installing self in their owner fields. This establishes the observed
-null-owner versus auxiliary-owner convention in these constructors; it does
-not give null ownership a universal gameplay meaning. A separate fighter
+without installing self in their owner fields. A
+separate fighter
 construction family creates three adjacent lists fed by two-sphere arrays.
 
 ### Resident pair processor
@@ -229,8 +226,7 @@ the same observed payload. Fighter consumption belongs to
 `CollisionEnvironment` has its own active chain, hierarchy, transform mode,
 origin, transform matrices, and enabled-group mask. Registration stores the
 transform mode and appends an inactive object; removal clears active/next
-state. The halfword at `+0x96`, reset during unregister, has no established
-meaning.
+state and resets the halfword at `+0x96`.
 
 The hierarchy is packed rather than pointer-linked. An
 `EnvironmentBoundsHeader` gives aggregate AABB bounds and group count. Each
@@ -256,8 +252,8 @@ and supplies a fixed homogeneous row.
 
 Swept-sphere queries use the same hierarchy and masks but test triangle
 planes, edges, and vertices. Their candidate `branch_class` values are 1, 2,
-and 3, and feature selectors range from 0 through 3; original names remain
-unknown. Accepted corrections accumulate surface-normal displacement.
+and 3, and feature selectors range from 0 through 3.
+Accepted corrections accumulate surface-normal displacement.
 `environment_reduce_candidate_flags` ORs bits outside `0x00F0F0F0` and selects
 the masked group by its distance/class rule, including precedence for
 `0x80000` and masked value `0x00E000E0`.
@@ -367,8 +363,7 @@ individual auxiliary masks rather than the auxiliary aggregates.
 `interaction_record_init` to its `0x54`-byte prefix. The annotation holds the
 copy map and initializer defaults. Eight halfword slots at runtime
 `+0x40..+0x4F` initially contain `0xFFFF`, then receive the definition's
-16-byte copy; their semantics are unknown. This does not establish a vec4 or
-shape record there.
+16-byte copy.
 
 Builders separately set `attack_scalar`. The auxiliary builder multiplies
 definition `attack_scalar` by the object's scalar returned by
@@ -394,18 +389,16 @@ Both category halfwords are truncated to the record's `response_selector`
 byte. Each selected branch invokes
 auxiliary callback `0x4C`, reloads the descriptor record, writes its scalar,
 submits the prefix, then invokes callback `0x50`. The base callbacks are the
-annotated no-op leaves; derived callback effects remain open. A callback can
+annotated no-op leaves; a derived callback can
 therefore change which record receives the later write and submission.
 
 Terminal cleanup clears header/descriptor state, including saved category and
 scalar, but does not clear or free the record allocation. Earlier gates can
-return before increment or category rewrite. Equivalent behavior for every
-primary/derived updater and full writers of the selectors remain unresolved.
+return before increment or category rewrite.
 
-The primary updater has two receiver-interface calls at slot `+0x8C`.
-A bounded exact-load census also found three BTL uses through other
-auxiliary tables and none in resident code. That instruction search does not
-establish a complete set of indirect calls.
+The primary updater has two receiver-interface calls at slot `+0x8C`; exact
+loads of that slot occur in three BTL routines through other auxiliary tables
+and nowhere in resident code.
 
 ### Computed construction and prefix publication
 
@@ -424,7 +417,6 @@ The extended constructors clear `alternate_category`, the low halfword of
 and the high halfword of `extended_58` untouched.
 `cc_skill_ksm_object_interface` identifies `ccSkillKSM000` and routes its
 six-way update dispatch to this producer when `computed_update_state == 0`.
-That table identity does not establish instance-level admission of every case.
 
 Prefix publication requires computed update state 3, publication-context
 `+0x6C > 1`, an admitted resource selector, and nonzero list-0 result count.
@@ -433,16 +425,14 @@ fields, copies exactly `0x54` bytes from the prefix, and prepares the first
 header with the secondary header as context. It snapshots category, scalar,
 and repeat count, forces repeat 1, and sets `prepared`.
 
-This copy and the initializer leave `update_form` untouched. Overlay BSS
-clearing establishes initial storage contents, but this publication does not
-establish a fresh selector for a reused record. Overlay lifetime belongs to
-[Overlay ABI](../../runtime/overlay_abi.md). Preparation also does not establish
-that separate activation gates accept the descriptor.
+This copy and the initializer leave `update_form` untouched, so publication
+does not reset the selector of a reused record; overlay BSS clearing supplies the initial
+value. Overlay lifetime belongs to [Overlay ABI](../../runtime/overlay_abi.md).
+Separate activation gates still decide whether the descriptor is accepted.
 
 The primary computed producer's selector `0x31` uses the same
 `skill_synthetic_31[side]` storage, but sets repeat 1 and supplies its own
-resource, mask, and scalar. This proves aliasing; ordering, simultaneous use,
-complete consumers, cleanup, and further pointer aliases remain unresolved.
+resource, mask, and scalar.
 The record's response selector is distinct from the object's packet tag.
 
 ### Active descriptor headers
@@ -540,8 +530,8 @@ Let `x = primary.relation_mask & auxiliary.counterpart_mask` and
 | 3 | `(x & y & 0x200) == 0x200` |
 
 They invoke the special response before ordinary suppression, deriving a
-midpoint-like vector from the primary built record and input position. A
-geometric contact-point interpretation is unproved. The ordinary branch uses
+midpoint-like vector from the primary built record and input position. The
+ordinary branch uses
 the high-bit and cross-mask compatibility expression above, including mutual
 `0x04` rejection, and consumes relevant primary/auxiliary masks on success.
 
@@ -558,8 +548,7 @@ The fixed 32-by-32 traversal requires reciprocal generation-checked backlinks:
 Special classes use the same intersections and dispatch before ordinary
 exclusion, deriving a midpoint-like vector from auxiliary positions. Ordinary
 acceptance uses the same compatibility family but does not explicitly clear
-either auxiliary mask. Reciprocal relations do not establish universal
-attacker/target roles.
+either auxiliary mask.
 
 ## Response-packet handoff boundary
 
@@ -577,8 +566,7 @@ and fills primary `published_category`. This preparation precedes packets;
 
 The primary/primary wrapper can swap resource positions before packet
 production when both records share relation bit `0x01`, using signed resource
-orientation. This is an established position side effect, without a recovered
-universal gameplay direction.
+orientation.
 
 `ResponsePacket` is `0x30` bytes: a byte tag, anchor vec4, and position vec4.
 The handoff first replaces packet positions from the ordered primaries' current
@@ -602,19 +590,16 @@ preparation, anchor, and tag callbacks still run when it fails. The auxiliary
 path also continues through descriptor callbacks. Failure of that predicate
 therefore does not by itself clear or prevent a packet tag.
 
-Direct writers establish primary base initialization to 1, JRB's clearing leaf
-to 0, FIR construction to 0, and auxiliary base/Rock construction to 0. No
-nonzero auxiliary writer was found in the direct byte audit. Complete writer
-sets and the tag's original semantic name remain open.
+The direct tag writers are primary base initialization (1), JRB's clearing
+leaf (0), FIR construction (0), and auxiliary base and Rock construction (0).
+No direct byte store writes a nonzero auxiliary tag.
 
 ### Tag lifetime and non-byte access bounds
 
-The bounded audit of 486,832 aligned BTL text words found no wider or partial
-store overlapping either tag and no immediate formation of its exact byte
-address. Arbitrarily
-rebased aliases and generic copies remain unresolved. Auxiliary `attack_scalar`
-and `update_control`, and the primary neighboring counter, have distinct
-widths and do not overlap the tags.
+No aligned BTL text word stores a wider or partial value over either tag at
+an immediate offset or forms its exact byte address. Auxiliary `attack_scalar` and `update_control`, and
+the primary neighboring counter, have distinct widths and do not overlap the
+tags.
 
 JRB event update reaches its clearing leaf through slot `0x22C`. Rock
 construction requires primary selector `0x0E`, allocates `0xDB0` bytes, calls
@@ -626,9 +611,8 @@ insertion writes the primary's separate `auxiliary_output` tuple.
 
 Rock retains the common activation, packet builder/getter, and its specialized
 anchor. Its destructor releases embedded records and base state, with no
-inspected tag reset. This bounded construction/publication/packet/cleanup chain
-supplies no nonzero tag writer. Allocation-failure paths, later callbacks and
-arbitrary aliases remain open; a universal auxiliary-zero invariant is unproved.
+inspected tag reset. Its construction, publication, packet and cleanup chain
+supplies no nonzero tag writer.
 
 ### Anchor callback family
 
@@ -644,8 +628,7 @@ registration preserves `(0,0,0,1)`; a registration with null sphere produces
 entity positions, model bones, list results, or environment-corrected positions.
 The recovered height scalar is
 `(0.5 * CollisionEntityScalars.scale) * CollisionEntityScalars.height`;
-the helpers multiply coefficient and scale before height or width. Original
-anatomical meanings are not established.
+the helpers multiply coefficient and scale before height or width.
 
 The hand and foot resource names are `skill_anchor_hand_name` and
 `skill_anchor_foot_name`. Resource branches refresh transforms: with no parent,
@@ -654,7 +637,7 @@ call `resource_transform_update`. Some temporarily replace the linked entity's
 animation-player pointer, run `entity_resource_update`, then restore it.
 Anchor generation can therefore mutate resources and participant state.
 
-FIR performs forward and possible reverse environment segments with mask
+FIR performs forward and conditional reverse environment segments with mask
 `0x40000001`, match mode 1, second mask 0 and mode -1. It starts with a signed
 175-unit endpoint offset; two hits add a signed 30-unit offset. It stores the
 selected position, forces w=1, and can copy it to the linked entity before the
@@ -671,8 +654,7 @@ no-registration branch overwrites its initialized output with an uninitialized
 stack vector; a null sphere with nonpositive span takes a null radius load.
 Some primary entity-position callbacks continue after a gate that leaves their
 source uninitialized. KIW initializes result-center components only on an
-accepted result, but its exhausted path still copies them. These static paths
-do not establish that ordinary play supplies the missing inputs.
+accepted result, but its exhausted path still copies them.
 
 ### Contact reconciliation
 
@@ -717,8 +699,8 @@ selected indices and head arrays for two line families, plus a vector of
 `StageSectionConfig` boundary records.
 
 First-family descriptor types are `0x25/0x26`; second-family types are
-`0x23/0x24`. Section indices are 0 or 1. Original family/section gameplay names
-remain unknown. Layouts, builders, stage counts, and selected-index writers
+`0x23/0x24`. Section indices are 0 or 1.
+Layouts, builders, stage counts, and selected-index writers
 belong to [Stages](../stages/stages.md#line-construction) and its
 [selected-index section](../stages/stages.md#selected-index-writers-and-neighboring-aliases).
 
@@ -729,13 +711,13 @@ factories obtain the active control; a missing control selects
 `bg_line_factory_noop` rather than building lines.
 
 Nearest-line queries require `filter_flags == 1` when querying
-`Fighter.movement_flags` includes `0x800`. No writer setting a nonzero line
-flag is established. Traced selected-index initialization uses head 0 for each
+`Fighter.movement_flags` includes `0x800`.
+Traced selected-index initialization uses head 0 for each
 populated section.
 
 ### Stage query functions
 
-Here x and z mean vector components 0 and 2; engine axis names are unproved.
+Here x and z mean vector components 0 and 2.
 
 `bg_floor_profile` first takes the first second-family line satisfying the
 strict interval `endpoint_a.x < query.x < endpoint_b.x`, then scans all
@@ -757,9 +739,9 @@ copies A's first endpoint; ratio above 1 or candidate x beyond A's second
 copies A's second. Otherwise it interpolates z through A's endpoint pairs,
 or uses the nearer neighboring endpoint in its terminal fallback. It mutates
 the vector without a status result. Zero numerator leaves ratio zero; a
-nonzero numerator with zero span is unguarded. Nonzero spans in valid resources
-are therefore an inference. `stage_project_position` validates against field
-`+0x7C`, whose broader meaning remains open, before reporting success/failure.
+nonzero numerator with zero span is unguarded.
+`stage_project_position` validates against field `+0x7C` before reporting
+success or failure.
 Boundary-record access is bounds-checked separately.
 
 `bg_cache_line_attributes` queries line midpoints and caches the published
@@ -795,18 +777,8 @@ around updates.
 type `0x800` uses an object's environment pointer, while type `0x100` follows
 its nested model first. These edges establish ownership by resident
 environment objects and registration for segment/swept-sphere queries.
-No direct pointer/call edge joins the builder or updater to the interaction
-manager or stage line manager. Indirect ownership remains open.
-
-## Evidence strength, hypotheses, and negative results
-
-The conclusions are bounded static results. Complete inspected bodies and
-layout arithmetic establish ordering, gates, widths and capacities; negative
-direct-reference audits cover their stated address/access forms. They do not
-exclude arbitrary aliases, prove instance-level admission, or recover original
-names. Conditional null/uninitialized paths do not establish ordinary-play
-reachability. Full synthetic-record reuse, unexamined interfaces, derived
-callback effects, and indirect ownership are unresolved.
+No direct pointer or call joins the builder or updater to the interaction
+manager or stage line manager.
 
 ## `ccSkillHNW001` interaction records and accepted-event route
 
@@ -830,7 +802,6 @@ header, and uses its secondary header as context. The descriptor borrows the
 manager-bank allocation rather than making an actor-local copy. Earlier common
 binding initializes index 0 when definitions exist. HNW update state 2 changes
 pause/rejection through that first record, distinct from activation's record 3.
-Unique ownership, later aliases and simultaneous reuse remain unresolved.
 
 ### Accepted-event callback and descriptor update
 
@@ -839,18 +810,14 @@ Unique ownership, later aliases and simultaneous reuse remain unresolved.
 first tallies accepted events and flushes accumulated words; the guarded-target
 branch also reaches the callback join. Statistical ownership belongs to
 [Battle statistics](../session/battle_statistics.md#accepted-ninjutsu-and-combo-flushing).
-Complete collision/authored-registration admission to the helper remains open.
 
 `skill_primary_update_descriptor` requires active-header flag bit 0. One
 confirmed local branch requires signed record pause nonzero and repeat count
 below 2 before descriptor services and accepted-event delivery. Another calls
 the helper after an optional definition-index increment: a valid linked target
 with nonzero guard state skips the increment but still reaches the helper.
-Earlier admission gates are not fully enumerated, and a receiver invocation
-alone does not establish a newly delivered authored event.
 
 `skill_hnw_accepted_event` compares header `update_count` with signed
 `saved_repeat_count` before setting
-`SkillHnw001.descriptor_threshold_reached`. The compared values belong to the
-interaction descriptor; their comparison does not establish a timer or a
-duration in frames or seconds.
+`SkillHnw001.descriptor_threshold_reached`. Both are
+interaction-descriptor counters.

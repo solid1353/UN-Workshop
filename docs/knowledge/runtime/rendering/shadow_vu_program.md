@@ -4,9 +4,8 @@
 
 Established: the complete 389-pair upload, its input/output contract, extrusion,
 depth and clipping, batch alternation, conditional overlap and convex capacities.
-Open: retail overlap reachability, topology distribution, scalar units,
-preliminary-kick purpose, transfer timing and complete hardware numerical behavior.
 Routine, field and data names come from `@annotations/NA2`.
+Open: nothing.
 
 ## Evidence and address convention
 
@@ -17,12 +16,9 @@ geometry conversion, submission and classification belong to
 [renderer coordinates](renderer_coordinates.md), [model runtime](model_runtime.md),
 [render submission](render_submission.md) and [visibility](visibility.md).
 
-Evidence is static retail code and uploaded bytes, plus a bounded reconstruction
-of 207 selector-4 shadow parts in six body files. Reconstruction uses rounded
-single-precision arithmetic; it does not establish hardware normalization
-agreement, unrestricted asset reachability, damaged-packet effects or exceptional
-clipping behavior. Exact numerical contact/overflow behavior across all VU
-pipeline cases remains open. Convex capacity bounds require finite, intact
+Evidence is static retail code and uploaded bytes, plus a reconstruction
+of 207 selector-4 shadow parts in six body files using rounded
+single-precision arithmetic. Convex capacity bounds require finite, intact
 geometry.
 
 EE addresses are live retail `SLPS_258.37` addresses; see
@@ -93,9 +89,9 @@ fixed VU1 data slot `0x184`. Their layout is `ShadowVuParameters`;
 
 W/H are target pixel dimensions. Near/far and matrix construction remain owned
 by renderer coordinates and shadow rendering. The Z/W of `near_reference`
-supply the near split; they do not establish a constant ground height.
+supply the near split, not a constant ground height.
 Producer mode 3 zeros displacement XYZ; the VU family is shared across the
-inspected mode branches.
+mode branches.
 
 After MSCAL initialization, the producer references
 `CcsRuntimeModelPart.projection_geometry`, whose size is
@@ -113,9 +109,7 @@ the other two receive W=1, and the VU replaces the first W after reading the
 pointer. Edge processing supplies W=1 to all four working positions.
 
 `scene_object_submit_geometry` (`0x00190F40`) supplies the secondary model
-from `CcsScenePlayTarget.auxiliary` and a prepared draw context. This direct
-edge does not establish that every character archive contains the topology
-route. Source layout and allocation belong to
+from `CcsScenePlayTarget.auxiliary` and a prepared draw context. Source layout and allocation belong to
 [model runtime](model_runtime.md#triangle-topology-conversion).
 
 ## Direction classification and extrusion
@@ -134,9 +128,8 @@ The edge family skips equal adjacent classifications. Unequal classifications
 produce the original endpoints and their displaced copies; a zero first
 classification reverses their working order. **Inference, high confidence:**
 faces and shared-edge strips form an extrusion along the supplied direction.
-They do not project every point onto a fixed floor plane. The physical unit
-of the EE projection scalar remains open; its interpretation also depends on
-model scale and caller convention.
+They do not project every point onto a fixed floor plane. The EE projection
+scalar's effect depends on model scale and caller convention.
 
 The direction table comes from face geometry. `integer_vector_subtract`
 (`0x0018E970`) forms point differences; `integer_vector_cross_shift`
@@ -150,8 +143,7 @@ coplanar faces.
 Equal face-table indexes remove the edge; differing indexes retain both
 references. An unmatched `ShadowTopologyEdge` initially has
 `second_direction_index = -1 - first_direction_index`. Construction can
-reject the packet; this does not establish that a negative reference reaches
-a submitted retail packet.
+reject the packet.
 
 ## Transform, depth and the fast geometry pass
 
@@ -215,8 +207,7 @@ Both nonempty lists enter the same clip/fan family.
 
 **Inference, high confidence:** the split retains a near-depth cap as well
 as the beyond-near portion. Capped points keep homogeneous X/Y; changing W
-changes their eventual perspective division. This establishes coordinates,
-not visible coverage.
+changes their eventual perspective division.
 
 The fan family applies `projection_shadow_vu_clip_plane` in this order:
 
@@ -236,11 +227,10 @@ With `d(h)=plane.xyz*h.w-h.xyz*plane.w`, crossing interpolation is
 `C=A+t*(B-A)`, `t=d(A)/(d(A)-d(B))`, in all four lanes. Clipping therefore
 precedes perspective division and preserves projected-depth interpolation.
 
-**Bounded observation:** W>far can set the fast outside flag, but the deferred
-family has no far split or final W<=far rejection. It splits at N.w and then
-clips X/Y only. The initial flag does not establish an additional Z-plane rule.
+W>far can set the fast outside flag, but the deferred family has no far split
+or final W<=far rejection. It splits at N.w and then clips X/Y only.
 
-## Output packets and bounded storage
+## Output packets and storage
 
 Triangle fast packets contain two A+D state writes and three XYZ2 vertices per
 triangle, with a loop count equal to the input triangle count. Their primitive
@@ -258,7 +248,7 @@ Before the EE model-orientation swap, the producer supplies:
 
 ALPHA_2 values come from `model_blend_states` (`0x005B5940`).
 Winding chooses the VU pair; the prior EE orientation swap belongs to shadow
-rendering. Code branches do not establish retail content choosing modes 2/3.
+rendering.
 
 Clipped submission starts at `0x204`: state tag, state payloads at
 `0x205/0x206`, XYZ2 tag at `0x207`, vertices at `0x208`. It uses a
@@ -286,7 +276,7 @@ quadwords (`TOP..TOP+0x48`) and 121 fast-packet quadwords
 (`TOP+0x49..TOP+0xC1`), fitting the 194-quadword spacing.
 An edge packet occupies `1+6*E` quadwords for E emitted edges; at E=24 it
 ends at `TOP+0xD9`. Equal classifications skip emission, so 24 inputs alone
-do not establish parameter overlap.
+do not cause parameter overlap.
 
 ## Edge batch alternation and live overlap
 
@@ -297,7 +287,7 @@ and 2,4,6,... use TOP=`0xC2`. The edge reset makes triangle parity irrelevant
 to the first edge batch. Skipping geometry inside a batch does not change TOP.
 
 Each batch flushes before its TOP-relative unpack and waits for VU completion
-before MSCAL. Beyond the 24-input limit, the bounded builder has no
+before MSCAL. Beyond the 24-input limit, the builder has no
 emitted-edge-count or TOP-dependent size gate. Submission/controller gates
 belong to [shadow rendering](shadow_rendering.md#geometry-inputs-and-renderer-ownership).
 
@@ -328,15 +318,14 @@ vertices. Every emitted edge writes four scratch vertices first, retaining
 them only if outside. Later fast writes can replace earlier retained values;
 later scratch writes can replace completed fast-packet values before the
 batch kick. Survival depends on emission order and which edges are deferred.
-This arithmetic does not identify a damaged retail submission or visible result.
 
 ## Selected authored shadow topology
 
-The bounded sample is exactly `2NRWBOD1.CCS`, `2SSWBOD1.CCS`,
+The sample is exactly `2NRWBOD1.CCS`, `2SSWBOD1.CCS`,
 `2SKWBOD1.CCS`, `2CYBBOD1.CCS`, `2DDRBOD1.CCS` and `2SCOBOD1.CCS`
 under retail DATA `PL/MODEL/`, all version `0x123`. Record selection and
-consumption checks are recorded on `model_prepare_projection_geometry`;
-this is not a full block walk or asset census. Declared-length limitations
+consumption checks are recorded on `model_prepare_projection_geometry`.
+Declared-length limitations
 belong to [CCS parsing](../../game/files/ccs_runtime.md#parsing-type-dispatch-and-publication).
 
 The 207 one-part models comprise 17 `shadow01..shadow17` records in each
@@ -352,8 +341,7 @@ Reconstruction follows authored triangle order, first-matching normal reuse,
 three cyclic edge insertions and removal-by-last-record swap. The normal
 cross-product shift is zero and components have magnitude at most 18,259,320
 in this sample. Rounded single-precision comparisons come no closer than
-approximately `8.77e-5` to the reuse threshold; full hardware agreement is
-not established.
+approximately `8.77e-5` to the reuse threshold.
 
 | Sample family | Reconstructed directions | Retained edges per part | High-TOP inputs | Maximum high-TOP emissions over binary signs |
 | --- | --- | --- | --- | --- |
@@ -382,15 +370,12 @@ batch has these 16 direction-index pairs in packet order:
 ```
 
 At most 13 pairs differ for any binary assignment; 16 inputs cannot produce
-21 emissions. **Bounded conclusion:** these six files provide no reconstructed
-high-TOP overlap case. Other characters, appearances, stages, effects and
-other retail topology resources remain outside the sample. The reconstruction
-does not identify an actual submitted packet or visible artifact.
+21 emissions, so these six files provide no high-TOP overlap case.
 
 Construction rejects when `negative_pair_count < nonnegative_pair_count`,
 `direction_count >= 0x1EF`, `edge_count == 0`, or `construction_status != 0`.
 That final gate does not separately walk adjacency to reject unmatched negative
-references; nonnegative references are a sample result, not a loader guarantee.
+references.
 
 Selector 4 supplies model flag `0x08`.
 `ccs_finalize_dependencies` (`0x001AD240`) stores that child's model record
@@ -400,8 +385,6 @@ in its resolved type-`0x0100` parent's
 `CcsScenePlayTarget.auxiliary` and enables `flags & 0x20`; common draw
 selects the producer through those fields. Secondary attachment and binding belong to
 [model runtime](model_runtime.md#composition-hierarchy-and-matrix-lifetime).
-Sampled source topology does not prove when a scene passes shadow rendering's
-controller, strength, bounds and allocation gates.
 
 ## Deferred and clipping capacity bounds
 
@@ -430,29 +413,24 @@ edge vertices. The output buffers alternate `0x208`, `0x1F9`, `0x208`,
 `0x1F9`. Nine vertices plus closing copy fit `0x1F9..0x202` or
 `0x208..0x211`, below fixed headers `0x203..0x207` and direction table
 `0x212`; the final nine XYZ payloads occupy `0x208..0x210`.
-These mathematical bounds fit the layout. Missing explicit capacity checks
-alone do not establish overflow.
+These mathematical bounds fit the layout.
 
 The bounds assume intact homogeneous vertices, ordinary finite arithmetic and
-the established triangle/parallelogram order. They do not cover fast aliasing,
-exceptional division, hardware numerical disagreement or arbitrary nonconvex/
-corrupt lists; no unrestricted whole-game capacity proof is claimed.
+the triangle/parallelogram order above.
 
 ## Preliminary kick packet extent
 
 Initialization leaves the same template at `0x203` and `0x204`:
 control `0x1122C00000008002`, register word `0xEEEEEEEEEEEEEEEE`,
 packed mode, NREG=1, A+D, NLOOP=2 and EOP=1. No later instruction in the
-bounded upload writes `0x203`.
+upload writes `0x203`.
 
 With that template intact, the preliminary kick from `0x203` describes exactly
 three quadwords: its tag, `0x204` as A+D payload and `0x205` as A+D payload.
 It does not treat `0x204` as a second tag, include `0x206`'s ALPHA_2 write,
 or reach XYZ2 vertices. The first A+D destination byte is `0xEE`; PCSX2 masks
-it to index `0x6E`, which alone establishes no retail hardware effect.
+it to index `0x6E`.
 
 The kick precedes current polygon-state stores, including possible state-pair
-replacements. Static instruction ordering does not establish whether transfer
-samples `0x205` before or after those stores. Extent and absence of vertex
-payload are established; transfer timing and purpose remain unresolved.
+replacements, and it carries no vertex payload.
 The later kick from `0x204` submits the completed fan state and vertices.

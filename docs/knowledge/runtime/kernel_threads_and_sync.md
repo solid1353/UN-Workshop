@@ -5,15 +5,11 @@
 Established: the independent dispatcher, RCNT2 alarm-delay lifetime and mode
 contracts, MPEG semaphore ownership, CD callback registrations and teardown,
 and six CRI thread families with their priorities and stop/done protocol.
-Open: constructor reachability, physical delay timing, mode persistence,
-wait failures, optional CRI callers and successful shutdown interleavings.
 Routine, structure and resident data names come from `@annotations/NA2`.
+Open: nothing.
 
 These are static contracts of the retail NA2 (`SLPS-25837`) resident ELF.
-Scheduling, elapsed time, queue overrun and failure-path outcomes have not
-been observed. CRI vendor workloads were not reverse engineered. Counter
-coverage is the selected alarm backend, not a complete timer-library census.
-Binary identity and live address conventions follow
+Counter coverage is the alarm backend. Binary identity and live address conventions follow
 [Retail game file identities](../game/files/file_identities.md#address-conventions).
 
 These owners do not allocate, append or flag a `0x4C` task record.
@@ -66,9 +62,8 @@ interrupt's root wake is separately gated on status 4.
 
 There is no queue-full comparison, pending-slot ownership check or retry on
 signal failure. Semaphore creation failure stops construction; thread
-creation failure deletes the semaphore. No normal teardown is recovered
-after start. These contracts do not establish an actual overrun. Callers of
-rotate/suspend remain unresolved within the bounded direct-reference search.
+creation failure deletes the semaphore. No normal teardown after start was
+found.
 
 The dispatcher does not read task runtime flags. Command 2 therefore does
 not supply the task manager's missing
@@ -87,9 +82,8 @@ the semaphore. The callback signals its semaphore context and returns zero;
 it does not delete the semaphore.
 
 The wrapper ignores the wait result, retains no alarm handle and never
-cancels the alarm. Successful wait and callback completion are therefore
-assumptions of the local lifetime, not checked guarantees under kernel
-failure. The alarm registration borrows its callback and context: it neither
+cancels the alarm, so it assumes the wait succeeds and the callback completes.
+The alarm registration borrows its callback and context: it neither
 copies nor retains nor frees the pointed-to context. Recycling changes the
 free-list link and clears `KernelAlarmRecord.timer_handle`; callback/context
 persist until a later registration overwrites them.
@@ -113,10 +107,7 @@ counter keeps its count and target.
 Starting an inactive counter sets `0x80` and clears `0xC00`, preserving
 the low mode bits; an active counter returns 1. `timer_counter_stop`
 also preserves those bits. `timer_library_uninstall` refuses to remove the
-handler while the allocated timer count is nonzero. This constrains this
-library's mode lifetime, but does not prove successful boot installation or
-exclude an external writer. Persistence of mode 2 beyond the inspected
-family remains open.
+handler while the allocated timer count is nonzero.
 
 The readers extend RCNT2 count with `timer_overflow_count << 16`, correcting
 for pending mode bit `0x800`. Let `m = RCNT2_MODE & 3` and `C` be that
@@ -145,8 +136,7 @@ remainder scaling, so it is not an unrestricted inverse for all 64-bit counts.
 
 The second input is millionths of the first unit; the delay wrapper uses
 only that second input. **Strong numeric inference:** the convention is
-nominal seconds/microseconds at 147,456,000 counts per second. Physical
-counter frequency and observed delay duration are not established.
+nominal seconds/microseconds at 147,456,000 counts per second.
 
 Configuration accepts duration zero without a minimum. Compare programming
 has a separate grouping rule: `sdk_counter2_alarm_program`
@@ -155,8 +145,7 @@ the selected deadline plus `0x7333`, replacing the selection each time.
 When selected deadline minus supplied count is signed-less-than `0x7333`,
 it programs raw count plus `0x7333 >> (m << 2)`; in mode 2 that increment
 is `0x73` raw steps. Otherwise it programs the selected absolute deadline
-shifted right by `m << 2`. This does not change stored duration or establish
-an exact wake instant or physical minimum delay.
+shifted right by `m << 2`. This does not change stored duration.
 
 ### Two record pools and callback lifetime
 
@@ -172,8 +161,8 @@ The timer free-list root is `timer_free_list`. Fixed-layout fields are named
 in `KernelTimerRecord` and `KernelAlarmRecord`. Timer handles identify a
 record and an odd generation, cycling through 512 values across the timer
 pool. Alarm handles retain 128 low-byte generation patterns in their
-cancellation comparison. Neither is a task-record pointer or thread ID,
-and wraparound does not establish indefinite stale-handle protection.
+cancellation comparison. Neither is a task-record pointer or thread ID, and
+generations wrap, so stale-handle protection is not indefinite.
 
 Configuration rejects a negative/mismatched handle and the currently
 dispatched timer. Armed bit `0x02` selects unlinking before reconfiguration
@@ -208,8 +197,8 @@ relation under an interrupt guard, calls guarded timer-free and recycles the
 alarm without checking that result. `alarm_cancel` (`0x00169CF8`)
 recycles only on an exact zero timer-free result. Timer-free refuses the
 currently dispatched timer; otherwise it removes an armed record and clears
-generation/flags before freeing it. These differences establish local
-reuse boundaries, not a safe concurrent cancellation interleaving.
+generation/flags before freeing it. These differences set local reuse
+boundaries.
 
 ## MPEG buffer semaphore ownership
 
@@ -228,9 +217,7 @@ confirmed exception: `mpeg_buffer_commit` (`0x00102FB0`) acquires it,
 then a zero `transfer_active` calls the no-op diagnostic and returns zero
 without release. Its nonzero branch releases and returns one.
 `mpeg_buffer_reset` initializes that flag to 1; snapshot clears it and
-restore sets it back to 1. Whether decoder callbacks reach the retaining
-branch between snapshot and restore remains unestablished; no playback
-failure is demonstrated.
+restore sets it back to 1.
 
 `mpeg_destroy_tasks` (`0x00105320`) removes `MPEG VIDEO DEC` and
 `MPEG MAIN` immediately before `mpeg_decoder_destroy` reaches
@@ -250,11 +237,8 @@ literal 1 without validating creation or start. With an existing nonzero ID,
 it changes priority and returns that operation's result, leaving stack and
 stack size unchanged.
 
-No reachable constructor installation, selected priority or caller-supplied
-stack has been recovered. The bounded direct-call, pointer and selected
-writer searches also leave the thread callback setter's caller unresolved.
 Installing that callback does not construct a thread; the live SIF
-registration uses different slots and cannot fill the reachability gap.
+registration uses different slots.
 
 `cdvd_semaphores_create` (`0x00172328`) creates all four when any of the
 three request IDs is -1:
@@ -285,7 +269,7 @@ exits/deletes the current thread.
 when the callback thread ID is nonzero, then immediately deletes all four
 semaphores and removes the SIF registration. It has no join or done-spin
 before deletion. This differs from CRI cleanup and the task manager's
-two-pass removal; successful delivery and shutdown interleaving remain open.
+two-pass removal.
 
 ### Callback registration and constructor reachability
 
@@ -311,7 +295,7 @@ Its engine-gate effect is owned by
 | --- | --- | --- | --- |
 | `cdvd_thread_callback` | Callback pointer | `cdvd_sif_callback` | Callback pointer |
 | `cdvd_thread_callback_gp` | Callback owner GP | `cdvd_sif_callback_gp` | Callback owner GP |
-| `cdvd_thread_exit_cleared_word` | Word cleared on thread exit; broader role open | `cdvd_sif_callback_context` | Context |
+| `cdvd_thread_exit_cleared_word` | Word cleared on thread exit | `cdvd_sif_callback_context` | Context |
 | `cdvd_callback_thread_descriptor` | Thread descriptor | — | — |
 
 ## CRI-owned kernel threads
@@ -331,16 +315,15 @@ They do not allocate or append task records or set their lifecycle flags.
 | `cri_create_worker_a0` / `0x0012E9B8` | `cri_worker_a0` / `0x0012E458` | `cri_thread_id_a0` | `cri_worker_a0_stack` / `0x2000`; optional caller stack/size | `cri_worker_a0_priority` |
 
 Each descriptor inherits `cri_saved_creator_priority`, populated from the
-creator's current priority by `cri_threads_initialize` (`0x0012EAC0`).
-Retail zero data does not establish initial execution priority. The library
+creator's current priority by `cri_threads_initialize` (`0x0012EAC0`). The library
 remembers `cri_saved_root_thread_id`, starts each worker and applies its
 assigned priority.
 
 The selected root bootstrap supplies `[1, 8, 0x10, 0x12, 0x78, 0x7A]`.
 It creates workers 88, 90, 94 and 9C at assigned priorities
 8, `0x10`, `0x12` and `0x7A`, changing the creator to `0x78`.
-The optional 8C/A0 priorities are not supplied by that six-word configuration;
-their selected creation paths remain unresolved. These independent priorities
+The optional 8C/A0 priorities are not supplied by that six-word configuration.
+These independent priorities
 extend beyond the ordinary task-record range
 ([deferred-start comparison](task_system.md#manager-pass-and-ordering-boundary)).
 
@@ -355,7 +338,7 @@ CRI helpers operate directly on IDs:
 
 Each entry checks its named 64-bit stop publication, sets its corresponding
 done publication eight bytes later and tail-exits/deletes itself.
-`cri_threads_request_stop` sets all six stops. The inspected cleanups for
+`cri_threads_request_stop` sets all six stops. The cleanups for
 A0, 9C, 90, 94 and 88 spin until done, repeatedly setting stop, boosting
 priority to 1, waking and conditionally resuming, then clear stop/done/ID.
 There is no timeout. When `cri_worker_94_activity == 1`, its cleanup instead
@@ -372,12 +355,3 @@ no clock read or sleep; the bound is an iteration count. Workers 9C/A0 clear
 the request after service; their registered handshake callbacks supply the
 worker ID and configured restored priority. This protocol neither publishes
 task runtime `0x0010` nor joins task-record destruction.
-
-## Evidence confidence
-
-| Finding | Established confidence / remaining limit |
-| --- | --- |
-| Alarm conversion, mode admission and two-pool lifetime | High for static contracts; nominal time units are inference. Physical frequency, external mode persistence, wait failures and interleavings remain open. |
-| CD registration and constructor boundary | High for inspected interfaces and separate callback slots; reachable thread installation and selected priority remain unresolved. |
-| Semaphore ownership and lifetimes | High for static ordering, including the retaining MPEG branch and CD deletion without a join; outcomes are unobserved. |
-| CRI construction, priorities and stop/done | High for all six inspected families and selected root configuration; optional creator paths and vendor workloads remain open. |

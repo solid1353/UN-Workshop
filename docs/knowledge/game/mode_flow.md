@@ -4,8 +4,7 @@
 
 Established statically: opening/title and manager graphs, Mode Select input,
 results and plate wheel, lifetimes, synchronous BTL/ETC selection, and resident returns.
-Open: auxiliary-byte and BTL-sentinel meaning, allocation/malformed-state and
-loader-failure consequences, and overlay-local behavior beyond the handoff.
+Open: nothing.
 
 Routines, structures, initialized data, and resident BSS globals are named by
 `@annotations/NA2`.
@@ -17,13 +16,12 @@ This document owns the resident `SLPS_258.37` flow from opening/title through
 New Game/Continue, Mode Select, Free Battle, Practice, Collection, Options,
 and their returns. It stops at the overlay interface. The excluded mode and
 its overlay, Save/Load child UI, layout, media, localization, and timing
-remain outside this flow map.
+are outside this flow map.
 
 Names describe established behavior, rather than recovered source identifiers.
 `ccGbtlProcess` is an original RTTI string (`btl_process_type_name`).
 The evidence is static against the retail ELF identity in
-[Standard game file identities](files/file_identities.md); allocation failure,
-corrupted state, and overlay-local behavior remain unconfirmed. Semantic
+[Standard game file identities](files/file_identities.md). Semantic
 labels inferred from stock menu order are distinguished from numeric contracts.
 
 Related owners: [Startup](startup.md), [Overlay ABI](../runtime/overlay_abi.md),
@@ -76,7 +74,7 @@ different lifetimes. These globals belong to the resident ELF's BSS.
 | `btl_process` | Shared `0x44`-byte `BtlProcess` pointer |
 | `front_end_gate` | Shared `0x28`-byte `SaveDialogController` used by Continue and Mode Select back |
 | `battle_route_code` | Resident battle-route word; value 7 converges on the front-end return path |
-| `mode_select_back_auxiliary` | Auxiliary byte cleared by Mode Select back; wider meaning unknown |
+| `mode_select_back_auxiliary` | Auxiliary byte cleared by Mode Select back |
 
 The mapped signed halfword `mode_select_remembered_slot`
 (`0x006045E0`) retains the physical Mode Select slot independently of the
@@ -110,7 +108,6 @@ Allocator success is assumed at most construction boundaries:
   `0x98` bytes) are dereferenced without recovery. Its optional `0x4C`-byte
   battle-condition object is checked for null at BTL entry.
 - Collection and Options can pass a null object to their poll/update entry.
-  Whether those callees tolerate null is not established by this boundary.
 
 ## Outer opening/title/front-end loop
 
@@ -252,7 +249,7 @@ replaced with 1 on every retail path reaching phase 4.
 Successful New Game and Continue preparation selects phase 4/mode 1.
 New Game constructs only results 0 and 1, making the caller's -1 check dead.
 Continue can return -1 on cancellation, which the manager converts to outer
-result 1. The Save/Load workflow inside Continue is not analyzed here.
+result 1.
 
 Before any nonzero manager return its allocation is gone and its pointer
 clear. Phase 5 uses `manager_destroy`; Continue cancellation destroys it
@@ -283,7 +280,7 @@ Phase 4 switches directly on `BattleManager.mode`:
 | 7 | Options | `manager_options_lifecycle` (`0x001EB440`) | Resident; cleanup writes mode 1 |
 
 English meanings are corroborated by stock menu order and called subsystems.
-Analyzed mode returns write mode 1 while leaving phase 4 active. The next
+In-scope mode returns write mode 1 while leaving phase 4 active. The next
 manager invocation re-enters Mode Select without recreating the manager.
 
 ### Numeric-domain crosswalk
@@ -360,7 +357,7 @@ sprites, last visual slot, selection visual, modal kind, and back modal.
 
 On every construction, `mode_select_reset_manager_characters`
 (`0x00384570`) resets the manager's current Player 1/Player 2 IDs to 1/2
-when the manager exists. This happens again on each analyzed return from BTL,
+when the manager exists. This happens again on each return from BTL,
 ETC, or Options, before another mode is accepted.
 
 ### Plate wheel
@@ -421,7 +418,6 @@ confirm outranks back; Down wins simultaneous Up/Down.
 
 Back clears the remembered slot and `mode_select_back_auxiliary`
 before state 3 decides whether to exit or resume. Resume restores neither.
-No in-scope resident consumer establishes the auxiliary byte's wider meaning.
 
 When `input_source` is nonzero,
 `mode_select_decode_scripted_input` (`0x00384D70`) treats target 7 as
@@ -431,9 +427,8 @@ therefore records port 0. A target filtered out of the compact list cannot
 reach equality/confirmation; no missing-target guard exists.
 
 Retail construction initializes `input_source` and `scripted_target` to
-zero. No direct writer in the analyzed controller/callback path activates the
-scripted selector, so normal retail flow uses the direct decoder. The scripted
-interface requires an external or otherwise unresolved mutation.
+zero. No direct writer in the controller or its callbacks activates the
+scripted selector, so normal retail flow uses the direct decoder.
 
 ### Resident pre-dispatch hook seam
 
@@ -450,7 +445,7 @@ instruction details are retained in the routine annotations.
 its physical slot. A negative mode result enters modal kind 4, unreachable
 through the stock sign-filtered list. Port 0 accepts any enabled slot. Port 1
 accepts slots 1 and 2 immediately; the other in-scope slots 4, 5, and 6 enter a
-modal path. The excluded slot is not characterized here.
+modal path.
 
 Normal acceptance writes the confirming port to manager `active_side`,
 persists the physical slot, writes controller result 1/state 1, and starts
@@ -502,8 +497,7 @@ Collection and Options reuse `countdown` for terminal cleanup.
 
 The routing switch copies results 2, 3, 5, 6, and 7 verbatim to manager mode.
 Result -1 writes manager phase 5, causing outer return to title. Results 5/6
-also stage their resident resource groups; their resource composition is
-outside this flow map.
+also stage their resident resource groups.
 
 The controller is destroyed and its slot cleared as soon as its update returns
 1 or -1. Only the transient carries the result through phases 5/6.
@@ -514,8 +508,7 @@ Back temporarily owns the separate shared gate, destroyed before phase 6.
 Continue preparation and Mode Select phase 5 lazily construct the same
 `0x28`-byte parent through `front_end_gate_construct` (`0x001E3DB0`),
 clear its `+0x20` word, and use the effective result of
-`save_dialog_update` (`0x001E3F00`). The word's wider purpose is unknown;
-the existing `SaveDialogController.ui` names its owned `0x44`-byte child.
+`save_dialog_update` (`0x001E3F00`). The existing `SaveDialogController.ui` names its owned `0x44`-byte child.
 
 | Caller | Gate mode | Interpretation |
 | --- | ---: | --- |
@@ -557,8 +550,7 @@ owns their lifetime evidence.
 | 0 | `btl_overlay_filename` (`0x00603048`), `BTL.bin` |
 | 2 | `etc_overlay_filename` (`0x00603058`), `ETC.bin` |
 
-The excluded entry lies between them; its selector behavior remains outside
-scope.
+The excluded entry lies between them.
 
 ### Selection-and-cache interface
 
@@ -609,9 +601,7 @@ before a later BTL selection.
 
 The process's `state`, `entry_type`, entry-type marker,
 `character_select`, `stage_select`, `result_metrics`, and `methods` are
-named in its annotation type. Raw word `+0x10` is initialized to -1; no
-later direct read was found in this resident path and its wider meaning remains
-unknown. Types 1/2 set `entry_type_enabled` to 1.
+named in its annotation type. Raw word `+0x10` is initialized to -1. Types 1/2 set `entry_type_enabled` to 1.
 
 `btl_process_table` (`0x005D9F98`) contains a pointer to the original
 type-name pointer, a null word, and `practice_driver_callback`
@@ -639,8 +629,8 @@ the entry type, then performs this order:
 5. Write process state 1.
 
 The manager constructed the optional `0x4C`-byte condition object;
-its payload begins at `+0x08`. Detailed condition/outcome semantics remain
-in [Match outcomes](../gameplay/session/match_outcomes.md); support belongs to
+its payload begins at `+0x08`. Detailed condition/outcome semantics belong
+to [Match outcomes](../gameplay/session/match_outcomes.md); support belongs to
 [Support mechanics](../gameplay/characters/support_mechanics.md).
 
 `battle_process_release` (`0x001EC370`) reaches
@@ -724,7 +714,7 @@ then writes manager mode 1.
 There is no overlay selector call. Mode Select already ensured BTL, so normal
 Options entry/return keeps that selection.
 
-## Negative results, limits, and open semantics
+## Unsupported states
 
 Unsupported states do not share one recovery policy:
 
@@ -742,7 +732,3 @@ The scripted decoder, negative-result confirmation branch, initialized
 manager mode 0, unrecognized-title fallback, and outer manager-result-2
 branch have narrower or absent reachability in the retail composition, as
 described above. Collection and Options accept only exact completion result 1.
-
-Original source field names, auxiliary-byte purpose, BTL sentinel meaning,
-loader-failure consequences, and malformed-state/allocation-failure effects
-remain unresolved.

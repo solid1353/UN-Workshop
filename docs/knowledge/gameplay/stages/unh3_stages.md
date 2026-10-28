@@ -9,10 +9,10 @@ normal-stage camera, the fog, glare and render records, factories 134 and
 135, the scaled marker, how its handlers for the factories it shares with
 NA2 and its renderer differ from NA2's, material-part drawing order, its scene-keyed code, how its
 computer fighters choose sections, its sound banks, its item records, and
-what the 29 mission scenes are, and its running dust's art. Open: the NA2
-codes of some of its item numbers and its camera's field of view. Names
-are UNH3 `EBOOT.BIN` addresses; NA2
+what the 29 mission scenes are, its running dust's art, its camera's
+field of view, and its collision lids, ropes, branch words and skies. Names are UNH3 `EBOOT.BIN` addresses; NA2
 comparison names come from `@annotations/NA2`.
+Open: nothing.
 
 This document owns retail UNH3 (*Naruto Shippuden: Ultimate Ninja Heroes
 3*, PSP) battle-stage facts. UNH3 runs NA2's stage engine
@@ -149,8 +149,13 @@ the diagonal, at least 800, up 0.22 of that. While the tracked fighter is
 in major state 8 near its one opponent, mode 1 (`camera_follow_behind_fighter`)
 looks past it from behind. `camera_clamp_to_stage_bounds` clamps the eye
 to `cpmin..cpmax`, pulling it back by any lateral overshoot, and the target
-to `cvmin..cvmax`; both ease 0.3 of the way each update. Its field of view
-is not established. No per-scene combo-anchor, route or effect-intensity
+to `cvmin..cvmax`; both ease 0.3 of the way each update. Its view camera
+(`+0xB4`) is built with a 45° field of view (`0x0889DCA8`), which none of
+these modes changes; the renderer takes it each update (`0x08888054`,
+render environment `+0x2E0`) and divides the screen width by twice the
+tangent of its half, so 45° spans the screen's width. NA2's battle camera
+sets 40.6° (`camera_compute_fit`, atan(0.8 × tan 47°))
+([Battle camera](../session/battle_camera.md#distance-elevation-and-framing)). No per-scene combo-anchor, route or effect-intensity
 table exists; only mission scene `r008` carries a route table
 (`BIN_cpucooproutetbl`).
 
@@ -211,9 +216,7 @@ otherwise: by direct effect, `29`, `2B`, `2D` and `2E` are NA2's `24`,
 `26`, `29` and `2A`; `28`, `2A`, `2C`, `30` and `32` have no direct effect
 and `19` effect 2, which no NA2 item has. Pool 1's `11` (an alternate
 action with effect 17) and `12` (no effect) match no NA2 record of their
-kind, 4. Which of UNH3's
-item names (text entries 1250..1287, such as Bomb Kunai and Curse Tag:
-Steal) these codes carry is not established.
+kind, 4.
 
 UNH3's renderer differs where the archives depend on it. It expands palette
 alpha to `2A - 1` (`0x088B4870`) yet discards each texel whose expanded
@@ -296,6 +299,34 @@ Each bomb:
    rises to it over 30 updates.
 
 It holds while stage updates are restricted.
+
+## Collision box, ropes, branches and skies
+
+Every Stage Select archive closes its stage-boundary hit batch
+(`HIT_s<nn>are00_hit`, word `0x00E000E3`) with a flat downward-facing lid
+over each section's strip, at 1050..1550 (s01 1150, s02 1150, s03 1150,
+s04 1550, s05 1050, s06 1450, s07 1100, s08 1146, s09 1050, s10 1150,
+s13 1150..1200, s21 1075, s22 1450), with lower steps at some ends. Those
+are its only ceiling-facing triangles with fighter bit `0x1`. NA2's
+boundary walls mostly rise to about 3500 with no lid; S04 and S22 close
+at 3500.
+
+`s21` and `s03` hang one sagging rope each, walked on through a static
+12-triangle batch of word `0x0001D0D1` (s21 front section, x -1033..1031,
+z 601..655; s03 second section, x -1145..920, z 660..719). No archive has
+a factory-43 wire, so UNH3's ropes never swing; NA2's wires generate
+`0x0001D9D1`, which adds `0x100` and the first-jump doubling `0x800`.
+`s21`'s `TEX_s21obj05` is identical to NA2 S21's wire texture. The
+landing-tree branch meshes (`HIT_gim_200_hit`, s01, s06, s07) are
+`0x0000D001`, where NA2's carry `0x800` (`0x0000D801`, `0x0000D80D`).
+
+The skies (`MDL_bac_000`/`_000_`) are half domes behind the stage: they
+start at y 0 on s01, s06, s07, s09, s13 and s22 and only a little in
+front on s02, s04, s05 and s10, where NA2's wrap round the stage. The
+camera, clamped to `DMY_cpmin..cpmax`, always faces them. Factory-29 skies
+and mist scroll at 0.0003..0.002 per update (s01 0.0003; s07, s08, s10
+0.0006; s09, s06 and s13 0.001; s02, s22 0.002), below NA2's slowest
+0.003.
 
 ## Sounds and surface effects
 

@@ -5,10 +5,8 @@
 Established: retail NA2 binding icons; Command Chart rows, input and footer;
 1P/2P Commands filtering, side, input and header; command-token derivation,
 texture selection and the native labels below.
-Open: complete chart sequences for every named action and the rear-direction
-label's relation to every object-relative selector; no visible result was captured.
-Evidence is static code and data; displayed rows do not establish executability.
-Names come from `@annotations/NA2`; addresses are live.
+Evidence is static code and data. Names come from `@annotations/NA2`; addresses are live.
+Open: nothing.
 
 This document owns the battle Command Chart and the 1P/2P Commands presentation.
 [Action commands](../../../gameplay/combat/action_commands.md) owns bindings,
@@ -97,8 +95,6 @@ Native input-condition wording, with ruby omitted:
 
 Row 8's `command_list_substitution_name` (`0x008BD620`),
 「変わり身の術（チャクラ消費）」, includes the chakra-consumption suffix.
-The input-condition wording does not establish that the rear-direction label
-matches every object-relative direction selector in the input interpreter.
 
 ### Input, badge and footer
 

@@ -8,8 +8,8 @@ Mode Select's Practice result, Practice's selection and loading states,
 participant fields, raw stage ownership, manual-opponent settings, and the
 Command Display and Easy Display flags.
 An observed startup snapshot confirms waiting in the language selector before
-the outer state loop. Open: completion of the traced startup path, other
-settings' complete player-facing meanings, and unrelated mode branches.
+the outer state loop.
+Open: nothing.
 
 Names come from `@annotations/UN4`. Addresses are live resident
 `SLUS_218.62` addresses unless a battle-overlay routine is named. Binary

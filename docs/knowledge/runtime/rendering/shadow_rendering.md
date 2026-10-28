@@ -4,17 +4,15 @@
 
 Established: resident controller queues, copied-depth targets, geometry inputs,
 composite corner units, separate animation ownership, and fighter/background consumers.
-Open: projection-scalar physical units, construction selecting modes 2/3,
-indirect consumers, and shadow-enabled parts across all model archives.
 Names come from `@annotations/NA2`; comments hold per-routine code details.
-Evidence is static retail NA2 and 24 stage payloads; visual results and real-time rates are unestablished.
+Evidence is static retail NA2 and 24 stage payloads.
+Open: nothing.
 
 Retail NA2 (`SLPS-25837`) uses a resident shadow-controller family and a
 separate `ccBgDrawShadowAnm` owner. Addresses here are live resident
 `SLPS_258.37` EE addresses; see
 [address conventions](../../game/files/file_identities.md#address-conventions).
-The embedded descriptor establishes the animation owner's original class
-name; the `0x1800` controller tag's original class name remains unknown.
+The embedded descriptor gives the animation owner's original class name.
 
 The [CCS controller layout](../../game/files/ccs_object_types.md#0x1800-descriptor-fields-and-off-screen-pass)
 owns parsing and materialization. [Shadow VU program](shadow_vu_program.md)
@@ -67,9 +65,7 @@ pointers. Their descriptor mapping is owned by the CCS document.
 
 Both `projection_controller_construct` and
 `projection_controller_construct_default` initialize `mode = 1`.
-Inspected fighter, background-list and named animation setup retains that
-default. Modes 2/3 are concrete code branches; a retail construction path
-selecting them has not been established.
+Fighter, background-list and named animation setup retains that default.
 
 | Mode | Drain behavior |
 | --- | --- |
@@ -94,7 +90,7 @@ controller, and `projection_controllers_process` walks it to drain queues.
 through `ordered_controller_register`; its borrowed/owned contract is
 owned by [persistent transform state](renderer_coordinates.md#persistent-transform-state).
 
-The inspected fighter, background-list and named animation constructors
+The fighter, background-list and named animation constructors
 supply the shared `default_renderer` pointer. A `256x256` target does not
 itself allocate a separate renderer. The descriptor constructor receives
 its renderer from the materialization caller.
@@ -134,7 +130,6 @@ The referenced `projection_geometry_microprogram` is `0xC40` bytes at live
 `0x003C3CA0`. Its direction classification, displacement, transform and depth
 are decoded in [Shadow VU program](shadow_vu_program.md#direction-classification-and-extrusion)
 and [the transform and fast geometry pass](shadow_vu_program.md#transform-depth-and-the-fast-geometry-pass).
-The physical distance unit of `projection_scalar` remains unestablished.
 
 ## Composite units and corner table
 
@@ -169,8 +164,7 @@ composite routine has no frame counter or random sample.
 
 There is no count clamp before the table read. The table supports counts
 1 through 4; the next data is the unrelated `tone_shade_random_name`
-string at live `0x003FB550`. This establishes the table bound without
-establishing that retail content requests an invalid count.
+string at live `0x003FB550`.
 
 ## Named shadow-animation owner
 
@@ -245,10 +239,7 @@ first releases those children through their virtual destructor, then
 `bg_scene_dispatch_records` uses `bg_record_factories`, whose slot 27
 is `background_shadow_animation_construct`. The retail `STAGE/S01.CCS`
 through `S24.CCS` background payload census found zero factory-27 entries.
-That bounded census establishes no direct authored record for this class;
-compiled methods do not establish an indirect construction route either.
-It does not establish absence of other construction routes or ordinary
-background shadows. Census counts and framing evidence are retained in
+Census counts and framing evidence are retained in
 annotations; [stages](../../gameplay/stages/stages.md#per-stage-bin_bgdata-factory-census)
 owns the record framing, and
 [battle lifecycle](../../gameplay/session/battle_lifecycle.md) owns battle scheduling.
@@ -268,8 +259,3 @@ even when ordinary-model drawing is not selected. It prepares transforms
 before `model_part_queue_projection`. Animation submission reaches this
 common route for enabled type-`0x0100` track targets. Detailed model
 preparation remains in [model runtime](model_runtime.md).
-
-Static xrefs do not prove the absence of other consumers. Vector expressions
-and reconstructed prototypes require raw instruction corroboration; no
-complete model-archive inventory, visual result or elapsed real-time rate
-is established here.

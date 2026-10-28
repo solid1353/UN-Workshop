@@ -4,10 +4,10 @@
 
 Established: UN3's field-item codes and their NA2 equivalents, five-slot
 panel, cache, compacting removal and scrolling HUD; UN4's five-slot layout, placement, fading and item-select badges.
-Open: UN3 addition and selection input, runtime layout/range values and writers.
 UN3 evidence is static with one corroborating screenshot; UN4 layout keys
 were observed in one battle state, with formulas confirmed in retail code.
 Names come from `@annotations/UN3` and `@annotations/UN4`; addresses are live.
+Open: nothing.
 
 This document records the battle-item inventories of retail UN3 and UN4.
 Retail NA2 (`SLPS-25837`) uses the three-slot inventory recorded in
@@ -58,7 +58,7 @@ panel's `scroll` starts at 16.
 `item_inventory_cache` (`0x00946050`) is their default runtime destination.
 Each record stores an item code and a byte count; the side stride is
 `0x28`. The imported file image has animation strings at this destination,
-so those bytes do not establish the cache's initial runtime contents.
+so those bytes do not show the cache's initial runtime contents.
 
 `item_remove_selected` (`0x0082AD10`) removes the selected item, compacts
 the remaining occupied items and decrements `occupied_count`. Removing the
@@ -89,9 +89,9 @@ steps 0, 1 and 2, negated on the negative side.
 `item_draw` (`0x0082BB60`) adds the step displacement, interpolates the
 height between layout points and applies the panel position. Each side has
 seven `un3ItemLayoutPoint` records. Their `x` fields are the interpolation
-keys, but all are zero in the imported file image; their runtime values and
-producer remain open. `item_visible_ranges` (`0x00919950`) supplies the
-occupied-count-dependent fading boundaries; its runtime contents remain open.
+keys, but all are zero in the imported file image.
+`item_visible_ranges` (`0x00919950`) supplies the
+occupied-count-dependent fading boundaries.
 
 | Data | Live address | Values at relative positions -3..3 |
 | --- | --- | --- |
@@ -101,8 +101,7 @@ occupied-count-dependent fading boundaries; its runtime contents remain open.
 
 One retail UN3 battle screenshot corroborates the list shape: P1's left
 neighbors rise and its right neighbors stay level, P2 is mirrored, and the
-two item-select badges sit below the wheel on either side. It does not
-establish animation timing or the other statically derived behavior.
+two item-select badges sit below the wheel on either side.
 
 ## UN4 item wheel
 

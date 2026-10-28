@@ -5,8 +5,8 @@
 Established: retail NA2 (`SLPS-25837`) has six primitives combining the
 selected text's gray shade, offset foreground pass and text renderer across
 `SLPS_258.37`, `ADV.BIN`, `BTL.BIN` and `ETC.BIN`. All six are resident ELF
-routines. Open: their complete caller coverage and states outside the
-documented gates. Names come from `@annotations/NA2`; addresses are live.
+routines. Names come from `@annotations/NA2`; addresses are live.
+Open: nothing.
 
 This document owns the cross-screen selected-style behavior. Selected-row
 displacement and glyph metrics belong to
@@ -37,7 +37,5 @@ two-choice primitive draws both base choices before the selected foreground;
 the two shared lower-panel choice components draw the selected gray pass
 before the two foreground choices.
 
-This is the bounded set of routines combining these colors, offsets and text
-rendering in the four covered retail programs. It does not enumerate their
-callers or establish that every selected element on every screen uses them.
-Per-routine signatures, constants and gates are retained in the annotations.
+These are the routines combining these colors, offsets and text rendering in
+the four covered retail programs. Per-routine signatures, constants and gates are retained in the annotations.

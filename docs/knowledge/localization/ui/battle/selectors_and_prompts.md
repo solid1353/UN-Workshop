@@ -5,10 +5,9 @@
 Established: retail NA2 and UN5 selector, prompt, scroll-arrow and label differences.
 The recorded awakening-texture correspondences have high confidence; all 72
 mapped ordinary labels have checked retail source hashes and decoded textures.
-Open: other callers and animation phases, and the UN5 player-marker comparison.
-Jutsu-name lead `jutsu_name_display_unverified_lead` (`0x001F64A4`) remains open.
 Names come from `@annotations/NA2` and `@annotations/UN5`.
 Addresses are live; annotation comments hold the per-routine details.
+Open: nothing.
 
 Binary identities and address conventions are defined in the
 [Standard game file identities](../../../game/files/file_identities.md).
@@ -100,8 +99,8 @@ The current naming census checked the maintained NA2/UN5 source hashes for
 all 61 portrait containers behind the 72 mapped `mode1name` textures and
 decoded all 144 source textures. [Status identity and naming coverage](../../../gameplay/projectiles_and_items/battle_items_and_status_effects.md#status-identity-and-naming-coverage)
 owns the effect/character/phrase joins. Shared phrases and paired IDs need
-owner qualifiers; a corresponding English phrase does not establish equal
-mechanics or a fixed title for arbitrary recipients.
+owner qualifiers, because one English phrase can belong to different
+mechanics and the title depends on the recipient's resource.
 
 ## Open VS Jutsu selector
 
@@ -114,7 +113,7 @@ mechanics or a fixed title for arbitrary recipients.
 
 Both open callbacks render two rows and the selected entry through
 `jutsu_select_draw`. The confirmation-state object dispatches them
-indirectly; a single direct caller is not established.
+indirectly.
 
 Arrows require a resolved selected character and at least three eligible
 Jutsu. In the stable open state, their center is X 115 for side 0 or X 409
@@ -145,12 +144,11 @@ horizontal offsets.
 
 The native `button_icon_submit` implementations differ. NA2's first two
 `common_prompt_regional_rectangles` (`0x005D4690`) are 70×22 regional
-legends, with a backing rectangle submitted before each. The backing's sprite
-identity is unestablished. UN5's first two
+legends, with a backing rectangle submitted before each. UN5's first two
 `common_prompt_english_rectangles` (`0x005DE870`) combine Cross/OK
 `(1,1,56,22)` and Triangle/Back `(1,25,64,22)`.
 The shared sprite's queued geometry changes between submissions, so equal
-base anchors do not establish equal raster placement in the two games.
+base anchors can still give different raster placement in the two games.
 
 ## Command Chart scroll indicators
 
@@ -163,8 +161,7 @@ base anchors do not establish equal raster placement in the two games.
 
 NA2's callback is the draw slot of `start_menu_basic_command_vtable`
 (`0x005FBA60`), the `ccStartMenuBasicCmd` Command Chart child, whose init slot
-is `command_list_build`; its draw dispatch is indirect. The UN5 child table
-was not checked.
+is `command_list_build`; its draw dispatch is indirect.
 
 Both games obtain layer 3 through `command_menu_sprite_get`, set its
 rotation to pi and draw the top arrow at X 256, Y `32 + pulse_offset`.

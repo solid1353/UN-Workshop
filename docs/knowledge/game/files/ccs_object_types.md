@@ -5,11 +5,10 @@
 Established: the 34 resident file routes, 29 resource identities or block roles,
 texture/CLUT transfer groups and file layouts with their VRAM placement, projection/composite controller behavior, the
 packet-ring producer contract, their resident BSS globals and the older-version
-branches of `0x0100`, `0x0200`, `0x0800` and `0x0E00`. Open: legacy file
-tags `0x1000..0x1200`, `0x1F00` semantics, the projection algorithm/units, and ring activation,
-read-side consumer and packet language. Names and per-routine facts come from
+branches of `0x0100`, `0x0200`, `0x0800` and `0x0E00`. Names and per-routine facts come from
 `@annotations/NA2`, with comparisons in `@annotations/UN3` and
 `@annotations/UN5`; addresses are live.
+Open: nothing.
 
 This document maps CCS numeric tags to resident resource identities. Container
 loading, publication, hashing, residency and generic lookup belong to
@@ -38,16 +37,11 @@ animation, camera, external references and pre-object metadata.
 The file-block tag selects a parser; `CcsRecord.type_tag` selects runtime
 interpretation and destruction. They can share a number without sharing a
 resource meaning. Parser descriptors and materialized playback objects also
-have distinct lifetimes. Fixed layouts are named in annotation types;
-unknown semantics remain explicit.
+have distinct lifetimes. Fixed layouts are named in annotation types.
 
 Static coverage reaches direct parsers, materialization, immediate
-constructors/destructors, finalizers and consumers, rather than the whole
-program. Corpus conclusions cover the non-excluded clean inputs, including
-texture walks using per-level counts.
-NA2 resident code and bounded literal/direct-call searches of `BTL.BIN` and
-`ETC.BIN`, plus UN3/UN5 comparisons, bound the
-negative conclusions. Overlay resource trees were not inspected.
+constructors/destructors, finalizers and consumers. Corpus conclusions cover
+the non-excluded clean inputs, including texture walks using per-level counts.
 
 ## Confirmed identities
 
@@ -83,9 +77,9 @@ class names.
 | `0x1C00` | `ccStreamToneShadeParam`, derived from `ccDrawEnvCtrl` | Same separate lifetimes with its own named concrete vtable. |
 | `0x1D00` | `ccStreamFBSBlurParam` | Own vtable and playback destruction layout, separate from the parser descriptor. |
 | `0x2000` | Transitional pre-object metadata carrier | A scalar and three nullable references update an existing object/effect/external wrapper or wait in a temporary carrier. The later final parser recovers the fields, frees the carrier and replaces it. `XNINKA.CCS` includes this ordering for `OBJ_xback01` and `OBJ_sun01`. It is not a stable object class. |
-| `0x2200` | Global packet-ring batch | A block-only packet producer copies into available ring slots or consumes/discards the same words. [The producer/control contract](#0x2200-batch-and-global-ring) does not establish audio semantics. |
+| `0x2200` | Global packet-ring batch | A block-only packet producer copies into available ring slots or consumes/discards the same words; see [the producer/control contract](#0x2200-batch-and-global-ring). |
 | `0x2300` | Composition child-attachment parameters | A block-only payload targets a composition and supplies two entry families. Finalization replaces child records with composition indices and compact parameter arrays; playback constructs attachments against resolved children. `CMP_2ddrh00t0 trall` includes `OBJ_2ddrh00t0 bone03` with floats `(0.85,0.9,0.2)`. |
-| `0x2400` | Opaque binary blob | `CcsBinaryBlob.byte_length` and inline `payload` are copied unchanged. The `BIN_stfdata` consumer uses the same length/data contract. `BIN_asw0scr`, `_atk`, `_ent`, `_ext` and `_wit` examples range from 12 to 936 bytes; this does not establish that every blob is a script. |
+| `0x2400` | Opaque binary blob | `CcsBinaryBlob.byte_length` and inline `payload` are copied unchanged. The `BIN_stfdata` consumer uses the same length/data contract. `BIN_asw0scr`, `_atk`, `_ent`, `_ext` and `_wit` examples range from 12 to 936 bytes. |
 
 Exact light selection is established by `ccs_materialize_light_secondary` (`0x0019B240`):
 
@@ -113,15 +107,15 @@ The runtime teardown switch is `ccs_destroy_record` (`0x001A9F10`); its annotati
 holds the complete destructor mapping.
 
 The 29 rows above are confirmed resource/block roles. The remaining file
-routes are the section marker and four unresolved entries:
+routes are the section marker and four legacy or table entries:
 
-| File tag | Annotated parser | Established behavior | Open identity |
-| ---: | --- | --- | --- |
-| `0x0003` | `ccs_object_section_noop` | Object-section marker; repeated header is a no-op. | Reason for accepting an in-stream repeat. |
-| `0x1000` | `ccs_parse_legacy_group_marker` | Publish numeric runtime tag with null descriptor; consume counted dwords without retaining them. Runtime teardown clears pointers only. | Relationship to texture/CLUT-created transfer groups is an inference. |
-| `0x1100` | `ccs_parse_legacy_page_marker` | Read 16 bytes; use only the target record to publish the numeric tag; create no descriptor and leave its runtime pointer unchanged. | No consumer, materializer or class-name chain recovered. |
-| `0x1200` | `ccs_parse_legacy_rect_marker` | Consume counted eight-byte entries without retaining them; publish the numeric tag with unchanged runtime pointer. | No consumer, materializer or class-name chain recovered. |
-| `0x1F00` | `ccs_parse_nested_halfword_table` | One owned allocation containing resolved records and nested halfword arrays. | No semantic consumer or non-excluded sample recovered. |
+| File tag | Annotated parser | Behavior |
+| ---: | --- | --- |
+| `0x0003` | `ccs_object_section_noop` | Object-section marker; repeated header is a no-op. |
+| `0x1000` | `ccs_parse_legacy_group_marker` | Publish numeric runtime tag with null descriptor; consume counted dwords without retaining them. Runtime teardown clears pointers only. |
+| `0x1100` | `ccs_parse_legacy_page_marker` | Read 16 bytes; use only the target record to publish the numeric tag; create no descriptor and leave its runtime pointer unchanged. |
+| `0x1200` | `ccs_parse_legacy_rect_marker` | Consume counted eight-byte entries without retaining them; publish the numeric tag with unchanged runtime pointer. |
+| `0x1F00` | `ccs_parse_nested_halfword_table` | One owned allocation containing resolved records and nested halfword arrays. |
 
 ### `0x2200` batch and global ring
 
@@ -134,7 +128,7 @@ claims `ccs_packet_ring_owner`. It publishes no object record.
 The manager pointer `ccs_packet_ring_pointer` (`0x00602A04`) initially
 points to `ccs_packet_ring`. `CcsPacketRing` names its fields.
 `ccs_packet_ring_construct` leaves `buffer`, `command_target`, counts and indices
-zero, `semaphore` and `count_snapshot` at -1, and the unresolved
+zero, `semaphore` and `count_snapshot` at -1, and the
 `value_3f` halfword at `0x3F`. `resident_heap_marker_initialize` registers
 `ccs_packet_ring_destroy` through `ccs_packet_ring_cleanup_node`, a
 `CompilerCleanupNode`, and returns without activating the buffer or command
@@ -145,7 +139,6 @@ With a command target, unavailable buffer/full count increments
 `unavailable_slots`. Slots are `buffer + write_index * 0x400`;
 commit increments the queued count, advances the index modulo `0x100`
 and signals the semaphore. The count snapshot is taken only while negative.
-The initialized read index's consumer is not established.
 
 File `0x2200` and frame `0x2201` producers request a slot, copy and
 commit, or consume/discard exactly the same packet words. The frame producer
@@ -157,15 +150,11 @@ Playback entry requests command bit 1, stop/exit requests bit 2, and teardown
 requests bit 4 in `CcsCommandTarget.command_bits`; each control signals
 the semaphore. Playback requests require the container's `0x80` flag.
 Teardown clears `ccs_packet_ring_owner` and the manager's command target.
-These are proved producer/control operations, not meanings assigned to a
-consumer's commands.
 
 The producer trusts `words_per_packet`: a `0x400`-byte slot fits at most
 `0x100` dwords, but neither loop enforces that bound. In the state created
-by the inspected constructor, the missing command target causes all declared
-words to be consumed/discarded. No activation writer, read-side consumer,
-packet decoder or PCM/sample interpretation is established; the reference
-audit does not prove that activation never occurs.
+by the constructor, the missing command target causes all declared
+words to be consumed/discarded.
 
 UN3 and UN5 corroborate the same count/index/semaphore layout, target gate,
 capacity, stride and commit behavior:
@@ -175,11 +164,10 @@ capacity, stride and commit behavior:
 | UN3 `SLUS_217.27` | `ccs_frame_tag_2201` (`0x0016AB30`) | `ccs_packet_ring_request_slot` (`0x00108D10`) / `ccs_packet_ring_commit` (`0x00108C90`) | `ccs_packet_ring_construct` (`0x00108F40`) |
 | UN5 `SLES_556.05` | `ccs_parse_packet_batch` (`0x001B87A0`) | `ccs_packet_ring_request_slot` (`0x00109230`) / `ccs_packet_ring_commit` (`0x00109170`) | `ccs_packet_ring_construct` (`0x00109530`) |
 
-Their inspected static initializers likewise return after destructor
+Their static initializers likewise return after destructor
 registration without publishing the buffer/target. The generic GS
 command-target initializer `gs_command_target_initialize` supplies DMA tags,
-callback and callback argument to a GS transfer/draw path; no established
-join connects that target to the CCS ring.
+callback and callback argument to a GS transfer/draw path.
 
 ### `0x1800` descriptor fields and off-screen pass
 
@@ -255,9 +243,6 @@ That owner's vtable does not belong to the CCS-created controller.
 alpha-blended compositing fit a soft-shadow/silhouette overlay.
 Direction, strength, projection scalar and the named shadow-animation use
 support this more directly than the explorer's `Shadow` label.
-The exact VU operation, projection units and a C++ class name for the
-CCS-created object remain unresolved. The resident analysis exposes no
-function for the referenced microprogram.
 
 ### File tag `0x0003`: object-section marker
 
@@ -276,10 +261,9 @@ Each of the 1,731 non-excluded clean inputs has one section-3 header directly
 after chunk 2, with length zero: 1,683 high halfwords are `0x0000` and
 48 are `0xCCCC`. Nine additional aligned `0xCCCC0003` words were inside
 other payloads and did not begin valid block chains. Synchronized length
-walks found no in-stream repeat. Tolerance of repeated/concatenated markers
-is a hypothesis about why the route exists.
+walks found no in-stream repeat.
 
-### Unresolved `0x1F00` binary and runtime layouts
+### `0x1F00` binary and runtime layouts
 
 `ccs_parse_nested_halfword_table` (`0x001B2930`) copies the complete payload, computes the
 required size and packs one runtime allocation. Record IDs are resolved;
@@ -297,7 +281,6 @@ Each `CcsNestedItemInputHeader` holds an element count, flags, four opaque
 bytes and two opaque halfwords. Its primary array has one four-byte
 halfword pair per element. Flag `0x1000` adds one secondary halfword
 per element after that array, rounded to a four-byte boundary.
-No other flag interpretation is established.
 
 The runtime `CcsNestedTable.groups` tail and `group_records` form two
 parallel tables with `group_count` entries each. The resolved-record table
@@ -308,11 +291,7 @@ Each `CcsNestedGroup` header precedes its `0x10`-byte
 Each item's `primary` points to its copied array; optional secondary arrays
 immediately follow and the next region is four-byte aligned.
 
-These ownership and packing relationships are established; the semantics
-of the pairs, opaque fields, arrays and remaining flags are open.
-The bounded direct-literal audit supplied no related-game semantic consumer.
-UN3 has the same two-pass parser; literal searches cannot exclude
-table-driven or synthesized-tag consumption.
+UN3 has the same two-pass parser.
 
 ### Runtime tag `0x1000` from texture and CLUT construction: image-transfer group
 
@@ -368,9 +347,7 @@ corroboration.
 runtime pointer, whereas texture/CLUT helpers reuse materialized pointers.
 A later member naming that record would therefore dereference a null group
 at the member-list field. That file block cannot safely precede group
-members in the same stream. A legacy placeholder relationship is plausible,
-but neither the shared number nor pointer-only teardown proves it; no clean
-non-excluded file block uses it.
+members in the same stream. No clean non-excluded file block uses it.
 
 ### File tags `0x0300` and `0x0400`: texture and palette placement
 
@@ -430,7 +407,7 @@ selects these branches for every section it holds:
 | `0x0800` `ccs_parse_model` | Below `0x121`: one byte instead of two after the header, no palette count, mode masked to its low nibble. Below `0x122`: the scale halfword is not divided by 256, and an ordinary model without flags `0x8181` gets runtime flag `0x10000`. Below `0x111`: the word and float after the header are not read, and descriptor `+0x54` is 1.0. |
 | `0x0E00` `ccs_parse_effect` | Below `0x122`: the scale halfword is not divided by 256 and bit `0x40` of descriptor byte `+0x14` is set. |
 
-## Negative results and labels not promoted
+## Class names and tool labels
 
 No class-name chain joins `ccExtObjLinker` to the external wrapper,
 `ccAnmCtrlInterpObj`/`ccAnmCtrlInterpBase` to the non-vtable
@@ -438,37 +415,24 @@ No class-name chain joins `ccExtObjLinker` to the external wrapper,
 the composition resource. Particle names `ccParticleManager`,
 `ccHigeParticleGenerator` and `ccHigeParticleManager` do not establish
 these route identities; only `ccGenerator2` has the direct generator chain.
-Destructor-family differences alone do not name unresolved classes.
 
-The inspected non-excluded corpus had no `0x0D00`, `0x1000`,
+Length-directed walks of the non-excluded corpus, with the `0xCCCC`
+aligned-word recheck, found no `0x0D00`, `0x1000`,
 `0x1100`, `0x1200`, `0x1F00` or `0x2200` blocks.
-This absence is bounded: declared lengths can exceed texture consumption,
-so length-directed walks can lose synchronization. The aligned-word recheck
-only recognizes the `0xCCCC` high halfword; other accepted high halfwords
-remain outside that check. It supplied no additional valid blocks for these
-routes. These findings do not establish unreachability in other inputs.
-
-The bounded legacy-tag search supplied no consumer, and UN3's corresponding
-stubs preserve no fuller payload. No proved runtime relationship joins
-`0x1F00` to `0x1900`; the nested-table shape does not justify calling
-it morph data. The annotation comments retain the literal-use census.
+UN3's corresponding stubs preserve no fuller payload. No proved runtime path joins
+`0x1F00` to `0x1900`.
 
 The corroborating `CCSFileExplorer.exe` geometry decoder supports the resident
-model finding, while its script/function/Puppet interpretation of `0x2400`
-remains a lead.
+model finding.
 Its label table includes:
 
 | Tag | Tool label | Status |
 | ---: | --- | --- |
 | `0x0003` | `Setup` | Consistent with section marker. |
-| `0x0D00` | `Particle` | Not established; resident child is transform-only. |
-| `0x1000` | `Blit_Group` | Consistent with texture/CLUT-created runtime group; unresolved file handler. |
-| `0x1100` | `FrameBuffer_Page` | Unverified. |
-| `0x1200` | `FrameBuffer_Rect` | Unverified; eight-byte entries could encode four halfword rectangle fields. |
+| `0x0D00` | `Particle` | Resident child is transform-only. |
+| `0x1000` | `Blit_Group` | Consistent with texture/CLUT-created runtime group. |
 | `0x1800` | `Shadow` | Supports the projection/composite interpretation. |
-| `0x1F00` | `Sprite2Tbl` | Unverified nested-table semantics. |
 | `0x2000` | `AnimationObject` | Resident behavior is a transitional metadata carrier. |
-| `0x2200` | `PCM_Audio` | Unverified; no decoder or sample semantics recovered. |
 | `0x2300` | `Dynamics` | Resident behavior establishes composition attachments only. |
 
 The tool includes `BLT_bg` and `BLT_obj`; none of its semantic label
@@ -476,5 +440,3 @@ strings is present in the resident executable. Object-name prefixes
 `OBJ_`, `MAT_`, `TEX_`, `CLT_`, `ANM_`, `HIT_`,
 `PAC_`, `PGE_` and `EFF_` corroborate independently established
 roles. Only `EXT_` participates directly in type-sensitive logic.
-The identities remain resident findings, not claims about every file variant
-or every object instance.

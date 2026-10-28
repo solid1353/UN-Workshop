@@ -6,8 +6,8 @@ Established: opponent selection, side/role setup, authored appearance and
 texture/draw switches, defender draw/placement/matrix gates, bone replacement,
 popup interruption, selected geometry providers, and the resident BSS globals
 for opponent groups, optional switch tables and the derived main path.
-Open: the intended optional-body constant/resource, targets across every
-cinematic, accumulated matrix orientation and visible body animation in
+Open: the intended optional-body constant/resource, the capacity of the
+derived main-path buffer, targets across every cinematic, accumulated matrix orientation and visible body animation in
 omitted-draw ranges. Names come from `@annotations/NA2`; comments and types
 carry code-level details. Static resident/BTL/ETC and clean CCS evidence
 establishes dependencies, not live allocation success. UN4's cinematic formats
@@ -134,6 +134,14 @@ with `0x200302`. The separate defender-`0x5D` exclusion remains unconditional.
 No alternate identifier producer appears between parsing and comparison
 inside this callback. The mismatch establishes neither an intended constant,
 resource nor player-facing move name.
+
+UN2's begin routine builds its identifier from three digits of a
+`dDD_L_P` stream name, so `0x200302` there is stream `D20_3_2` (Guy's
+Ultimate: Hidden Lotus), the one film in which defender Haku (ID 10) does
+not get his mask, and `0x70302` is `D07_3_2`, where UN2 also hides
+`OBJ_1skr20t0 bod`
+([Nine-Tailed Naruto: UN2](un2/nine_tailed_naruto.md#ultimate-jutsu-contest-and-damage)).
+NA2 kept both constants.
 
 | SINF skill | Stream path | Header identifier |
 | ---: | --- | ---: |

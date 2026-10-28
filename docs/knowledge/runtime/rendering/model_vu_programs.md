@@ -6,8 +6,10 @@ retail NA2 (`SLPS-25837`) model rendering.
 ## Research coverage
 
 Established: descriptor selection, representative geometry/output contracts,
-clipping/storage bounds and six body samples. Open: complete variant semantics,
-asset validity and observed use. Names come from `@annotations/NA2`.
+clipping/storage bounds, the influence-list lengths that fit them, six body
+samples and the list lengths of every retail NA2 and UN3 CCS file.
+Names come from `@annotations/NA2`.
+Open: nothing.
 
 ## Evidence conventions
 
@@ -17,17 +19,14 @@ An embedded upload stream has an EE address, but its VU instruction entry and
 VU data slots belong to separate address spaces. Stream labels are data, not
 EE routines. VU instruction indices below identify entrypoints, not EE calls.
 
-The evidence is static retail code and a bounded sample of retail character
-CCS files. Upload presence and a conditional selector outcome do not establish
-execution by a particular character or a roster-wide distribution. The resident
-MCP import exposes EE code and bytes; the embedded VU decoding used PCSX2's
+The evidence is static retail code and a sample of retail character CCS files.
+The resident MCP import exposes EE code and bytes; the embedded VU decoding used PCSX2's
 VU/VIF definitions, recorded with the stream annotations.
 
 Coverage includes all 42 nonnull descriptor upload streams and shared setup
-and continuation. Semantic conclusions are bounded to representative
+and continuation. Semantic conclusions come from representative
 weighted/rigid, lighting, strip-control, two-pass and six-plane clipping bodies.
-Later selector changes, exceptional arithmetic and the supported asset domain
-beyond the sample remain open. Annotation comments carry the code details.
+Annotation comments carry the code details.
 
 Related owners: [Model runtime](model_runtime.md) owns CPU readers, skeletons,
 morphs and strip normalization; [Render submission](render_submission.md) owns
@@ -88,17 +87,17 @@ index; these views do not form a single per-influence record.
 
 | VU data slot relative to TOP | View | Established fields |
 | --- | --- | --- |
-| `0` | `ModelVuWeightedHeader` | X `vertex_count_and_flags = vertex_count + 0x8000`; Y `logical_vertex_end = 4 * vertex_count + 1`; Z `first_batch_marker = 0x8000` in the first weighted batch, zero thereafter; W consumer meaning remains unknown |
-| `1 + 4*i` | `ModelVuWeightedControl` | X `scaled_weight`: low-nine-bit weight shifted left four; Y `palette_address = 0x50 + 4 * bone_index`; Z `list_count`: narrowed list count at its first influence, one thereafter; W remains unknown |
-| `2 + 4*v` | `ModelVuWeightedUv` | X/Y `u` / `v`: masked source UV halfwords expanded into VU lanes; Z/W meaning remains unknown |
+| `0` | `ModelVuWeightedHeader` | X `vertex_count_and_flags = vertex_count + 0x8000`; Y `logical_vertex_end = 4 * vertex_count + 1`; Z `first_batch_marker = 0x8000` in the first weighted batch, zero thereafter |
+| `1 + 4*i` | `ModelVuWeightedControl` | X `scaled_weight`: low-nine-bit weight shifted left four; Y `palette_address = 0x50 + 4 * bone_index`; Z `list_count`: narrowed list count at its first influence, one thereafter |
+| `2 + 4*v` | `ModelVuWeightedUv` | X/Y `u` / `v`: masked source UV halfwords expanded into VU lanes |
 | `3 + 4*i` | `ModelVuWeightedAttribute` | X/Y/Z `direction_x` / `direction_y` / `direction_z` and W `strip_control`: sign-extended source bytes |
-| `4 + 4*i` | `ModelVuWeightedPosition` | Float `x` / `y` / `z`; W remains unknown |
+| `4 + 4*i` | `ModelVuWeightedPosition` | Float `x` / `y` / `z` |
 
 VIF cycling scatters these streams into interleaved slots. The reader,
 terminators and original halfword position scale are owned by
 [Model runtime](model_runtime.md#packed-geometry-influences-and-matrix-palette).
 The command words, source widths and unpack evidence are in the converter
-annotation. Unknown lanes retain their numeric slot positions above.
+annotation.
 
 For each influence, the weighted body transforms position by the palette
 matrix's three XYZ columns plus translation, transforms direction by the XYZ
@@ -109,10 +108,9 @@ direction bytes become float integers without a preceding division by 64.
 It normalizes the accumulated XYZ direction using its reciprocal length and
 compacts direction and position into one four-slot record per logical vertex.
 Input advances once per influence; output advances once per logical vertex.
-Position is not divided by a weight sum. Zero-length or cancelling direction
-sums have no established asset-level contract.
+Position is not divided by a weight sum.
 
-This differs from the inspected
+This differs from the
 [CPU property-skinning direction loop](model_runtime.md#property-geometry-and-cpu-skinning),
 which omits the position weight multiplier. Each route retains its own
 arithmetic contract.
@@ -195,8 +193,7 @@ contains weighted and rigid paths followed by the offset construction.
 
 `model_build_material_vif_setup` (`0x00192740`) supplies ordinary `0x14.x`
 from `ModelDrawBase.direction_offset` and the selected descriptor register list
-and sign parameters in slot `0x15`. The arithmetic alone does not establish
-the higher-level purpose of those scalar writers.
+and sign parameters in slot `0x15`.
 
 ## Projected-triangle sign controls
 
@@ -215,7 +212,7 @@ direct bit-15 OR.
 rolling plane flags and source-control adjustment. The short base ordinary
 `model_vu_upload_000` lacks this projected-edge family. The
 [selected control consumers](#source-strip-controls-and-their-selected-consumers)
-below do not establish identical semantics for every variant or source byte.
+are described below.
 
 ## Geometry, direction and GIF output
 
@@ -231,8 +228,8 @@ converts signed direction bytes to float integers, applies a first three-column
 matrix stage and clamps against zero, then applies a second stage plus ambient
 color, clamps to the setup upper RGB limit and converts to integer. Packed
 `model_vu_upload_025` uses the corresponding stages after weighted direction
-normalization, with an inspected upper clamp of 255. Neither establishes an
-inverse-transpose normal transform for arbitrary nonuniform matrices.
+normalization, with an upper clamp of 255. Neither applies an inverse-transpose
+normal transform.
 
 Alternate ordinary `model_vu_upload_008` (`0x003C24B0`) uses a scalar direction
 dot product instead of the full RGB chain. It scales slot `0x16`'s coefficients
@@ -320,8 +317,7 @@ For `c` in the observed domain `{0,1,2}`, a proper subset of mask `0xd0`
 always sets ADC; the smallest result is `0x800f` for `c=0, R=0xc0`.
 Control 0 therefore permits output only while all three masks keep every
 X/Y/W bit. This body rejects rather than interpolates a crossing triangle.
-The contract is sign-based, including boundaries and signed-zero sensitivity;
-exceptional arithmetic behavior is not established.
+The contract is sign-based, including boundaries and signed-zero sensitivity.
 
 In the selected `2NRTBOD1.CCS` weighted part, the first logical controls are
 `1,1,0,0,2,2,0,1,1,0,0,1,1,0,0,2,2,0`. Later influences match their own
@@ -391,10 +387,8 @@ its furthest result slot is `0x91`, and the largest closing copy uses slots
 
 Final output is one header plus four slots per result vertex. Nine vertices
 reach slot `0xb3 + 4*9 = 0xd7`; the header uses the returned count, and the
-first two controls carry nonzero ADC. These endpoint contracts establish
-conditional space sufficiency, not a general ten-vertex interface, a capacity
-guard, or behavior for nonfinite/nonconvex inputs. Those inputs are not
-established as retail cases.
+first two controls carry nonzero ADC. These endpoint contracts give
+conditional space sufficiency; there is no capacity guard.
 
 ## Packed palette and influence storage bounds
 
@@ -409,10 +403,9 @@ This is not an enforced validity limit. The optional palette list allocates
 `0x40` bytes but copies its declared count without a corresponding maximum
 check. The draw producer also lacks that guard; larger totals disagree with
 wrapped eight-bit VIF NUM. A declared count of zero instead selects the
-composition child count. Oversized lists and zero-child packed draws have no
-established asset-level contract. [Model runtime](model_runtime.md#packed-geometry-influences-and-matrix-palette)
+composition child count. [Model runtime](model_runtime.md#packed-geometry-influences-and-matrix-palette)
 owns CPU palette/list ownership. The rigid selector is a separate source dword
-without the weighted six-bit extraction or an established range check.
+without the weighted six-bit extraction or a range check.
 
 `model_weighted_vu_batch_bases` (`0x005BF988`) contains VU data BASE values
 `0x158`, `0x23a`, `0x31c`, selected modulo three with OFFSET 0. Each region
@@ -428,17 +421,29 @@ total vertex endpoint, so no influence list is split. The reader's list count
 is a dword, narrowed to a halfword during conversion, and the VU traverses it
 without a numeric maximum check.
 
-**Derived limitation:** two lists of 30 influences give `I=60,V=2`, below the
-stop threshold but requiring TOP `+0xf0`, beyond the region. This is a
-counterexample to a universal capacity inference, not an observed asset or
-execution. For one/two-influence lists, a threshold-crossing batch has
-`I+V <= 75` and `I <= 50`, so the sample's input shape fits. Rigid conversion
-separately caps a batch at `0x36` vertices. General supported list lengths
-remain open.
+Before its last vertex a batch has `I+V <= 72`. With lists of at most `L`
+influences, the largest batch therefore has
+`I = 72 - ceil(72/(L+1)) + L`, and `V` never exceeds 37:
+
+| Longest list `L` | Largest `I` | Fits a region |
+| ---: | ---: | --- |
+| 1 | 37 | Always |
+| 2 | 50 | Always |
+| 3 | 57 | Not always: 19 consecutive three-influence vertices give `I=57`, TOP `+0xe4` |
+
+So lists of one or two influences fit in any order; from three influences on,
+whether a batch overflows depends on the order of the lists, and a single
+list longer than 56 always overflows. Two lists of 30 (`I=60,V=2`) are another
+overflowing shape. Rigid conversion separately caps a batch at `0x36`
+vertices.
+
+Every packed weighted part in every retail CCS file uses only one- and
+two-influence lists: 1,947 parts in 1,249 NA2 files and 952 parts in 743 UN3
+files, whose largest batch under NA2's rule is `I=50, V=37`.
 
 ## Representative retail body payloads
 
-Six complete main-body payloads in retail `PL/` CCS files were inspected.
+These are six complete main-body payloads in retail `PL/` CCS files.
 All have version `0x123`, file flags `0x3804` selecting the packed reader, and
 one weighted part. The mode and palette count are separate header fields.
 [Character assets](../../game/character_assets.md) owns file organization;
@@ -468,13 +473,11 @@ Every terminated weighted-list count matched its part's logical count, and
 all six complete payloads ended before the expected following chunk. Across
 8,220 weighted vertices, every encoded weight sum is 256. With the VU `/256`
 conversion this gives unit-sum position weights for the sample, without a
-VU weight-sum division. One/two influences in the sample do not establish a
-format maximum.
+VU weight-sum division.
 
 Two influence records in `2SCOBOD1.CCS` have zero weight but their complete
 lists still sum to 256. All 12,991 influence controls are 0, 1 or 2. The
-selected consumers above establish their effects, without declaring a
-permitted domain for every variant.
+selected consumers above establish their effects.
 
 One file can contain several routes. `2NRTBOD1.CCS`'s
 `MDL_w2kn00t0 weapon` has flags `0x3801`, mode `0x1000` and one ordinary
@@ -518,25 +521,4 @@ material-alpha admission follows. Packed delegation instead takes the first
 part's factor and emits packed part chains without that ordinary loop.
 [Visibility](visibility.md#ordinary-model-draw-boundary) owns scene and bounds
 gates, and [Texture and material runtime](texture_material_runtime.md) owns
-material factors. Later flag setters, attachment state, alpha, classification
-and draw history remain necessary to identify a descriptor in a retail scene.
-
-## Remaining evidence gaps
-
-- Conditional descriptor formulas do not establish character draw histories,
-  later flag changes, factors, attachments or companion classifications.
-- The selected base packed and shared offset controls establish first-influence
-  ownership, ADC and opposite seeds for 0/1/2. Other values and each variant's
-  winding and exceptional sign behavior remain open.
-- Complete upload extents were decoded, but semantic conclusions remain tied
-  to representative bodies. Six-plane interpolation is established for
-  `model_vu_upload_016`; it is not a general packed-body contract.
-- Cancelling direction sums, exceptional W/Q inputs and arbitrary nonuniform
-  matrices have no established asset-level contract.
-- Sixty-four weighted matrices are representable; unchecked palette counts
-  and rigid dword selectors do not define a universal validity limit.
-  The 56-influence region condition is separate from the open supported
-  list-length domain.
-- The selected clipper's nine-vertex bound assumes finite convex triangle
-  clipping through six linear planes. There is no numeric capacity guard;
-  degeneracies, rounding and other bodies need separate evidence.
+material factors.

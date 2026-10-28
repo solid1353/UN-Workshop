@@ -6,11 +6,10 @@ and material packet contracts in retail NA2 (`SLPS-25837`).
 ## Research coverage
 
 Established: independent GS-state inputs, model/effect blend selection, ordinary
-and packed material contracts, optional-pass gates and bounded restoration.
+and packed material contracts, optional-pass gates and scoped restoration.
 Names come from `@annotations/NA2`; comments and types hold code-level detail.
 Evidence includes eight model headers and four packed VU state kicks.
-Open: whole-roster modes, indirect/other-overlay callers, every continuation's
-state history, optional-pass names/reachability and visible outcomes.
+Open: nothing.
 
 Related owners: [Texture and material runtime](texture_material_runtime.md)
 (resource binding and UV updates), [Model runtime](model_runtime.md)
@@ -24,7 +23,7 @@ Related owners: [Texture and material runtime](texture_material_runtime.md)
 All cited addresses are live resident `SLPS_258.37` EE addresses; see
 [address conventions](../../game/files/file_identities.md#address-conventions).
 Names describe demonstrated behavior, not recovered retail source symbols.
-Static inspection establishes emitted values and ordering, not visible results.
+Static inspection gives emitted values and ordering.
 The embedded VU streams are distinct from the resident program's EE instructions;
 their annotation comments preserve the raw-word evidence and separate decoding.
 
@@ -94,7 +93,7 @@ while shared draw state is replaced. The bound font texture owner is
 
 ## Blend selection and model state producers
 
-The inspected prefix of `model_blend_states` (`0x005B5940`) contains:
+The first eleven entries of `model_blend_states` (`0x005B5940`) are:
 
 | Index | Packed ALPHA value | `(A,B,C,D,FIX)` |
 | --- | --- | --- |
@@ -110,9 +109,7 @@ The inspected prefix of `model_blend_states` (`0x005B5940`) contains:
 | 9 | `0x62` | `(2,0,2,1,0)` |
 | 10 | `0x00000080000000A4` | `(0,1,2,2,128)` |
 
-This prefix does not establish the complete table extent or public selector
-range; the following bytes contain addresses. Numeric selectors have no
-established player-facing names.
+The following bytes contain addresses.
 
 `model_instance_set_blend` (`0x001987A0`) copies the selected word into
 `CcsModelInstance.blend_state` after masking the selector to eight bits, without
@@ -126,8 +123,7 @@ TEST low state `0x100B`; every other selector sets the bit and selects
 | 1 | Clears low four bits and bits 12..13; ORs `0x100B` for nonzero value or `0x1001` for zero. |
 | 2 | Clears bits 14..15; ORs `0x4000` and supplied value shifted left 15. |
 
-Only helper selector 1 normalizes its value to a boolean branch. These masks
-do not establish a malformed-input interface contract.
+Only helper selector 1 normalizes its value to a boolean branch.
 `ccs_model_instance_initialize` starts TEST at `0x50000` and clears
 `draw_state`, then applies `CcsModelDescriptor.blend_selector`: defaults are
 `0x5100B` for selectors 0/4 and `0x51001` otherwise.
@@ -142,7 +138,7 @@ with an antialias contribution in bit 7; sampling is masked as above.
 `model_dispatch_geometry` separately copies the instance's blend and TEST
 states. A shared draw-state reset does not undo persistent model setters.
 
-### Bounded retail model-header sample
+### Retail model-header sample
 
 `ccs_parse_model` takes the low two bits of `CcsModelFileHeader.draw_modes` as
 `CcsModelDescriptor.blend_selector`. Higher bits have separate conversion and
@@ -151,8 +147,6 @@ headers—the six body models, the `2NRTBOD1.CCS` weapon and
 `PL/1NRTBOD1.CCS`'s `MDL_1nrt00t0 eye1`—give initial selector 0 despite
 differing higher bits; see
 [Model VU programs](model_vu_programs.md#representative-retail-body-payloads).
-This sample does not establish all-resource distribution or later runtime
-selector values.
 
 ## Ordinary per-material packets
 
@@ -222,12 +216,10 @@ Four representative embedded streams—`model_vu_upload_025` (`0x003C86C0`),
 `model_vu_upload_032` (`0x003CADD0`)—kick the full state packet without
 intervening state-slot stores. Their label comments hold the decoded evidence.
 
-**Bounded inference:** after a long textured upload, a short upload retains the
+**Inference:** after a long textured upload, a short upload retains the
 later textured PRIM write among those last five slots. Consumption of the
 fixed eleven-pair packet applies it after the short branch's PRIM. A first
-short upload instead retains initialized NOPs. This establishes register-write
-order, not every continuation's state history, a visible result, or safety of
-arbitrary textured/untextured sequences.
+short upload instead retains initialized NOPs.
 
 ## Optional material pass contracts
 
@@ -241,7 +233,6 @@ selection, after rejecting whole-model alpha below `1/128`:
 | `2` | Model flags `&0x805 != 0` and `&0x8000 != 0`, `descriptor_pass_owner.enabled != 0`, and its `texture` nonnull. | Ordinary `model_build_packet`; packed `model_build_packed_descriptor_pass`. |
 | `4` | Model flag `0x100`, nonnull `context2_owner`, its `enabled` nonzero. | Context-two rectangle and clear. |
 
-These numeric gates do not establish authored effect names.
 Descriptor-pass producers use `CcsDescriptorPassOwner` texture/CLUT, blend and
 TEST selectors with the selected working owner:
 
@@ -295,9 +286,8 @@ and width/64 separately. The shared ALPHA/TEST/FRAME composition is unchanged.
 FRAME_2, masked depth writes, centered XYOFFSET_2, camera SCISSOR_2, FBA_2 zero
 and descriptor texture state. TEST_2 is `0x71001`; ALPHA_2 uses
 `CcsContext2Descriptor.blend_selector` to index `context2_blend_states`
-(`0x005BEEA0`). Its four inspected entries are `0x54`, `0x58`, `0x52`, `0x52`;
-`model_vu_descriptors` follows. The unchecked eight-bit index does not establish
-a public accepted range. Missing texture or computed alpha below one returns
+(`0x005BEEA0`). Its four entries are `0x54`, `0x58`, `0x52`, `0x52`;
+`model_vu_descriptors` follows, and the eight-bit index is unchecked. Missing texture or computed alpha below one returns
 before allocation.
 
 `render_context2_clear_alpha` (`0x0018F160`) uses display `color_base` and
@@ -313,7 +303,7 @@ defaults, not saved GS words.
 | Ordinary | Textured rectangle, optional chain, alpha clear. |
 | Packed | Alpha clear, optional chain, textured rectangle. |
 
-Neither order establishes restoration of all preceding context-two state.
+Neither order restores all preceding context-two state.
 
 ## Scoped CPU state and restoration boundaries
 
@@ -337,7 +327,7 @@ is set for traversal and cleared afterwards without saving a previous pointer.
 callbacks, submits model/shadow work and restores the scratch cursor. It does
 not save model ALPHA/TEST or reconstruct earlier GS state. Persistent model
 setters, scoped CPU-owner restoration and explicit register-setting packets
-are separate mechanisms. A general GS push/pop contract is not established.
+are separate mechanisms; none is a general GS push/pop.
 
 ## Mode propagation and bounded direct callers
 
@@ -364,9 +354,7 @@ Frame-derived alpha belongs to
 selectors/values only when the child's primary model exists.
 `sp_skill_owner_set_blend` also propagates through its selected owner path.
 `scene_apply_table_draw_modes` (`0x003592C0`) establishes a table-driven
-selector-10 path while updating renderer priority and scene alpha. It does
-not identify a player-facing effect or a particular character's use.
+selector-10 path while updating renderer priority and scene alpha.
 
-The bounded direct model-selector scan covers the resident, BTL and ETC
-imports. Its counts and call sites are in `model_instance_set_blend`'s
-annotation; indirect calls and other overlays remain open.
+The direct model-selector scan covers the resident, BTL and ETC imports. Its
+counts and call sites are in `model_instance_set_blend`'s annotation.

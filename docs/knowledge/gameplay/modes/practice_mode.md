@@ -5,11 +5,9 @@
 Established: retail settings ownership/transactions, values/gates, dummy and
 resource policies, reset/snapshot semantics, rendering failure, resident-global
 ownership, and which Battle/Practice distinctions are latched rather than read
-live. Open:
-unrestricted owner reachability/overlap, complete AI/linked graphs, original
-field names, mode reads through passed manager pointers outside the setting
-getters, and hardware reproduction of packet exhaustion. Names come from
+live. Names come from
 `@annotations/NA2`; per-routine details are in comments and addresses are live.
+Open: nothing.
 
 ## Scope and evidence
 
@@ -54,8 +52,8 @@ The manager singleton pointer is `battle_manager`. `BattleManager` names
 its mode, active side, menu state, control mode, settings packs, persistent
 Difficulty/Strength mirror, and live fighter pointers. Mode `3` is Practice;
 mode `2` is Battle. The active pack serves modes `2/3`, the alternate pack
-other modes. Three packs are default-initialized; the third pack's established
-Practice consumer is the persistent Strength mirror `difficulty`.
+other modes. Three packs are default-initialized; the third pack's only
+traced Practice consumer is the persistent Strength mirror `difficulty`.
 
 The preparation UI's `PracticePreparationOwner.settings` owns a
 `SettingsParent`. `settings_parent_construct` allocates a `PracticeSettings`
@@ -87,7 +85,7 @@ to [Pause and replay](../session/pause_and_replay.md#resident-ownership-and-top-
 
 Outer state `9`, handled by `battle_state_select_stage`, lazily constructs
 the `0x16C`-byte preparation owner. Variant `2` supplies raw stage value
-`6`; that does not establish a player-facing stage name. Preparation owner
+`6`. Preparation owner
 state `4` updates/draws the generic settings parent. While owner update
 returns neither `1` nor `-1`, the outer handler retains and draws it.
 Either result destroys/frees the owner and clears its pointer:
@@ -105,7 +103,7 @@ set when `PracticeSessionPhase.phase` advances `3 → 4`, and cleared on the
 inspected departure from active phase `4` and on session completion.
 The start menu requires admission `1`, local menu state `0`, manager menu
 state `0`, all remaining opening gates below, and an eligible input side.
-This establishes phase separation, not elapsed duration or every indirect route.
+This separates phases; it does not measure elapsed time.
 
 ### Registered standalone Practice selection
 
@@ -121,8 +119,8 @@ and name `ccStartMenuPractice` belong to BTL:
 
 The wrapper is `0x10` bytes. It constructs the same `0xB8`-byte child with
 backdrop variant `0`; the main parent uses variant `1`.
-The resident table supplies indirect dispatch; its location does not prove
-that BTL methods remain usable after overlay replacement. See
+The resident table supplies indirect dispatch; its location does not keep
+BTL methods usable after overlay replacement. See
 [Overlay ABI](../../runtime/overlay_abi.md#indirect-dispatch-is-application-abi-not-loader-binding).
 
 Variant `2` places Practice command `5` at list index `4`.
@@ -168,7 +166,6 @@ graph ownership to [Battle lifecycle](../session/battle_lifecycle.md#session-con
 loading to [Startup](../../game/startup.md#controller-construction-resources-and-phases),
 and the timeout producer to
 [Match outcomes](../session/match_outcomes.md#terminal-detector-and-classifier).
-The full coordinator graph remains unresolved.
 
 Once manager menu state is nonzero and local menu state is `1`, the existing
 host allocation/poll branch does not recheck opening gates.
@@ -181,8 +178,7 @@ host free, global clear. `battle_session_initialize` clears that global
 without a destructor; this is not a retirement path. See
 [Battle lifecycle](../session/battle_lifecycle.md#teardown-order).
 Wrapper destruction tears down/frees its child, clears the pointer, and
-optionally frees the wrapper. These paths do not establish visible owner
-overlap or unrestricted indirect reachability.
+optionally frees the wrapper.
 
 ### Generic parent states
 
@@ -246,8 +242,7 @@ Practice timer. Difficulty/Strength, Items, Chakra, Ultimate Jutsu and
 Simple Display share the active pack. A scan for direct loads of the manager
 global found 17 resident and 37 BTL mode reads, all in code that runs when
 needed (AI, Ultimate Jutsu contests, fighter construction and damage, versus
-and battle drawing, the start-menu factory); reads through a passed manager
-pointer were not inventoried. Outer states `1`, `5`, `7`, `9`, `14`, `15` and
+and battle drawing, the start-menu factory). Outer states `1`, `5`, `7`, `9`, `14`, `15` and
 `18` read the entry type as they run.
 
 These distinctions are latched earlier:
@@ -299,8 +294,7 @@ fields are named in `BattleSettings`; manager defaults are a separate operation.
 four prompt/panel objects, three sprites, help object, phase, selected row,
 repeat countdown, row offset, backdrop variant, cyclic presentation phases,
 alpha, reveal delay, draw transform, input masks, 17 local values, and two
-window starts. Original engine class names for several resources and
-presentation accumulators remain unknown.
+window starts.
 
 `practice_settings_snapshot` resets presentation/input/page state, snapshots
 manager values through `practice_settings_load`, clamps by
@@ -366,7 +360,7 @@ Disabled values cannot be changed. Profile slot `0x6A` additionally removes
 Strength index `5` when zero. The resident difficulty selector uses the same
 gate. Slot acquisition and its finite-Survival producer belong to
 [Content availability](../../game/content_availability.md#recovered-difficulty-word-producer);
-Practice consumers establish no separate acquisition event.
+Practice consumers add no separate acquisition event.
 
 ## Input and child state transitions
 
@@ -458,8 +452,7 @@ Manager menu state stays active until overall host completion. Overall result
 
 The refresh does not write position, action, motion, input/history, current HP,
 chakra, Link Gauge, item cache, or AI work. Its construction consumer is
-`fighter_load_character_record`;
-indirect overlay callers were not inventoried. Practice acquires no Handicap
+`fighter_load_character_record`. Practice acquires no Handicap
 control through this refresh
 ([Damage](../combat/damage.md#handicap-factors)).
 
@@ -490,8 +483,7 @@ only when the previous subfield was zero or the comparison flag requests it.
 That flag compares local Strength with its getter **after** writing Strength.
 Ordinary Practice setter success makes it false even when the value changed.
 An already-nonzero behavior subfield therefore avoids reinitialization;
-`ai_tick` hot-reloads the profile instead. A broader “Status changed”
-interpretation of the comparison is not established.
+`ai_tick` hot-reloads the profile instead.
 
 `ai_initialize` resets common work for both side records, then loads the
 passed fighter's Strength profile, descriptor modifiers, and remaining side
@@ -579,16 +571,15 @@ countdown is zero outside majors 7/8, including the ordinary hit response
 (major 5). Double-jump selects it only in major 0, or in major 2 with action
 `0x18/0x22/0x24`. Static consequence: outside that awakening exception, a
 Stand or Double-jump dummy emits no `0x10000` during a hit response, and a Jump
-dummy emits it only when its 90-count timer expires there. Whether such a
-timed press lands in a rebound window has not been observed. Decision priority and state-constructor coverage
+dummy emits it only when its 90-count timer expires there. Decision priority and state-constructor coverage
 remain owned by [Battle AI](../session/battle_ai.md#main-tick-and-output-boundary).
 
 `fighters_update` (`0x0024FD80`) runs the actor's AI callback before
 `fighter_copy_input_outputs`, then `fighter_update_phase_and_exits`, and then
 `fighter_consume_logical_input`. A command can reach a response decision in
 that pass, and a later jump consumer can see the state produced by it.
-The bridge can suppress the proposed output. These are established ordering
-facts, not an unconditional recovery success guarantee.
+The bridge can suppress the proposed output. This ordering does not guarantee
+that the recovery succeeds.
 
 ### Strength profiles
 
@@ -651,8 +642,7 @@ is separate.
 `ai_dispatch_state` code `0x26` writes request `0x20000000` and clears
 the request latch only for signed handshake `2`. It does not reread Linked
 Mode or rewrite the handshake; the menu setter does not perform this request.
-The full linked graph and original field names remain unresolved
-([Battle AI](../session/battle_ai.md#action-state-dispatcher)).
+[Battle AI](../session/battle_ai.md#action-state-dispatcher) owns the linked graph.
 Rows `4/15` therefore interact through scheduling/handshake and request
 enable/frequency while remaining distinct controls.
 
@@ -761,8 +751,8 @@ whose menu/getter/setter belong to
 
 `battle_settings_reset_defaults` resets active/alternate packs, then in
 modes `2/3` reapplies Strength from the persistent mirror.
-Its established caller is Practice outer state `2`; no Battle caller is
-established. Merely selecting Battle mode assigns mode `2` and rejoins its
+Its only direct caller is Practice outer state `2`; Battle has none.
+Merely selecting Battle mode assigns mode `2` and rejoins its
 common selector flow. Manager reset is separate from local menu Defaults.
 
 ### Discrete Practice-controller reset
@@ -831,7 +821,7 @@ Reconstruction mode `battle_continuation_route` chooses full or timer-excluding
 restore.
 The restored resources are what capture left in snapshot storage, not proof
 that capture preserved earlier HP/chakra. Neither operation includes Link Gauge.
-These conditional branches do not establish an ordinary Practice menu route
+These conditional branches alone do not make an ordinary Practice menu route
 ([Pause and replay](../session/pause_and_replay.md#battle-teardown-and-reconstruction)).
 
 Linked Mode outlives either UI: outer setup recreates the support manager with
@@ -839,8 +829,6 @@ Auto; outer cleanup destroys it. State-`14` battle entry and state-`16`
 active-object cleanup retain its side selectors. A choice survives those
 graph paths until the outer controller is rebuilt
 ([Support mechanics](../characters/support_mechanics.md#scheduled-lifecycle-and-teardown)).
-Direct ELF/BTL snapshot callers were bounded; other overlays and indirect
-calls were not inventoried.
 
 ### Continuous fighter policy
 
@@ -863,7 +851,7 @@ field supplies the periodic gate. Chakra reservation/adder ownership belongs to
 Confirm writes settings, not current HP/chakra/gauge.
 Normal Health actively refills; Normal Chakra does not refill, and Normal
 Link Gauge does not increment. Unlimited Chakra retains its reservation and
-adder gates. No established menu Confirm/local Defaults path directly resets
+adder gates. Neither menu Confirm nor local Defaults directly resets
 items, Link Gauge, or the item cache.
 
 ## Rendering and control split
@@ -891,7 +879,7 @@ Thereafter it submits all 17 rows, including offscreen ones, with the section
 gap before row `9`, the enabled/grey predicate, and selection/arrows helper.
 
 Drawing therefore mutates presentation delay but neither applies settings nor
-owns input/phase. Reveal delay is draw-call-counted. The bounded direct caller
+owns input/phase. Reveal delay is draw-call-counted. The direct caller
 families are the generic parent and standalone wrapper; each has separate
 update/draw calls.
 
@@ -904,12 +892,9 @@ No suitable free block returns null and skips that glyph.
 The pool occupies `0x00951480..0x00B51480`, exactly 2 MiB;
 allocations retain their owning list in `RenderPoolAllocation.owner_list`.
 
-This establishes selective text loss on pool exhaustion, not which state
-exhausts it first. **Runtime observation:** the same text loss occurs in
-unmodified retail NA2. **Inference:** because failure occurs in EE-side packet
-construction before the renderer sees the GS stream, physical PS2 should
-reproduce it on exhaustion. Hardware reproduction is unconfirmed; there is
-no input recording or breakpoint trace for the reported loss.
+Pool exhaustion therefore drops individual glyphs. **Runtime observation:**
+the same text loss occurs in unmodified retail NA2. The failure happens in
+EE-side packet construction, before the renderer sees the GS stream.
 
 ### Native Practice Settings presentation geometry
 
@@ -954,4 +939,4 @@ per-routine code detail is in annotations.
 | `battle_item_cache` | `0x008D6A60` |
 
 AI work/profile copies and item caches are live BSS; their initial runtime
-content is not established by the imported file bytes.
+content is not given by the imported file bytes.

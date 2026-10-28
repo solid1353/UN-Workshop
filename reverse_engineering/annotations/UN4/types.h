@@ -14,9 +14,9 @@ typedef struct un4StageRouteRecord { signed char source_line; signed char destin
 
 typedef struct un4TsunadeDescriptor { unsigned int character_record; unsigned char _unknown_0004[0x4C]; int mode0_action_indices[3]; unsigned char _unknown_005c[4]; int mode1_action_indices[4]; int audio_range_start; int audio_range_end; int audio_event; } un4TsunadeDescriptor;
 
-typedef struct un4ActionRecord { char *debug_name; char *auxiliary_name; char *display_names[5]; unsigned short owner_character; short jutsu_selector; unsigned int category; unsigned int flags; signed char continuation; unsigned char _unassigned_0029[3]; unsigned int signature; float cost; unsigned char _unassigned_0034[0x10]; float threshold; float threshold_2; unsigned char _unassigned_004c[0x14]; int row; } un4ActionRecord;
+typedef struct un4ActionRecord { char *debug_name; char *auxiliary_name; char *display_names[5]; unsigned short owner_character; short jutsu_selector; unsigned int category; unsigned int flags; signed char continuation; unsigned char _unassigned_0029[3]; unsigned int signature; float cost; unsigned char _unassigned_0034[8]; unsigned char response_selector; unsigned char _unassigned_003d[7]; float threshold; float threshold_2; unsigned char _unassigned_004c[0x14]; int row; } un4ActionRecord;
 
-typedef struct un4FighterControlBlock { short value_00; short value_02; short value_04; short value_06; short value_08; short value_0a; short value_0c; short value_0e; short value_10; short value_12; short value_14; short value_16; } un4FighterControlBlock;
+typedef struct un4FighterControlBlock { short hold_cooldown; short value_02; short hold_count; short hold_threshold; short hold_progress; short hold_progress_cap; short hold_release_latch; short hold_overflow; short multi_press_threshold; short multi_press_distance; short multi_press_latch; short value_16; } un4FighterControlBlock;
 
 typedef struct un4UltimateJutsuRecord { char *display_name; unsigned short authored_id; short category; unsigned char record_class; signed char cost_tier; short intro_voice; unsigned short effect; short damage_percent; } un4UltimateJutsuRecord;
 

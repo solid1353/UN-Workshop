@@ -5,12 +5,16 @@
 Established for UN3 Guy 20 against NA2 Might Guy 69: complete action-family
 correspondence and the meaning of every unequal aligned phase row; definition,
 construction, callbacks and hair ownership; input admission and continuation
-gates; Dynamic Entry and Primary Lotus actors, shared with Green Beast, with their
-geometry, contact, landing and surface effects; twenty Ultimate Jutsu records
-selecting eight skills; effect `0x21`; compact, PLVOICE and SOUND dependencies.
-Open: unmatched payloads and later remaps, contact-domain translation, enclosing
-provider lifetime, cinematic frame contracts, remaining effect consumers and
-voice cues, and ID-dependent services.
+gates; every response selector and callback destination the donor uses, in NA2
+numbers; Dynamic Entry and Primary Lotus actors, shared with Green Beast, with
+their geometry, contact, landing and surface effects and provider lifetime;
+twenty Ultimate Jutsu records selecting eight skills, with every record field's
+reader; effect `0x21` and its consumers; cinematic audio, placement and palette
+data; compact, PLVOICE and SOUND dependencies, including jutsu dialogue clips.
+Dynamic Entry's contact masks, the jutsu definitions and every action record
+field have NA2 equivalents, and NA2 reads every donor CCS file as UN3 does.
+Open: the identity-dependent services, which wait on the chosen destination ID,
+and native Guy's full alternate-control emission.
 
 Names come from `@annotations/UN3` and `@annotations/NA2`; addresses are live. Shared format comparisons are in [UN3 and UN4 characters](../un3_un4_characters.md).
 
@@ -459,7 +463,27 @@ UN3 BATTLE `action_descriptor_table` (`0x0091ACC0`) and NA2 BTL
 `0x0089AEB0`; motion roots are resident `response_motion_table`
 (`0x00389550` / `0x00407670`).
 This supports those table translations without asserting identical body
-animation bytes or all later conditional remaps.
+animation bytes.
+
+The two selectors' switches (`0x001C07E0` / `0x00231C60`) give the complete
+mapping used by both UN3 Guy-class donors. NA2 inserts two ground substates
+`0x2D/0x2E` (`ACT_DMG_NHH/NHL`), so donor substates `0x2D..0x3E` are NA2
+`0x2F..0x40` and donor `0x46..0x4A` are NA2 `0x4A..0x4E`:
+
+| Donor selector (substate) | NA2 selector (substate) | Used by |
+| --- | --- | --- |
+| `0x0D` (`0x34` ground / `0x35` air) | `0x0F` (`0x36` / `0x37`) | Green Beast actions 1, 3 |
+| `0x0E` (`0x36`) | `0x10` (`0x38`) | Guy action 5; Green Beast 23, 30 |
+| `0x14` (`0x46`) | `0x17` (`0x4A`) | Green Beast 33 |
+
+The descriptor phase lists and motion rows of donor `0x34/0x35` and NA2
+`0x36/0x37` (`ACT_DMG_ND/NDA`) are byte-identical, as are donor
+`0x2B/0x2C/0x2D` and NA2 `0x2B/0x2C/0x2F` (`NLH/NLL/NAS`). With the rows
+above and the first table, every selector in both donors' action arrays
+(`0xFF` marks the four non-damaging slots 0, 7, 8, 9) and every
+nondefault hit-response destination of both donors has a checked NA2 number.
+The repeat-collapse and streak remaps after selection keep the same
+families under the same shift.
 
 Mode-2 donor callback scales `+0x8F0/+0x8F8/+0x8FC` translate to
 native `+0x9A0/+0x9A8/+0x9AC`: knockback, planar and vertical scales.
@@ -478,17 +502,33 @@ repeat counts agree except action 1 (1 → 8), whose ordinary-jutsu actors
 already differ. Phase radius, attachment and motion multiplier do not enter
 this amount. The checked `damage_calculate` formulas
 (`0x001B5E30` / `0x00224E30`) agree in offense, durability curve,
-reservation factor, effect-factor arithmetic, handicap and clamp ordering;
-the underlying effect-producing functions are not established equivalent.
+reservation factor, effect-factor arithmetic, handicap and clamp ordering.
+UN3's effect factor getters and record fields are in
+[UN3 effect record fields](#un3-effect-record-fields-and-effect-0x21).
 The native accepted-hit rules remain owned by
 [Damage](../../combat/damage.md#native-damage-calculation).
 
 This comparison establishes field meanings, threshold/geometry differences
-and the listed numeric translations. It does not establish collision outcomes,
-body-animation payload equivalence, complete later donor response/contact
-remaps, or all action/attack flag translations. Input admission is covered
-separately above. Callback/CCS audio producers are outside this phase-row
-comparison; no audio cue is encoded in the checked `0x4C` phase row.
+and the listed numeric translations. Input admission is covered separately
+above. No audio cue is encoded in the checked `0x4C` phase row; the callback
+producers are under [Callbacks](#callbacks).
+
+The remaining action record fields convert as follows. In all 30 aligned
+pairs above, category `+0x10`, flags `+0x14`, guard selector `+0x2D`, sound
+`+0x40`, voice `+0x42`, timing `+0x44` and response sound `+0x46` are equal
+except where the moves themselves differ, so these keep their numbers.
+Only two fields shift:
+
+| Field | UN3 reader → NA2 reader | Donor value → NA2 value |
+| --- | --- | --- |
+| `+0x4A` guard sound | `fighter_request_sound_effect` via UN3 map `0x003892F0` → `action_sfx_map` (`0x00406FD0`) | Below 80 unchanged; 80 and above + 1. NA2 inserts index 80, so UN3 80..94 and NA2 81..95 all select event `0x1D`. |
+| `+0x48` hit effect | `fighter_hit_effect_by_selector` (`0x0019E270`) → `0x00209A80` | 0 → 0; 1..5 unchanged; 6 → 7; 7..10 → 8..11; `0x0B..0x1A` → `0x10..0x1F`. NA2 adds a sixth composite (6) and four more scatter variants (12..15) and its own `0x1D`. |
+
+NA2's retail Might Guy stores exactly these converted values in every
+aligned row (for example guard sound 85 → 86 and capture hit effect 19 → 24).
+Both donors use sound indices 30..38 and 48..56, whose map entries are the
+same events in both games. `+0x4C` and `+0x4E` are -1 in every Guy and
+Green Beast action.
 
 ### Ordinary jutsu and provider domains
 
@@ -569,8 +609,22 @@ definitions) multiplied by source action float `+0x24`.
 The definition's response halfword `+0x14` is `0x10` for Entry and
 4 for Lotus; repeat halfword `+0x2C` is 1 for both. The Entry definition
 also stores `0x84000001` at `+0x20` and 7 at `+0x24`, versus zero
-for Lotus. These are executable contact inputs, not CCS resource IDs;
-complete cross-game flag/response translation is not established here.
+for Lotus. These are executable contact inputs, not CCS resource IDs.
+The copy sends `+0x14` to the working record's response selector `+0x2C`,
+`+0x16` (Entry 4, Lotus 0) to guard selector `+0x2D`, `+0x12` to `+0x54`
+and `+0x20/+0x24` to relation/counterpart masks `+0x60/+0x64`. UN3's
+primary-pair filter (`0x008710E0`) applies NA2's compatibility rule to
+those masks (both relation masks hold `0x80000000`, one relation meets the
+other's counterpart, not both hold `0x04`;
+[NA2 filters](../../combat/collision.md#primary-versus-primary)).
+NA2 BTL still holds definitions for resources 29/30/67/68
+(`owner_descriptor_transfer_table` rows → `guy_legacy_dynamic_entry_definition`
+`0x008A9018`, `guy_legacy_primary_lotus_definition` `0x008A905C`,
+`green_beast_legacy_ultimate_entry_definition` `0x008AA008`,
+`green_beast_legacy_primary_lotus_definition` `0x008AA04C`). They equal
+UN3's bytes except Entry's `+0x12/+0x14`, which are `0x12`: the
+[selector mapping](#guy-phase-consumers-and-reaction-number-translation)
+of `0x10`. These retained definitions are the NA2-terms form.
 
 **Dynamic Entry / Ultimate Entry.** The `0x790` constructor owns three
 embedded `0x50` contact shapes at `+0x5A0/+0x5F0/+0x640`, a fourth
@@ -581,7 +635,17 @@ three to receiver `+0x50C` with radii 45/30/30 and depth bias 30.
 `0x40/0x410900`, or other-side `0x800/0x208048`, with optional
 receive bit `0x100000` from its common gate. The fourth shape has
 radius 200, zero depth bias and masks `0x10/0x10100` or
-`0x200/0x8008`. The receiver registration nodes borrow these embedded
+`0x200/0x8008`. NA2's native skill sphere, `skill_primary_setup_sphere`,
+uses send/receive `0x80/0x88900` or `0x800/0x44090`. The common gate that
+adds `0x100000` is UN3's reversal-game check, as in UN4's identical routine.
+The bit translation UN4's jutsu actors need for NA2
+([UN4 Shizune and Kabuto](../un4/shizune_kabuto.md)) turns the first three
+shapes' masks exactly into the NA2 sphere's: `0x40`→`0x80`, `0x410900`→`0x88900`,
+`0x208048`→`0x44090`, with `0x800` unchanged. The fourth shape never
+collides: setup deactivates its receiver `+0x6E0`, and its only activation,
+`guy_dynamic_entry_register_contact(actor, 1)`, has no caller
+(`guy_dynamic_entry_set_state` registers only `+0x50C`), so its masks need
+no translation. The receiver registration nodes borrow these embedded
 shapes. `guy_dynamic_entry_position_contact_shapes` (`0x0089A220`,
 virtual `+0x240`) places the first three at source `l foot`, `l calf`
 and `pelvis` scene transforms.
@@ -724,14 +788,28 @@ available leaf graph, not whole-provider byte equality or equivalent cache IDs.
 
 State 3 and destruction invalidate retained particles only after their
 serial handle still resolves to the same object, set its removal fields
-`+0x34/+0x23C`, and clear the actor pointer. Destructor also checks
-`+0x7F4`; no creation of that second pointer was established by the
-selected class paths. `battle_particle_cleanup_fields`
+`+0x34/+0x23C`, and clear the actor pointer. The recovery state and
+destructor treat `+0x7F4` the same way, but every store to `+0x7F4` in
+BATTLE.BIN (constructor, recovery state, destructor) writes zero, so that
+slot never holds an object. `battle_particle_cleanup_fields`
 (`0x002FFF90`) releases field state, while `battle_particle_destroy`
 (`0x002FFEE0`) frees the resource-descriptor array. Lotus destruction
 pairs armed surface services with `0x002B80F0/0x002B8280` and destroys
-the embedded player before common cleanup. This establishes actor-owned
-cleanup; it does not establish enclosing CCS-provider retention/release.
+the embedded player before common cleanup.
+
+The enclosing providers live longer than the actors. Before a fight,
+`battle_request_selected_character_ccs` (`0x00279720`, mask 8) queues each
+side's two jutsu CHA files from its loadout selectors (battle manager
+`+0x68/+0x6A`, `+0x6C/+0x6E`) through `jutsu_animation_archive_name`;
+`battle_adopt_selected_character_ccs` (`0x00279BD0`) keeps their handles and
+`battle_release_selected_character_ccs` (`0x00279E40`) destroys them,
+skipping a handle the other side shares. Actors only look the CHA up by name
+(`interaction_bind_jutsu_resource`, `ccs_require_container`).
+`battle_load_common_resident_ccs` (`0x00273600`), called from
+`game_main_task`, loads `cmn/cw2`, `effect0x`, `gauge`, `particle` and `shade`
+once; that list's only references are in the loader, so these stay resident.
+NA2's `frontend_load_common_ccs` (`0x001E7F7C`) loads its own five-file
+startup list the same way.
 
 ### Shared contact and landing effects
 
@@ -805,9 +883,10 @@ Landing smoke creates eight pooled scene-effect objects, binds common
 index `0x88`, and assigns lifetime 40 with motion and randomized rotation.
 Surface drops create sixty `0x260`-byte moving objects, bind index
 `0x97` aliasing base `0x80`, and use the default drop palette. Every
-fourth stores position at `+0x240` and value `0x27` at `+0x250`.
-The selected update/draw paths do not establish that latter field's
-consumer or any additional provider selected by it. The landing dispatcher
+fourth stores position at `+0x240` and value `0x27` at `+0x250`
+(the constructor sets -1). No integer load in SLUS_217.27 uses displacement
+`0x250`, and the class's own update, draw and reserved methods
+do not read it, so the value selects no further resource. The landing dispatcher
 returns without creating these effects on `0x202020/0xE0E000`;
 `0xD0D0` emits only its checked spatial SFX `8/0x3C` on this path.
 
@@ -834,8 +913,9 @@ the manager's index/serial/object triple, ends the retained object and clears
 the handle. `battle_screen_fragment_destroy` (`0x00257B80`) releases
 the optional renderer, render packet, two environments and embedded
 renderer before base cleanup. This closes the selected effect owners;
-enclosing common-CCS retention and foreign packed-geometry evaluation
-remain separate questions.
+common-provider lifetime is described with the Lotus cleanup above.
+NA2's reading of the donor's packed geometry is a separate question owned by
+[CCS runtime](../../../game/files/ccs_runtime.md#un3s-parser-compared-with-na2s).
 
 ### Native Might Guy jutsu actor comparison
 
@@ -871,6 +951,15 @@ The body/CHA0/CHA1 contain 120/3/10 `ANM_` directory names, versus
 marked common-2 names occurs in NA2 `CMN/2CMNBOD1`; this bounds names,
 not behavior of their bindings. Neither donor CHA file has a `BIN_` name;
 native CHA0 contains `BIN_skldamoffs_2guwcha0`.
+
+All of these files and all sixteen film files (`D20_101/201/102/103/202/301`,
+`D03_402`, `D08_401`, each with its `E` companion) have container version
+`0x123`, NA2's own. Against the
+[parser differences](../../../game/files/ccs_runtime.md#un3s-parser-compared-with-na2s),
+every ordinary image's declared pixel words equal its storage size, and no
+file has a `0x0D90` generator or `PGE_` name; NA2's `0x804` model trap is
+unreachable, as shown for [Kakashi's files](kakashi.md#body-eye-and-common-dependencies).
+NA2 therefore reads these files as UN3 does.
 
 Donor CHA0 additionally marks directory 52, `OBJ_eff_dummy_guycha1`,
 under `#c\2guy\max\2guycha1.max`. CHA1 supplies matching local object
@@ -910,9 +999,14 @@ additionally has channels 1/5/7. Action numbers below belong to each version's
 own array; [the correspondence](kakashi.md#complete-authored-move-correspondence)
 does not make numeric IDs interchangeable.
 
-UN3 `guy_channel2` (`0x001FC100`) emits position request `0x7C` and
-its delegated visual helper on neutral state `0/3` event 10; state `0/4`
-has its own events 4/5. `guy_channel3` (`0x001FC200`) emits position
+UN3 `guy_channel2` (`0x001FC100`) emits spatial SFX `0x7C` on neutral
+state `0/3` event 10 and calls `fighter_pay_chakra_add_effect`
+(`0x001B8D00`): if 3.75 chakra is affordable it is debited and generic
+effect 5 is added for 450 ticks. Effect 5's only nonunit factor is action
+rate 1.25 (UN3 record `0x00473FA0`, default lifetime 240); NA2's effect
+`05` also has action rate 1.25. An unaffordable request adds nothing and
+calls `0x001B6710` unless a flag-`0x40` effect is active. State `0/4`
+emits SFX `0x10/0x81` at events 4/5. `guy_channel3` (`0x001FC200`) emits position
 request `0x7C` for action `0x2A` event 15, `0x29` for action `0x1D`
 event 5, a delegated event for action `0x1C` event 3, and sound event
 `0x20` on action `0x1A` events 20/25/32. At event 32 it also invokes
@@ -943,7 +1037,15 @@ His virtual hair update instead reads effect `0x21`; the
 [effect/lifetime comparison](#ultimate-jutsu-and-effects)
 owns that behavior. [Guy input admission and chaining](#guy-input-admission-and-action-chaining)
 records the ordinary selector, mode categories and payload-window gates.
-Complete transitive event-helper behavior remains open.
+
+The three callbacks call only these helpers: `audio_emit_spatial_sfx_control`,
+`fighter_request_sound_effect`, `fighter_request_voice`,
+`timeline_event_crossed`, `fighter_state_is`, `fighter_current_action_index`,
+`fighter_pay_chakra_add_effect`, `fighter_action_repeat_for_receiver`,
+`prng_inclusive`, `fighter_request_facing_offset_effect` (`0x0019F4D0`,
+an offset rotated by facing and added to the fighter position, forwarded to
+`0x0019F5D0`) and `fighter_step_sound_and_surface_effect` (`0x0019E790`,
+sound control `0x10` plus the surface effect `0x00268910`).
 
 ## Ultimate Jutsu and effects
 
@@ -976,8 +1078,22 @@ against the three ability IDs at `+8/+0xA/+0xC` by
 `ultimate_jutsu_record_abilities_available` (`0x0028B830`). It is not
 NA2's category field. Intro/effect/damage are halfwords at
 `+0x12/+0x14/+0x16`; six stat adjustments occupy `+0x18..+0x22`.
-The individual stat meanings and raw bytes `+0xE..+0x11` are not fully
-established by this character comparison.
+
+Every record read goes through `ultimate_jutsu_record_get`, whose 17
+callers give each remaining field its only readers:
+
+| Field | Reader | Meaning |
+| --- | --- | --- |
+| `+0x0E` byte | none | Zero in every Guy and Green Beast record. |
+| `+0x0F` byte | `ultimate_jutsu_record_contest_kind` (`0x0028BE70`) | Button-contest kind for `ultimate_jutsu_contest_construct`; 3 randomizes four directions. 1 in every Guy and Green Beast record. |
+| `+0x10` byte | `ultimate_jutsu_record_chakra_code` (`0x0028BE40`) | Copied through the spawn descriptor to fighter `+0x17C` (values 3 and above 6 become -1). Its low two bits are the chakra level index: Triangle staging (`chakra_staged_allowed`) targets level index + 1 at cost 5 × (level index + 1), and `ultimate_jutsu_connect_enter` debits 5/10/15 through `fighter_pay_ultimate_chakra_cost`. |
+| `+0x11` byte | `ultimate_jutsu_record_display_chakra_level` (`0x0028BEA0`) | Value + 1, shown after "Chakra Level:" in the selection menu. |
+| `+0x18..+0x22` | `ultimate_jutsu_record_stat_adjustment` | Read only by `ultimate_menu_stat_digits`, which draws them as signed digits; no battle code reads them. |
+
+Guy's `+0x10/+0x11` pairs are 0/0, 1/1, 2/2 for skills `0x56/0x57/0x58`
+and `0x59/0x5A/0x5B` in every version, and 2/2 for `0x1A` and `0x33`.
+Record `+0x16` damage reaches battle only through the film damage route in
+[UN3 cinematic damage and audio](itachi.md#un3-cinematic-damage-and-audio).
 
 NA2 Might Guy's list at `0x006044A0`, selected by row `0x005AD0C4`,
 contains **151/152/153**, with default 151. At
@@ -1012,8 +1128,39 @@ effects **`0x47/0x48`**, retaining ID 69. Their authored lifetimes and
 resource deltas are recorded under [Authored lifetime](../awakening.md#authored-lifetime-and-resource-behavior);
 the controller advances between stages under its progress gate.
 Native channel 1 also changes mode-dependent move categories. These are
-different effect IDs, entry mechanisms and move-state consumers. All
-remaining UN3 effect-scalar consumers are outside this bounded comparison.
+different effect IDs, entry mechanisms and move-state consumers.
+
+### UN3 effect record fields and effect `0x21`
+
+UN3 effect records are `0x6C` bytes from `0x00473D84` (`+0` factory,
+`+4` ID, `+8` lifetime, `+0xC` flags). `fighter_status_effect_construct`
+copies record `+4..+0x54` to node `+0x68..+0xB8`. Each factor getter sums
+(value − 1) over the active nodes of fighter list `+0x828`:
+
+| Record field | Consumer | Effect `0x21` |
+| --- | --- | ---: |
+| `+0x10` | `effect_attack_factor`, cap 2.0; outgoing damage flag `0x10` | 2.0 |
+| `+0x14` | `effect_defense_factor`, floor 0.25; incoming damage × max(0.1, 2 − factor) | 1.25 |
+| `+0x18` | `effect_action_rate_factor`, cap 1.25, 1 under scene lock, majors 5/6 or category `0xC0000` | 1.25 |
+| `+0x1C` | `effect_payload_80_factor`, multiplies fighter `+0x104` (record `+0x84`) | 1.0 |
+| `+0x20` | `effect_payload_84_factor`, read by `response_motion_update` | 1.25 |
+| `+0x24` | Construction: a value other than 1 emits SFX `0x4E` and scales the fighter (`0x001B7B40`) | 1.0 |
+| `+0x28`, `+0x30` | HP-gain and chakra-gain multipliers with fighter `+0x154/+0x158` | 1.0, 1.0 |
+| `+0x38`, `+0x40` | HP and chakra added at construction | +0.3 HP, +15 chakra |
+| `+0x3C`, `+0x44` | HP and chakra added when the lifetime expires (`status_effect_apply_expiry_deltas`) | 0, −15 chakra |
+| `+0x48/+0x4C` | `effect_hp_tick_delta`: HP per tick, stopping at the boundary | −0.0005 down to 0.1 HP |
+| `+0x50/+0x54` | `effect_chakra_tick_delta` | 0 |
+
+Effect `0x21`'s flags `0x92` add two gates: bit `0x80`
+(`effect_flag80_active`) skips `fighter_debit_chakra`, so the UJ connect cost
+is waived; bit `0x10` (`effect_flag10_active`) blocks Triangle staging and,
+through `ultimate_action_blocked`, every UJ action except effect-kind ones.
+Of the 16 SLUS callers of `fighter_has_effect`, those testing `0x21` are
+the hair update, the voice-event list and `fighter_has_voice_alternate_effect`
+(`0x00234540`, also `0x0D/0x0E/0x10`); that predicate and BATTLE's
+`dialogue_voice_remap_for_fighter` feed the jutsu dialogue route in
+[Guy voice](#voice). UJ film damage uses only calculator flag
+`0x100`, so these factors do not change it.
 
 ## Cinematics
 
@@ -1069,10 +1216,38 @@ body, defender body/eye/mouth, camera target and auxiliary scene object.
 scene data. `sp_skill_defender_position_table` (`0x0047C958`) supplies
 a counted frame-threshold list and defender-ID-indexed signed XYZ triples;
 `sp_skill_play_update` (`0x00294F10`) applies the corresponding translation
-matrix. The latter table is placement data, not audio cues. The exact
-per-defender triples and every timed appearance command are outside this
-character-specific comparison. The selected intro audio's physical members
-are established in [Guy voice](#voice).
+matrix. The latter table is placement data, not audio cues.
+Film damage and audio follow
+[UN3 cinematic damage and audio](itachi.md#un3-cinematic-damage-and-audio);
+the selected intro audio's physical members are in [Guy voice](#voice).
+Guy's per-skill values are:
+
+| Skill | `STREAM.AFS` soundtrack (+140 Japanese) | Cue rows: frame / defender control | Placement count: frame thresholds | Palette records |
+| --- | ---: | --- | --- | --- |
+| `0x56` | 85 | 77/`0x0F`, 112/`0x10`, 181/`0x0C`, 213/`0x11` | 6: 1, 70, 106, 131, 163, 194 | none |
+| `0x57` | 88 | 40/`0x0F`, 197/`0x11` | 5: 1, 34, 122, 141, 155 | none |
+| `0x58` | 86 | 95/`0x0C`, 122/`0x0D`, 144/`0x0F`, 173/`0x0E`, 191/`0x10`, 212/`0x0F`, 255/`0x11` | 4: 1, 140, 188, 225 | none |
+| `0x59` | 87 | 91/`0x0C`, 270/`0x11` | 4: 1, 113, 212, 239 | `EXT_1guy01t0 body` |
+| `0x5A` | 89 | 45/`0x0F`, 82/`0x0C`, 235/`0x11` | 2: 1, 38 | `EXT_1guy01t0 body` |
+| `0x5B` | 90 | 77/`0x0F`, 280/`0x11` | 5: 1, 61, 160, 191, 252 | `1guybod2` / `EXT_1guy01t0 body` |
+| `0x1A` | 25 | 55/`0x0C`, 98/`0x0D` | 5: 1, 76, 120, 151, 180 | `1guybod1` / `EXT_1guy00t0 body`; `1rocbod1` / `EXT_1roc00t0 body` |
+| `0x33` | 50 | 298/`0x11` | 4: 1, 210, 249, 296 | `1kksbod2` / `EXT_1kks10t0 body`; `1guybod1` / `EXT_1guy00t0 body` |
+
+All cue rows use request ordinal 1. Descriptors are at
+`skill_cinematic_cue_descriptors` + skill × 8 and rows at `0x00387380`
+(`0x56`), `0x003873C0`, `0x003873F0`, `0x00387450`, `0x00387480`,
+`0x003874B0`, `0x00386830` (`0x1A`) and `0x00386CB0` (`0x33`). Placement
+records are `0x005D9F80`, `0x005DB740`, `0x005DA780`, `0x005DAF80`,
+`0x005DBB80`, `0x005DC380`, `0x005BE070` and
+`eternal_rivals_defender_positions`; each holds the counted thresholds
+and one pointer per defender ID 0..56 (ID 0 null) to that many signed XYZ
+triples, so the table can only be carried whole. `sp_skill_timed_command_scripts`
+is null for all eight skills: no screen inversion or appearance flag
+commands. A palette record `{container, object, CLT c1, CLT c2}` is applied
+by `sp_skill_apply_object_palette_record` when the attacker's appearance
+flags have bit 1 or 4 set, selecting the `c1` or `c2` palette
+(`CLT_1guybod2c1/c2`, `CLT_1guybodyc1/c2`, `CLT_1rocbodyc1/c2`,
+`CLT_1kksbodyc1/c2`).
 
 ## Voice
 
@@ -1132,6 +1307,30 @@ is `45,47,49,63,68,69,125,126,151,155,165,166,167,199,209,210,211,235,
 a physical member index. The donor 81..87 suffixes have no corresponding
 entry in that native list; this does not establish spoken-content matches.
 
+### Guy jutsu dialogue
+
+The shared Entry and Lotus actors speak through
+`jutsu_participant_emit_voice_index` (BATTLE `0x0086B200`). It maps cue
+*n* through the source fighter's table from pair `0x00920090 + (ID − 1) × 8`
+and emits the result with `audio_emit_character_voice_control`: a compact
+SNDDATA control, not a PLVOICE member. Guy's pair `0x00920128` selects base
+table `0x0093D770` (cue *n* → control *n*) or, while
+`fighter_has_voice_alternate_effect` holds (effect `0x0D/0x0E/0x10/0x21`),
+`0x0093D7D0` (cues 0..8 → controls `0xA0..0xA8`). Controls *n* and
+`0xA0`+*n* select program *n* with keys `0x3C` and `0x3E`. Entry's begin
+emits cue `rand % 3`; its hit path emits cue 0 or a random 0..2; Lotus's
+state 1 emits cue 1. Each program has one split, keys 12..119, velocity
+1..127, so both keys reach the same sample:
+
+| Program | English VAG / SNDDATA offset | Japanese VAG / SNDDATA offset |
+| ---: | --- | --- |
+| 0 | 14 / `0x009904E0` | 14 / `0x01A04190` |
+| 1 | 13 / `0x0098F3E0` | 13 / `0x01A02E00` |
+| 2 | 15 / `0x00991450` | 15 / `0x01A04ED0` |
+
+`dialogue_voice_remap_for_fighter` separately suppresses Guy's cues `0x51`
+and `0x55` while effect `0x21` is active.
+
 ### Guy Ultimate Jutsu intro archive
 
 The donor UJ intro halfwords are **SOUND-family members**, not those Guy
@@ -1153,7 +1352,7 @@ each with 149 members. Their physical AFS starts are
 | 91 | `0x12EE2800` / 17725 | `0x26232800` / 16544 |
 
 These are the seven physical intro selections used by the eight distinct
-Guy skills. The complete cinematic frame-cue/damage route remains separate
-from this startup voice. Sample offsets are source-file evidence, not live
+Guy skills. The film soundtracks and defender cues are listed under
+[Cinematics](#cinematics). Sample offsets are source-file evidence, not live
 IOP addresses. Input identities are owned by
 [File identities](../../../game/files/file_identities.md#guy-comparison-inputs).

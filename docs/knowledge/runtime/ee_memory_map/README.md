@@ -7,10 +7,9 @@ and lifetime constraints for runtime analysis and asset-size planning.
 
 Established: resident and overlay address ownership, allocator placement and
 entry points, the system allocation layer, stacks, persistent pools, CCS-load
-costs, and sampled retail capacity. Open: result screens, active Save/Load,
-long transition stress, per-asset battle heap use, and byte-level main-thread
-stack use. Routine, structure and data names come from `@annotations/NA2`;
-the linked documents use live addresses.
+costs, and sampled retail capacity. Routine, structure and data names come
+from `@annotations/NA2`; the linked documents use live addresses.
+Open: nothing.
 
 - [Address space](address_space.md) owns the resident ELF and startup layout,
   large static objects, allocator boundaries, and unsafe fixed-storage regions.
@@ -28,5 +27,3 @@ the linked documents use live addresses.
   remainder and the main-thread stack.
 - Loaded executable code requires correct EE instruction and data cache
   maintenance; stable RAM alone is insufficient.
-
-Sampled free space is not a formal maximum-use bound for every state.

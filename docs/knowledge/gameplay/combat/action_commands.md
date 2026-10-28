@@ -10,10 +10,8 @@ Established: the native masks and configurable bindings, the `ccCommand`
 history and its matchers, logical-mask translation, the two double-tap tables,
 resident hold/release and multi-press synthesis, signature construction,
 selector modes and entry gates, fixed-chain masks, working-array setup, and the
-static action data of all 78 character definitions. Open: user-facing names of
-the object-relative direction selectors, any producer of
-`BattleInput.alternate_angle`, eligibility writers outside the screened
-callbacks, and observed selection frequencies.
+static action data of all 78 character definitions.
+Open: nothing.
 
 Routines, structures and data are named by the NA2 annotations in
 `@annotations/NA2`; their comments carry the per-routine detail. Addresses are

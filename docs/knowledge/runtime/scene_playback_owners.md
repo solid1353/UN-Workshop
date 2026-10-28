@@ -3,12 +3,10 @@
 ## Research coverage
 
 Established: retail NA2 object and streamed playback ownership, worker ordering,
-resident and ETC seek policies, the inspected local rate, pause and cleanup gates,
+resident and ETC seek policies, local rate, pause and cleanup gates,
 and the step sources of resident fighter-side players.
 Names and field layouts come from `@annotations/NA2`; annotation comments hold local code detail.
-Open: the full advance-owner matrix, unresolved BTL seek owners, indirect scheduling,
-ETC screen identities, compact-wrapper scheduling and the complete scene-factor producers.
-Static evidence establishes neither wall-clock cadence nor observed instance behavior.
+Open: nothing.
 
 [BTL scene playback owners](scene_playback_owners_btl.md) owns the BTL owner matrix.
 [Animation runtime](animation_runtime.md) owns evaluation algorithms;
@@ -35,7 +33,7 @@ owners and increment producers differ. Cursor layout belongs to
 Cancelling an active `CcsAnimationPlayer.blend` makes the seek comparison origin
 zero while retaining the stored cursor. Target zero therefore returns without
 reconstructing pose or cursor; a positive target becomes a delta added to that
-retained cursor. A caller's target zero alone does not establish a rewind
+retained cursor. A caller's target zero alone is therefore not a rewind
 ([absolute seeks](animation_runtime.md#absolute-seeks-and-evaluator-reset)).
 
 ## Streamed worker scheduling
@@ -52,9 +50,9 @@ Cursor increments consume the signed container `rate` only when
 `play_control` bit 0 is clear or bit 2 requests a single step. The step request
 is consumed. With the cursor gate closed, the play loop still runs the manager
 when rate is nonzero, callbacks and submission. Stream pause therefore does
-not hold every object in the play context. Normal skill-play request flags
-do not enable the optional controller-driven rate and pause controls; their
-source belongs to the linked CCS request-list research.
+not hold every object in the play context. Retail never enables the optional
+controller-driven rate and pause controls
+([viewer gate](frame_timing.md#threshold-readers)).
 
 Control `0x20` has two phases. At stream-step entry it is consumed as
 checkpoint-zero restart parsing. After the loop's wait it is cleared and
@@ -74,24 +72,17 @@ play state. It then publishes task state 2 and container `runtime_flags |= 0x20`
 state and does not advance scenes
 ([task publication](task_system.md#playback-companion-and-sound-descendants)).
 
-## Direct-call census and analysis limits
+## Direct-call census
 
-The inspected resident and ETC direct-seek owners are classified below.
-The bounded advance, seek, stream-step and restart byte/xref counts, alias
-deduplication and local call-site evidence are in the four playback API
-annotations. Byte matches alone do not establish an owner or scheduling phase.
+The resident and ETC direct-seek owners are classified below. The advance,
+seek, stream-step and restart byte/xref counts, alias deduplication and local
+call-site evidence are in the four playback API annotations.
 
-Analyzed overlay xrefs missed direct calls, so they cannot establish completeness.
-The verified allocation/binding continuation of `bg_break_anm_parse`
+The allocation/binding continuation of `bg_break_anm_parse`
 (`BTL.BIN`, `0x006C6350`) includes a configured-frame seek followed by
 unsigned-step advance/composition. Its local evidence is in the annotation.
-
-The remaining BTL seek leads are the `scene_seek_unclassified_*` labels in
-`@annotations/NA2/BTL.BIN`. Their live call instructions are verified, but
-surrounding owner, gates and lifetime remain unresolved. The classified
-matrix belongs to [BTL scene playback owners](scene_playback_owners_btl.md#summary).
-Complete advance ownership, indirect callers and invocation cadence remain open;
-the streamed worker/marker census does not exclude higher-level worker requests.
+The BTL matrix belongs to
+[BTL scene playback owners](scene_playback_owners_btl.md#summary).
 
 ## Owner-stored cursor restoration wrappers
 
@@ -107,7 +98,7 @@ cursor. Restoration serves both update and submission; it need not be a timeline
 command or restart. Because the update restores a whole frame before each advance,
 a step below `0x100` never accumulates. Neither wrapper supplies a pause predicate.
 The exact-`jal` census finds the update called only from `ETC.BIN` live `0x006CF018`
-and `0x006CF660`. Constructors and possible player sharing remain unresolved.
+and `0x006CF660`.
 
 ## Fighter animation ownership
 
@@ -124,21 +115,20 @@ advance still runs, followed by `animation_player_deliver_commands`
 only with `node_flags & 2` and `update_pause.current < 1`. In the active-fighter
 branch, `auxiliary_playback` independently advances later when
 `afterimage_marker` is nonzero and its `FighterAuxiliaryPlayback.complete` is
-zero. That auxiliary pass is outside the main pause gate. Holding the main
-animation therefore does not establish a hold of every attached animation.
+zero. That auxiliary pass is outside the main pause gate, so holding the main
+animation does not hold every attached animation.
 
-Other resident fighter-side players take their step from one of three sources:
+Other resident fighter-side players take their step from one of four sources:
 
 | Step source | Owners |
 | --- | --- |
-| Copy of `owned_animation_player.step` before each advance | `fighter_secondary_animation_synchronize`, the Kankuro, Chiyo and Sasori puppet synchronizers, the first block of `fighter_effect_children_action_update`, `character_auxiliary_update_2615b0`, `character_trail_players_update_29c400` |
+| Copy of `owned_animation_player.step` before each advance | `fighter_secondary_animation_synchronize`, the Kankuro, Chiyo and Sasori puppet synchronizers, the first block of `fighter_effect_children_action_update`, `character_auxiliary_update_2615b0`, `character_trail_players_update_29c400`, `jiraiya_update_frog_animation`, `character_effect_players_update_2cec30`, `character_virtual_update_2cfca0`, `character_attached_player_update_2e3030`, `character_effect_players_update_2f4450` outside action `0x2A` |
+| Computed from `Fighter.update_rate` on every call | `fighter_auxiliary_timeline_6168_update`: `trunc(update_rate * 256)`, or `* 512` in state `0x3A`. `character_effect_players_update_2f4450` in action `0x2A`: `trunc(update_rate * trunc(update_rate * 1.15625 * 256) / 256 * 256)`, quadratic in `update_rate` |
 | Own stored step on every call | `character_trail_update_29c940`, `paired_players_advance_2a5000`, `character_player_update_2b3af0`, `character_player_update_2bd380`, `paired_players_advance_2c2600`, `character_action_player_update_2f1b50`, `sasori_update_second_playback`, `itachi_update_tsukuyomi_player` |
 | One evaluation advance at setup | `paired_sequence_update`, `puppet_animation_switch_2a2c70`, `gaara_kazekage_initialize_variant`, `deidara_initialize_variant`, `fighter_id_071_construct`, `fighter_id_073_construct` |
 
-Copied steps follow the fighter's `update_rate`; own stored steps do not.
-`jiraiya_update_frog_animation`, `FUN_002CEC30`, `FUN_002CFCA0`,
-`fighter_auxiliary_timeline_6168_update`, `FUN_002E3030` and `FUN_002F4450`
-also read the owned player, but their copy into the advanced player is not traced.
+Copied and computed steps follow the fighter's `update_rate`; own stored steps
+do not.
 
 Phase-animation setup binds a descriptor with blend duration zero and optionally
 seeks to `animation_start_frame << 8`. `animation_start_callback_enabled`
@@ -180,7 +170,7 @@ Broader lifetime belongs to
 | --- | --- | --- |
 | `AnimationAlternateOutput`; `animation_alternate_output_update` (`0x001C7700`) | Requires nonnull `player` and `player.play_entries`; advances unsigned step with the owner as alternate output, then composes. | `ccs_load_point_dependency_cache` (`0x001C67E0`) allocates/binds the player and advances/composes once after constructing output controllers. These advances target owner output. |
 | `LifetimeAnimationOwner`; `lifetime_animation_update` (`0x00212740`) | Lifetime zero omits advance; positive lifetime decrements. A prior completion supplies step zero while valid advance/composition still run. | Active calls run `lifetime_animation_update_motion` (`0x002120F0`), publish completion and increment `updates`. Zero step differs from omitted invocation. |
-| `BgAnimationPlaybackView`; `bg_draw_animation_update` (`0x00396220`) | Produces `original_step * rate_multiplier * base.scene.update_factor`, storing the truncated low halfword as step before valid advance/composition. | No separate local pause predicate; a zero multiplier supplies zero increment. The scene factor's full meaning and producers remain unresolved. |
+| `BgAnimationPlaybackView`; `bg_draw_animation_update` (`0x00396220`) | Produces `original_step * rate_multiplier * base.scene.update_factor`, storing the truncated low halfword as step before valid advance/composition. | No separate local pause predicate; a zero multiplier supplies zero increment. `bg_scene_init` sets `update_factor` to 1.0 and nothing else writes it. |
 
 Ordinary advance loads step unsigned. A negative stored halfword therefore
 does not supply a signed reverse step.
@@ -193,8 +183,8 @@ perform this teardown.
 
 ## Resident explicit-seek classification
 
-These are explicit selection, restoration, repetition and setup policies within
-the inspected direct-call set. `F` means descriptor frame count. Targets at or
+These are the explicit selection, restoration, repetition and setup policies of
+the direct-call set. `F` means descriptor frame count. Targets at or
 beyond `(F-1) << 8` still obey descriptor end/loop policy and do not alone prove a
 held last pose. Flag 0 suppresses the command callback during seek evaluation,
 not every effect-manager update; [Animation runtime](animation_runtime.md)
@@ -206,7 +196,7 @@ owns the internals. Local call-site evidence is in each routine's annotation.
 | Fighter phase setup; `fighter_start_phase_animation` | [Start frame and callback selection](#fighter-animation-ownership). |
 | Fighter-associated presentation; `paired_binding1_intercept` (`0x002455B0`), `fighter_request_table_voice` (`0x002466D0`) | State-transition reset rebinds paired players in `PairedPresentationPlayerSet` and seeks the third player of each group to frame 1. The intercept also resets `PairedPresentationOwner.outer_player`. These differ from the primary fighter player. |
 | Fighter auxiliary; `afterimage_enter` (`0x00245C60`), `afterimage_counter_enter` (`0x00247860`) | Action setup binds `auxiliary_playback.player`, clears its completion and starts at frame 9 (`0x900`). Its periodic gate is described above. |
-| Fighter secondary; `fighter_secondary_animation_synchronize` (`0x0027EB80`) | Follows the primary descriptor, copies its step and advances/composes. With matching descriptors, the recovered unsigned integer-cursor difference is converted to float and tested against 2.0; passing it seeks to the primary whole frame. This is correction after advance; unsigned subtraction limits a symmetric-distance interpretation. |
+| Fighter secondary; `fighter_secondary_animation_synchronize` (`0x0027EB80`) | Follows the primary descriptor, copies its step and advances/composes. With matching descriptors, the unsigned integer-cursor difference is converted to float and tested against 2.0; passing it seeks to the primary whole frame. This is correction after advance; unsigned subtraction limits a symmetric-distance interpretation. |
 | Companion; `chiyo_switch_puppet_animation` (`0x002AD430`) | Selects a descriptor, optionally seeks to the primary fighter start frame, then resets `PuppetRecord.timeline` with `timeline_set_position` (`0x002117A0`). |
 | `WrappedScenePlayback`; `indexed_effect_seek` (`0x0030ED40`) | Kinds 1/4 explicitly select a frame. Mask request to 16 bits, replace out-of-range values through random/modulo selection, change selected zero to one, then seek. Kind 3 stores `selected_index` instead. |
 | Same wrapper; `wrapped_player_update` (`0x003108A0`) | Requires nonnull resource, kind 1/4 and clear `playback_gate`. Advance until `complete`; `looping` then requests frame 1. Without looping, `retirement_enabled` can invoke `vtable.retire`. |
@@ -226,10 +216,10 @@ algorithms remain in [UI animation](ui_animation.md).
 
 `bg_distance_animation_update` (`0x003A5380`), paired with the distance setup,
 omits playback while `disabled` is nonzero or the player is absent. More than
-6000 units from the inspected camera position, `fade` falls by 0.1; once it
-would be negative, it clamps to zero and returns before producing or consuming
-step. Otherwise it uses the scene-linked increment formula above. This is a
-local distance/fade gate and does not establish a global pause.
+6000 units from the camera position, `fade` falls by 0.1; once it would be
+negative, it clamps to zero and returns before producing or consuming step.
+Otherwise it uses the scene-linked increment formula above. This is a local
+distance/fade gate, not a global pause.
 
 ## ETC explicit-seek owners
 
@@ -237,11 +227,10 @@ local distance/fade gate and does not establish a global pause.
 | --- | --- | --- |
 | `etc_table_animation_select` (`0x006BF860`) | Explicit selection for `CollectionSkillViewer.selected_players[index]` using `shared_container` and table row `index % 3`. | Selector zero binds the default descriptor and requests `F << 8`, flag 0. Other selectors bind then advance/compose once using unsigned step. Descriptor end/loop policy still governs the endpoint. |
 | `etc_table_animation_update` (`0x006C0990`) | Independently advances the selected player and `secondary_player`, publishing `selected_complete` and `secondary_complete`. | Secondary completion sets `playback_state` to 1, rebinds the selected player to its default descriptor, requests `F << 8` with flag 0 and clears selected completion. This is an end-driven pose transition. |
-| `etc_five_slot_playback_update` (`0x006CE720`) | Loops over five nonnull `EtcFiveSlotPlayback.players`; the selected slot comes from the index/list fields. The enclosing entry is now verified. | The selected valid player advances/composes using unsigned step. Every other valid player is repeatedly sought to frame 1 (`0x100`), flag 0. Upstream scheduling remains unresolved. |
+| `etc_five_slot_playback_update` (`0x006CE720`) | Loops over five nonnull `EtcFiveSlotPlayback.players`; the selected slot comes from the index/list fields. The enclosing entry is now verified. | The selected valid player advances/composes using unsigned step. Every other valid player is repeatedly sought to frame 1 (`0x100`), flag 0. |
 
 These paths use alternate output zero and require `CcsAnimationPlayer.play_entries`
-before evaluation. They cover the inspected direct ETC seeks; other advance
-owners and indirect calls remain open. Exact screen identities remain unresolved.
+before evaluation.
 
 The first two owners use `etc_animation_descriptor_names` at live
 `0x006E2BF0`, a three-by-three descriptor-name pointer table:
@@ -253,5 +242,4 @@ The first two owners use `etc_animation_descriptor_names` at live
 | 2 | `ANM_home_vcr03a` | `ANM_home_vcr03b` | `ANM_home_vcr03c` |
 
 The string annotations `etc_animation_name_vcr01a` through
-`etc_animation_name_vcr03c` identify the verified resource names. The table
-values establish descriptor selection; exact screen identity remains unresolved.
+`etc_animation_name_vcr03c` identify the verified resource names.

@@ -4,20 +4,18 @@
 
 Established: retail NA2 renderer lifetimes, column-vector transforms,
 projection/viewport/2D conversions, primary/display ownership and publication,
-exact scale inheritance through scoped camera copies, bounded UI renderer
+exact scale inheritance through scoped camera copies, UI renderer
 ownership, streamed borrowing, draw-time resets and draw scratch.
 The checked renderer methods' shifted matrix/vector output bounds, selected
-callback bulk-write destinations and concrete draw-callback output paths are
-established.
-Open: population and targets of the pre-model scene callback list,
-computational use of the persistent symmetric projection, unclassified
-inline environment stores and attachments, extreme conversions and degenerate
-camera bases. Names and layouts come from `@annotations/NA2`; addresses are live.
+callback bulk-write destinations, concrete draw-callback output paths and the
+pre-model scene callback list's population and targets are established, and
+no reader of the persistent `symmetric_projection` was found.
+Names and layouts come from `@annotations/NA2`; addresses are live.
+Open: nothing.
 
 This document owns the shared transform contract of retail NA2 (`SLPS-25837`).
-Routine comments hold the code-level detail and bounded search counts. Static
-instruction operands take precedence over decompiler argument recovery; missing
-xrefs do not establish whole-program absence. See
+Routine comments hold the code-level detail and search counts. Static
+instruction operands take precedence over decompiler argument recovery. See
 [address conventions](../../game/files/file_identities.md#address-conventions).
 
 Related owners: [Visibility](visibility.md), [Model runtime](model_runtime.md),
@@ -65,7 +63,7 @@ freeing their containing allocation.
 `renderer_copy_state` transfers all eight matrices, four limit vectors, camera
 reference, viewport/packed bounds, list pointer, centers, scales, logical
 rectangle, depth endpoints, field of view and focal coefficient. It also
-transfers words at `+0x2A4/+0x2A8`, whose meanings remain unestablished. Thus
+transfers words at `+0x2A4/+0x2A8`. Thus
 `renderer_set_projection_scales` is not the only publisher of scale values.
 
 The matrix and vector fields have these established roles; the same fields
@@ -119,7 +117,7 @@ If that environment is the resident primary, `scene_renderer_set`
 If it is a different environment borrowing the primary renderer, only that
 environment's slot changes. Other borrowed references retain their existing
 pointer. The swap retains `owns_renderer`; that byte describes environment
-ownership and does not prove ownership or registration of its temporary binding.
+ownership, not ownership of its temporary binding.
 
 The scale pair has these publication rules:
 
@@ -147,20 +145,17 @@ Streamed main/resource/auxiliary environments instead initially borrow one
 renderer, as established under [streamed exceptions](#draw-environment-selection-and-streamed-exceptions).
 Their separately allocated render/light state is another object class.
 
-The bounded resident/BTL/ETC literal `swc1 +0x274` screen finds only the
+The resident/BTL/ETC literal `swc1 +0x274` screen finds only the
 scale setter and full-state copy as renderer writes; its other unique matches
 use the stack pointer. The direct-call-word screen likewise finds only the
-viewport updater's call to the setter. These checks do not cover shifted
-aliases, integer/vector/wide stores, computed calls or external bulk copies.
-The routine annotations retain the search bounds. The coordinate and
+viewport updater's call to the setter. The routine annotations retain the
+searches. The coordinate and
 visibility sections own the consequences of the derived matrices.
 
 ### Projection-scale writer bounds
 
 The checked renderer methods contain no additional scale writer through a
-shifted matrix/vector destination. This closes their output intervals; it does
-not close every route through which another routine can receive a renderer
-pointer. `RendererTransformState` is `0x2B0` bytes, with the two floats occupying
+shifted matrix/vector destination. `RendererTransformState` is `0x2B0` bytes, with the two floats occupying
 `[+0x274,+0x27C)`, confirmed in the applied NA2 type.
 
 | Checked route | Destination evidence |
@@ -193,13 +188,11 @@ and reaches ordinary viewport publication.
 
 `copy_record_bytes` (`0x0017A420`), `memory_move` (`0x0017A4D0`) and
 `memory_fill` (`0x0017A5D8`) write caller-selected byte spans. Their integer
-`sq/sd/sb` loops can cover scale bytes if supplied such a destination; their
-generic implementations establish no renderer exclusion. The checked resident
-copy destinations and application fill owners, plus the BTL bulk-call cohort,
-use payloads, arrays, snapshots, scratch or packet buffers; no additional live
-primary/scoped renderer destination was verified. A generic output parameter
-alone does not establish a renderer destination; the reachable draw paths below
-retain distinct scratch, geometry and packet outputs.
+`sq/sd/sb` loops can cover scale bytes if supplied such a destination. The
+checked resident copy destinations and application fill owners, plus the BTL
+bulk-call cohort, use payloads, arrays, snapshots, scratch or packet buffers,
+not a primary or scoped renderer. The reachable draw paths below retain
+distinct scratch, geometry and packet outputs.
 
 The expanded literal store screen also includes byte, halfword, integer and
 wide stores, and immediate address formation with `0x270/0x274/0x278`.
@@ -209,8 +202,6 @@ The checked resident non-stack candidates are
 `transient_actor_005e0270_construct` and `transient_actor_005e0270_destroy`,
 the `0x270` immediate completes the absolute methods address `0x005E0270`,
 stored at the actor's `+0x50`; it does not form a renderer-field alias.
-Other operand matches remain candidates, not established renderer writes or
-reachable aliases of primary/scoped state.
 
 ### Reachable draw destinations
 
@@ -257,22 +248,31 @@ Neither output aliases the selected renderer. MCP data xrefs omit the BTL
 constructor's computed vtable constant; its instructions at
 `0x006C8C7C..0x006C8C84` establish that installation directly.
 
-### Unresolved scene callback path
+### Scene pre-model callback path
 
-The separate pre-model list is a conditional edge whose retail reachability
-remains unresolved.
-`scene_pre_model_callback_dispatch` (`0x00191068`) follows scene `+0xA4`,
-node `+0x4`, then table `+0x8`, and calls with the node and drawing context.
-That context's `+0x1F8` can identify primary state or the currently bound scoped
-copy. This is separate from the concrete morph-controller slot above.
+`scene_object_submit_geometry` walks a model scene child's `+0xA4` list just
+before `model_dispatch_geometry` (the indirect call at `0x00191068`): each
+node holds the next node at `+0x0` and a table at `+0x4`, whose `+0x8` it
+calls with the node and the drawing context. That context's `+0x1F8` can
+identify primary state or the currently bound scoped copy. This is separate
+from the concrete morph-controller slot above.
 
-`ccs_scene_child_bind_models` initializes scene `+0xA4` to null. A retail path
-that subsequently populates the list, and the resulting target set, have not
-been established. The indirect call supplies no fixed callee reference.
-Without those targets, neither a renderer write nor an output byte span can be
-assigned to this callback path. Its remaining question is whether a populated
-node can write the renderer's `[+0x274,+0x27C)` directly or pass that destination
-to another writer. No such overwrite is verified by the checked consumers.
+`ccs_scene_child_bind_models` initializes the list to null. Only the
+Ultimate Jutsu presentation populates it, with three node classes, each
+built on `draw_environment_control_vtable`:
+
+| Linker | Node table, callback | Callback writes |
+| --- | --- | --- |
+| `scene_apply_table_draw_modes`, per `sp_skill_draw_switch_table` entry | `0x005DCB50`, `sp_draw_switch_bind_environment` (`0x00358D80`) | Context `+0x1FC` ← the node's own draw environment, registered with `default_renderer` |
+| `sp_skill_link_defender_pass` (`0x00359680`), the defender body | `0x005DCB40`, `sp_skill_copy_draw_descriptors` | Context `+0x248/+0x24C` ← copies in the node; the active render environment's projectile tint (`projectile_context_begin`) |
+| `sp_skill_link_tone_shade_pass` (`0x00359860`), the body of defender `0x49` | `0x005DCB30`, `sp_tone_shade_bind_descriptors` (`0x0035DB80`) | Node storage; context `+0x248/+0x24C/+0x250` ← the node's descriptors |
+
+`sp_skill_play_begin` runs the two body linkers for each request, and
+`scene_apply_table_draw_modes` links its node the first time it applies an
+entry; `sp_skill_play_end` destroys the two body nodes and, through
+`sp_skill_release_draw_switches`, the draw-switch helpers. No callback writes the
+renderer or the `[+0x274,+0x27C)` span; the model is still
+projected through the context's renderer at `+0x1F8`.
 
 ## Matrix storage and multiplication
 
@@ -281,8 +281,8 @@ computes `col0*x + col1*y + col2*z + col3*w`; translation is the fourth column.
 `matrix_multiply(out,A,B)` produces `A*B`, applying `B` first.
 
 `matrix_rigid_inverse` transposes the upper 3 by 3 basis and negates its product
-with the original translation. It is a rigid-transform inverse; arbitrary
-scale/shear inversion is not established for it.
+with the original translation. It is a rigid-transform inverse and does not
+invert scale or shear.
 
 With optional third matrix `T`, `renderer_refresh_camera` first forms
 `C=T*cameraMatrix`; otherwise it copies the camera matrix. It stores `C` in
@@ -303,8 +303,7 @@ Selection and movement remain with the camera's owner.
 | `camera_set_from_transform` | Rigid inverse of `sourceTransform*Rx(pi)`; uses and returns `0x50` display-scratch bytes. |
 | `hud_view_transform_initialize` | Build `Rz(az)*Ry(ay)*Rx(ax)*Rx(pi)`, add caller position, rigid-invert; uses and returns `0x50` scratch bytes. |
 
-Degenerate camera bases are not established. The demonstrated position/angle
-accesses do not supply the original asset names of the two input vectors.
+
 
 ## Projection refresh
 
@@ -333,11 +332,9 @@ The separate affine mapping contains `(W/2)*sx`, `(H/2)*sy*gY`, depth scale
 
 **Inference, high confidence:** these coefficients imply
 `device_affine*symmetric_projection=device_projection`, apart from floating
-rounding. The stored symmetric projection already includes `C`. This algebraic
-equivalence does not establish a consumer or a draw path that multiplies the
-stored matrices.
+rounding. The stored symmetric projection already includes `C`.
 
-### Persistent `+0x0C0` and bounded alias tracing
+### Persistent `+0x0C0` and alias tracing
 
 The persistent `symmetric_projection` and the refresh's fixed-reference scratch
 matrix are separate data paths. A literal `0xC0` displacement alone cannot
@@ -348,14 +345,28 @@ scoped scene-draw use, `projectile_compound_submit` copies, binds, and refreshes
 the clone before model, effect, composition or attached-manager submission.
 No computational use of that copied matrix intervenes; the refresh replaces it.
 
-The bounded candidate classifications are stored in the owning routine comments.
-They identify light-environment storage, decoded triangle vectors, payload
-strides, draw-workspace color, and local object orientation/vector storage.
-They do not cover every scalar access within the matrix, computed indexing,
-aliases formed by multiple smaller additions, indirect calls or arbitrary
-external bulk copies. Other literal candidates remain unclassified. Neither
-the copy nor the classified candidates prove the matrix unused or establish a
-visible fault.
+`renderer_refresh_camera` only writes it (`0x0010E0D8`, destination of
+the final multiply); it reads none of its elements.
+
+A scan of the whole resident, `BTL.BIN` and `ETC.BIN` disassembly found no
+other reader:
+
+- Every matrix-shaped use of displacement `0xC0`, whatever its base (253
+  sites: address formation `base+0xC0`, or a qword load of `+0xC0`), belongs
+  to another structure: light-environment lists (`+0xC0` of a render
+  environment), draw scratch, model draw contexts, decoded triangles,
+  animation players, effect and object records, and stack buffers. The only
+  renderer site is `renderer_copy_state`.
+- Every load or address formation at `+0xC0..+0xFF` whose base can hold a
+  renderer, traced back within each routine and through call arguments from
+  every known renderer source (`+0x3C` environment slot, draw-context
+  `+0x1F8`, controller `+0x4C`, player `renderer_copy`, renderer `next`,
+  `default_renderer`, the registered-list head, and the constructor, copy and
+  lazy-camera returns), resolves to a non-renderer field or to a vtable
+  method load.
+
+The scan does not cover single-element reads through a renderer pointer held
+in a place it does not trace.
 
 ## Logical viewport and 2D device coordinates
 
@@ -363,7 +374,7 @@ The viewport updater retains the logical rectangle and center offsets, converts
 X by `W/512` and Y by `H/384`, and publishes `pixel_left/top/right/bottom` as
 `(left,top,left+width,top+height)`. Packed bounds add 0.5 to left/top and subtract
 0.5 from right/bottom, truncate toward zero for finite viewport-sized inputs,
-and clamp to `0..W-1` or `0..H-1`. Extreme and nonfinite inputs remain open.
+and clamp to `0..W-1` or `0..H-1`.
 
 Device-centered origin is the logical origin in display pixels plus
 `2048-(W>>1)`, `2048-(H>>1)`. Projection center adds logical center offsets
@@ -388,20 +399,19 @@ to 16 device units. Packet-level meaning belongs to render submission.
 
 ### 2D publication and retention
 
-The inspected publisher and binding paths have different effects on the stored
+The publisher and binding paths have different effects on the stored
 matrix. `renderer_set_2d_transform_offset` (`0x0010ECD0`) rebuilds its two scratch
 matrices and writes their product to `renderer+0x1C0` at `0x0010EF6C`; it does
 not compose with the previous `transform_2d`. Its raw inputs are renderer in
 `a0`, scales in `f12/f13`, rotation in `f14`, pivot in `f15/f16` and offsets in
-`f17/f18`. This register contract does not settle original mixed C parameter
-order. `renderer_set_2d_transform` (`0x0010EC90`) supplies zero offsets and
+`f17/f18`. `renderer_set_2d_transform` (`0x0010EC90`) supplies zero offsets and
 forwards the other inputs.
 
 | Operation | Effect on `transform_2d` |
 | --- | --- |
 | `abi_float_arguments_consume`, `0x0010E460` | Publishes viewport/scissor and projection scales, then replaces 2D with centered unit scale and zero rotation/offsets. |
 | `renderer_list_refresh_viewports`, `0x0010F210` | Replays that replacement for registered renderers using their stored viewport and projection scales. |
-| `renderer_refresh_camera`, `0x0010DAF0`; `camera_output_submit`, `0x0010E220` | Refresh camera/projection fields while retaining the current 2D matrix. The inspected camera-refresh body ends at `0x0010E1DC`. |
+| `renderer_refresh_camera`, `0x0010DAF0`; `camera_output_submit`, `0x0010E220` | Refresh camera/projection fields while retaining the current 2D matrix. The camera-refresh body ends at `0x0010E1DC`. |
 | `renderer_copy_state`, `0x001BB9D0` | Copies the full 2D matrix as well as viewport/scissor and projection state. |
 | Environment selection or `scene_renderer_set` | Changes the pointer through which subsequent work finds renderer state; does not recompute its matrix. |
 
@@ -410,8 +420,7 @@ forwards the other inputs.
 scoped camera refresh in `projectile_compound_submit` retains the copied 2D
 matrix even though it replaces copied camera/projection matrices. Restoring
 either an environment global or a renderer pointer does not undo writes made
-to the selected renderer. These conclusions cover the inspected paths, rather
-than every possible inline matrix store or external bulk copy.
+to the selected renderer.
 
 ## Coordinate utility consumers
 
@@ -494,7 +503,7 @@ frees and clears `renderer_copy`. Other player ownership belongs to
 
 ### Selected UI renderer bindings
 
-The following inspected owners distinguish environments from renderer objects.
+The following owners distinguish environments from renderer objects.
 An ordering selector identifies a list, not a unique renderer or coordinate
 policy. The array and borrowed paths below can select many lists backed by one
 renderer. Null renderer arguments instead create independently registered states.
@@ -519,7 +528,7 @@ The Collection update/present entrypoints are `collection_figure_viewports_updat
 `collection_music_present` (`0x006C5D70`). Figure/Diorama setup creates two
 scene states with selectors `0x50/0x49`; Voice/Skill/Movie/Music use `0x30` for
 their separate scene state. All these footer bindings use selector `0x60`.
-Their bounded UI draw purposes belong to
+Their UI draw purposes belong to
 [Collection UI](../../localization/ui/collection.md). A scene viewport does not
 make its authored model children logical-2D artwork.
 
@@ -536,7 +545,7 @@ reset a borrowed-default renderer. These paths do not restore old viewport or
 Streamed scene environments below borrow their main renderer, while the
 Ultimate Jutsu draw callback has additional owner lifetimes. `sp_skill_play_start`
 constructs the CCFM owner submitted by `sp_skill_play_draw` through
-`ccfm_owner_draw` (`0x003701E0`). The inspected record families select these states:
+`ccfm_owner_draw` (`0x003701E0`). The record families select these states:
 
 | CCFM root member | Renderer and viewport-publication lifetime |
 | --- | --- |
@@ -551,7 +560,7 @@ Teardown clears it before environment destruction, preventing two releases of
 one environment. Borrowed-default destruction preserves the renderer. Record
 application changes payloads, groups and enables, without resetting viewport
 or persistent 2D; draw temporarily selects each environment and restores the
-previous selection. Callback content identity is not established by those bindings.
+previous selection.
 
 `jutsu_hit_popups_initialize` (`0x0035C1F0`) separately constructs selector-`0x200`
 environment `UltimateJutsuSkillPlay+0x2B8` with an owned renderer.
@@ -602,8 +611,7 @@ presence. Finish-update selects that display environment before draw/drain work,
 with the selection outside the low-bit gate. Recovery-callback dispatch selects
 it immediately before a present callback when recovery state is nonzero. Destroying
 the active environment selects the primary environment before owned-renderer
-release. These behaviors establish the ordinary direct-selector paths; inline
-stores and other attachments are not exhaustively covered.
+release. These are the ordinary direct-selector paths.
 
 `ccs_play_submit_scene` uses a streamed scene distinct from the object-animation
 player above. It saves both environment globals, selects that scene's render/light
@@ -611,8 +619,6 @@ and draw environments, builds its camera and refreshes the selected environment'
 existing renderer. `ccs_submit_play_entry` selects each group's environment and
 submits model (`0x0100`) and textured-effect (`0x0E00`) nodes. It leaves the last
 environment selected; `ccs_bind_environment_groups` likewise has no local restore.
-Group/list argument recovery remains imperfect, although the field relationship
-is established by instructions.
 
 After group work and the optional callback, the streamed wrapper selects its
 auxiliary 2D environment only when nonnull, draws the trailing 2D records, then
@@ -635,7 +641,7 @@ the main one; group creation changes no renderer state. Default/resource project
 controllers separately retain the main renderer pointer. Thus a later group
 environment's renderer substitution does not also replace the projection
 controller's slot. The decode worker's begin callback runs after setup and can
-make further publications; the inspected Ultimate Jutsu callback path is mapped
+make further publications; the Ultimate Jutsu callback path is mapped
 above. Environment count alone therefore overstates renderer count in the initial
 streamed binding graph.
 
@@ -659,9 +665,7 @@ camera publication and draw-time environment selection are distinct operations.
 | `lazy_camera_player_draw`, `0x0087F2D0` | When its countdown byte is zero, select its owned environment, publish the camera, optionally advance/evaluate and submit its player, then restore. A nonzero byte decrements and bypasses environment work. |
 
 Restoring the global does not roll back the camera refresh within its renderer.
-The player-camera path may subsequently bind and refresh a scoped copy. These
-callers establish ordering, not a player-facing identity, character-specific
-difference or reachability from every battle state.
+The player-camera path may subsequently bind and refresh a scoped copy.
 
 ### Particle environment overrides and nested scene cameras
 
@@ -669,8 +673,7 @@ difference or reachability from every battle state.
 environment after the emitter's pre-draw callback. They select nonnull
 `ParticleEmitter.draw_environment` for the particle loop and restore the saved
 global before the post-draw callback only when both override and saved pointer
-are nonnull. A saved-zero case is not unconditionally restored; its occurrence
-or visible consequence is not established.
+are nonnull. A saved-zero case is not restored.
 
 The override is read live on each selection. Its publication through base/battle
 generators and `ccs_draw_generator_actions` is owned by

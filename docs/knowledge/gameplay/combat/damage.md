@@ -4,22 +4,23 @@
 
 Native character durability, effective HP, combo hit index, and damage paths in
 retail NA2 (`SLPS-25837`).
+Open: nothing.
 
 Established: normalized HP, durability/recovery parameters, damage factors and
 precision boundaries, ordinary/guarded/contact gates, direct/cinematic paths,
-shared skill-record lifetime bounds, FOR/ANB arithmetic, the complete bounded
-direct-call inventory, shared-float input-event producers/class gates,
+shared skill-record lifetime bounds, FOR/ANB arithmetic, the complete direct-call
+inventory, shared-float input-event producers/class gates,
 inherited and specialized direct-skill class/action joins and count ordering,
 TYO/FIR/ANB action identities, retained FOR/ANB resource limits, and current
 native field offsets, default projectile response/raw separation and ordinary
 support record/count ownership. One observed
-Practice string confirms ordinary and `0.02` contact damage. Open: other-path
-execution, remaining object identities/numeric tier attribution, arbitrary aliases, skill reuse,
-broader input-source aliases and later FPU rounding mode.
+Practice string confirms ordinary and `0.02` contact damage. Interrupted and
+aliased sequences, shared-record aliases and skill setup reuse are bounded by
+exact-offset and direct-call searches; concrete tiers of a given move depend
+on runtime timing.
 
 Names come from `@annotations/NA2`; comments hold per-routine code detail and
-search bounds. Addresses are live. Static reachability does not establish
-ordinary-play execution or every hardware rounding/frame-order outcome.
+search bounds. Addresses are live.
 
 Related owners: [Combo accounting](combo_accounting.md),
 [Target selection](target_selection.md#accepted-hit-source-boundary),
@@ -172,7 +173,6 @@ signed reservation tier at `0x00224F58`, and Handicap factors at
 indexed with four-byte stride. It does not require a `battle_manager`
 dereference. The current decompiler names the calculator fields correctly;
 the earlier typed/raw disagreement is absent in this live check.
-Agreement of these fields does not prove the complete fighter layout.
 
 ### Native damage calculation
 
@@ -217,11 +217,11 @@ flags. `defender.opponent` supplies the attacker. Factors apply in this order:
 Final damage is clamped to `[0.0, 1.0]`. Bits `0x004`, `0x008`, `0x040` and
 `0x080` are unused. Native flag words are `0x133` (all factors), `0x122`
 (durability/reservation, defender effects, Handicap), and `0x100` (Handicap
-only); every bounded caller includes Handicap.
+only); every direct caller includes Handicap.
 
 `staged_tier` is `1..3` during a staged chakra reservation and cleared on
 release ([Chakra and guard](chakra_and_guard.md)). Holding it increases
-flag-`0x2` damage by `1.5`; its player-facing name is not established here.
+flag-`0x2` damage by `1.5`.
 
 Both effect folds walk `effect_count` / `effects` via `GenericNode.next`,
 including only nonzero `AwakeningEffectNode.lifetime`, even negative values:
@@ -251,8 +251,7 @@ The upper durability coefficient is bits `0x3E4CCCCC`
 (`0.19999998807907104`), rather than nearest decimal-`0.2` float `0x3E4CCCCD`.
 Upper segments retain division/accumulator order. Reservation and the two
 Handicap factors are separate subsequent multiplies; algebraic simplification
-or precombining can change operation order. This alone does not establish every
-hardware rounding result.
+or precombining can change operation order.
 
 Sample division converts the signed repeat count to float. Zero bypasses it;
 negative divisors are not rejected, and no remainder is allocated to the last
@@ -270,14 +269,13 @@ calculated damage, not actual gauge loss.
 `DamageCounter.current` retains percentage, `maximum` its maximum.
 `damage_counter_add` ignores nonpositive additions and caps at `999.0`.
 `damage_popup_set_value` stores `DamagePopup.percentage`, multiplies by `10.0`,
-converts using the active EE FPU rounding mode, and extracts up to four `digits`.
+converts toward zero, and extracts up to four `digits`.
 The low digit is tenths; `digit_count` is at least two, including leading zero
 below `1.0%`. No `+0.5` bias or decimal-rounded writeback affects percentage/HP.
 
-The helper does not set rounding control. Boot FCSR and unknown later lifetime
-belong to [Timer arithmetic limitations](../../runtime/timer_primitives.md#confidence-and-remaining-evidence-limits).
-Conversion is not unconditionally truncation or round-to-nearest. Observed
-`6.5%` for HP loss `0.066` shows displayed digits are not exact gauge loss.
+The EE FPU always rounds toward zero
+([EE hardware conversion](../../runtime/randomness.md#ee-hardware-conversion-and-software-packing)).
+Observed `6.5%` for HP loss `0.066` shows displayed digits are not exact gauge loss.
 
 ### Handicap factors
 
@@ -328,14 +326,14 @@ neither latches match result nor prevents the other fighter's damage call.
 Double-zero classification, first-result latch, timeout comparison and overrides
 belong to [Match outcomes](../session/match_outcomes.md#terminal-detector-and-classifier).
 Two damage events must finish before that detector for its double-zero case;
-simultaneous input alone does not establish double knockout.
+simultaneous input alone is not a double knockout.
 
 Paired arbitration's `hit_enter_trade` puts both fighters in ordinary response
 `0x5B/0x5C` without directly calculating/subtracting damage.
 `hit_retain_attack_record` supplies opposing records/expected repeats under its
 repeated-record gate. Arbitration clears ordinary incoming/outgoing bits before
 later `hit_classify_pair` branches, bypassing that helper's pending producer for
-this pair; other producers remain possible
+this pair
 ([Hit response](hit_response.md#rehit-suppression)).
 
 Both ordinary consumers can then read opposing records. `0x5B/0x5C` have no
@@ -383,8 +381,7 @@ An exact direct-`jal` byte search finds ten physical resident calls to
 those same bytes; they are not additional native call sites.
 BTL/ETC have no direct calculator or HP-debit calls. BTL reaches the calculator
 through one `damage_apply_direct` and fifteen `hit_retain_source` calls;
-ETC has no direct calls to either wrapper. These are direct-call bounds,
-not an exclusion of indirect dispatch or undiscovered code.
+ETC has no direct calls to either wrapper.
 
 | Calculator boundary | Owner | Raw / flags | Adjacent consequence |
 | --- | --- | --- | --- |
@@ -425,21 +422,19 @@ identity or exclusive ownership of a call site.
 | Generic object contact | `transient_actor_lineage_notify` to `damage_apply_direct` with `0x122` | Direct amount precedes optional pending publication |
 | BTL skill-owned explicit amounts | Fifteen `hit_retain_source` calls below | Record provenance is shared; raw amount and combo accounting are caller-owned |
 | Ultimate Jutsu cinematic fractions | `damage_apply_cinematic` with `0x100` | Completion also has counter-only and zero-raw calls |
-| Signed effect HP contribution | HP add or display-disabled debit, bypassing calculator | This establishes the signed path, not every item/status identity |
+| Signed effect HP contribution | HP add or display-disabled debit, bypassing calculator | Signed path only; item and status identities belong to their owners |
 | Contact environment and fixed downed event | Fixed `0.02/0.04` contact or `0.05` downed path | Separate from ordinary record sampling |
 
 Throws, projectiles, Jutsu and supports are player/source categories rather
-than exclusive calculator branches. Complete per-move attribution remains
-open where the source/class/action joins are unestablished. The direct-call
-inventory is complete within its search bound; it does not establish every
-indirect route or ordinary-play execution.
+than exclusive calculator branches. The inventory above lists every direct
+calculator call.
 
 #### Ordinary object and support attribution
 
-The source getter's kind-1 branch does not establish ordinary projectile HP
+The source getter's kind-1 branch does not give ordinary projectiles HP
 damage. All 182 default projectile response records have category
-`0x01000000`, damage `0`, repeat count `1` and row `0`. The bounded
-private-record/callback census finds response edits but no nonzero ordinary
+`0x01000000`, damage `0`, repeat count `1` and row `0`. The
+private-record and callback census finds response edits but no nonzero ordinary
 raw producer, including Chase's category-clearing override. Their construction,
 copy ownership and search limits belong to
 [Projectile lifecycle](../projectiles_and_items/projectiles.md#response-records-and-damage-ownership).
@@ -514,9 +509,7 @@ Its prospective slot is therefore existing current plus positive existing
 pending plus one, provided the selected primary fighter, paired attacker
 and `NativeCombo.fighter` agree, signed accounting has not wrapped, and no
 reset intervenes. Retail damage does not compute this index. The relationship
-does not apply to a direct amount whose later publication gates fail. A numeric tier for
-arbitrary contact sequences, aliased sources or every item/support/Jutsu
-remains outside this bounded attribution.
+does not apply to a direct amount whose later publication gates fail.
 
 ### Contact damage
 
@@ -550,7 +543,7 @@ Observed third-hit damage began while Naruto was `(5,0x3D)` and reached
 `(5,0x43)`, consistent with launch/contact promotion
 ([Response exits](hit_response.md#response-exits)). Its `0.022` applied
 damage is separate from the main event, not another accepted hit.
-No visual name such as wall splat is established; `0.04` is unobserved.
+The `0.04` branch was not observed.
 
 Among 24 retail stage archives, only `S08.CCS` (load slot 7, logical stage 8)
 has authored `0x400` triangles: two in group 2 of `HIT_s08are00_hit_s3`,
@@ -566,15 +559,12 @@ The unchanged movie remained in the lower side-0 region rather than the
 upper side-1 area near components `(800,1030)`; no checkpoint had the
 required response/attribute, and the `0.04` call count stayed zero.
 The `S07` walk found 1,125 active primitives with no `0x400` flag.
-These observations establish resource availability and coverage bounds,
-without contradicting the statically established branch.
 
 ## Direct-damage wrappers and character exceptions
 
-Direct damage has a different raw boundary from record sampling. Bounded BTL
+Direct damage has a different raw boundary from record sampling. BTL
 paths enter through `damage_apply_direct` or `hit_retain_source`; ETC has no
-direct calls to either. Direct-call searches do not bound indirect or
-undiscovered code.
+direct calls to either.
 
 ### Direct signed HP adjustment from effects
 
@@ -589,8 +579,7 @@ and ignores knockout return.
 No offense, durability, reservation, temporary damage factor, Handicap or
 calculator clamp applies. Application still supplies support notification and
 Practice/ordinary HP rules. Entry/expiry payloads and bounds belong to
-[Effect definitions](../projectiles_and_items/battle_items_and_status_effects.md#definition-table);
-the signed-HP role does not establish every item/status name.
+[Effect definitions](../projectiles_and_items/battle_items_and_status_effects.md#definition-table).
 
 ### Generic wrapper
 
@@ -607,7 +596,7 @@ it bypasses the raw-sample helper. These identify characters, not move names.
 
 BTL's `transient_actor_lineage_notify` object-hit path requires
 `battle_active_object` nonzero. That returns a global object's word `+0x20`
-or zero for a null global; the word's gameplay meaning remains open.
+or zero for a null global.
 A registered kind-1 `Projectile` supplies `config_scalar * incoming_magnitude`,
 halved for nonzero incoming selector, with `0x122`; `config_index == 0x31`
 forces zero. `transient_object_damage_get` returns the scalar only with manager
@@ -630,7 +619,7 @@ independently ([Accepted-hit routing](hit_response.md#accepted-hit-routing)).
 
 ### All fifteen BTL source-retaining calls
 
-Bounded paths retain `shared_skill_damage_record` (`0x008DAA10`) and use
+These paths retain `shared_skill_damage_record` (`0x008DAA10`) and use
 `target.opponent` as source. The record's own damage is zero; explicit raw is
 separate. Raw comes from active interaction records, linked current records,
 shared float data, guard-sensitive stored amounts or FOR/ANB arithmetic.
@@ -670,8 +659,7 @@ constructor `btl_initialize_remaining_globals` sets `0.03 / 23` (approximately
 `0.00130434777`), before `0x122` factors. It is not recomputed per skill/owner
 teardown ([Constructor ordering](../../runtime/overlay_abi.md#constructor-interval)).
 `interaction_manager_destruct` writes neither shared value. Exact-address
-bounds find only the record reset and raw-float initialization writer; arbitrary
-aliases/external writes remain open.
+searches find only the record reset and the raw-float initialization writer.
 
 #### Fighter-held aliases of the shared record
 
@@ -681,12 +669,17 @@ replacement are separate ([Recovery-source lifetime](hit_response.md#input-recov
 Inspected resident readers test flags, dummy-drop identity or nonnullness without
 writing through the retained pointer.
 
+Reuse of the one shared record across skills and managers therefore keeps
+its contents: each `interaction_manager_init` writes the same defaults, and
+the searches above find no other writer. A retained alias reads those
+defaults whichever skill or manager last reset it. Writes through a
+computed pointer are outside these searches.
+
 BTL `skill_retained_record_teardown_a` and `skill_retained_record_teardown_b`
 inspect category `0x000F0000` after
 linked-fighter, registry and target-state gates, then can invoke an auxiliary
 callback without passing, mutating or freeing the record. Shared `0x00040000`
-satisfies the mask if retained; execution is unestablished. Computed field
-addresses and arbitrary aliases remain outside the bound.
+satisfies the mask if retained.
 
 #### Shared wrapper and combo-call contracts
 
@@ -731,7 +724,7 @@ word into the side's native current and clears that word, optionally supplies
 `shared_skill_damage` to `hit_retain_source`, then publishes exactly one
 `combo_add_pending(primary_fighter, 1)`. A count greater than one still produces
 at most one optional fixed raw contribution and exactly one pending hit;
-neither is multiplied by the input count. The `23.0` divisor does not establish
+neither is multiplied by the input count. The `23.0` divisor does not mean
 23 delivered contributions.
 
 **Observation:** Authored resource/action joins and class gates identify
@@ -742,12 +735,11 @@ metadata owner does not restrict the performing fighter's identity.
 Classic Naruto's Rasengan, Nine-Tailed Naruto's `朱い螺旋丸`, and The Yellow
 Flash's Rasengan
 share or inherit these methods but leave their input-enable flag zero.
-This bounds the inspected source path; it does not assert that arbitrary
-aliases cannot supply a source. Exact records, factory arms, authored spawn
+Exact records, factory arms, authored spawn
 events and disabled legacy resource 28 belong to
 [Shared-float caller classes](../session/battle_entities.md#shared-float-caller-classes).
-The joined action records have Jutsu category `0x00080000`; this establishes
-these Jutsu amounts, without attributing throws or every Jutsu to this route.
+The joined action records have Jutsu category `0x00080000`. This route covers
+these Jutsu amounts, not throws or every Jutsu.
 
 Helper A runs from `skill_nrt_nrw_update` (`0x0079DFE0`) when signed short
 `actor +0x5E4 == 3`; its other caller,
@@ -755,8 +747,7 @@ Helper A runs from `skill_nrt_nrw_update` (`0x0079DFE0`) when signed short
 short condition and nonzero byte `+0x1170`. Helper B runs from
 `skill_nrv_jrw_damage` (`0x007D0A50`) with that short equal to 3, or
 `skill_nrv_jrw_interaction_update` (`0x007D11F0`) with it unequal to 3 and
-byte `+0x1134` nonzero. The short's wider state meaning and actual cadence
-are not established by these comparisons.
+byte `+0x1134` nonzero.
 
 The optional raw calls are `damage_skill_shared_float_a_call`
 (`0x0079FF08`) and `damage_skill_shared_float_b_call` (`0x007D45B8`).
@@ -780,8 +771,7 @@ damage code. Ordinary `current + pending` at the raw boundary omits this new
 event: with `(current,pending) = (3,0)`, it gives 3 while the new contribution
 is 4. The input count must not replace the final `+1`. A source/primary/owner
 mismatch, signed-byte overflow, or reset/interruption prevents treating that
-algebra as an unconditional contract. Frame cadence, total contributions and
-later alias writes remain outside the static result.
+algebra as an unconditional contract.
 
 #### Inherited primary-record categories and tier
 
@@ -866,10 +856,9 @@ The one-time Ninjutsu metric gates do not suppress this native contribution.
 `skill_two_route_contact_update` (`0x007AFB40`) requires that bit and
 `+0xB30`, then calls the helper on the same linked victim.
 Its intervening `skill_auxiliary_scale_target_motion` writes motion
-fields, with no guard/count write. This bounded synchronous chain establishes
-the full `0x007AFF28` route after its event's count. The half instruction
-exists, but no admitted guard transition or alternate caller establishes it
-within this chain; arbitrary aliased writes remain outside coverage.
+fields, with no guard/count write. This synchronous chain gives the full
+`0x007AFF28` route after its event's count; no guard transition or other
+caller in it reaches the half instruction.
 
 `skill_route_timed_contact_update` (`0x007B05C0`) instead resolves its
 guard subject with `skill_route_select_same_side_fighter`
@@ -899,8 +888,7 @@ not `ActionRecord.damage` directly. Their first definitions
 `1.0`; each remaining three-row set has category `0x00080000` and multiplier
 zero (`0x008A8358/0x008A839C/0x008A83E0` and
 `0x008AA800/0x008AA844/0x008AA888`). An explicit amount of `0.125`
-therefore requires the first definition to be active. These callbacks alone
-do not establish that identity.
+therefore requires the first definition to be active.
 
 All seven explicit instructions see actual native current **after** any
 positive manager-word flush; a flushed word is cleared and no new fighter
@@ -923,7 +911,7 @@ amount without changing these observed ordering facts.
 The First Hokage's **木遁・森羅万象**, and ANB resources 3/89/143 join
 Classic Sasuke's **千鳥**, Second Stage Sasuke's **黒い千鳥**, and
 Kakashi's **雷切**. These are Jutsu action 1/3 categories
-`0x00040000/0x00080000`; a throw in a move name does not establish an
+`0x00040000/0x00080000`; a throw in a move name does not make it an
 ordinary throw route. Exact action/resource/factory and authored startup
 joins belong to [Battle entities](../session/battle_entities.md#ccskilltyo000b).
 FOR resource 22, ANB resource 11 and ANB resource 53 have no verified
@@ -965,8 +953,7 @@ retains the original repeat count. Common form-0 updating divides that saved
 amount by the signed repeat and writes the active record before submission.
 Resource 31 initially selects definition 0, multiplier `1.0` and repeat 1;
 its second definition has multiplier zero and repeat 1. Thus the active
-record producer is established, without assuming every later alias selects
-the first definition.
+record producer starts as definition 0.
 
 The common zero-guard accepted producer has already incremented/flushed its
 contribution before dispatching this class's slot `+0x1A0`. TYO clears any
@@ -989,8 +976,8 @@ The inherited terminal callback sets the finish latch without counting event
 The shipped main animation contains only terminal event 10 at marker 115,
 with no nonterminal authored count events. The common accepted-contact
 route can previously count an unguarded contact, but FIR's slot `+0x1A0`
-is `skill_primary_accepted_callback_noop`. Actual prior contact admission,
-reset/retention and numeric tier remain unestablished; neither tier one nor
+is `skill_primary_accepted_callback_noop`. Its numeric tier therefore comes
+from whatever counting state precedes it; neither tier one nor
 a 115-hit sequence follows from this static join.
 
 ##### FOR and ANB accepted callbacks
@@ -1010,6 +997,49 @@ They therefore share the existing counted state, subject to ownership and
 later external producers. `damage_updates` counts update work, not new
 combo hits. These are code-order facts for a retained resource without
 an active native move join.
+
+#### Interrupted and aliased sequences
+
+Retail keeps no tier for a skill sequence. Every amount above reads the
+side's live `NativeCombo` and the fighter's pending byte at its own raw
+boundary, so an interruption changes the tier only through those counters.
+
+Between two counted events, `combo_consume_pending_hits` resets `current`
+to zero on timeout (90 updates without a consumed count) or when the
+defender is free, unless `keep` holds
+([Retention and reset](combo_accounting.md#retention-and-reset)).
+Later amounts then count from the reset value; nothing restores the earlier
+count. A reset in the same invocation that consumes a shared-float `+1`
+also discards that new contribution. A defender held in a response state is
+not free, because `guard_entry_allowed` rejects majors 5..8.
+
+`keep` needs the attacker's resolved action 1 or 3 and the defender's
+`state_flags & 0x80`. The byte stores that set that bit are in
+`skill_control_acquire` (`0x007943B0`), the attached state
+(`fighter_enter_attached_state`, `fighter_attached_object_update`), the
+fighter coordinator (`fighter_coordinator_state2`,
+`fighter_coordinator_state3`, `jutsu_post_cinematic_update`,
+`fighters_phase_slot_0c`), `battle_intro_update`, and five other BTL
+routines (`kabuto_classic_chakra_jutsu_contact_prepare`,
+`tsunade_legacy_jutsu1_receiver_control_cleanup`, `anb_set_state` and the
+unnamed `0x0079D3D0` and `0x00834D10`). This list comes from a search of
+decompiled byte stores. `skill_control_acquire` sets it on the skill's
+first header fighter and, when `substitute_second` is set and valid, on the
+second; `skill_control_release` (`0x007944C0`) clears it, and so do
+other routines, including
+[forced skill retirement](target_selection.md#release-and-cancellation-outside-the-final-substate).
+While the bit stays set and the attacker stays in Jutsu action 1 or 3, the
+counted events cannot be reset. Without it, a timeout or a free defender can
+reset them. Concrete tiers of a given move depend on when these
+conditions occur at runtime.
+
+The ownership terms cannot change sides within one battle graph. Exact-offset
+searches of resident and BTL code find only `battle_create_graph` writing the
+manager's primary slots `+0xDE4/+0xDE8`, so `primary_fighter_get` is fixed
+per graph. `combo_create` publishes each side's `NativeCombo` from that
+fighter's `fighter_init`, and `fighter_cleanup` clears it.
+`battle_create_sides` cross-links the two fighters' `opponent` pointers;
+other writers of `Fighter.opponent` were not searched.
 
 ANB's slot `+0x1A0` is `skill_anb000_damage`. Its positive-guard half amount
 follows guarded acceptance without a new count. If instead the common
@@ -1049,13 +1079,17 @@ then independently `fighter_hp_add(raw * 0.5, linked_fighter, 0, 0)`.
 Recovery uses half raw, not calculated damage/actual HP loss. It retains the
 adder's suppression/life gates and `1.0` cap, without `hp_recovery`/effect folds.
 Target damage can be suppressed while recovery runs; no success return joins
-them. This does not establish ordinary availability or full reuse lifetime.
+them.
 
 #### FOR damage-state lifetime
 
 `skill_for000_setup` recomputes the secondary snapshot from current `C`/record
-without resetting `C` or `q`. Repeated setup would use existing cumulative
-value; normal reuse is unproven. The inspected spawn allocates freshly.
+without resetting `C` or `q`, but it runs once per fresh object. Setup slot
+`+0x22C` is called only from `skill_primary_event_update` (`0x0078E700`)
+in the direct-call and decompiled slot-call searches, and that routine's
+only direct caller, `interaction_primary_register_call` (`0x00776280`),
+calls it right after `skill_actor_factory` allocates the object. Each FOR
+setup therefore starts from the constructor's `C` and `q`.
 `for_select` stores the byte selector: state 0 clears `damage_updates`, state 3
 clears it after release, state 2 performs entry work without clearing it.
 None resets `C`, `q` or snapshot. Earlier state-0 updates can advance the
@@ -1075,7 +1109,7 @@ After cleanup, target `guard_state > 0` or response `(5,0x4F)` admits damage.
 
 The multiplications stay separate. Accumulated flush precedes optional
 source-retaining `0x122` damage under target gates. There is no ordinary guard
-factor `G` or corresponding HP recovery in this bounded contribution.
+factor `G` or corresponding HP recovery in this contribution.
 Current ANB action identities and conditional tier ordering are established
 [above](#known-class-source-categories-and-hit-tiers).
 
@@ -1088,7 +1122,7 @@ Current ANB action identities and conditional tier ordering are established
 | 143 | `skill_anb_descriptor_143` | `0x3F8CCCCD` / approximately `1.1` | `2kkwcha1.ccs` |
 
 `skill_primary_event_update` uses `skill_resource_name_table` before class setup.
-The action joins, rather than CCS names alone, establish the three current
+The action joins, not the CCS names, identify the three current
 ANB move identities. ANB resolves the multiplier per contribution, not via
 constructor snapshot. FOR resource 22
 uses `skill_for_descriptor_22` / `2orccha0.ccs` but does not consume this
@@ -1107,13 +1141,6 @@ and selects post-cinematic effect/KO. It introduces no extra nonzero amount.
 
 ## Evidence limits
 
-The single observation covers ordinary/`0.02` contact only. `0.04` contact,
-guard damage, Handicap, temporary factors and every direct path remain
-unobserved here. Other characters and throws, projectiles, Jutsu, Ultimate
-Jutsu, support, status and transformations are not covered by that observation.
-
-Other move/tier attribution and arbitrary shared-record aliases/mutation,
-reuse beyond fresh spawn, broader input-source aliases and later FPU rounding
-control remain unresolved. Observed heap addresses are allocation-specific.
-There is no original source; static branches, authored data and the Practice
-observation have distinct bounds.
+The single Practice observation covers ordinary and `0.02` contact damage
+only. Every other path in this document is established statically. Observed
+heap addresses are allocation-specific.

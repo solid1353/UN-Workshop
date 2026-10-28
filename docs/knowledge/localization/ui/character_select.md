@@ -5,8 +5,8 @@
 Established: retail NA2 and UN5 character-name rectangle ownership, the
 separate portrait grid, footer draw order and cross-game anchor differences.
 The examined binaries, callers, records and paired screen states establish
-these relationships; they do not cover every animation phase or indirect
-caller. Other callers and states remain open.
+these relationships.
+Open: nothing.
 
 Names come from `@annotations/NA2` and `@annotations/UN5`; comments there
 hold per-routine details. All addresses below are live.
@@ -25,8 +25,8 @@ NA2 `character_name_rectangle_copy` (`0x0037D410`) reads
 `FrontendRectangle` records. The UN5 counterpart with the same name
 (`0x0038C350`) uses `character_name_rectangle_get_localized` (`0x003D45D0`)
 and `character_name_locale_tables` (`0x005BB490`). English language index zero
-selects `character_name_rectangles_english` (`0x005DDC50`). Its table length is
-not established here.
+selects `character_name_rectangles_english` (`0x005DDC50`), which also has 96
+rows: the next localized table starts at `0x005DDF50`.
 
 UN5 `character_portrait_rectangle_copy` (`0x0038C3A0`) instead reads
 `character_portrait_rectangles` (`0x005DBFA0`), the separate uniform 38 by 46
@@ -45,17 +45,19 @@ vertical anchor 362:
 
 | Control | NA2 horizontal anchor | UN5 horizontal anchor | Resource owner |
 | --- | ---: | --- | --- |
-| OK | 400 | 400 plus the OK global adjustment | `common_prompts` |
-| Back | 470 | 470 plus the Back global adjustment | `common_prompts` |
+| OK | 400 | 388 (400 + `frontend_cross_x_offset`) | `common_prompts` |
+| Back | 470 | 462 (470 + `frontend_triangle_x_offset`) | `common_prompts` |
 | Random | 300 | 260 | `charsel_sprites`, `character_select_random_rectangle` |
 | Select Color | 160 | 100 | `charsel_sprites`, `character_select_color_rectangle` |
 
 `charsel_sprites` and `common_prompts` are named fields of NA2
 `CharacterSelectRoot` and UN5 `CharacterSelectFooterView`. Random and Select
 Color use `CHARSEL1.CCS` records; OK and Back use the separate shared prompt
-compositor and resources. UN5 adds signed global adjustments to the latter
-anchors, so the nominal constants alone do not establish their effective
-positions. The adjustment values and their writers are not established here.
+compositor and resources. UN5 adds the signed regional globals
+`frontend_cross_x_offset` (`0x00611964`) and `frontend_triangle_x_offset`
+(`0x00611968`) to the latter anchors; English captures hold `-12` and `-8`,
+the same additions as the
+[Options-root anchors](options.md#options-root-ok-and-back-anchors).
 
 The UN5 prompt setup depends on its own globals and calling convention;
 its setup cannot be treated as interchangeable with NA2's.

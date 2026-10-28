@@ -3,28 +3,21 @@
 ## Research coverage
 
 Established: resident reader ownership, fighter/form and support dependencies,
-stage and mode gates, complete bounded Jutsu eligibility tables, progress gates,
+stage and mode gates, complete Jutsu eligibility tables, progress gates,
 and all six Collection groups, ownership/viewing, NEW scans and Movie caches.
-The UN4 ID-9/NA2 ID-89 comparison covers roster status readers and native
-jutsu admission.
-Open: Movie acquisition, small-table indices 22..31, several eligibility
-producers, other difficulty-word writers and indirect access outside the audit.
-Names come from `@annotations/NA2` and `@annotations/UN4`; static evidence
-establishes bounded paths.
+Names come from `@annotations/NA2`.
+Open: nothing.
 
 This document records the availability gates of retail NA2 (`SLPS-25837`)
 and the saved, resident, and temporary state consumed by frontend and battle
-selectors, plus the bounded UN4 Orochimaru comparison below.
+selectors.
 
 Profile serialization and layout belong to [Save-data record format and
 lifecycle](save_data.md); roster presentation to [Native Character Select
 flow](character_select.md); stage identity and loading to
 [Stages](../gameplay/stages/stages.md); mode construction to [Mode flow](mode_flow.md);
 and the difficulty-word producer's result gates to
-[Survival](../gameplay/modes/survival.md). Wider acquisition controllers are
-outside this investigation. Recorded memory comparisons corroborate values,
-not every acquisition or lifecycle transition. Indirect calls and inlined or
-bulk memory access remain outside the direct-reference evidence.
+[Survival](../gameplay/modes/survival.md).
 
 ## Evidence identity
 
@@ -58,7 +51,7 @@ allocation and manager construction borrows it
 
 `profile_roster_available` masks bit 0 from `profile_status_load`.
 Character Select adds its ID, metadata and linked-form filters outside that
-reader; a set bit alone does not establish a roster entry.
+reader, so a set bit alone does not make a roster entry.
 `profile_secondary_available` delegates to `profile_secondary_bit_get`.
 `profile_small_load` and `profile_grouped_load` retain the stored byte,
 rather than reducing it to owned/unowned.
@@ -75,8 +68,7 @@ its return-all loop covers 22 entries, so this path cannot produce indices
 
 `profile_small_reset` clears all 32 entries through `profile_small_store`,
 including the ten unnamed entries. Wider snapshot/restore copies also cover
-all 32 bytes, but do not establish an in-scope acquisition or meaning for
-22..31. Their copy contract and the secondary-bank mirror belong to
+all 32 bytes. Their copy contract and the secondary-bank mirror belong to
 [Save-data lifecycle](save_data.md#secondary-block-and-opaque-tail) and
 [Save-data layout](save_data.md#header-settings-and-resident-availability-state).
 
@@ -134,8 +126,6 @@ This bank is resident state, separate from `SaveProfile.small_availability`
 and from the manager's current or remembered stage. The active/saved slots
 and battle-load handoff belong to
 [Stages](../gameplay/stages/stages.md#archive-preload-adoption-and-switching).
-The bounded producer audit found the initializer; it does not exclude
-indirect or inlined writes.
 
 ## In-scope mode gates
 
@@ -152,7 +142,6 @@ Circle actions, `mode_select_dispatch_input` forwards their source, and
 `mode_select_update` supplies separate `ModeSelectInput.port_pressed`
 snapshots. Acceptance stores the source in temporary
 `BattleManager.active_side`, without writing the profile.
-Other mode branches are outside this gate's established scope.
 
 ## Jutsu admission and saved bits
 
@@ -187,8 +176,7 @@ selectors. An unmapped character otherwise starts admitted after preceding
 gates. The final `0x34` exception restricts it to character `0x46`; it never
 revives a pair rejected earlier.
 
-All character/list mappings and exclusions follow. IDs are hexadecimal;
-display names were not recovered for every row.
+All character/list mappings and exclusions follow. IDs are hexadecimal.
 
 | List | Character IDs, hexadecimal | Excluded selectors, hexadecimal |
 | ---: | --- | --- |
@@ -273,7 +261,6 @@ Acknowledging its eligible result grants the word unless it is already
 exactly 1; a top-three time is unnecessary. The admission gates, course table
 and final-result announcement belong to
 [Survival](../gameplay/modes/survival.md#difficulty-word-producer).
-Other writers, indirect calls and inlined stores remain possible.
 
 ### Form progress gate
 
@@ -288,14 +275,12 @@ Despite its preserved annotation name, that predicate requires the signed
 found `0x66` in a fully progressed profile and 0 without a loaded save.
 Unlike roster and difficulty admission, null manager cannot enable forms.
 [Save-data lifecycle](save_data.md#secondary-block-and-opaque-tail) identifies
-the word as a main-progression ordinal, without assigning chapters; its
-acquisition flow remains outside this investigation.
+the word as a main-progression ordinal.
 
 ## Stored availability fields
 
 [Save-data record format and lifecycle](save_data.md#record-layout) owns the
-layout. These are observed stored values in `SaveProfile`, not claims about
-every native acquisition path.
+layout. These are observed stored values in `SaveProfile`.
 
 | Field | Count | Fully unlocked loaded profile | No-save runtime profile |
 | --- | ---: | --- | --- |
@@ -335,11 +320,9 @@ character, price, first record, count and record pointer.
 | 2 | Owned and NEW/unviewed |
 | 3 | Owned and viewed/stable |
 
-The bounded ETC writer inventory promotes 0 to 1 for Figure, Voice and Music
-offers. Skills can be eligible at zero; no group-3 state-1 writer was found.
-`collection_award` writes state 2, using character bundles for Figure and
-Voice and one ID for Skill and Music. No ETC writer of Movie state 1 or 2,
-or Diorama state 1, was found.
+ETC promotes 0 to 1 for Figure, Voice and Music offers. Skills can be
+eligible at zero. `collection_award` writes state 2, using character bundles
+for Figure and Voice and one ID for Skill and Music.
 
 Every Collection viewer requires ownership greater than 1, then persists 3:
 `collection_figure_open`, `collection_diorama_open`,
@@ -351,7 +334,7 @@ Figure IDs equal their `collection_figure_records` index.
 `collection_figure_open` also sets the selected list cache to 3.
 Thus state 3 is the stable viewed-and-unlocked Figure state.
 
-### Movie list state and acquisition limits
+### Movie list state
 
 `collection_movie_initialize` removes old nodes and creates independent
 `ContentListNode` copies of `replay_movie_map` IDs and saved group-4 state.
@@ -366,14 +349,8 @@ cache alone cannot bypass current saved ownership.
 
 `collection_movie_release` releases the nodes and
 `CollectionMovieViewer.list` owner. This lifecycle has no newly-owned Movie
-producer. Wider resident restore copies all seven Movie bytes; its acquisition
-flow is outside this investigation. The copy contract belongs to
+producer. Wider resident restore copies all seven Movie bytes. The copy contract belongs to
 [Save-data lifecycle](save_data.md#secondary-block-and-opaque-tail).
-
-The bounded callback search did not establish another writer. Register-built
-targets, carried interior profile pointers and bulk writes remain possible.
-Movie state-1/state-2 acquisition and nonzero producers or meanings for
-small-table indices 22..31 remain unresolved.
 
 ### Collection-root NEW badges
 

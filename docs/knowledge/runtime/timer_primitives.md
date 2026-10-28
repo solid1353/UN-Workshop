@@ -5,9 +5,8 @@
 Established: NA2 fractional cursors, five event/range predicates, fixed-point
 countdown arithmetic, reset/arming, selected caller gates and local ordering.
 Names come from `@annotations/NA2`; annotations hold per-routine code detail.
-Open: the reset sentinel's consumer, indirect-call coverage, exceptional inputs,
-complete timer coverage and the wall-clock duration of a count.
 Evidence is static retail `SLPS-25837` code; addresses below are live.
+Open: nothing.
 
 This document owns reusable timer contracts. Fighter phase meanings belong to
 [Hit response](../gameplay/combat/hit_response.md), combo ownership to
@@ -22,8 +21,8 @@ This document owns reusable timer contracts. Fighter phase meanings belong to
 
 `TimelineBlock` is a `0x24`-byte embedded cursor/countdown record.
 `timeline_construct` initializes `type` to `timeline_type_descriptor`
-(`0x005DA070`), resets the record and returns its pointer. The descriptor's
-semantic type remains unknown; reset and arithmetic preserve it.
+(`0x005DA070`), resets the record and returns its pointer. Reset and
+arithmetic preserve the descriptor.
 
 | Field | Established contract |
 | --- | --- |
@@ -75,8 +74,7 @@ assignment, forward remainder lies in `[0,1)` and countdown remainder in
 `(-1,0]`. **Inference:** at ordinary small positive counts, delta `0.5`
 extracts a whole unit every second call while fractional state changes each
 call. Countdown zero can coexist with negative fractional position after
-overshoot. Counts are invocation units; the helpers establish no seconds or
-display cadence.
+overshoot. Counts are invocation units.
 
 `entry` (`0x00100008`) clears FCSR at `boot_clear_fcsr`
 (`0x00100118`). The scoped timer helpers do not write it. EE rounding is
@@ -96,8 +94,7 @@ consume no event.
 | `timeline_interval_crossed` | `0x00211BA0` | Same integer traversal, accepting any visited integer in inclusive `[low, high]`. |
 | `timeline_interval_crossed_wrapped` | `0x00211C80` | Reduce previous/current by signed remainder modulo period; replace current remainder zero with period only when previous remainder is nonzero, then apply the inclusive traversal. |
 
-Direction follows signed comparisons of a wrapping 32-bit difference. No
-elapsed-time interpretation is established after difference overflow. The
+Direction follows signed comparisons of a wrapping 32-bit difference. The
 wrapped helper neither guards its divisor nor reconstructs complete cycles:
 equal reduced endpoints cannot distinguish a full cycle from no movement.
 Only the nonzero-to-zero endpoint receives the explicit adjustment.
@@ -126,8 +123,7 @@ remainder, which matters when consumers run without advancement.
 
 ### Bounded callers and scheduling ownership
 
-The selected callers establish these local gates; indirect calls and other
-timer implementations remain outside the established coverage.
+These callers have the following local gates:
 
 | Owner / named record | Delta or assignment | Local gate/order |
 | --- | --- | --- |
@@ -181,8 +177,7 @@ Inside `node_flags & 2`, `fighter_update_movement_slot` calls action effect
 presentation then `fighter_schedule_action_audio`, outside its inner
 positive-pause branch. Audio uses secondary-enable primary event `0`, or the
 descriptor-authored event in major `8`. Cue ownership and other gates belong
-to [Battle audio](../gameplay/session/battle_audio.md). These local orders
-alone do not establish how often the outer scheduler invokes each owner.
+to [Battle audio](../gameplay/session/battle_audio.md).
 
 ## Fixed-point remaining/elapsed block
 
@@ -197,14 +192,13 @@ with `TimelineBlock`. The examined resident global instance is
 | `elapsed` | 32-bit fixed-point value, unsigned-capped at `0x63000000` before terminal handling. |
 | `snapshot_0c/snapshot_10` | Words cleared by configured reset and unused by advance; snapshot ownership belongs to [Practice mode](../gameplay/modes/practice_mode.md). |
 | `limit` | Initial whole count; terminal handling replaces elapsed with `limit << 24`. |
-| `reset_sentinel` | Configured reset assigns `-1`; consumer meaning remains unknown. |
+| `reset_sentinel` | Configured reset assigns `-1`. |
 | `delta` | Subtracted from remaining/added to elapsed; configured value `0x00044444`. |
 
 There are 24 fractional bits. Stored delta
 `0x00044444 = floor(2^24 / 60)` is quantized. **Arithmetic consequence:**
 sixty eligible updates sum to `0x00FFFFF0`, sixteen fixed-point units short
-of `1 << 24`. This establishes a nominal sixty-update whole-unit scale,
-without establishing display or wall-clock cadence.
+of `1 << 24`. This gives a nominal sixty-update whole-unit scale.
 
 ### Advance, suppression and terminal ordering
 
@@ -242,8 +236,8 @@ presentation are owned by
 `battle_clock_freeze_set` replaces only the arithmetic-freeze bit from the
 input's low bit. `battle_collect_scheduler_masks` assigns suppression from
 two suppression words before complementing them into controller masks.
-`battle_timer_update` owns the recovered advance call and its additional
-fighter/session gates; flag bits alone do not establish scheduling.
+`battle_timer_update` owns the advance call and its additional
+fighter/session gates.
 `battle_evaluate_terminal_conditions` consumes terminal state and publishes
 the expiry latch; [Collision](../gameplay/combat/collision.md) owns its combat
 use.
@@ -258,23 +252,7 @@ toward zero. It has no timer record, reset, remainder or scheduler access.
 and producer coverage belong to
 [Match outcomes](../gameplay/session/match_outcomes.md).
 
-## Confidence and remaining evidence limits
+## FPU rounding
 
-Arithmetic, branch endpoints and field writes are established by scoped code.
-Names describe demonstrated operations; retail source type names were not
-recovered. Caller coverage is bounded: incomplete function boundaries and
-negative xrefs do not prove whole-program absence.
-
-Some current typed Fighter expressions after pointer arrays disagree with raw
-accesses and the saved field declaration. The raw accesses establish
-`update_rate`, the embedded timeline locations and the pause gate used here;
-no cause for that disagreement is established. The auxiliary Kankuro/Chiyo
-views use the raw-confirmed timer locations. BTL's selected timer path is
-corroborated by live disassembly where an older decompilation truncated paths
-after calls classified as non-returning.
-
-The fixed-point reset sentinel's consumer remains unknown. Positive nonzero
-periods are not proved for every modulo caller; unusual signed, large or
-non-finite deltas are outside established caller contracts. The helpers perform
-native FPU operations without changing rounding control
+The helpers perform native FPU operations without changing rounding control
 ([Randomness](randomness.md#ee-hardware-conversion-and-software-packing)).

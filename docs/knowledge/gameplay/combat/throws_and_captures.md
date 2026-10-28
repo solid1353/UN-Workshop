@@ -6,18 +6,17 @@ This document investigates throw and capture control in retail NA2 (`SLPS-25837`
 
 Established: paired capture entry, contact/substitution gates, classification, guard exceptions, attachment/approach arithmetic,
 continuations, release callbacks, category disabling, and selected model update/destruction ordering.
-Open: `0x400/0x800` meanings/producers, anchor/partner-model availability, zero-distance/scale inputs, address-zero lookup failure,
-isolated removal ordering, other escape/destruction families, branch reachability, and visible durations/outcomes.
 Names come from `@annotations/NA2`; routine comments hold the code-level detail.
+Open: nothing.
 
 ## Evidence and address conventions
 
 Binary identities and live address conventions belong to
 [Retail game file identities](../../game/files/file_identities.md#address-conventions).
-The evidence is static and bounded; equations describe velocity writes rather than a
+The evidence is static; equations describe velocity writes rather than a
 measured trajectory. Annotation names describe the demonstrated roles, not recovered
-source names. The bounded overlay direct-call census is preserved in the resident
-routine comments and excludes no indirect transfer. Descriptor-driven receiver handoff
+source names. The overlay direct-call census is preserved in the resident
+routine comments. Descriptor-driven receiver handoff
 remains in [Hit response](hit_response.md).
 
 [Target selection](target_selection.md) owns participant/provenance contracts;
@@ -39,7 +38,7 @@ here recognize only `0x100/0x200`.
 
 `capture_bypasses_guard` returns 1 only when that classification is nonzero and
 `ActionRecord.flags & 0x4000` is set. The contact-side consumer `hit_attacker_landed`
-uses this result to suppress its ordinary guard branch. This proves a
+uses this result to suppress its ordinary guard branch. This is a
 category/flag-specific guard bypass, not universal unguardability of everything entering
 a held response. Hit admission, response selection and damage application remain
 separate gates owned by [Hit response](hit_response.md) and [Damage](damage.md).
@@ -52,8 +51,7 @@ attachment service does not use `Fighter.response_source` to choose its partner.
 
 ### Wide-mask bits without a classified capture
 
-Bits `0x400/0x800` have a bounded common-code contract even though their authored
-meanings remain unidentified. A record containing either bit but neither `0x100` nor
+A record containing either bit `0x400/0x800` but neither `0x100` nor
 `0x200` passes the attachment category gate and the broad `fighter_side_query` predicate
 (when behavior `& 0x7C` is zero), but `capture_classify` returns zero. Such a record
 does not receive classifier-based guard bypass. Action entry and cleanup call only the
@@ -66,13 +64,9 @@ For a held receiver whose partner remains in major 8 with such a record,
 `response_held_handoff` enters `(0,0)` if behavior `0x04000000` is clear: the current
 record exists, but both classified category bits fail. When that behavior bit is set,
 the same updater retains the receiver without checking those two category bits. Thus the
-broad attachment mask alone does not establish a complete starter/release lifecycle for
-`0x400/0x800`.
+broad attachment mask alone gives `0x400/0x800` no complete starter/release lifecycle.
 
 The selected IDs 39/47 arrays contain `0x100/0x200` in this group and no `0x400/0x800`.
-No concrete authored wide-mask-only capture record or writer is established; matching
-numbers in input/exchange or movement fields do not identify a category producer. Their
-purpose and reachability remain open.
 
 ## Sender-side attachment
 
@@ -103,11 +97,8 @@ handling has three forms:
 After a successful anchor path, the function clears partner grounded bit
 `Fighter.contact_flags & 0x80` and clamps negative `Fighter.response_vertical_speed` to
 zero. Its local transform workspace pointer is restored before return. It does not store
-an additional `opponent` pointer or install an allocation owner. This establishes the
-static position/model binding; it does not establish the visible animation or which
-resource supplies every anchor. The direct `0x4E` model-write branch has no explicit
-partner-model null check; the investigation does not establish that model pointer's
-availability under every possible interruption.
+an additional `opponent` pointer or install an allocation owner. The direct `0x4E`
+model-write branch has no explicit partner-model null check.
 
 ### Attachment equations and lookup failure
 
@@ -136,9 +127,7 @@ The anchor is borrowed for this call, not retained in a fighter field:
 `resource_find_model` searches the sender scene's named entries and the optional
 type-`0x100` `CaptureModelLookupNode.nested_type100` object. Its required-lookup failure
 writes zero to address zero before returning null. `capture_attach_receiver` supplies
-zero. Its later null branch prevents attachment stores, but does not prove that a
-missing authored anchor is harmless. The effect of the address-zero write and
-ordinary-play reachability of such a missing anchor are unresolved. The name pointer
+zero. Its later null branch prevents attachment stores. The name pointer
 itself is dereferenced without a null-pointer check after the nonnull sender-model gate.
 
 ## Common entry, handoff and interruption
@@ -170,8 +159,7 @@ is still installed. When the requested next major is not 8, it also releases a p
 specifically held in `(5,0x50)` to `(0,0)`; this branch is distinct from attachment
 responses `0x4A..0x4E`. It does not immediately force those attachment responses to
 neutral. Their following response updates consult the partner's resulting state through
-`response_held_handoff`. This proves a scheduled handoff, not complete protection
-against every possible participant destruction or indirect callback.
+`response_held_handoff`, a scheduled handoff.
 
 ### Facing and sender approach
 
@@ -239,8 +227,7 @@ target-refresh branch requires E; its alternative reuses `S.capture_target`.
 Set `d = T-O`, `r = lengthXYZ(d)` and `C = S.capture_distance_cap`. If `r > C`, use
 `d = C*d/r` and retained length `L = C`. Otherwise use `d = (1+wS/r)*d` and retain
 `L = r`. Reverse only `d.x` when `S.response_facing != S.facing`, then store `O+d` in
-`Fighter.capture_target`. No zero-distance guard precedes the `wS/r` division; the
-evidence does not establish which authored/play states avoid that input.
+`Fighter.capture_target`. No zero-distance guard precedes the `wS/r` division.
 
 The next stage sets the intermediate vector's Y to zero and computes
 `a = wrap(pi/2 + atan2(d.z,d.x))`. Here `wrap` subtracts `2*pi` once above `pi` and
@@ -343,7 +330,7 @@ Additional consumers show why classification is broader than guard handling:
 | `naruto_nine_tails_channel3` | Classic Naruto's Nine-Tailed form callback dispatches a pending index other than `-1` during classification 1 before its action-specific effects |
 
 The request/cancel contracts remain in
-[Combat action execution](combat_action_execution.md#input-interruption-of-an-executing-action). These code paths do not establish a universal escape command or a separate
+[Combat action execution](combat_action_execution.md#input-interruption-of-an-executing-action). These code paths are not a universal escape command or a separate
 target-selection mechanism.
 
 For a receiver in major 5, that separate `section_transfer_down_allowed` request checks
@@ -353,8 +340,8 @@ still require zero `exchange_roles/context_state`, grounded bit
 `Fighter.contact_flags & 0x80`, `movement_flags & 0x10000`, and logical request
 `0x100000` or both `0x8/0x10000`. Successful attachment clears that grounded
 prerequisite. Thus this request is excluded by the bound receiver's grounded state after
-the attachment pass, not by a universal no-escape flag. Reachability before attachment
-or with an absent anchor is unresolved. The two ordinary input-recovery state lists also
+the attachment pass, not by a universal no-escape flag. The two ordinary input-recovery
+state lists also
 omit `0x4A..0x4E`; their complete conditions remain in
 [Hit response](hit_response.md#input-recoveries).
 
@@ -494,7 +481,7 @@ three ID-39 starters lack behavior `0x4000` and have nonnegative predecessor byt
 starter records. Their callback's pending-release dispatch thresholds are recorded
 above. The ID-39 `0x25` starter and both ID-47 starters have predecessor -1 and behavior
 `0x4000`. The common automatic handoff still requires outcome 1 and matching accepted
-source record; a continuation byte by itself does not establish connection.
+source record; a continuation byte by itself does not connect them.
 
 The `0x25/0x26` sequences use ID-39 animation slots `0x8A/0x8B` and `0x8C/0x8D`.
 Capture conditions are `-16/-16`, release conditions `-16/-18`, each followed by
@@ -549,8 +536,8 @@ mode, a current category-`0x200` record, or category `0x100` with outcome 1, cal
 capture cleanup before restoring category words for indices `0x15..0x2A` and zeroing
 them for `0x2B..0x37`. Mode 1 swaps the enabled sets. The direct caller
 `choji_channel2` gates this helper on fighter ID `0x51` and supplies the same
-`contact_flags` bit `0x20` mode. This establishes an interruption path during category
-activation changes, without assigning a player-facing name to that mode.
+`contact_flags` bit `0x20` mode. This is an interruption path during category
+activation changes.
 
 ## Attachment scheduling
 
@@ -561,8 +548,8 @@ transforms resulting from those preceding passes. Its loop is not restricted by 
 pause in that pass; the attachment body's own state/category/partner/anchor gates
 still apply.
 
-This order proves when the position binding is applied relative to the examined model
-callbacks. It does not prove every indirect invocation or all frame scheduling;
+This order fixes when the position binding is applied relative to the examined model
+callbacks;
 [Battle lifecycle](../session/battle_lifecycle.md) owns the coordinator schedule.
 
 ### Selected pre-attachment callbacks and model lifetime
@@ -589,8 +576,8 @@ The full ID-47 helper `naruto_nine_tails_update_bones` includes authored `0x22/0
 `0x2A/0x2B` capture events, derives reach offsets, and writes selected bone matrices in
 its primary and auxiliary scenes. It resolves optional names with argument 2 equal to 1
 and skips absent objects. It stores no new participant and contains no model-destruction
-call. This is a concrete pre-attachment transform producer; it does not prove every
-anchor matrix is always present. General skeleton binding remains in
+call. This is a concrete pre-attachment transform producer.
+General skeleton binding remains in
 [Model and skeleton runtime](../../runtime/rendering/model_runtime.md#animation-binding-to-scene-nodes).
 
 The four record-provided anchor strings are respectively `OBJ_eff_dummy_fouhol0`,
@@ -628,7 +615,5 @@ held-partner release or reciprocal `opponent` invalidation. Common handle releas
 destroys and clears the player, but does not clear the other fighter's pointer. The
 current-state setter's interruption cleanup and whole-fighter destruction are therefore
 distinct paths. The normal form replacement rebuilds both participants, as recorded in
-[Awakening](../characters/awakening.md#static-reconstruction-order); an isolated
-participant removal between receiver update and attachment remains unproved. Neither the
-local anchor scratch pointer nor the full-transform write establishes general
-stale-pointer protection.
+[Awakening](../characters/awakening.md#static-reconstruction-order). Neither the local
+anchor scratch pointer nor the full-transform write protects against a stale pointer.

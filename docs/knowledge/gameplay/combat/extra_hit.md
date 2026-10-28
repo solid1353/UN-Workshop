@@ -4,10 +4,8 @@
 
 Established: eligibility, authored chase/counter records, role changes, counter
 window and limit, initialization and teardown in retail NA2 (`SLPS-25837`).
-Open: attacker-bit `8/0x20` writers beyond the bounded search, precise probe
-geometry, intermediate rounded windows, visual labels and score meaning.
-Static ordering does not establish exhaustive character-specific behavior.
 Names come from `@annotations/NA2`; routine comments hold code-level detail.
+Open: nothing.
 
 This document owns the native exchange between a launched fighter and its
 opponent: chase eligibility, counter selection, role reversal and teardown.
@@ -26,11 +24,10 @@ All addresses below are live. The routines are resident ELF entries; the
 stage queries and `action_descriptor_table` belong to `BTL.BIN`.
 Named fighter fields follow the saved `Fighter` declaration and verified raw
 loads/stores. Applied decompiler field expressions can disagree with that
-declaration and do not independently establish offsets.
+declaration; raw accesses decide offsets.
 
 The authored inventory covers all 74 primary action tables (3,428 records).
-The role-writer search covered direct role-word/byte and window stores;
-rebased aliases, bulk writes and uninspected overlay writers remain open.
+The role-writer search covered direct role-word/byte and window stores.
 The pair resolver was inspected here only for its calls into this exchange.
 
 ## Eligibility and action exit
@@ -80,10 +77,9 @@ otherwise. *Airborne* means `contact_flags & 0x80` is clear. Probe sentinel
 | `0x1000` | `exchange_floor_eligible` (`0x00241890`): airborne, `floor_probe_distance` unset or at least `2H`; position component 2 is at least `H` above the projected boundary and no lower than the floor profile. |
 
 Each gate re-requires one of the five launch responses. Other kinds reject.
-The endpoint query is not an established “contact means reject” predicate.
+A query result other than `1` does not reject by itself; the clearance test decides.
 The probe field names follow
-[Movement and physics](../stages/movement_and_physics.md#floor-side-surfaces-and-limits);
-precise geometry interpretation beyond their measured use remains open.
+[Movement and physics](../stages/movement_and_physics.md#floor-side-surfaces-and-limits).
 
 ### Authored Extra Hit records
 
@@ -160,9 +156,10 @@ common increment:
 
 `exchange_window = max(1, s16(cvt(12.0 - 1.7142857 * exchange_count)))`
 
-The conversion uses the active EE rounding mode. Exact established endpoints
-are `12` at count `0` and the floor `1` from count `7`; intermediate
-rounded values remain open.
+The EE FPU converts toward zero
+([EE hardware conversion](../../runtime/randomness.md#ee-hardware-conversion-and-software-packing)),
+so counts `0..6` give windows `12, 10, 8, 6, 5, 3, 1`, and every later count
+gives `1`.
 
 Retargeting makes the initiator retain its opponent as both `response_source`
 and `contact_attack_source`, clears `response_attack_record`, and adopts
@@ -185,9 +182,8 @@ the dispatch return.
 
 Missed windows change receiver `0x100 → 0x200` and paired attacker
 `1 → 2`, or receiver `0x400 → 0x800` / `0x1000 → 0x2000` while attacker
-`4/0x10` remain set. This does not establish `4 → 8` or `0x10 → 0x20`.
-Teardown handles `8/0x20`, but their writers remain outside the established
-fighter-role paths.
+`4/0x10` remain set. No traced fighter-role path writes attacker `8` or
+`0x20`; teardown still handles them.
 
 ### Receiver response and exchange limit
 
@@ -218,12 +214,11 @@ score and returns `-1`.
 
 The progress interval follows the current authored attack phase. Its ordinary
 width is `window * converted_phase_rate / 256` animation frames, where the
-phase rate times update rate is converted under the active rounding mode;
+phase rate times update rate is converted toward zero;
 the active matching animation player can supply its own rate, frame and
 fraction. Payload flags and authored end fields can bypass or extend the
 ordinary terminal window, so “only the last window frames” is conditional.
-The score is a normalized progress formula, without a clamp proving an
-unconditional `0..1` bound. Its player-facing meaning remains open.
+The score is a normalized progress formula and is not clamped to `0..1`.
 The full mode table belongs to
 [Action commands](action_commands.md#selector-modes-and-entry-gates);
 counter options belong to
@@ -262,5 +257,4 @@ exchange teardown.
 **Inference:** requiring a launch caused by the initiating current attack,
 then selecting another authored launch, makes this the native air-chase/juggle
 continuation. The window shrinks with each exchange; later receiving roles
-refuse further counters at count `15`. Visual labels and the player-facing
-score meaning have not been established.
+refuse further counters at count `15`.

@@ -2,16 +2,12 @@
 
 ## Research coverage
 
-189 of the 214 direct BTL seek sites are classified. The established contracts
-cover selection, rate, completion, submission and local ownership; the remaining
-25 sites are listed in the [direct-call census](scene_playback_owners.md#direct-call-census-and-analysis-limits).
+The established contracts cover selection, rate, completion, submission and
+local ownership of 189 of the 214 direct BTL seek sites; the other 25 are the
+`scene_seek_unclassified_*` labels in `@annotations/NA2/BTL.BIN`.
 Routine names, signatures, field layouts, resource labels and local details are
 recorded in `@annotations/NA2` for `BTL.BIN` and `SLPS_258.37`.
 
-This is static coverage. Indirect dispatch, invocation cadence, the inherited
-primary player's full lifetime and schedule, GAR's continuing update, SKN/SKM
-child playback, typed-resource type-3 selection and derived initialization,
-linked-node flag bit 1, and all buddy outer-gate producers remain open.
 
 [Animation runtime](animation_runtime.md) owns evaluation algorithms;
 [CCS runtime](../game/files/ccs_runtime.md) owns parsing and resource lifetime.
@@ -60,8 +56,8 @@ target `0x100`; every listed seek also carries the
 
 Stage playback combines scene-rate increments with explicit trigger, endpoint,
 rebirth and construction requests. Contact-count and flag gates in the base
-break owners choose contact processing, then converge on playback; they do not
-establish an animation pause.
+break owners choose contact processing, then converge on playback; they are not
+an animation pause.
 
 | Owner | Increment policy | Explicit requests |
 | --- | --- | --- |
@@ -71,7 +67,7 @@ establish an animation pause.
 | `ccBgTransAnm` | Cached default step × animation multiplier × scene rate; requires the battle context | Configured construction frame, or random frame `0..F-1` |
 | `ccBgBreakObjectRebornBattle` | Base playback precedes rebirth handling | Rebirth selects model zero at frame 1 and clears completion |
 | `ccBgBreakObjectMoveBattle` | Mover and base playback precede reset handling | Delay expiry selects model zero at frame 1 and clears completion and break count |
-| `ccCraneTruck` | Its own player advances in both inspected states | Alternate-animation completion rebinds and evaluates the default once, then resets the linked break player's model zero to frame 1 |
+| `ccCraneTruck` | Its own player advances in both states | Alternate-animation completion rebinds and evaluates the default once, then resets the linked break player's model zero to frame 1 |
 | `ccBgBreakObjectBattleChandelier` | Playback rate × scene rate × 256 | Trigger at zero, endpoint return at `F-1`, and timed rebirth at frame 1 |
 
 The doll's nonzero cooldown decrements and returns before playback. The
@@ -84,7 +80,7 @@ Two earlier owners have independent initialization contracts.
 `btl_counter_arm_stopped_player` arms its player when the clamped counter
 exceeds 1, requests frame 1 and assigns step zero.
 `btl_reset_player_records` requests frame 1 while resetting owner and record
-state. Their complete scheduling chains remain open.
+state.
 
 ## Additional BTL local owner contracts
 
@@ -112,8 +108,7 @@ Submission visits 20 instance records. Nonzero-opacity instance zero uses the
 first player; the remaining instances sequentially reuse a shared player,
 restoring each instance's transform, opacity and the owner's logical frame
 before submitting. Submission does not increment that logical frame. A helper
-can change draw suppression after update clears it; its full gate and cadence
-remain open.
+can change draw suppression after update clears it.
 
 ## BTL requested-state and endpoint sequencing
 
@@ -145,13 +140,12 @@ rotation copy do not choose between different descriptors.
 `anb_primary_endpoint_advance` requests the primary player's `F-1` endpoint
 and then advances/composes that player in the same eligible path. Endpoint
 selection here does not imply a stationary pose. Its earlier association work
-converges before this pair; the complete upstream schedule remains open.
+converges before this pair.
 
 ## BTL byte selectors and frame-one requests
 
 These byte-driven changes reuse the inherited primary player. They bind with
-zero blend and request frame 1, then continue local bookkeeping. They do not
-establish the player's ordinary advance schedule.
+zero blend and request frame 1, then continue local bookkeeping.
 
 | Selector family | Byte value | Descriptor choice |
 | --- | ---: | --- |
@@ -169,12 +163,12 @@ requests into a looping rule.
 
 The gauge owns three allocated players in the borrowed `battlegauge`
 container. Construction binds and evaluates each once; clearing a latch does
-not imply an unevaluated player. Cleanup destroys all three, while the inspected
-cleanup retains the container.
+not imply an unevaluated player. Cleanup destroys all three and retains the
+container.
 
 The threshold predicate selects the first qualifying fighter record among
 records 4..9. Activation requires its value in `0..threshold`; no qualifying
-record yields -1. The value's player-facing meaning remains unassigned.
+record yields -1.
 
 | Resource / role | Activation | Active update and release of latch |
 | --- | --- | --- |
@@ -196,10 +190,8 @@ recorded transform and opacity. Fade expiry makes the record reusable.
 Pool destruction separately releases the player and other resources.
 
 The opacity increment is fade increment × fighter update rate. Negative values
-clamp to zero and deactivate the record; the inspected upper branch also writes
-zero for values above 1. Submission requires opacity at least 0.01. Neither
-the meaning of the capture pair nor the higher-level spawn/fade schedule is
-established.
+clamp to zero and deactivate the record; the upper branch also writes
+zero for values above 1. Submission requires opacity at least 0.01.
 
 Typed playback has a separate allocation and update contract.
 
@@ -207,16 +199,15 @@ Typed playback has a separate allocation and update contract.
 | --- | --- | --- | --- |
 | 1 | Effect | Transform and effect update | Descriptor-bound setup/replacement |
 | 2 | Animation player | Transform/opacity, advance and composition; completion ignored | Descriptor-bound setup/replacement; replacement requests frame 1 |
-| 3 | Effect | Transform and effect update | Implemented allocation arm; selection remains open |
+| 3 | Effect | Transform and effect update | Implemented allocation arm |
 | 4 | Animation player | Transform/opacity, advance and composition; completion ignored | Owner IDs `0xB4/0xB5` and table rows 62..64 |
 
 The typed table has binding code `0x14` for the descriptor-bound type-1/2
 setup. Types 3/4 pass their constructed resource to a virtual initializer;
-the base initializer is empty and derived implementations remain open.
-Replacement explicitly releases previous types 1/2; use on types 3/4 is
-unestablished. Full cleanup releases all four types and the separate effect.
+the base initializer is empty.
+Replacement explicitly releases previous types 1/2. Full cleanup releases all four types and the separate effect.
 
-Both inspected update callers apply delay and enable gates before playback.
+Both update callers apply delay and enable gates before playback.
 The first can skip playback through state-7 dispatch. The counter-90 caller
 returns early in states 6/7, but in its other paths checks counter 90 only
 after playback. That terminal invocation can therefore still advance.
@@ -228,8 +219,6 @@ update gates.
 Directional input arms a left or right player and requests zero when the
 settled-value comparisons permit it. Update advances armed directional players
 until completion clears their latches. Decoration players advance independently.
-A local dispatch connection exists; its complete upstream entry gate remains
-open.
 
 The position helper requests endpoint `F` for selector zero, or its unsigned
 counter frame otherwise. It performs no ordinary advance. The endpoint-counter
@@ -243,15 +232,13 @@ controller has a different state policy:
 | 4 | Request `F-counter`; completion sets the latch and clears state and counter |
 
 Positive-state draw increments the 16-bit counter, moving the state-4 target
-one frame earlier per such invocation. The full draw/update ordering and
-upstream controller schedule remain open.
+one frame earlier per such invocation.
 
 ## BTL player recreation and descriptor restoration
 
 Associated-player recreation saves only descriptor and whole frame, destroys
 the old player, allocates a replacement, binds the saved descriptor and requests
-that frame. It does not establish preservation of step, fractional position or
-active blend. Ordinary associated update is gated by the owner enable bit;
+that frame. It does not preserve step, fractional position or active blend. Ordinary associated update is gated by the owner enable bit;
 the alternate update assigns step zero after prior completion but still calls
 advance/composition. Cleanup separately releases the player and local resources.
 
@@ -264,12 +251,11 @@ Controller selection compares the requested index with the previous selector
 unless forced. A valid descriptor clears its counter and assigns step
 `0x100` even when restart is zero; restart controls the guarded frame-one
 request. Previous/current selection bookkeeping follows the association work.
-Referenced-player ownership remains open.
 
 Other descriptor transfers preserve three ordering constraints. Consuming a
 pending request clears request data without releasing the player. Copying a
-linked player's descriptor can precede destruction of that linked object;
-the descriptor's complete backing lifetime remains open. A virtual callback
+linked player's descriptor can precede destruction of that linked object.
+A virtual callback
 can change the later rebind gate, so that gate uses fields reread after the
 callback. The nonpositive/positive descriptor choice and separately gated
 primary substitutions are recorded on their owning routines.
@@ -287,7 +273,7 @@ Owner ID other than `0x54` then assigns step `0x200`; ID `0x54`
 retains the step. Completion and counters clear before state 2 is established.
 
 Wrapper bookkeeping, ordinary advance/repeat and submission are separate
-virtual phases. Their full dispatcher order remains open. Submission requires
+virtual phases. Submission requires
 a resource, draw enable and nonpositive signed delay; it has no seek or advance.
 Destruction releases the allocated player through the wrapper's ownership path.
 
@@ -309,8 +295,7 @@ assign a step or advance.
 
 Two update routes share enable, transform and valid-track gates, consume the
 player's current step, and ignore completion. The caller's later association
-checks follow one route's playback. Their existence does not establish that
-both execute in one scheduling cycle. Enabled submission assigns opacity 0.8;
+checks follow one route's playback. Enabled submission assigns opacity 0.8;
 a separate local object can still draw while the embedded player is disabled.
 
 ## BTL GAR and GAV primary-player transitions
@@ -328,11 +313,10 @@ its step.
 
 GAV clears its unsigned 16-bit counter on each listed transition.
 Its later counter-2 event is separate from descriptor selection.
-The recovered GAR update increments its signed-byte counter before dispatch:
+The GAR update increments its signed-byte counter before dispatch:
 state 0 with a playback event requests state 1, and state 1 at counter at least
 31 requests state 2. A separate cleanup helper also requests state 2 before
-resource cleanup. GAR's continuing body and both inherited-player schedules
-remain open; the local counters establish no elapsed duration.
+resource cleanup.
 
 ## BTL TOV variant-selected primary-player seeks
 
@@ -347,8 +331,7 @@ a frame-one request:
 | 4 | Variant 1 and secondary variant 1 / other | `ANM_ptovcha17` / `ANM_ptovcha16` |
 | 4 | Variant other than 1 | `ANM_ptovcha13` |
 
-The eighth setup resource is `ANM_2tovdash01`. Resource prefixes do not
-establish action identities. States 0/3 do not seek. State 3 saves and clears
+The eighth setup resource is `ANM_2tovdash01`. States 0/3 do not seek. State 3 saves and clears
 the counter and later clears the secondary variant. State 2's non-1 variant
 sets limit 5 and clears its counter after selection; variant 1 omits those
 counter writes.
@@ -381,8 +364,7 @@ primary player. States 0/4 contain no direct seek.
 | Separate request helper | 4 |
 
 Update increments its 16-bit counter before virtual/local work and dispatch.
-These requests do not establish its inherited player's complete advance
-schedule. State-4 restoration here still enters the setter, unlike TOV's
+State-4 restoration here still enters the setter, unlike TOV's
 direct state-2 write.
 
 ## BTL KIB primary and looping embedded player
@@ -410,8 +392,7 @@ playback. No step write separates advance, rebind and seek.
 Only after this playback/repeat work does current unsigned counter greater
 than 25 request state 4. That transition invocation can already have repeated
 the embedded player. Submission uses state 2; state changes retain storage,
-and destruction separately destroys the embedded player. The primary player's
-full schedule remains open.
+and destruction separately destroys the embedded player.
 
 ## BTL SKN and SKM counter-gated primary players
 
@@ -423,10 +404,9 @@ descriptor transitions:
 | `ccSkillSKN001` | State 1, unsigned counter greater than 10 | Clear counter, bind/seek, then increment current state |
 | `ccSkillSKM001New3` | State 0, playback event | Create child first, bind/seek, clear counter, then increment current state |
 
-The factories establish child creation and registration, not those children's
-playback contracts. Neither state method directly advances or assigns the
-inherited primary-player step. Counter thresholds are per invocation;
-their elapsed duration and the primary-player lifetime remain open.
+The factories create and register children. Neither state method directly
+advances or assigns the inherited primary-player step. Counter thresholds are
+per invocation.
 
 ## BTL TYV parent and allocated-player object
 
@@ -442,10 +422,10 @@ The object owns an allocated player and composition. Setup binds
 request object state 3 and clear its counter; this requests fading without
 destroying the player.
 
-All inspected object states converge on transform, opacity and valid-track
+All object states converge on transform, opacity and valid-track
 advance/composition. States 3/4 still reach that tail after fade or termination
-handling; completion is ignored. A state change or fade alone therefore does
-not establish a local pause. The outer phase wrapper can omit the update
+handling; completion is ignored. A state change or fade alone is therefore not a local
+pause. The outer phase wrapper can omit the update
 through its enable, phase and countdown gates. Submission has no matching
 local state/opacity/track gate. Storage release occurs later in destruction.
 
@@ -510,7 +490,7 @@ drawable while ordinary periodic advance is omitted.
 The explicit transform/update method advances/composes first, then separately
 requests frame 1 without an intervening bind or step write. It has no local
 enable or state-1 gate. Its request does not replace that invocation's ordinary
-advance. The full dispatcher order and callers remain open.
+advance.
 
 ## BTL ANB embedded and associated players
 
@@ -555,8 +535,7 @@ Controller selection also occurs in requested states 1/3/4/6/7/8/9.
 The shared advance tail accepts any nonzero enable value; the earlier
 attachment/position branch requires exactly 1. Completion is stored, or zero
 for a missing track. Submission shares the nonzero enable gate, while a
-separate object can draw regardless. All enable producers, remaining cases
-and full phase order remain open.
+separate object can draw regardless.
 
 ## BTL FOR embedded-player pair
 
@@ -569,11 +548,10 @@ The helpers perform timer-driven transform work before their common playback
 tails. An enabled valid player advances/composes with its current step.
 The first helper then replaces that step from `next_step`, even when its
 advance gate was closed; the second has no corresponding replacement.
-The `next_step` producer remains open. Completion is ignored.
+Completion is ignored.
 
 Submission uses each record's enable flag without a completion gate.
-Destruction separately destroys both embedded players. The full phase order,
-cadence and remaining record-control producers remain open.
+Destruction separately destroys both embedded players.
 
 ## BTL TND embedded-player group
 
@@ -584,8 +562,7 @@ player and activates the group.
 
 For child frame count `F>=3`, the requested frame is chosen from
 `1..F-2` by the inclusive random helper. A preceding random call with
-argument 3 does not supply the seek target. The resources' general minimum
-frame-count guarantee remains open.
+argument 3 does not supply the seek target.
 
 Active update advances unlatched child players. Completion latches only when
 `stop_on_completion` is set. Main-player advancement is absent from this
@@ -602,7 +579,7 @@ embedded storage separately from these controls.
 
 CHY allocates its supplementary player only when `ANM_pchycha03` resolves.
 It binds with zero blend and requests cursor zero. The equal-cursor return
-means this request alone does not establish evaluation of frame-zero records.
+means this request alone does not evaluate frame-zero records.
 
 Earlier owner events and randomized callbacks converge on the supplementary
 player's update. A present valid player advances/composes with its own step;
@@ -629,9 +606,7 @@ separate controls.
 
 `skill_auxiliary_update_banks` increments the phase counter only in its
 enabled ordinary bank after countdown handling. Its alternate phase bank
-increments a different signed halfword. The relation between that counter
-phase and playback phase remains open; even-counter gating does not establish
-an advance every two rendered frames.
+increments a different signed halfword.
 
 Submission has no corresponding parity gate. Destruction separately destroys
 and clears each owned player.
@@ -641,7 +616,7 @@ and clears each owned player.
 Each linked node owns a player plus flags, an optional render context and a
 next pointer. Setup constructs nodes in the following resource order, binds
 with zero blend, requests cursor zero and prepends each node. The request alone
-does not establish frame-zero evaluation.
+does not evaluate frame zero.
 
 | Setup family | Resource names in construction order | Installed masks |
 | --- | --- | --- |
@@ -660,24 +635,23 @@ does not establish frame-zero evaluation.
 | BDY22 | `ANM_pbdycha22/23` | 2, 1 |
 | BDY03 | `ANM_pbdycha03/04/05/06` | 2, 2, 2, 1 |
 
-These labels identify resource families, not player-facing actions.
+
 The first BDY33 node is also retained as `first_node`.
 
-Common and inspected specialized passes set transforms, then advance/compose
+Common and specialized passes set transforms, then advance/compose
 every valid node. Mask bit 0 clear uses owner position/rotation; bit 0 set uses
 constant position and zero rotation. Masks 0/2 therefore use owner vectors,
-and masks 1/3 use the constant branch. Bit 1's meaning remains open.
+and masks 1/3 use the constant branch.
 Completion is ignored and does not unlink a node. Later owner events follow
-the inspected list passes and cannot gate advances already performed.
+the list passes and cannot gate advances already performed.
 
 Submission walks the same list without seek or advance. A nonnull node
 context temporarily overrides the default context; the prior context restores
 between nodes and at return.
 
 Release saves the next pointer, destroys the player's internals and frees each
-node. The inspected release helper leaves the owner head uncleared.
-Virtual wrappers connect update, submission and release, but their full
-dispatcher order and all shutdown routes remain open.
+node. The release helper leaves the owner head uncleared.
+Virtual wrappers connect update, submission and release.
 
 ## BTL descriptor-switched player array
 
@@ -696,7 +670,7 @@ The positive-`F` random range includes endpoint `F`, with no additional
 local clamp before seek. These are phase-selection requests rather than
 variable increments.
 
-All inspected state branches then call common update. Its associated-player
+All state branches then call common update. Its associated-player
 predicate chooses an extra transform-vector copy; both branches reach ordinary
 array advance. Geometry handling is therefore not a local playback pause.
 Completion is ignored. Later passes apply instance offsets and copy associated
@@ -704,14 +678,13 @@ opacity, or zero when absent.
 
 Submission draws the array without playback. Cleanup destroys the player array
 and releases the offsets, clearing both pointers. State transitions reuse the
-arrays; the full upstream schedule remains open.
+arrays.
 
 ## BTL buddy-resource descriptor changes
 
 Buddy setup obtains containers through `buddy/2%sbdy.ccs` and
 `buddy/2%sbdy%d.ccs`, owns an allocated player, and resolves five
-descriptors through `ANM_p%s%s%d`. The formatted names do not establish
-an arbitrary instance's character or action. Setup installs
+descriptors through `ANM_p%s%s%d`. Setup installs
 `fighter_event_dispatch`, requests frame 1, then forces selector zero;
 the early setup request is not its final descriptor selection.
 
@@ -726,14 +699,13 @@ The general selector skips replacement only when unforced and already selected.
 Selector/state replacement binds with zero blend, requests frame 1 when valid,
 clears completion and sets one-invocation suppression. Local state-zero and
 substate handlers also make replacements under their own gates. These 15
-requests establish descriptor transitions, not periodic looping.
+requests are descriptor transitions, not periodic looping.
 
 Rate preparation precedes the outer gate. It copies the primary fighter
 player's step when `battle_nested_state_is_3` succeeds. Otherwise effect
 `0x4A` and geometry at most 400 choose step `0x40` and rate 0.25;
 the other branch uses `0x100` and rate 1. The copied-step branch stores
-step divided by 256 as rate. The nested object's word `+0x14` has no
-established high-level meaning.
+step divided by 256 as rate.
 
 Cursor-change bookkeeping and the separate step accumulator both run before
 the lifecycle gate. Nonzero lifecycle omits later state, playback and transform
@@ -747,5 +719,3 @@ store zero. This is distinct from the outer lifecycle gate.
 
 Submission also requires lifecycle zero but performs no playback.
 Cleanup destroys and clears the player, effect and composition in sequence.
-Complete container retention, all lifecycle producers and upstream scheduling
-remain open.

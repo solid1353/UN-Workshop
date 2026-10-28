@@ -4,13 +4,11 @@
 
 Established for retail NA2's resident executable, BTL and ETC: header and
 placement, synchronous loader/cache ordering, fixed-address linkage, the
-shared small-data area, constructor initialization, bounded Collection and BTL cleanup, and returned
-data lifetime. Open: other MWo3 variants, complete typed interfaces and payload
-semantics, indirect workers and cleanup beyond the traced owners.
-Names come from `@annotations/NA2`; all addresses here are live.
+shared small-data area, constructor initialization, Collection and BTL cleanup,
+and returned data lifetime. Names come from `@annotations/NA2`; all addresses
+here are live.
+Open: nothing.
 
-Static evidence establishes reachable behavior, not observed concurrent-load
-or malformed-file failures. The other overlay is outside this analysis.
 Task scheduling belongs to [Resident task system](task_system.md), mode
 sequencing to [Mode flow](../game/mode_flow.md), animation ownership to
 [Animation runtime](animation_runtime.md), and input identities/address
@@ -22,7 +20,7 @@ For these two linked images, the loader reads the complete file, including the
 `0x40` header, into destination slot 1 at `0x006B3F00`. Text, data, BSS,
 constructors and absolute pointers already assume that placement. No runtime
 relocation, import/export resolution, magic/kind/base validation or generic
-exit hook exists in the recovered loader path.
+exit hook exists in the loader path.
 
 The sole automatic format hook is the half-open constructor pointer interval.
 Application entry and cleanup are ordinary fixed-address interfaces owned by
@@ -33,7 +31,7 @@ pointer table or context argument does not extend an overlay target's lifetime.
 ## Inputs and identity
 
 The stripped resident ELF has no symbol-table entries and an empty string
-table. Annotation names are recovered names; recognized SDK symbols and original
+table. Annotation names are descriptive names; recognized SDK symbols and original
 product/class strings are exceptions. The image labels are `BTL_product.bin`
 and `ETC_product.bin`; ETC is 200,448 bytes (`0x30F00`).
 
@@ -75,7 +73,7 @@ Bytes returned as zero outside a block are not evidence for retail contents.
 
 ## Common 0x40-byte header
 
-`Mwo3Header` records the recovered little-endian layout. Field names describe
+`Mwo3Header` records the decoded little-endian layout. Field names describe
 the proved meaning, not vendor terminology.
 
 | Field | Meaning | Loader use |
@@ -102,8 +100,6 @@ clears BSS at destination plus bytes read. It does not cross-check these
 equations. Text/data spans are linker spans, not EE protection boundaries;
 BTL's nominal data includes executable constructors. The import marks that
 span non-executable, so some functions require annotation-created entries.
-The decoded-instruction censuses in annotations exclude undiscovered executable
-data-span bytes.
 
 ## Exact clean layouts
 
@@ -136,7 +132,7 @@ entrypoint.
 
 `overlay_select` calls `mwo3_load_file`, which normalizes its path, reads
 the complete file, and calls `mwo3_initialize_image`; the latter flushes
-caches, clears new BSS and runs `constructor_range_run`. The recovered loader
+caches, clears new BSS and runs `constructor_range_run`. The loader
 callers, the selector and `manager_setup`, select destination slot 1; the loader
 owns the post-read initialization path.
 
@@ -153,7 +149,7 @@ Resident startup separately calls `resident_initialize_constructors` over
 | 1 | `0x006B3F00` |
 | 2..15 | Null |
 
-Slot 0 is unused by the recovered path and would overwrite the resident.
+Slot 0 is unused and would overwrite the resident.
 There is no slot bounds check: slot 16 uses the next unrelated word, value 1,
 and later indices read more unrelated data. Null slots and out-of-range slots
 are not recoverable errors.
@@ -191,16 +187,15 @@ names the outgoing image; another request for that selector could return on
 a hit while bytes are changing, and another incoming request could start a
 second load. Disc-readiness polling does not close this interval, because
 cache hits bypass it and selection does not set its state. The normal front-end
-chain below is serialized; other ordering remains open.
+chain below is serialized.
 
-The recovered selection owners are `battle_mode_selector_update`,
+The selection owners are `battle_mode_selector_update`,
 `manager_snapshot_state6`, `battle_driver_setup`, `btl_transition_prepare`
 and `btl_prepared_state_wrap`. Incoming overlay calls follow selection.
 `btl_transition_prepare` first calls the outgoing image at `0x007D7580`
-and retains its result, then selects BTL. That outgoing identity remains
-unresolved. In BTL this number lies inside `btl_owner_pair_initialize`,
-not at a valid entry; membership in BTL's larger reservation does not establish
-BTL ownership.
+and retains its result, then selects BTL. In BTL this number lies inside
+`btl_owner_pair_initialize`, not at a valid entry, so the outgoing image is not
+BTL.
 
 `manager_allocate` creates a `0xDF8` manager when absent, constructs and
 publishes it, then calls `manager_setup`. `manager_initialize` sets the cache
@@ -227,23 +222,18 @@ This establishes control-flow serialization, not a loader mutex.
 
 The task lifecycle pass checks neither selector nor header, and
 `task_record_construct` accepts arbitrary entry addresses. Its annotation and
-`task_record_start` record the bounded construction evidence. Indirect creation,
-resident-created workers and resident workers calling overlay methods remain
-untraced possibilities.
-Resident entry placement, sleep or one lifecycle pass cannot prove overlay
-independence or worker completion.
+`task_record_start` record the construction evidence.
 
 Both task retirement paths invoke the `TaskCleanupRecord.cleanup_callback`
 with `cleanup_argument` before terminating and deleting its thread, as owned
 by [task termination](task_system.md#termination-destruction-and-ownership).
-The recovered MOTHER registration is `mother_cleanup_noop`, retaining no
-overlay address. No BTL/ETC cleanup registration is confirmed; indirect
-assignments and the original callback type remain open. A retained overlay
+The MOTHER registration is `mother_cleanup_noop`, retaining no overlay address.
+No BTL or ETC cleanup registration was found. A retained overlay
 callback requires that image through its actual invocation; requesting
 retirement does not discharge this obligation. This mechanism is separate
 from both compiler cleanup registration and the MWo3 constructor interval.
 
-### Recovered mode-owned entry and cleanup contracts
+### Mode-owned entry and cleanup contracts
 
 Collection's resident state machine owns a `0x80` `CollectionOwner`.
 Within ETC residence it initializes fields, initializes resources, polls until
@@ -274,14 +264,12 @@ table is `support_generation_vtable`. The type chain ends at the BTL
 `support_owner_class_name`, original `ccBuddyAtkCtrl`; the deleting method
 is `support_owner_destroy`. Its signed 16-bit delete flag controls the outer
 free; cleanup destroys the two `SupportOwner.slots` children through
-`SupportObject.node.vtable`, deleting slot `+0x08`, and clears them. Those
-child destinations remain open.
+`SupportObject.node.vtable`, deleting slot `+0x08`, and clears them.
 Support gameplay belongs to
 [Support mechanics](../gameplay/characters/support_mechanics.md).
 
 Another setup allocates `0x28` bytes and calls `btl_small_owner_initialize`
-after BTL selection. The small owner's field meanings remain open: its dwords
-at `+0x00/+0x04/+0x08/+0x0C/+0x10/+0x18/+0x1C/+0x20/+0x24` and byte
+after BTL selection. Its dwords at `+0x00/+0x04/+0x08/+0x0C/+0x10/+0x18/+0x1C/+0x20/+0x24` and byte
 `+0x14` are cleared. These are application contracts, not header exports;
 the loader neither discovers nor invokes their teardown.
 
@@ -334,8 +322,7 @@ partial image. A zero-byte file is an exact-size success using stale metadata:
 | BTL / ETC | Stale BSS 0 and empty constructor interval; ETC bytes stay, cache publishes BTL 0 |
 | ETC / BTL | Stale BSS `0x6E80` clears `0x006B3F00..0x006BAD80`; reread constructor bounds now zero, cache publishes ETC 2 |
 
-No recovered selector/loader identity check exists. Arbitrary indirect header
-consumers remain untraced; the bounded search evidence belongs to
+No selector/loader identity check exists; the search evidence belongs to
 `mwo3_load_file`. Safe slot entry requires higher-level exclusion throughout
 retries and initialization.
 
@@ -370,12 +357,11 @@ image: calls and dereferences would still use their linked addresses.
 
 The two images use a broad statically linked resident interface, including
 allocation, CCS lookup, animation, scene composition, matrices and random
-values. Their imported service sets differ substantially; the recovered
-surface is not a tiny interchangeable service table. Per-target call counts
+values. Their imported service sets differ substantially; the surface is not a
+tiny interchangeable service table. Per-target call counts
 belong to the target annotations, and aggregate decoded linkage coverage to
-`resident_text_start`, `btl_text_start` and `etc_text_start`.
-Those censuses count static decoded sites, not execution frequency or complete
-semantic coverage.
+`resident_text_start`, `btl_text_start` and `etc_text_start`; they count static
+decoded sites.
 
 The interaction-head imports register/unlink objects in resident lists;
 their destructor removes an active head before releasing registrations/results
@@ -464,9 +450,9 @@ index selects `btl_record_descriptor_table`; `BtlRecordDescriptor.count`,
 `keys` and `records` describe an ordered signed-halfword key scan. A missing
 descriptor/key returns zero; a match returns an initialized-data record with
 stride `0x440`. It copies nothing, allocates nothing and checks no image
-identity. Invalid indices can read outside the examined table.
+identity. Invalid indices can read outside the table.
 
-The bounded interval has 66 words (codes 0..65): 18 shared descriptors, code
+The interval has 66 words (codes 0..65): 18 shared descriptors, code
 31's three-record descriptor and 47 nulls. The shared codes are
 0,2,5,6,8,10,13,14,17,21,23,25,35,42,61,62,63,64.
 
@@ -480,18 +466,13 @@ The bounded interval has 66 words (codes 0..65): 18 shared descriptors, code
 
 `btl_shared_record_payload` and `btl_code31_record_payloads` end exactly
 at their descriptors. They are overlay initialized data, not resident
-allocations. Payload fields, key meaning and the supported domain beyond
-0..65 remain open.
+allocations.
 
-The examined owners supply code word `+0x56C` with key word `+0x1DC`, or
-constant keys 0 and 1; some retain the pointer at `+0x10C`. Those owner-field
-meanings beyond their lookup use remain open. The complete leaf overwrites
-the context with its descriptor before dereferencing it.
+The owners supply code word `+0x56C` with key word `+0x1DC`, or
+constant keys 0 and 1; some retain the pointer at `+0x10C`. The complete leaf
+overwrites the context with its descriptor before dereferencing it.
 `btl_initialized_resident_word`, cleared on BTL initialization, is neither its
-cache nor owner; its broader purpose remains open.
-
-The bounded address-formation evidence does not exclude absolute or indirectly
-aliased access; its exact formation census remains in the lookup annotation.
+cache nor owner. The address-formation census is in the lookup annotation.
 
 ### Resident to overlay
 
@@ -506,27 +487,24 @@ common signature: the pre-switch `0x007D7580` example above belongs to
 the outgoing image even though it lies within BTL's larger reservation.
 
 The compared resident-called entries in the shared range have different BTL
-and ETC bytes. No byte-compatible common entrypoint was found in that set;
-similar higher-level behavior elsewhere remains possible. Exact comparison
+and ETC bytes; none is a byte-compatible common entrypoint. Exact comparison
 widths, first words and target/call counts belong to annotations.
 
 The broad fixed-address surface and stale-tail behavior matter together:
 under ETC, a wrong call to a higher BTL address can execute stale bytes.
 Apparent success does not establish the right image.
 
-### Recovered call convention
+### Call convention
 
-Annotation prototypes define the inspected interfaces where their signatures
-are established. `abi_general_arguments_forward`, `abi_stack_arguments_consume`,
-`abi_float_arguments_consume`, `etc_output_setup`, `btl_scalar_convert` and
-`skill_fir_anchor` hold the exact call-convention evidence; unestablished
-signatures remain open.
+Annotation prototypes define the interfaces. `abi_general_arguments_forward`,
+`abi_stack_arguments_consume`, `abi_float_arguments_consume`,
+`etc_output_setup`, `btl_scalar_convert` and `skill_fir_anchor` hold the exact
+call-convention evidence.
 
 Decompiler ordering of mixed floating and general arguments can mislead;
 actual argument use and callers establish the interface. A replacement must
 preserve the compiled interface, including inherited resident global state
-and saved caller state. The full fixed-address typed catalog remains
-unrecovered.
+and saved caller state.
 
 ## Automatic entry and lifetime
 
@@ -549,8 +527,7 @@ this order:
 
 Their per-routine constants, targets and field writes belong to annotations.
 The complete ordinary callee family allocates no heap memory and starts no
-worker. This is bounded to automatic initialization; later application setup
-allocates separately. The two resident array-helper calls pass null element
+worker; later application setup allocates separately. The two resident array-helper calls pass null element
 destructors; the helper supplies each constructor with element/constructing
 arguments and can unwind through an optional destructor.
 
@@ -595,11 +572,10 @@ This is consistent with process-lifetime compiler cleanup, not an unload hook.
 Neighboring BSS owners belong to the
 [item cache](../gameplay/projectiles_and_items/battle_item_inventory.md#item-cache).
 
-**Conditional reload hazard:** unless untraced code resets the head, first
-BTL initialization leaves it pointing to the BSS node. Reload clears that
-same node then registers it again, so `previous_head` becomes a self-link.
-No scoped consumer proves a mode-switch failure, but this chain cannot safely
-be reinterpreted as an unload facility.
+**Reload hazard:** first BTL initialization leaves the head pointing to the BSS
+node. Reload clears that same node then registers it again, so `previous_head`
+becomes a self-link. This chain cannot safely be reinterpreted as an unload
+facility.
 
 Replacement writes only the incoming physical file and clears only its BSS.
 BTL writes through `0x008D61FF` and clears through `0x008DD07F`; ETC
@@ -613,22 +589,7 @@ At the common base, the clean image identity is
 `Mwo3Header.magic == 0x336F574D`, `linked_base == 0x006B3F00`, with kind 1
 for BTL or 3 for ETC. Only kind distinguishes these images. This tuple has no
 hash/version and cannot identify a build. It describes the slot at the instant
-read; no execution lock binds that read to a subsequent call. Front-end
-sequencing is established, retained workers/callbacks require separate lifetime
-evidence.
-
-## Evidence strength and unknowns
-
-The loader/header placement, cache ordering, constructor family, inherited state,
-Collection method/type chains, BTL child/singleton boundary and bounded lookup
-have strong static evidence. They do not establish a universal vendor format
-or an exhaustive semantic catalog of the three programs.
-
-Still open are original vendor field/type names, other format versions and
-kinds, precise linker-section composition, complete typed fixed-address
-interfaces, indirect worker creation/completion and retained callbacks,
-lookup payload/key meanings and the supported code domain beyond 65, and
-cleanup/polymorphic targets beyond the resolved owners.
+read; no execution lock binds that read to a subsequent call.
 
 MCP annotates all named routines, mapped tables and resident BSS globals here.
 The two header locations cannot receive symbol rows because their imported

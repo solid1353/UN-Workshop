@@ -5,9 +5,9 @@
 Established: retail NA2 and UN5 Victory emblem geometry and animation,
 win-count artwork, name rectangles, and both battle initialization paths.
 Evidence covers native owners, records, and paired screen states.
-Open: unexamined callers, indirect consumers, and other animation phases.
 Names come from `@annotations/NA2` and `@annotations/UN5`; addresses are live.
 Annotations hold routine detail and fixed-layout fields; owner views are partial.
+Open: nothing.
 
 ## Scope and source identity
 

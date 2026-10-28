@@ -125,3 +125,7 @@ typedef struct un3GuyHairState { int mode; void *head_node; void *body_node; voi
 typedef struct un3UltimateJutsuRecord { char *display_name; short authored_id; short ability_count; short ability_ids[3]; unsigned char _unknown_000e[4]; short intro_voice; unsigned short effect; short damage_percent; short stat_adjustments[6]; } un3UltimateJutsuRecord;
 
 typedef struct un3SkillRequestRow { char *display_name; char *main_path; unsigned char extra_count; unsigned char stream_count; unsigned char _unknown_000a[2]; char **extra_paths; void *stream_pairs; } un3SkillRequestRow;
+
+typedef struct SkillCueRow { short frame; short request_ordinal; int control; unsigned char _unknown_08[3]; unsigned char mode_key_index; } SkillCueRow;
+
+typedef struct SkillCinematicCueDescriptor { SkillCueRow *rows; int soundtrack_member; } SkillCinematicCueDescriptor;

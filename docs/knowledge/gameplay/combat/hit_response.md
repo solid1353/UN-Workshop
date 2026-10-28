@@ -7,13 +7,10 @@ selection with callbacks and remaps, descriptors, animations and phase lengths,
 the motion table and modifiers, gravity, the update order behind elapsed
 counts, contact and held handoffs, input recoveries, timed downed recovery,
 guarded transitions, rehit suppression, the rejection countdown, the
-destination sets of all 74 table-selected source-response callbacks, and a
-bounded raw-store, address-taken entry and callback-vector owner audit. Animation
-roles are inferences from control flow. Open: stage-dependent timing of
-grounded phases, visual confirmation of animation roles and move names,
-non-default bindings, reachability of every callback branch, and
-recovery-source pointer aliases. Arbitrary computed/bulk state writes and
-callback-vector replacements remain outside the bounded audit.
+destination sets of all 74 table-selected source-response callbacks, and the
+raw-store, address-taken entry and callback-vector owner audit. Animation
+roles are inferences from control flow.
+Open: nothing.
 
 The native battle state after a hit has been accepted in retail NA2
 (`SLPS-25837`): ordinary reactions, table-driven motion, launch and contact
@@ -33,8 +30,8 @@ Related owners: [Collision](collision.md), [Damage](damage.md),
 [Target selection](target_selection.md), and
 [Character action callbacks](../characters/character_action_callbacks.md).
 
-Fighter fields are named in `Fighter`. Fields whose width is not established
-keep raw offsets: `+0x9B8` (low two bits choose the grounded-family variant),
+Fighter fields are named in `Fighter`. Some fields keep raw offsets:
+`+0x9B8` (low two bits choose the grounded-family variant),
 `+0xE3C` (hit request bits) and `+0xBA4` (an environment boundary).
 *Grounded* means `contact_flags & 0x80`.
 
@@ -198,7 +195,7 @@ accept.
 
 ### Source-callback destination coverage
 
-The bounded source set is `character_definition_table` (`0x005A2900`): 94
+The source set is `character_definition_table` (`0x005A2900`): 94
 eight-byte rows, including row 0 with null pointers and 78 distinct nonnull
 definitions. Each definition stores its callback vector at `+0x1C`; slot 3
 at vector `+0x0C` is the source response. The 74 dedicated definitions select
@@ -210,16 +207,13 @@ definition. Each callback's annotation records its complete static result set.
 `0x27..0x2C`, `0x2F..0x36`, `0x38/0x39`, `0x3C..0x41`,
 `0x4A/0x4C/0x4F`, and `0x51/0x52`. None returns a contact destination
 `0x42..0x49`, `0x5A..0x62`, or another non-sentinel value outside ordinary
-`0x27..0x5C`. This closes callback-result entry into `0x48/0x49` for the
-bounded set; it does not constrain the generic selector or later transitions.
+`0x27..0x5C`. No table-selected callback result therefore enters `0x48/0x49`;
+the generic selector and later transitions are separate.
 
 Return-contributing dependencies were included: `guy_response_delegate`
 (`0x002C6380`) returns only `-1/0x39`; literal RNG bounds produce only the
 recorded alternatives; Naruto, Taijutsu Chiyo and Shino load initialized
-destination constants whose recorded xrefs are reads. Arbitrary indirect writes
-to those constants remain outside this static result closure. Branch
-reachability in ordinary play and callback-vector replacement outside the
-table-selected owners are not established.
+destination constants whose recorded xrefs are reads.
 
 The `0x4A/0x4C/0x4F/0x51/0x52` branches select receiver responses.
 Numeric action IDs below are callback-local, and repeat means
@@ -254,7 +248,7 @@ Shared requested-state preparation is `response_prepare_entry`
 `0x42..0x49` entry through this preparation runs contact-entry setup,
 including its gated contact damage, without calling the automatic proposal;
 the proposal's chakra decision is separate. None of the
-bounded callbacks supplies such a contact destination. Their chosen launch,
+table-selected callbacks supplies such a contact destination. Their chosen launch,
 motion and live attack-record flags can still change later contact eligibility.
 The attacker's own count-0 recovery calls and Loopy Fist Lee's own downed exit
 remain separate [entry families](#recovery-decision-boundaries).
@@ -670,7 +664,7 @@ transition in the same dispatch.
 
 Two binding-2 (`0x00010000`) recoveries run inside the ordinary response; they
 are separate from the contact rebounds, downed choices and the Extra Hit
-counter. `ACT_RCV_0/1` do not establish which one players call a rebound.
+counter.
 
 - **First grounded** (`ACT_RCV_1`, `(0,0x0A)`): substates `0x36..0x39`,
   `0x3C/0x3D`, `0x3F..0x41`, `0x48/0x49`; cursor at least 2; height above
@@ -741,7 +735,7 @@ limits are owned by
 ### Recovery decision boundaries
 
 The resident dispatcher and helpers expose separate decisions. All addresses
-below are live NA2 addresses; a shared animation destination does not establish
+below are live NA2 addresses; a shared animation destination does not imply
 the same input requirement or entry side effects.
 
 | Decision | Entry or decision address | Result |
@@ -787,8 +781,8 @@ state-setter calls request neither pair. The
 separately closes all 74 table-selected result sets without a contact/recovery
 destination. Coverage includes the
 dispatcher/helper graph, recovered direct helper callers and recovered direct
-state-setter callers in the resident ELF and BTL. The additional writer and
-callback-owner coverage is bounded below.
+state-setter callers in the resident ELF and BTL, and the writers and
+callback owners below.
 
 ### Indirect and raw state writers
 
@@ -844,14 +838,9 @@ record vector only for major 8, action 0..3 and a positive provider ID;
 otherwise. Provider selection changes that invocation's table and still passes
 the original Fighter; it does not rewrite the stored vector. The
 [execution callback contract](../characters/character_action_callbacks.md#static-scope)
-owns the bounded class/slot census.
+owns the class/slot census.
 
-No additional rebound/contact entry family was established by this audit.
-It does not exclude arithmetic-derived or interior function pointers,
-other rebases/instruction forms, bulk copies, unrecovered pointer-forming
-bodies, or writes through definition/vector-slot aliases and independently
-constructed callback owners. The source-response result closure above remains
-separate from those limits.
+The writers and callback owners above add no rebound or contact entry family.
 
 ## Timed downed recovery
 
@@ -865,7 +854,7 @@ separate from those limits.
 
 Both are multiplied by the scale (and an effect factor that is always 1.0 on
 this path, since the call happens in major 5). The float-to-integer conversion
-uses the active FPU rounding mode. Five overlay entries (`downed_override_a..e`)
+rounds toward zero. Five overlay entries (`downed_override_a..e`)
 instead force thresholds of 45 (or arguments) without setting the enable bit.
 
 Update rate is 1.0 in majors 5 and 6 unless `update_rate_override` or

@@ -4,10 +4,10 @@
 
 Established: the 22 resident field-item names, their index lookup and state
 mirror, and the corresponding official UN5 English names in table order.
-Open: retail NA2/UN5 names for code `29` and user-facing names for `02`/`03`;
-the latter have internal BTL identifiers only. Other item-name sources remain open.
+Codes `02`, `03` and `29` have no name in either table.
 Names come from `@annotations/NA2` and `@annotations/UN5`.
 The code `29` identification is user-supplied; its English name is external.
+Open: nothing.
 
 Selection and weighting belong to
 [Battle item inventory](../gameplay/projectiles_and_items/battle_item_inventory.md),
@@ -41,9 +41,8 @@ between `SaveProfile.small_availability` and
 
 The official UN5 English bank has the corresponding 22 titles in the same
 order, from `field_item_scroll_of_teleportation_title` (`TEXTENG.BIN`,
-`0x009052B0`) to `field_item_medical_pack_title` (`0x00905488`). This establishes
-the English names for these NA2 rows, without establishing UN5 numeric item
-codes, naming absent NA2 codes, or proving every item source uses this table.
+`0x009052B0`) to `field_item_medical_pack_title` (`0x00905488`), which gives
+the English names for these NA2 rows.
 
 | NA2 code | Retail NA2 source name | Official UN5 English name |
 | ---: | --- | --- |
@@ -73,8 +72,8 @@ codes, naming absent NA2 codes, or proving every item source uses this table.
 The selector can also produce codes `02`, `03`, and `29`, which are absent
 from this name table. BTL identifies the first two internally as
 `ItemRecoverLife` (`item_recover_life_class_name`, `0x00898B60`) and
-`ItemChakraBall` (`item_chakra_ball_class_name`, `0x00898B40`); no retail NA2 or official UN5
-user-facing name was established for code `29` from the binaries.
+`ItemChakraBall` (`item_chakra_ball_class_name`, `0x00898B40`). Neither the NA2
+name table nor the UN5 English title run names any of the three.
 
 ## Code `29`: Curse Tag: Chakra Points Seal
 
@@ -85,9 +84,8 @@ the struck opponent from using chakra. This provides the PS2-series English
 name; the association with NA2 code `29` comes from the user's identification,
 not from an NA2 or UN5 name-table entry.
 
-No corresponding item name was recovered from UN5 `TEXTENG.BIN`.
-**Curse Tag: Chakra Points Seal** remains an externally sourced UN2 name;
-the negative-search evidence is retained in the UN5 title-run annotation.
+UN5 `TEXTENG.BIN` has no corresponding item name; the negative-search evidence
+is retained in the UN5 title-run annotation.
 
 Pool membership and weighting are owned by
 [Random field-item selection](../gameplay/projectiles_and_items/battle_item_inventory.md#random-field-item-selection).

@@ -7,15 +7,16 @@ scene record table and its walker, the six-scene record census (scenes 0, 9,
 10, 11, 16, 17) with every handler's address and UN3 counterpart or
 behavior, stage node placement, collision attribute words, content
 comparison with UN3's same places, the per-scene camera, route, intensity,
-render, music and auxiliary tables, US/JP differences, Stage Select choices,
+render, music, glare and auxiliary tables, US/JP differences, Stage Select choices,
 previews and names, the surface effects and sounds, stage sounds, the
 scene-keyed code census, every UN3-matched type's differences from UN3, the
 fighter-pair placement's scene rules, the pest characters' and support
-points' records, and the event that names `0x59F`'s puff fighter. Open:
-the role of the battle context's `+0x260` object that `0x00770BE0` resets,
-and the other twelve scenes' records.
+points' records, the event that names `0x59F`'s puff fighter, and the
+jutsu camera that `0x00770BE0` ends, and the users of the scene-9 draw
+environment branch and the rectangle lists.
 Names come from `@annotations/UN2`; UN3 and NA2 comparison names come from
 `@annotations/UN3` and `@annotations/NA2`.
+Open: nothing.
 
 This document owns retail UN2 (US `SLUS-21575`, JP `SLPS-25398`)
 battle-stage facts and their correspondence with UN3 and retail NA2
@@ -231,7 +232,7 @@ Behavior of the types without a UN3 counterpart:
 | `0x539` | Seven looping generators (`0x00820440`, fields `0x00820970`/`0x008209B0`) at `OBJ_ha_010`..`070` with `CMP_s0aefe00` at scale 0.25 (`+0x30`), fading in from 100 to 500 units (`0x00839230`/`0x00839238`) and out at the generator's default 4,000 to 5,000; a generator (`0x00820478`, same fields) that the update (`0x00700050`) keeps 250 units ahead of the camera toward its target and 100 higher; and bursts (`0x006FFB40`) from 50 to 150 above a fighter at x -1100..-830 or 870..1100 in section 0, otherwise -950..-750 or 770..950, without distance fade, six slots per kind: on a section transfer (1, `0x15`/`0x16`, `ACT_LIN_0`/`1`) generator `0x00820C50` (fields `0x00820C90`/`0x00820CB0`), turned after 16 updates to the force objects of `0x00820CD0`, `0x00820CF0` and `0x00820D10`; on (5, `0x3D`), `ACT_DMG_BD` (NA2's `0x40`), generator `0x00820D30` (`0x00820D70`/`0x00820DB0`), turned to `0x00820D90`. Each update applies the generator visibility to all of them and, until `+0xB1` of the object at `gp-0x6560` is set, writes the wind q = -`gp-0x657C`, at least 0.2 either way, into the rows: field `0x00820970`'s values 0 and 2 become 8q and -5 - 3\|q\| (`0x00820980`, `0x00820988`) and the trees' emission rate 1 + \|q\| (`0x00820458`). UN3 splits these into its falling, flying and rising leaves. |
 | `0x579` | 50 drop models `OBJ_s0befe00` (`0x008395C0`) at local (±50, ±40, 30), the first time at a random height within ±35, falling 8 + up to 2 per update and respawning below -35. Each update (`0x006FAA10`) places them, unrotated, at the point 100 ahead of the camera's eye toward its target (camera `+0x10`, `+0x60`) plus their local position, computed before a respawn; sets opacity 0.2 (0.75 at parse); turns them to (-camera `+0x20`, 0, camera `+0x28` - π) and scales them (0.1, 1, 5) (`0x0081D220`). The draw (`0x006FAEE0`) submits them in draw environment 3 (stage owner `+0x0C`, priority 15) unless `0x002B0C90` reports the mask at battle context `+0x2EC` and latch `+0x2E8` set. |
 | `0x57B`, `0x57C`, `0x57E` | Looping generators from the 0x38-byte descriptor table at `0x0081FF70`, without distance fade: the grass spray rows 12..18 at `OBJ_sibuki_010`..`070` and row 13 at (-1080, 0, 50), (1030, 0, 50) and (1050, 1100, 50), each with growth field `0x00820950` (key 5, scale 0.1 to 0.3 over five ages) and `EFF_s0befe01`, scale 1; the memorial spray rows `0x13`..`0x15` at (0, 1850, 200), (0, 1850, 100) and (0, 1700, 100) with `EFF_s0befe02`, scale 0.2 (`+0x30`); the puddle ripples rows 6..11 at `OBJ_hamon_010`..`060`, catalog row 12 (`effect0x`/`ANM_e0x_ring_01`), scale 0.2. Their updates apply the generator visibility; their draws are empty. |
-| `0x57D` | Lightning: models `OBJ_s0befe03` (single) and `_04`..`_06` (group), fog flags cleared. After a wait of 4 × 60 / frame divisor updates, with `0x002A9650(450)` = 0 (one in 451) while no group shows, `0x006FBA90` places the group at (±10000, 40000, 3000) (`0x0081D2B0`), each model at scale (80, 1, 100) or, with even odds, (0, 0, 0), at least the first showing, and the single model 2000 nearer and 5000 higher at (250, 1, 60), all at opacity 0.75, which falls by 0.05 per update; it sets `gp-0x6568` and writes the stage owner's glare pass `+0x270` amount from 0.1 down by 0.01 to -0.3. `0x002D4930` draws that pass (`0x002B2310` defaults: mode 1, colours `0xA0808080`/`0xFFFFFF`) in the owner's environment `+0x28` (priority 16) while `gp-0x6568` is set and `0x002EB210` is nonzero. While no group shows and the single model's own opacity has fallen by 0.05 to 0, `0x006FBD80` draws 0..100: 0 shows it alone at (±8000, 38000, 8000 ± 1000) at (100 + up to 150, 1, 30 + up to 30) and opacity 1, 1 the group without a flash. The draw (`0x006FC200`) submits the group while it shows and always the single model. |
+| `0x57D` | Lightning: models `OBJ_s0befe03` (single) and `_04`..`_06` (group), fog flags cleared. After a wait of 4 × 60 / frame divisor updates, with `0x002A9650(450)` = 0 (one in 451) while no group shows, `0x006FBA90` places the group at (±10000, 40000, 3000) (`0x0081D2B0`), each model at scale (80, 1, 100) or, with even odds, (0, 0, 0), at least the first showing, and the single model 2000 nearer and 5000 higher at (250, 1, 60), all at opacity 0.75, which falls by 0.05 per update; it sets `gp-0x6568` and writes the stage owner's glare pass `+0x270` amount from 0.1 down by 0.01 to -0.3. `0x002D4930` draws that pass (mode 1, colours `0x80808080`/`0xFFFFFF` from [scene 11's glare row](#scene-glare)) in the owner's environment `+0x28` (priority 16) while `gp-0x6568` is set and `stage_flash_allowed` (`0x002EB210`) is nonzero: it is zero only in battle while the last active of the battle's four jutsu actors (battle `+0x1048`, updated by `battle_update_jutsu_actors`, `0x00758D20`, which leaves the actor's resource index in `gp-0x6F70`) is built from resource 1, `2nrtcha0.ccs`. While no group shows and the single model's own opacity has fallen by 0.05 to 0, `0x006FBD80` draws 0..100: 0 shows it alone at (±8000, 38000, 8000 ± 1000) at (100 + up to 150, 1, 30 + up to 30) and opacity 1, 1 the group without a flash. The draw (`0x006FC200`) submits the group while it shows and always the single model. |
 | `0x57F` | Three animation players, `ANM_s0bare04` (`0x00839710`) and twice `ANM_s0bare05` (`0x00839720`), at the origin from random angles about the vertical axis; the update (`0x006FEBB0`) turns the first two by +0.0025 and the third by -0.0025 radians per update. The first's opacity (player `+0x88`) bounces by 0.001 between 0.1 and 0.2; the others' takes their step instead of adding it, which clamps it to 0.1. The draw (`0x006FEEA0`) submits them in draw environment 0 (priority -0x1400), the first a second time turned π about component 1. |
 | `0x580` | A glare-filter pass (`0x002B2310`, matching UN3's `pause_auxiliary_refresh` initializer at 0.73, the class NA2's factory 11 builds) with token 8 (`-0.019`) at `+0x88`, token 9 (`0x808080`) at `+0x8C` and token 10 (`0x3A808080`) at `+0x84`. |
 | `0x58D` | Token-5 lanterns at the token-3 stem's nodes `<stem>0`, `<stem>1`.. (`%s%d`, `0x00839B68`), each the token-7 composition with a token-6 glow effect. The update (`0x00709890`) turns each lantern about the depth axis by 0.65 × sin(phase), replacing the second float of `(0, 0, 0, 1)` at `0x0081D890`, the phase starting at random(360) and stepping 4° per update, less 360 above 360, and stores the glow's position, (0, -10, token 9) turned with the lantern from its node, in the next slot of a ring of 32. The draw (`0x00709A80`) submits each composition, then shows the first token-10 lanterns' glows at frame 0 from ring slots head + 0, 8, 16 and 24, which are 0, 24, 16 and 8 updates old, at alpha 1, 0.6, 0.36 and 0.216 and size 0.6, 0.525, 0.45 and 0.375, and each other lantern's glow once, in the stage's environment. The scene's tokens 9 and 10 are -30 and 2. |
@@ -325,8 +326,8 @@ All are indexed by scene without a range check.
 | `stage_music_tracks` | `SLUS_215.75` `0x00419B50`, a word per scene | `audio_apply_music_preset` (`0x002B8090`): member of `SOUND.AFS/000` unless the context `+0x1AC` override is set |
 | `stage_scene_variants` | `SLUS_215.75` `0x00442470` | `0x002D8D10` selects the `_a` suffix of `BLT_bg`/`BLT_obj` for even scenes and `_b` for odd ones; each archive holds only its own |
 | `stage_scene_auxiliary_filenames` | `SLUS_215.75` `0x00440070` | `3eye/3eye%s` paths |
-| `stage_scene_rectangle_lists` | `SLUS_215.75` `0x0043EFA0` | `0x0027C9E0`; purpose open |
-| `stage_scene_effect_defaults` | `SLUS_215.75` `0x004425D0` | `0x002EB5F0`, after stack overrides |
+| `stage_scene_rectangle_lists` | `SLUS_215.75` `0x0043EFA0`, 32-byte records of section, line, endpoint, side byte and rectangle | `stage_rectangle_x_offset` (`0x0027C9E0`): the x offset out of the first rectangle of the fighter's section containing a position. Only `actor_target_rectangle_x_offset` (`0x0027CB10`) calls it, for two actor update methods (call sites `0x00278618`, `0x0027A39C`); the first adds it to a fighter's x before placing it. No stage code reads the table. |
+| `stage_scene_effect_defaults` | `SLUS_215.75` `0x004425D0`, 16-byte screen glare rows: enable byte, packed colour, float amount, packed second colour | `stage_apply_scene_glare` (`0x002DAAA0`) through `stage_glare_apply_scene_row` (`0x002EB5F0`), which overrides some colours on a stack copy, then sets the stage owner's glare pass (`+0x270`, mode 1) as UN3 does ([UN3 screen glare](un3_stages.md#per-stage-camera-anchor-and-route-tables)). As NA2 factory-11 tokens: scene 0 `50,200,250,0,-0.5,100,150,255`, 9 `100,50,50,100,-0.1,255,255,175`, 10 `50,130,130,130,-0.3,255,255,255`, 16 `100,120,120,120,-0.35,255,255,255`, 17 `100,125,125,125,-0.1,255,255,255`, 5 `128,128,128,128,-0.24,255,255,255`; scene 11 is disabled. `SLPS_253.98` holds the same rows. |
 
 UN2 has no anchor list: no UN2 code matches UN3's
 `stage_choose_combo_anchor` or its caller, and no data holds UN3's or NA2's
@@ -380,6 +381,23 @@ UN3's `0x6F`, `0x7F` and `0x7F`.
 The tracks are stereo 48 kHz ADX: `004` 5,068,835 samples, `005` 3,456,143,
 `006` 3,836,498 and `010` 3,980,038.
 
+### Scene glare
+
+`stage_scene_construct` calls `stage_apply_scene_glare` (`0x002DAAA0`),
+which writes the scene's `stage_scene_effect_defaults` row (above) through
+`stage_glare_apply_scene_row`: its enable byte to `stage_glare_enabled`
+(`gp-0x6568`) and its colours and amount to the stage owner's glare pass,
+whether or not the row is enabled. While the byte is set and
+`stage_flash_allowed` is nonzero, the owner's draw submits the pass
+(`glare_pass_draw`, `0x002B2620`) in its environment `+0x28` (priority 16).
+The pass shrinks the frame to 256, 128 and 64 pixels square, blurs it back
+up to 256, subtracts the amount × 255 of the second colour, then adds the
+result over the frame by its colour's alpha: light areas brighten and glow
+into their surroundings. In the JP savestates of scene 17 the pass holds
+the row's values and its draws come after the stage's particles and before
+the HUD. Scene 11's disabled row still sets the colours its `0x57D`
+lightning flash draws with.
+
 ## Scene-keyed code outside the stage records
 
 These are the reads of the battle context's scene byte (`+0x41` of the
@@ -396,12 +414,12 @@ Reads through other fields or computed addresses are outside this census.
 | `field_player_placement` (`0x0081BFE0`) | 5, 6, 10 | Players start in section 1, which the routine returns for the fighter's section `+0x7A6` |
 | `0x0073DF60` | 10, 6 (other branches 3, 8) | A COM with less than 2.5 chakra (`0x001974B0`, threshold at `0x0055F79C`) in route states 3..5, 9, `0x18`, `0x1A`, `0x1C` or `0x1D`, or 2 at step 5, replans and picks a random reaction, as UN3's `ai_water_chakra_gate` does on its scenes 9 and 16 |
 | `0x00734A20` | 10, 6 (15) | With the fighter in section 0 on scenes 10 and 6 (section 1 on scene 15), COM route kinds `0x25` and `0x37` replan |
-| `0x00770BE0` | 10, 6 | When a fighter is at or below height -10 while the object at `+0x260` of the battle context is in state 1, `0x00331EA0` resets that object to state 0, after calling `0x001ED550` |
+| `0x00770BE0` | 10, 6 | When a fighter is at or below height -10 while the battle context's jutsu camera (`+0x260`, updated by `jutsu_camera_update`, `0x00331A80`) runs a shot in state 1, `jutsu_camera_reset` (`0x00331EA0`) ends the shot with state 0, switching straight back to the battle camera (`jutsu_camera_apply_state`, `0x0033B430`), and clears byte `+0x134` of the object at `gp-0x6804` → `+0x10` → `+0x14` |
 | `0x007325D0` | 0 (with 12, 13) | COM point routes take 40 instead of 10 as their near distance, as UN3's `ai_point_route_update` does on its scenes 0, 5 and 6 |
 | `0x007BA710`, `0x007BB190` | 0; 10, 11 | Fighter-pair placement rectangles and heights (above) |
 | `0x00818EF0`, `0x00807510` | 10 (with 4, 6, 15) | An actor's ground handling (`0x008181F0`), not stage code: landing on `E0E000` water or `0x202020` ground plays splash variant 2 on scene 10 (4 on 6, 3 on 15) and keeps 0.2 of its speed; `0x00807510` sets byte `+0x0E` of generator row `0x0082BAE0` to `0x15` on scenes 4 and 10 (`0x5C` on 6, `0x5F` on 15) before its burst and sound 9 |
 | `stage_vending_machine_trigger` (`0x006C8740`) | 9, 14 | Hit-counter value 10 on scene 9, 8 on scene 14 |
-| `0x001F27C0` | 9 | Sets the default draw environment `0x00561460` to priority 0 and reinserts it, where other scenes reinsert manager `+0x2440` at its priority, 100 from setup; on every scene it moves qualifying actors to layer 3 (manager `+0x24C0`). Its visible effect is not established. |
+| `knockout_screen_effect_begin` (`0x001F27C0`) | 9 | Part of the knockout screen effect: `battle_director_knockout` (`0x001BF518` call) sets draw environment `0x00561460` to priority `0x10` and starts the effect when the director's fighter `+0x20` is knocked out and its fighter `+0x24` is not. On scene 9 the effect sets that environment back to priority 0; other scenes reinsert manager `+0x2440` at its priority, 100 from setup. On every scene it moves qualifying actors to layer 3 (manager `+0x24C0`). After 31 updates `knockout_screen_effect_end` (`0x001F28F0`) restores the layers and reinserts `+0x2440` at priority 1, and the director sets `0x00561460` to 0. |
 | `effect_emit_surface_puffs` (`0x0021C370`) | 16, 17 | Three `EFF_e0x_ice` particles; smoke variant `0x95` on scene 16 |
 | `0x007D3610`, `0x007D36F0`, `0x007D7E70`, `0x007D7F50` | 16 | Treat the ground as `0xF0F0F0` snow in effect routines |
 | `0x00286110` | 11, 17 | Credits a side counter through `0x006B6950` |

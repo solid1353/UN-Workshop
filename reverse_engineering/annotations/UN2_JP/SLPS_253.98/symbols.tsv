@@ -1,0 +1,46 @@
+address	kind	name	type	comment
+0x001867B0	function	fighter_load_character_record		Copies 0x34 words of the record to fighter +0x70 and sets up the working arrays; returns 1 on asset failure.
+0x00186CD0	function	fighter_load_character		Requires the shared 2cmnbod1 and body providers; resolves animation names (cmn names in the shared provider), leaving slots 0x48..0x4F empty.
+0x001887A0	function	character_dispatch_channel		Events 1,2,3,5,6 -> callback slots 0,1,2,4,5; major 8 actions 0..3 use the configured jutsu owner's callbacks (selectors +0x154/+0x156). NA2 counterpart 0x00217670.
+0x001A0FD0	function	hit_select_response		Defender response from action +0x28 selector (0x27..0x51); the source owner's callback slot 3 can override it.
+0x001E3A50	function	doto_create		Allocates 0x1AB0 bytes and calls doto_construct.
+0x001E3AA0	function	doto_construct		Base constructor, vtable 0x005BBF70, working animation array fighter +0xAF0 (record +0x40), working actions +0xD44 (record +0x30), then fighter_load_character_record.
+0x001E3D40	function	doto_channel3		Event-3 callback: per-action phase/frame steps for actions 8, 13, 14, 15, 17, 36..38 (sounds 0x28/0x2F, forward motion, ground-code footstep sound and dust).
+0x001E43C0	function	doto_response_override		Slot 3: overrides the defender response for actions 8, 10, 13, 14 by hit count and airborne state; -1 keeps the default.
+0x001E4620	function	doto_capture_pin		Event-5 callback: during throw actions 16/17 on the same stage section, sets the held opponent's position from a node matrix.
+0x001EBB10	function	jutsu_animation_archive_name		Word 0 of jutsu_animation_provider_table row [selector].
+0x001EBC90	function	jutsu_selector_character		Positive selector >> 1, else 0 (US 0x001ED4C0).
+0x0025C200	function	audio_request_archive_member		(bank, member, slot, family): checks the bank bound and the descriptor's member count (+6) in audio_archive_descriptor_lists[family].
+0x0025E180	function	audio_load_character_bank		Loads SNDDATA.BIN rows of audio_character_banks[index] (RPC 0x9400) and binds side bank 0x9056 + side.
+0x0025F8D0	function	audio_write_pending_stream		Pending stream row [slot]: bank = character - 1, member, slot, alternate family, pending 1. One PLVOICE bank per character (no language set).
+0x00262C50	function	sp_skill_part_frame		Frame callback: runs frame-script ops 1/2/3 by frame, and moves the defender to the offset triple of the current threshold (block +0 count, +4 halfword thresholds, +8 per-defender-ID triple lists).
+0x00263160	function	sp_skill_part_begin		Begin callback of each cinematic part: binds participant eye/mouth palettes, frame script from jutsu_cinematic_frame_scripts, contest duration from jutsu_contest_rows (shifted up to +-30 by the fighters' HP difference) into jutsu_contest_begin, and the part's defender-offset block from jutsu_cinematic_offsets.
+0x00264350	function	sp_skill_build_requests		Request list: row resident path (flag 0x1000), row extras (0x1000), then the row's part paths (first 0x400, others 0).
+0x002645A0	function	sp_skill_play_start		Starts 'SP Skill Play' for attacker/defender characters and level (param 7 low half) and optional single part (high half): row from jutsu_cinematic_row_index, requests from sp_skill_build_requests, per-part offsets from jutsu_cinematic_offsets.
+0x002E0090	function	audio_setup_battle_banks		Loads both fighters' compact banks with index = character - 1 (manager +0x42/+0x43).
+0x002E08F0	function	audio_consume_pending_streams		For each pending row: stop the slot, then audio_request_archive_member(bank, member, slot, family 3 PLVOICE) or the alternate family 0.
+0x002E1DC0	function	audio_skill_soundtrack_frame_update		Starts each later part's STREAM.AFS member at its frame 1 and emits matching cue rows, as the US routine.
+0x002F0BC0	function	jutsu_contest_begin		Sets both players' contest inputs from the part's contest row descriptors and the duration.
+0x0031A2C0	function	jutsu_presentation_update		Ultimate Jutsu presentation states 1..5; state 2 at count 20 calls sp_skill_play_start with level = selector - 13.
+0x003DC8D0	data	doto_callbacks		Slots: 1 empty stub, 2 doto_channel3, 3 doto_response_override, 4 doto_capture_pin.
+0x003DC8F0	data	doto_animation_names		149 ANM_pdtu* names; slots 0x48..0x4F reserved for jutsu animations (75 ANM_pdtucha00, 79 ANM_pdtucha10).
+0x003DF750	data	doto_actions		39 UN2 0x58-byte action records PL26_ATK_*; +0x50 points to each action's own phase rows, +0x54 jutsu selector.
+0x003E04C0	data	doto_character_record		ID 26, ドトウ, 2dtubod1.ccs; 0xD0-byte UN2 record: +0x1C callbacks, +0x28 action count 39, +0x2C actions, +0x38 animation count 149, +0x3C names; no 0x4C row table.
+0x003E0590	data	doto_character_descriptor		Points back to doto_character_record; passed to fighter_load_character_record by doto_construct.
+0x00400170	data	jutsu_null_action_pair		Zero word, then a pointer to the null action record 0x00372A70; immediately precedes jutsu_animation_provider_table.
+0x00400178	data	jutsu_animation_provider_table		68 rows of 12 bytes, filename at +0; selectors 52/53 = 2dtucha0/1.ccs (owner 26). Same layout as US 0x0040F898.
+0x004004A0	data	character_definition_table		34 (factory, record) pairs for IDs 0..33; ID 26 is Doto.
+0x00408950	data	sp_skill_cue_descriptors		Per jutsu_cinematic_rows row {12-byte cue rows, second pointer}, as the US table.
+0x00408C40	data	sp_skill_part_soundtracks		Pointer per jutsu_cinematic_rows row to four halfwords: STREAM.AFS member of each part (-1 none).
+0x00409B60	data	audio_character_banks		12-byte rows (SNDDATA offset, header bytes, sample bytes) by character - 1; Doto row 25: 0xB2E000, 0x1240, 0x6A9C0.
+0x00409E10	data	audio_plvoice_descriptors		33 eight-byte descriptors (handle 0x32 + outer index, member count +6), then 0xFF sentinel; outer index = character - 1, Doto 25 (133 members).
+0x00409F20	data	audio_archive_descriptor_lists		Per-family descriptor list pointers; family 3 = audio_plvoice_descriptors.
+0x0040A2B4	data	jutsu_cinematic_frame_scripts		Word [char*3 + level]: per-part frame-script pointers; zero for Doto.
+0x0040A540	data	jutsu_cinematic_offsets		Word [char*3 + level]: pointer to the per-part defender-offset block pointers for that cinematic.
+0x004E2F50	data	character_select_model_filenames		cs???.ccs list in select order plus extra entries; csdtu.ccs at 0x004E2FC0.
+0x0050A23A	data	jutsu_cinematic_row_index		unsigned short [char*3 + level]: row of jutsu_cinematic_rows; Doto 75/76/77.
+0x00586B00	data	character_select_order	unsigned short[34]	Entry 0 then Character Select's 33 IDs in grid order; Doto 26 is entry 28. US SLUS 0x004F1D10 drops 26 (32 IDs).
+0x00596840	data	jutsu_cinematic_rows		0x14-byte rows: title, resident str/dNN_Le.ccs, extra count byte +8, part count byte +9, extras list +0xC, parts list +0x10 (title, path pairs).
+0x00596F91	data	jutsu_stage_damage		Bytes [ID*15 + level*5 + stage]: four stage percents and a bonus percent.
+0x00597130	data	jutsu_contest_rows		12-byte rows [char*0x90 + level*0x30 + part*0xC]: attacker and defender contest descriptors, s16 duration at +8, byte +10. Doto: descriptor 0x00597198 both sides, duration 90, byte +10 40 only on level 2 part 2.
+0x0059844D	data	jutsu_contest_modes		Contest mode byte per ID*3 + level.
