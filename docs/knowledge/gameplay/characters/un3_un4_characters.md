@@ -705,6 +705,20 @@ under [Compact program-to-VAG lookup](../session/battle_audio.md#compact-program
 UN3 compact decoding was not part of this comparison. Its separate streamed
 selector is established [below](#checked-un3-streamed-bank-selection).
 
+**Clean-file comparison of NA2 and UN4 compact samples:** for NA2 IDs
+50, 16, 83, 84, 89, 7 and 14 against UN4 IDs 50, 16, 21, 25, 9, 7 and 14
+(Possessed Gaara, Kiba, Jiraiya, Tsunade, Orochimaru, Sakura, Choji), no
+VAG of the NA2 bank equals any VAG of either UN4 set, by SHA-1 of the
+sample data through its end-flag block. `battle_voice_controls` rows 5, 6,
+7, 8, `0x16`, `0x19` and `0x25` (programs 5, 6, 7, 8, 22, 25, 37, key
+`0x3C`) are identical in both ELFs and every one of these banks has those
+programs, so each resolves to a different sample in each game. UN4's
+English Gaara 50 and Choji 14 samples store 18,000 Hz; the other checked
+ones 22,050 Hz. Spoken content was not compared. In contrast, common events
+`0x1E`/`0x1F` (programs 30/31) and mode-0 event `0x102B` (program 34 of
+mode bank 0, both UN4 sets) resolve to the same sample in both games; the
+two mode-0 banks share 45 (English set) and 52 (Japanese set) of 57 VAGs.
+
 #### Compact bank-set language
 
 **Code and resource observations:** `audio_settings_menu_create_resources`

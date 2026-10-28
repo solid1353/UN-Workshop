@@ -8,7 +8,8 @@ form-result mapping, optional palette/script/position/filter interfaces,
 the separate authored-ID-1 presentation, stage transition, seven-controller
 route and attack-pattern layout with every controller's descriptor values,
 the common controller base (vtable, update/draw hosting, fighter lock,
-clash interface, timer and stage lifetime);
+clash interface, timer and stage lifetime) and its effect services
+against NA2's;
 the Naruto, Jiraiya, Tsunade and Orochimaru films' and summon stages'
 external providers against NA2's files; no UN4 film uses the transformed
 filter bank. Each move's own resources and methods belong to its character
@@ -491,12 +492,24 @@ effects (`effect_remove_ordinary_classes`, reason 1).
 jutsu actors such as `jutsu_actor_release_captured_fighters`
 (`0x0079AF60`) re-enable a captured fighter only when it is not the
 initiator. The opponent's attacks reach the controller's incoming group
-`+0x230`. During a clash, `interaction_clash_begin` (`0x00753360`) calls
+`+0x230` (`reversal_game_add_incoming_contact`, `0x00748000`: send
+`0x80002`, receive `0xE00` or `0x70`). Clash contacts take their masks
+from `reversal_game_contact_masks_init` (`0x00748140`): send `0x100000`,
+receive `0x400800` (side 0) or `0x200040` (side 1) plus `0x80000`, the
+bit the controller's own hurtboxes send. An opponent jutsu auxiliary that
+receives `0x100000` gets candidate bit `0x2000000`;
+`interaction_scan_reversal_clash` (`0x00756290`) then requires its active
+record's relation bit `0x80000000` set and `0x40000` clear, and
+`interaction_begin_reversal_clash` (`0x00754350`) starts the clash from
+that one object. During a clash, `interaction_clash_begin` (`0x00753360`) calls
 `reversal_game_set_clash_mode` (`0x00748310`) with 1 (freeze the
 controller, HUD-only draw) and `reversal_game_spawn_clash_effect`
 (`0x00748440`), seeding the summon side from `reversal_game_clash_power`
 (`0x00749F40`); `interaction_clash_resolve_reversal` (`0x00755260`) then
-sets mode 3 (won), 2 (lost) or 4 (draw). The command list
+sets mode 3 when the jutsu side mashed more (jutsu outcome 0), 2 when it
+mashed less (outcome 1, the jutsu retired) or 4 on a tie (outcome 2,
+impact at the clash point). The summon side's starting count is
+`(reversal_game_clash_power − jutsu +0x5C0) · 0.5 · 15 + 7.5`. The command list
 (`command_list_build`, `0x0038ECD0`) shows the controller's attack names for
 the initiating side.
 
@@ -538,6 +551,35 @@ separate lifetime, rather than an alternative ordinary cinematic hit script.
 Entries 2, 3 and 4 have their resources, methods and code-side rewrites in
 the Jiraiya, Tsunade and Orochimaru comparisons; entries 0, 1, 5 and 6 are
 below.
+
+#### Effect services against NA2's
+
+The controllers' effect objects and services have NA2 counterparts with the
+same code:
+
+- The `0x210` transient is NA2's `WrappedScenePlayback`. Construction,
+  reset, update and fade step match offset for offset; NA2 only adds a
+  delay halfword at `+0x208` and moves UN4's flag nibble to `+0x20A`.
+  `+0x1AE` enables the `+0x1BC` countdown that retires the effect at 0, and
+  `+0x1C0` is a velocity added to the translation every update
+  (`wrapped_resource_bookkeeping`).
+- The `0x280` particle generator is NA2's `BattleParticleGenerator`
+  (`battle_particle_create` = `battle_generator_create` `0x00349BA0`); its
+  construction and emitter reset use the same offsets and defaults.
+- `battle_spawn_drifting_effect` (`0x00304200`) = NA2 `0x003380D0`.
+- `battle_acquire_ground_effect` (`0x00302120`) = NA2 `0x00336BD0`, with
+  IDs lowered by `0x30`: UN4 `0x32..0x46` are NA2 `2..0x16`
+  (`ground_effect_resource_map` `0x005C8128`).
+- The common cues `0x001D8B00`/`0x001D8E80` = NA2
+  `0x001D8050`/`0x001D83B0`; the common table rows `0..0x5A` are equal,
+  and NA2 inserts row `0x5B`.
+- `scene_child_set_transform` (`0x0019D870`) = NA2 `0x0019CB70` except the
+  rotation order: UN4 applies X, Y, Z; NA2 Z, Y, X.
+- `battle_emit_aura_and_secondary_visual` (`0x0030C6F0`: transient row
+  `0x21` `ANM_e0x_aura_00` and a pooled row 7 `ANM_e0x_gard_01`) has no NA2
+  counterpart. NA2's `battle_emit_hit_and_secondary_visual` (`0x0033FEB0`)
+  plays `ANM_e0x_hit_05`/`hit_06` and row 7 `ANM_e0x_hit_par0x`; NA2 has
+  `aura_00` at row `0x24` and `gard_01` at row 8.
 
 #### Entry 0: Shukaku
 
@@ -652,14 +694,26 @@ human holds Up or Down (pad bits `0x1000`/`0x4000`); the CPU picks a
 direction every 6..13 updates when the tornado is more than 240 above or
 below the opponent. `soutourou_reversal_apply_steering` (`0x00735FC0`)
 eases the vertical speed and moves the height 120 per unit of speed; Down
-stops below 120. The arrow HUD shows the pressed direction.
+stops below 120. The arrow HUD shows the pressed direction. The same
+routine spawns ground dust (`soutourou_reversal_spawn_tornado_dust`)
+when the tornado's x `+0x4C0` is within 2400 of the centre
+(`double_less_than(|x|, 2400)`) and its height `+0x4C8` is at most 400.
 
 `soutourou_reversal_position_tornado_contacts` (`0x00735A00`) moves the
 tornado contacts only while the running combo count `+0x256` is below a
 limit: progress / 7 + 1 for state 1 (8 at progress 56) and 8 for state 2.
-The combo count clears 30 updates after the last hit, so Pan-dimensional's
-second pass can hit again. The charge, not the pattern caps 9 and 18,
-therefore bounds tornado hits per combo.
+Past the limit the contacts stop where they are but stay enabled: only
+the landing's end disables them. `reversal_game_check_attack_contact`
+(`0x00749A50`) runs every update and hits on any touch of their group
+while the pattern's hit count is below its cap (9 or 18) and the opponent
+is not in hit pause; `reversal_game_deliver_hit` (`0x00748F50`) only adds
+the finish flag, the opponent's no-hit bit and major state 6. An opponent
+who stays in or walks into the stopped contacts is therefore hit again.
+Each hit raises the combo count and restarts its 30-update clear timer,
+so the contacts stay put until 30 updates pass without a hit; then the
+count clears and they rejoin the tornado (how Pan-dimensional's second
+pass hits again). The charge limits how many hits the moving tornado
+carries; the pattern caps bound the total.
 
 The descriptor's pattern names are English and French; the German,
 Italian and Spanish slots hold `#SommonSkillKiba…` placeholders.
@@ -680,7 +734,12 @@ pixels; it has no `2CMNBOD1` keys. Resource `0x66`, `particle` /
 `EFF_e0xsmok11`, is NA2 common-effect row `0x72` (table `0x005A3D80`,
 read by `effect_resolve_common_resources`), and both `PARTICLE` files
 hold identical `e0xsmok11` objects. The arrow HUD's `gauge` / `TEX_xhanyou`
-exists in NA2 with different pixels and palette.
+exists in NA2 with different pixels and palette. `reversal_arrow_guide_draw`
+(`0x00745E50`) draws cell (66, 1, 20, 20) of it (`gp-0x6A58`, ELF
+`0x00608518`) for both arrows, rotated. In both games' 128 by 128 texture
+that cell holds the same downward triangle: NA2's is a red-to-orange
+gradient, UN4's flat orange. The `battlegauge` / `TEX_xshadow` (32 by 32)
+that `CMP_xshadow` draws decodes to identical pixels in both games.
 
 #### Entry 5: Inner Sakura
 

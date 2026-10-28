@@ -495,9 +495,12 @@ and is destroyed after four updates; every contact retirement creates
 smoke helper variant 2 (`battle_create_smoke_helper`, class
 `ccEffFrogAppearSmoke`). Besides a delivered hit, an opponent attack
 contact retires it (unless the opponent's active jutsu object's
-`jutsu_resource_flags` word has `0x400`, or, with no jutsu object, every contact owner has type `0x8B`
-or 9), and any other contact retires it unless the opponent's action has
-flag `0x02000000`.
+`jutsu_resource_flags` word has `0x400`, or, with no jutsu object, every
+contact's owner (`query_result_owner`) holds jutsu resource 9 or `0x8B`
+at `+0x90`: in `jutsu_resource_filenames` (`0x0084A660`) these are
+`2sikcha1` and `2siwcha1`, the two Shino jutsu-1 resources), and any other
+contact retires it unless the opponent's current action (`+0xA3C`) has
+flag `0x02000000` at `+0x24`.
 
 Each acid node waits 0..11 updates, then flies 30 updates at x −88·facing
 per update, vertical `rand(48) − 40`, sideways `rand(40)` for three in five
