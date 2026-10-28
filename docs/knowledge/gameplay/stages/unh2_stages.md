@@ -10,9 +10,9 @@ height limits, scene 19's floor layout, the route
 reader, the combo anchors, the scene-keyed code, the common sounds and
 footsteps, the battle tracks' format and selection, the Stage Select
 container and the English stage names, and what UNH2's scene 5 changes
-from UN2's, and the jutsu camera's end request. Names come from
+from UN2's, the jutsu camera's end request and the screen-glare colour
+overrides. Names come from
 `@annotations/UNH2`; UN2 comparison names from `@annotations/UN2`.
-Open: whether UNH2 applies UN2's screen-glare colour overrides.
 
 This document owns retail UNH2 (*Naruto: Ultimate Ninja Heroes 2*, US
 `ULUS-10349`) battle-stage facts and their correspondence with UN2, whose
@@ -117,7 +117,7 @@ chakra ([UN2 battle stages](un2_stages.md#record-types-of-the-six-scenes)).
 | `stage_camera_records_by_scene` | `0x08B57B60` | 22-float records, UN2's fields 0..21; `camera_bind_stage_record` (`0x088ECF40`) binds them at camera `+0x17C` |
 | `stage_effect_intensity` | `0x08B25E68` | UN2's 18 bytes, then `0xFF` for scenes 18 and 19 |
 | `stage_render_coefficients` | `0x08B51D50` | UN2's, then (0.32, 0.3) and (0.45, 0.3) |
-| `stage_scene_effect_defaults` | `0x08B51E70` | UN2's 18 [screen glare rows](un2_stages.md#per-scene-tables), then disabled zero rows for scenes 18 and 19; whether UNH2 applies UN2's colour overrides is not traced (scene 5's row has none in UN2) |
+| `stage_scene_effect_defaults` | `0x08B51E70` | UN2's 18 [screen glare rows](un2_stages.md#per-scene-tables), then disabled zero rows for scenes 18 and 19. `stage_glare_apply_scene_row` (`0x0889148C`) applies UN2's colour overrides to rows 0, 1, 2, 4, 9 and 10 with the same values, so scene 5 uses its row unchanged, as in UN2; it writes the pass's colour, amount and second colour at `+0x64`/`+0x68`/`+0x6C` |
 | `stage_music_tracks` | `0x08BD071C` | a `music_rows` index per scene, `0x0F` for scenes without an archive |
 | `stage_navigation_authored_routes` | `0x08B58E30` | UN2's rows; scenes 18 and 19 point at scenes 16's and 17's lists |
 | `stage_combo_anchors` | `0x08B31ED0` | UN3's and NA2's layout: side 0 and 1 vector pointers at `+0`/`+4`, counts at `+8`/`+9` |

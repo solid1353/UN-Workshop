@@ -274,7 +274,14 @@ chakra delta, chakra boundary}`; `status_effect_node_construct`
 | `0x30` | `封印大蛇丸Ｂ` | 600 | attack 1.25, jump height 1.75, knockback 1.2 |
 | `0x31` | `封印大蛇丸Ｃ` | 600 | attack 1.5, hit chakra debit 0.15, knockback 1.5 |
 
-All three have flags 2. NA2's comparable path is the class-7 Ultimate Jutsu
+All three have flags 2. Shizune's `0x29..0x2B` (`シズネＡ..Ｃ`), Kabuto's
+`0x2C..0x2E` (`カブトＡ..Ｃ`), ANBU Kakashi's `0x32..0x34` (`暗部Ａ..Ｃ`) and
+Taijutsu Naruto's `0x35..0x37` (`ナルトＺＡ..ＺＣ`) have the same lifetime,
+flags and values, level for level. No retail NA2 effect has any of the
+three value sets ([NA2 factor columns](../../projectiles_and_items/battle_items_and_status_effects.md#authored-factor-columns)):
+NA2's attack-1.1 effects (`2E`, `53`, `59`) all raise defense, none has
+jump height 1.75, and its effects with attack 1.5 and knockback 1.5
+(`0E`, `0F`, `10`, `24`, `57`) all raise defense. NA2's comparable path is the class-7 Ultimate Jutsu
 entry, which applies its effect with lifetime -1
 ([Awakening](../awakening.md#exact-class-7-uj-entry)).
 

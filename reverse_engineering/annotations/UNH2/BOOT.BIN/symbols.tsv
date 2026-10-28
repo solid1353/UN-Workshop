@@ -24,6 +24,7 @@ address	kind	name	type	comment
 0x08882E78	function	stage_parse_fog		Category 1: tokens 0..2 colour, 3 near, 4 far, 5 far percentage.
 0x08883040	function	stage_parse_lighting		Category 13: light animation, token 5 light count; token 10 R,G,B (not "0") sets the render environment colour, else the light's.
 0x08884018	function	stage_parse_animation_props		Category 5: constructs a subtype per record, including UNH2's 0x5A9 lantern lights, 0x5AA mist and 0x5AB translucent layers.
+0x0889148C	function	stage_glare_apply_scene_row		Copies 20 stage_scene_effect_defaults rows, applies UN2's same overrides to rows 0,1,2,4,9,10, writes enable byte and glare pass +0x64 colour, +0x68 amount, +0x6C second colour.
 0x08896714	function	stage_dispatch_prop_effect		Prop effects by type, then the sound at the position: 2 hit spark, 7/8/9 the break effects of stage_break_effect_construct with particle bursts, as UN3's.
 0x08899BF8	function	stage_item_draw		Draws an item kind by cumulative percentage weights, then one of the kind's item codes at random (lists from 0x08B52150).
 0x0889A04C	function	stage_item_drop		Spawns the drawn item; by the items setting 2 a second one at 80% and the given count of extra 0xC chakra items, none at 0 or 1.

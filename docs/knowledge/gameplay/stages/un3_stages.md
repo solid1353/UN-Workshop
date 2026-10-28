@@ -934,6 +934,8 @@ binds the next animation and starts fading in; above 0.5 it clamps to 0.5 and
 fades out. The wall-created groups multiply their alpha by the wall's fade.
 `stage_root_light_draw` (`0x007E45A0`) uses their optional environment override;
 the wall gives its three groups the third stage environment.
+The wall, root-light and dappled-light updates write opacity only to their
+players' `+0x88`; their `+0x84` stays 1.
 
 The `0x528` canopy record binds `OBJ_obj_170_` and its two siblings at
 `DMY_hadummy_000_`. `stage_sway_leaves_parse` (`0x007EFAC0`) initializes
@@ -1076,7 +1078,8 @@ retail table; both copies are authored.
 
 Scene10's `0x73E` controller waits300 updates and follows four randomized
 points (363±300,5000,0),(547±200,900,0),(-363±200,600,0),(-563±200,3000,0)
-at speed0.0028. It fades on the first and last curve segments, rotates the
+at speed0.0028. It fades on the first and last curve segments, writing the funnel's
+opacity and 0.8 times it for the overlay only to each player's `+0x88`. It rotates the
 camera-relative `ANM_s5astom` overlay by -0.1 per update, moves a common
 particle generator and positional sound71, then repeats after another calm.
 Two spheres of radius250 at offsets200/600 from the moving origin raised500

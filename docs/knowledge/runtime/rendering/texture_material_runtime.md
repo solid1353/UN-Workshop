@@ -173,6 +173,11 @@ Integer division truncates, so for a positive initial scale one unit less
 always changes the ratio, while an increase must be at least
 `initial_scale / 4096`. Its outputs are signed halfwords in
 1/4096 units, so a coordinate beyond about ±8 texture widths wraps.
+Each rewrite starts from the part's original UVs: `model_draw_part_setup`,
+called before every part, clears `ownership_flags` (whose mask 4 marks
+writable UVs) and restores the part's own UV pointer, and
+`model_prepare_writable_uv` writes into newly allocated render-pool storage,
+leaving the part's array unchanged.
 
 The flag-4 route, `model_submit_packed_geometry`, sends
 `(current_offset - initial_offset) & 0xFFF` for both axes to VU slot

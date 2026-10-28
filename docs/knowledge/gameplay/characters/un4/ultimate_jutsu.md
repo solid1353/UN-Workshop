@@ -572,7 +572,14 @@ same code:
   (`ground_effect_resource_map` `0x005C8128`).
 - The common cues `0x001D8B00`/`0x001D8E80` = NA2
   `0x001D8050`/`0x001D83B0`; the common table rows `0..0x5A` are equal,
-  and NA2 inserts row `0x5B`.
+  and NA2 inserts row `0x5B`. Cue IDs from `0x1000` go through
+  `audio_route_bank_event` (`0x001D8760`) = NA2 `0x001D7CF0`, same logic:
+  both cue calls reach `audio_request_bank_parameters` (`0x001D6820`) = NA2
+  `audio_request_bank_parameters`, and both games' battle mode takes
+  `0x1000..0x103A`. NA2's `battle_audio_suppressed` also needs coordinator
+  substate 0 before muting in state 6. Of the summons' IDs (Shukaku's
+  `0x1000`, `0x1005`, `0x100A`, `0x1013`, `0x1014`; Katsuyu's `0x102B`),
+  only `0x102B`'s row has been compared.
 - `scene_child_set_transform` (`0x0019D870`) = NA2 `0x0019CB70` except the
   rotation order: UN4 applies X, Y, Z; NA2 Z, Y, X.
 - `battle_emit_aura_and_secondary_visual` (`0x0030C6F0`: transient row
