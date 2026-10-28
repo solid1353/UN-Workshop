@@ -15,7 +15,8 @@ field, S05's directional wind, flying debris, bells and torches, S08's cargo,
 vending machine and desert eagle, S19's wall, dappled/root sunlight, canopy
 and bed, S06's crash boundaries and steam, S11's sandstorm, their shared
 jutsu-resource particle gates and NA2 factory correspondence, S12's dome,
-the giant and hanging spiders, the water ripples, the breakables' and
+the giant and hanging spiders, dome opacity inheritance, shared fragment
+model selection and motion, the water ripples, the breakables' and
 training dolls' hit and break effects, sounds and item drops, the rising
 leaves' actions, S06's bamboo debris flag, and every scene comparison outside
 the records.
@@ -223,6 +224,9 @@ colour, float amount, packed second colour) into the scene's glare effect
 the values NA2's factory-11 glare records carry (tokens alpha, red, green,
 blue, amount, second red, green, blue, mode, parameter); NA2 S08 and S16 hold
 UN3 S07's and S13's rows exactly. All twenty normal scenes are enabled:
+
+The colours below are the initialized values; the raw `BATTLE.BIN` colour
+words are zero and do not describe the applied colour settings.
 
 | Scene | Glare tokens | Scene | Glare tokens |
 | --- | --- | --- | --- |
@@ -551,6 +555,8 @@ pose; this seek is not a periodic increment. Types `0x801/0x871` share
 Breakables, S06's boundaries and S12's dome share one debris set.
 `stage_break_debris_parse` (`0x007D29D0`) binds four models, token 7's
 object and its `%s_a1`..`_a3` siblings, and 20 fragments sized by token 8.
+It chooses each fragment's model once during parse; later launches retain
+those choices.
 `stage_break_debris_launch` (`0x007D3010`) starts each at the origin with
 speed size×0.1 + 42 + 0, 10 or 20, elevation 50..70 degrees, a random
 azimuth within ±π, scale min(size×0.02, 1.2) on the two horizontal axes, and
@@ -558,7 +564,10 @@ random spin rates ±0.4, ±0.6 and ±0.5. `stage_break_debris_update`
 (`0x007D3670`) adds gravity 9.8×0.6 to the vertical speed, floors it at -90,
 moves by 0.6 of each speed, and spins only the first and third rotation
 angles, wrapping each into ±π; the middle rate is never applied. While
-falling, opacity is height / 300 clamped to 0..1; the set finishes when every
+moving, the horizontal displacement uses `Rz(azimuth) * Rz(-π/2)`, giving
+world x = origin x + distance × sin(azimuth) and world y = origin y −
+distance × cos(azimuth). While falling, opacity is height / 300 clamped to
+0..1; the set finishes when every
 fragment reaches 0. `stage_break_debris_draw` (`0x007D3BE0`) writes each
 fragment's opacity to its model's `+0x88` (and `+0x84` unless the model's
 `+0x8C` bit 0 is set), sets its transform and submits it at factor 1 in the
@@ -1160,6 +1169,11 @@ opacity only to the player's `+0x88`, whose `+0x84` stays 1, so the faded
 dome draws at vertex alpha `0x26`; it uses the third environment while faded
 and the second otherwise, and draws its debris after restoring the caller's
 environment.
+The captured faded-dome draw reloads both dome textures and their palettes
+immediately before submitting the two materials. Their texture blocks
+`0x3F40` and `0x3F60` lie inside the 256×256 32-bit shadow target starting
+at byte address `0x3C0000`; a main-pass upload alone cannot keep those images
+resident through shadow rendering until the late draw.
 
 The dome registers its initial animation's collision environment during parse.
 The first crash unregisters the old environment, binds the damaged animation

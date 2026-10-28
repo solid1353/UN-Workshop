@@ -56,9 +56,9 @@ address	kind	name	type	comment
 0x007D1FC0	function	stage_queue_archive	void stage_queue_archive(int index)	Queue scene record0 resource08 path through archive_queue_request(path,0); no index range check, skip null table pointer.
 0x007D2010	function	stage_require_archive	void stage_require_archive(int index)	Require already loaded record0 path and store handle945910; no index bounds check, skip null table pointer.
 0x007D2310	function	stage_vector_append	void stage_vector_append(un3StageVector *vector, void **position, unsigned int count, void **value)	Append pointer into vector storage08 and update count04; vector12-byte header. Header00 is capacity; actually insert count copies at supplied position with growth/moves; stage append callers insert at end.
-0x007D29D0	function	stage_break_debris_parse		Constructs four debris models from token7 stem,20 particles by default, size token8 and origin; gravity9.8,bounce0.6,damping0.8.
+0x007D29D0	function	stage_break_debris_parse		Construct four debris models from token7 stem,20 fragments by default,size token8 and origin; gravity9.8,step0.6,damping0.8. Random model choice is assigned once per fragment during parse and retained on subsequent launches.
 0x007D3010	function	stage_break_debris_launch		Restart every fragment at the origin: speed size*0.1+42+0/10/20, elevation 50..70 deg, azimuth +-pi, spin x/z only; state 1.
-0x007D3670	function	stage_break_debris_update		Gravity 9.8*0.6, vz floor -90, spin x/z wrapped to +-pi, opacity z/300 while falling; state 2 when all fragments are gone.
+0x007D3670	function	stage_break_debris_update		Gravity9.8*0.6,vz floor-90; spin only rotation x/z and wrap to+-pi. Rotate local displacement by Rz(azimuth)*Rz(-pi/2),giving world x=origin.x+distance*sin(azimuth),y=origin.y-distance*cos(azimuth),z=origin.z+height. Falling opacity clamps world z/300; state2 when all fragments gone.
 0x007D3BE0	function	stage_break_debris_draw		Per fragment: opacity to model +0x88 (+0x84 unless fading), set transform, submit at 1.0 in the current draw environment.
 0x007D3CE0	function	stage_break_debris_take_finished		True once state is 2; resets state to 0.
 0x007D4A20	function	stage_dispatch_prop_effect		(position, kind, sound, argument): kind-specific generators and effects, then sound >= 0 via audio_emit_spatial_sfx_control, or its _with_key form with argument as key for kind 1; kind 0x10 starts two falling-leaf generators (catalog rows 0x34/0x4C) with random spin.
@@ -275,7 +275,7 @@ address	kind	name	type	comment
 0x0080A5C0	function	earth_dome_crash		First hit damage animation; second breaks, scatters debris/items, selects front CL and DMY line variant1 and rebuilds navigation.
 0x0080A6C0	function	earth_dome_detect_crash		Front-section crash event0: states3F/40 x500..800 z<=500, states42/43/44/45 x500..1100 z<=600.
 0x0080AAC0	function	earth_dome_update		Crash detection and debris; fade toward0.3 if back fighter x>600, otherwise1.
-0x0080ACD0	function	earth_dome_draw		Draw faded dome in third environment, opaque in main; draw live fragments.
+0x0080ACD0	function	earth_dome_draw		Draw faded dome in third environment,opaque in main. Write only player+0x88,leaving inherited factor+0x84 at1; player submit forwards88 while child inherits84,so writing opacity to both would square the fade. Restore caller environment before stage_break_debris_draw.
 0x0080B180	function	small_spider_thread_geometry		Build22 fixed-point XYZ strip vertices along cubic anchor-to-spider bowed down by length/3; camera-side ribbon width5.
 0x0080B930	function	small_spider_initialize		Bind small spider animation, radius90 attack receiver at front depth0, authored anchor and emergence height.
 0x0080BB00	function	small_spider_hit		Accept ordinary hit, record attacker facing and credit its side.
