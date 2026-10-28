@@ -6,7 +6,8 @@ Established for UN4 Jiraiya 21 against NA2 Jiraiya 83: 46/181/154 against
 45/177/151 actions/rows/names with complete authored correspondence and callback
 differences; Needle Jizo and the resource-aware Rasengan against NA2's jutsu,
 their labels and helper dependencies; two ordinary films and their bindings; the
-Gamabunta controller, stage, attacks, shadow, particles and voices; the timed
+Gamabunta controller's vtable, states, attacks, contacts, clash handlers,
+stage, shadow, particles and voices; the timed
 power effect's lifetime and factors; Rasengan's compact control and Needle Jizo
 cue 89, which has no PLVOICE member; the constructor's input-synthesis
 parameters; and the AI, support, roster, jutsu-admission, presentation and
@@ -491,29 +492,83 @@ indices 4 and 8; `ANM_4jryact12` is bound only when the actual initiating
 fighter ID is 21. Special bindings include `ANM_4bntrdy1`,
 `ANM_4bntact12`, `ANM_4bntact04` and `ANM_bnttpd00`.
 
-`jiraiya_reversal_update` (`0x00738840`) dispatches its four concrete
-states. `jiraiya_reversal_release_charge` (`0x007389B0`) chooses
-state 1 or 2 at the two thresholds. The attack states own different
-descriptors and behavior:
+The vtable at controller `+0x2BC` holds, besides common entries:
+`+0x08` `jiraiya_reversal_close_range` (CPU range: opponent closer than
+400), `+0x10` `jiraiya_reversal_set_state`, `+0x14`
+`jiraiya_reversal_state_event`, `+0x18`
+`jiraiya_reversal_build_clash_projectile`, `+0x1C`
+`jiraiya_reversal_predraw` (sets renderer `+0xE0` to 1500.0 and `+0xE4` to
+`0x40`, which the common render restores), `+0x20`
+`jiraiya_reversal_draw`, `+0x24` the two-entry threshold list, `+0x28`
+`jiraiya_reversal_update`, `+0x2C` `jiraiya_reversal_update_main_animation`,
+`+0x30` `jiraiya_reversal_attach_initiator`, `+0x38`
+`jiraiya_reversal_head_anchor`, `+0x40` the initializer, `+0x44`
+`jiraiya_reversal_acquire_stage_container` and `+0x48`
+`jiraiya_reversal_destroy`.
 
-| Descriptor offset / state | Base damage fraction | Authored repeat limit | Reaction | Concrete attack |
-| --- | ---: | ---: | --- | --- |
-| `+0x0C`, state 3 | 0.02 | 3 | `0x10` | Body contact during animation frames 43..47; distant contacts can select reaction `0x3E` |
-| `+0x38`, state 1 | 0.035 | 1 | `0x10` | Two independently managed projectile players; contact and ground/expiry cleanup |
-| `+0x64`, state 2 | 0.05 | 15 | `0x1C` | Timed area effect, with its own animation and collision interval |
+Gamabunta stands at `(facing*2150, 250, 0)`; Jiraiya's model rides at
+`OBJ_eff_dummy_jrypos0` and the initiating fighter is moved to
+`(facing*750, 0, 1100)`. `jiraiya_reversal_update_placement` keeps the
+incoming-hit sphere at the head anchor plus `(80*facing, 0, 260)` and an
+always-active contact at the head anchor; when that contact touches the
+opponent, it calls `paired_action_entry(opponent, 3, 0)` (`0x00226E10`,
+which acts only in major state 8 and sends the fighter back at planar
+speed 30) when the opponent's current action category has mask 2, and
+otherwise clears the opponent's planar speed `+0x984`.
 
-`reversal_bind_hit_descriptor` (`0x00748E80`) creates a synthetic action
-from those fields, including the controller's damage multiplier;
-`reversal_game_deliver_hit` (`0x00748F50`) applies the common hit path. These
-values describe admitted attack descriptors, not a guaranteed aggregate
-damage total. They are independent of metadata row 50's zero damage and
-the two cinematic arrays.
+Animations by state (Gamabunta / Jiraiya): 0 `nut0/nut0`, 1
+`act02/act02`, 2 `act03/act03`, 3 `act01/act01`, 4 `rdy0/nut0` then
+`rdy1` while held, 5..8 `dmg00..03` / `dmg00, dmg01, dmg02, dmg02`.
+`KTYS_BNT` also holds `ANM_4jryact04`, which no controller path binds.
+The common input starts state 3 from one button and the charge state 4
+from the other. Charge progress past 54
+releases into state 2, otherwise state 1. Each attack binds its pattern:
 
-The concrete descendants include
-`jiraiya_reversal_spawn_projectile` (`0x00738A80`),
-`jiraiya_reversal_projectile_contact` (`0x00738FA0`),
-`jiraiya_reversal_update_area_effect` (`0x007395C0`), and the attack
-updates at `0x00739960/0x0073A040/0x0073A270`.
+| Pattern / state | English name | Damage | Final / intermediate reaction | Final multiplier | Cap | `+0x26 / +0x28` |
+| --- | --- | ---: | --- | ---: | ---: | --- |
+| `jiraiya_reversal_body_hit_pattern` / 3 | Toad Blade Cut | 0.02 | `0x10 / 0x01` | 30 | 3 | 0 / 0 |
+| `jiraiya_reversal_projectile_hit_pattern` / 1 | Water Style: Liquid Bullets | 0.035 | `0x10 / 0x01` | 12 | 1 | `0x7FFF / 0x7FFF` |
+| `jiraiya_reversal_area_hit_pattern` / 2 | Fire Style: Toad Flame Bombs | 0.05 | `0x1C / 0x1B` | 3 | 15 | -1 / 1 |
+
+All three voice triggers are 1. The German, Italian and Spanish names are
+the placeholders `#SommonSkillJraiya{Ger,Ita,Spa}1..3`. Descriptor
+`+0x04` (incoming factor) is 0.6; the CPU rows
+`jiraiya_reversal_cpu_weight_rows` are `45/8/20/15`, `40/8/20/20`,
+`30/8/20/20`, `24/8/20/25`. These values describe admitted contacts, not a
+guaranteed total, and are independent of metadata row 50's zero damage.
+
+- **State 3:** `jiraiya_reversal_update_body_attack` enables four body
+  contacts (radius 250, x -750/-250/250/750) at Gamabunta frame 43 and
+  disables them after 47. After a delivered hit with the opponent at least
+  500 away it sets the synthetic action's `+0x56/+0x58` to `0x3E/10`.
+- **State 1, charged (progress 35..54):** `act04`; at frame 45 one
+  projectile from `(facing*840, 0, 650)` moving `(45, 0, 16)` per frame.
+- **State 1, uncharged:** after `act02` ends, the facing flips and
+  projectiles launch at state frames 45 and 55
+  (`gamabunta_volley_spawn_frames`) from `x = 500 - 200i`, z 3000 (times
+  the shot direction) moving `(15i, 0, 50)`, while the camera moves until
+  frame 110. The next animation end plays `act12` (and `jryact12`); four
+  `smok11` emitters fire at Gamabunta's hands and feet.
+- **State 2:** frame 24 starts a 100-frame area effect and emitter
+  `+0x628`; frame 32 enables emitters `+0x624/+0x62C` and area contacts
+  0/1 (x -900/-900, z 300/700, radius 480/400, mirrored by facing).
+  Contacts 2/3 are never enabled; the effect deactivates them at frame 26,
+  so 0/1 stay on until the last hit or frame 100.
+
+Projectile radius and scale grow with charge, `t = progress/55`: 120..300
+and 0.5..1.25. A projectile ends past `z - radius < -300` or beyond
+`|x| = 2000`, or on a delivered hit; `jiraiya_reversal_burst_projectile`
+then plays transient resource `0xC` (`effect0x` / `ANM_e0x_down_03`) when
+`z <= 200` and shows emitter `+0x630` for 30 frames.
+
+Clashes: the common clash class calls `0x00748310`, which stores an event
+at `+0x36` and calls vtable `+0x14`; `0x00748440` builds the clash effect
+through vtable `+0x18`. Event 1 arms projectiles whose second contact was
+hit, 3 reflects armed ones, 2 requests Jiraiya compact control `0x62`, 4
+bursts them. A reflected projectile that reaches Gamabunta (bit `0x80000`
+contact, or `x = ±1300`) puts him in reaction state 7, subtracts
+`+0x54 * 0.125` from time meter `+0x50`, and requests ground pool `0x3F`.
+
 `jiraiya_reversal_destroy_fields` (`0x00736A10`) releases both main
 animation players, both projectile records, the shadow, retained models,
 four emitters and the owned stage provider. Shared stage transition,
@@ -527,7 +582,7 @@ at `0x008443D0` selects 19. The own-game cache initializer resolves 13
 to `effect0x` / `EFF_e0xsmok03`, 16 to `particle` / `EFF_e0xsmok07`,
 and 19 to `particle` / `EFF_e0xsmok11`. Index 60 aliases resource 11,
 `effect0x` / `EFF_e0ybom01`, with its `CLT_e0ybom01` palette selection.
-Projectile ground/expiry cleanup requests ground pool `0x3F`, which maps
+The reflected-projectile hit's ground pool `0x3F` maps
 through `0x005C3BC4` to effect-resource `0x39`,
 `effect0x` / `ANM_e0x_dokan_00`, from descriptor `0x005756F8`.
 
@@ -622,6 +677,14 @@ phases. Descriptor `0x00435E40` has 56 members and language increment 28:
 | 21 | `0x14AA3000` / 20,039 | 49 / `0x14B1F800` / 19,043 |
 | 22 | `0x14AA8000` / 30,834 | 50 / `0x14B24800` / 36,602 |
 | 23 | `0x14AB0000` / 29,309 | 51 / `0x14B2D800` / 27,498 |
+
+The controller's compact controls `0x5A..0x62` all select program 55
+with keys `0x3C..0x44`; the rows are identical in NA2's
+`battle_voice_controls`. UN4 Jiraiya's English and Japanese banks hold
+program 55 with one sample per key (Sset 9, 10, 11, 34..39; Vagi
+7, 6, 4, 5, 3, 1, 2, 0, 8; English 22,050 Hz, Japanese 8,000 Hz). NA2
+Jiraiya 83's bank ends at program 40, so these controls select nothing
+there.
 
 The dialogue path is separate. `audio_queue_player_voice`
 (`0x001D46F0`) scans `jiraiya_streamed_voice_cue_list`

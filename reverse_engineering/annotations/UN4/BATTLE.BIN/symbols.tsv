@@ -123,30 +123,99 @@ address	kind	name	type	comment
 0x00730600	function	reversal_game_request_voice		Own-game family6,entry-specific bases0/16/20/24/8/4/12 forentries0..6 plusphase0..3;slot frominitiatingfighterflag.
 0x00730700	function	reversal_game_request_state_control		Use suppliedstateorcurrentstate;1/2/3 map control0x60/0x61/0x5F,5/6 random(1)+0x5C,7/8=0x5E; forwards initiatingfighterEC to resident1D5900. Separate from family6 streamed requests.
 0x007307D0	function	reversal_game_dispatch_state_voice		At controller state-count+0x10 equal pattern+0x16 (Manda body/rising4,travel2), state1 requests phase2,state2phase3 family6 via730600; entry4 cues10/11. Body uses compact control0x5F, incomingstates5..8 count1 use730700; sourceEC.
+0x00730A00	function	shukaku_reversal_release_resources		Free impact pool +414, +410, scene +DC, both bullet players; retire emitters +418/+41C if registry still holds them; signal +624; release owned stage container +B4.
 0x00730BF0	function	shukaku_reversal_initialize		Vtable +0x40 of ccSumSyukaku: selects shukaku_reversal_descriptor at +0xF4, binds CPU weights, scene player +0xDC, effects.
+0x00730ED0	function	shukaku_reversal_impact_player_construct		Element constructor for the 16-entry 0x120 impact-player pool at +414 (destructor 0x001BB0E0).
+0x00730F30	function	shukaku_reversal_acquire_stage_container		Vtable +0x44: ccs_acquire_container_by_path(reversal_definition_auxiliary_value(0)) into +B0 ownership/+B4 container.
+0x00730F80	function	shukaku_reversal_start		Vtable +0x0C: clear live bullet count +680, set state 0.
+0x00730FB0	function	shukaku_reversal_bind_animations		Rider node name +670 = OBJ_2gar10t0 when stage/ktys_skk2.ccs is published (state anims from it), else OBJ_2gar00t0; ANM_skk%s x9 into +B8, ANM_skkrdy1 +614, ANM_ektys_skk00 +618, ANM_s10aefe09 +61C, ANM_s10aefe10 +620.
+0x00731140	function	shukaku_reversal_bind_rider_palette		Only for OBJ_2gar00t0: rebind MDL_2gar00t0 body to CLT_4garbody/c1/c2 by initiating side costume (manager +8C/+AC); requires MAT_clut.
+0x00731260	function	shukaku_reversal_initialize_contacts		Hurtboxes +2D0 (r220) and +1E0 (r64,h56); three fixed claw contacts +320 group +60 at x=sign*880/520/200 z160 r256/160/160; two bullet primaries +440 group +84 and secondaries +490 with reversal masks.
+0x00731510	function	shukaku_reversal_camera_anchor		Vtable +0x38: world position of rider node +670 in scene +DC; zero output and return 0 when absent.
+0x00731600	label	shukaku_reversal_active_contact		Vtable +0x34 (no Ghidra function): copy state-3 claw contact +320 or state-1/2 bullet contact +440 summary (mask,group,radius,height,position) to a1; -1 otherwise.
+0x007316B0	function	shukaku_reversal_spawn_impact		Start impact-pool player slot with ANM_s10aefe09 (kind 0) or ANM_s10aefe10 (kind 1) at position/scale; held or side-1 trail rotated pi; set live flag +684[slot].
+0x00731840	function	shukaku_reversal_set_state		Vtable +0x10: state 0..8; bind pattern +C (3), +38 (1), +64 (2); state 4 rewinds bullet players; state 0 clears charge; attach +B8[state] to +DC.
+0x00731A10	function	shukaku_reversal_clash_event		Vtable +0x14 by event +36: 1 hold touched bullet (+610, held +E0=1); 2 release + voice control 0x62; 3 reverse held bullet; 4 destroy held bullet.
+0x00731B80	function	shukaku_reversal_bind_clash_effect		Vtable +0x18: bind ANM_ektys_skk00 to the factory transient at the held bullet's caught target, offset by its radius, with bullet angle/scale.
+0x00731E60	function	shukaku_reversal_reverse_held_bullet		Negate held bullet angle +D4 and disable its primary contact.
+0x00731EA0	function	shukaku_reversal_draw		Vtable +0x20: draw live bullet players and impact players, then reversal_game_draw_hud.
+0x00731FB0	label	shukaku_reversal_draw_environment		Vtable +0x1C (no Ghidra function): renderer gp-5A10 +E0=1500.0, +E4=0x60.
+0x00731FE0	function	shukaku_reversal_in_range		Vtable +0x08: base distance 0x00749EB0 < 700.
+0x00732030	function	shukaku_reversal_update_model		Vtable +0x2C: scene at (1500*sign,120,0) rot -1.4*sign; anim end -> state 0; camera anchor +40; pin initiating fighter at (960*sign,0,750); incoming contact -> reaction state.
+0x007322F0	label	shukaku_reversal_callback_noop		Vtable +0x30: jr ra (no Ghidra function).
+0x00732300	function	shukaku_reversal_update_attacks		Vtable +0x28: state 4/3/2/1 helpers; claw emitter motion; impact pool advance; bullet movement when +680 live.
+0x007324C0	function	shukaku_reversal_move_claw_emitter		Move claw emitter +41C by +420 each update for +682 updates, then disable it.
+0x00732590	function	shukaku_reversal_update_charge		State 4: reversal_game_update_charge; on release state 2 if progress > last threshold (30) else 1, cooldown +26=50; while held loop ANM_skkrdy1.
+0x007326B0	function	shukaku_reversal_update_bullets		Move kind-2 bullets by (60*sign, 0, descent {10,24}[i]); near ground spawn one ANM_s10aefe09 and camera shake.
+0x00732840	function	shukaku_reversal_update_big_bullet		Move big bullet by 80*sign; spawn two ANM_s10aefe10 trail players in ring slots k, k+8 (gp-55C8, 0..7).
+0x007329E0	function	shukaku_reversal_move_bullet		Advance a bullet slot (x mirrored while held/reversed); retire past |x|2000 or z<-100; sync contacts and player transform; then shukaku_reversal_bullet_contact.
+0x00732BF0	function	shukaku_reversal_bullet_contact		Unheld: shake per delivered hit, disable at final. Reversed: hits Shukaku (state 7, budget -1/8, effects) at |x|1300 or receive 0x80000; meeting the other small bullet cancels both.
+0x00733020	function	shukaku_reversal_fire_bullets		State 1: fire bullet i at frame {70,87}[i] from (840*sign,0,650), radius progress*60/T+150, scale 0.4+progress*0.24/T; flash, filter, sounds 0x1014/0x1005.
+0x00733330	function	shukaku_reversal_fire_big_bullet		State 2: frame 72 fire at x=sign*(4.6*(T+1-progress)+440), z200, radius 4.6*progress; impact, flash, filter, sounds 0x1014/0x100A; notes 0x3C/0x3B per hit.
+0x007335D0	function	shukaku_reversal_claw_attack		State 3: frame 24 claw emitter, 27 enable claw contacts and sounds 0x1013/0x16, 28 filter; off after 31 or final contact.
+0x00733810	function	soutourou_reversal_construct		ccSumSoutourou field constructor: clears +0x494..+0x4E7 (afterimage list, helper, tornado state).
 0x00733870	function	soutourou_reversal_initialize		Vtable +0x40 of ccSumSoutourou: selects soutourou_reversal_descriptor at +0xF4, binds CPU weights, scene player +0xDC.
+0x00733A50	function	soutourou_reversal_acquire_stage_container		Vtable +0x44: entry 1 fourth table word (stage/ktys_str.ccs) via ccs_acquire_container_by_path into +0xB0/+0xB4.
+0x00733AA0	function	soutourou_reversal_reset		Vtable +0x0C: clear tornado phase +0x4DC and substate +8, set state 0.
+0x00733AE0	function	soutourou_reversal_bind_animations		ANM_4str{nut00,nut00,act03,act02,nxr0,dmg00,dmg01,dmg02,dmg02} to +0xB8 by state; nut00/rdy0/grg00/lan0 to +0x484; ANM_4strgrg01 to +0x494.
+0x00733C20	function	soutourou_reversal_initialize_contacts		Body contact +0x2D0 in group +0x60; three tornado contacts +0x320 in group +0x84; contact +0x410 in group +0x460.
+0x00733DC0	function	soutourou_reversal_camera_anchor		Vtable +0x38: tornado bone OBJ_grg_dummy01 while phase +0x4DC is 2, else OBJ_4str00t0 l head plus +0x4B0.
+0x00733EF0	function	soutourou_reversal_is_first_side		Vtable +0x3C: returns facing byte +0x4E6 == 0.
+0x00733F10	function	soutourou_reversal_set_state		Vtable +0x10: binds pattern 0/2/1 for states 3/2/1, state 4 starts charge (substate 1), plays +0xB8[state].
+0x00734070	function	soutourou_reversal_complete_substate		On animation end: charge->rdy0, release->tornado grg00 (enable +0x84/+0x460, start x 5000*dir, z 240), tornado end->lan0.
+0x00734350	function	soutourou_reversal_control_changed		Vtable +0x14: control 3 or 4 ends the tornado (control 3 first drains meter 15), disables contacts, requests control 7.
+0x00734440	function	soutourou_reversal_place_effect		Vtable +0x18: binds ANM_4strgrg00 to the supplied transient effect at a contact owner's position, x+520*dir, scale 3.
+0x007346F0	function	soutourou_reversal_drain_meter		Subtract 15 from time meter +0x50 and report initiator condition 4.
+0x00734730	function	soutourou_reversal_draw		Vtable +0x20: afterimages, shared presentation, HUD helper +0x4A4 unless finished.
+0x007347B0	function	soutourou_reversal_configure_draw_environment		Vtable +0x1C: renderer +0xE0 = 1500.0, +0xE4 = 0x40; reversal_game_render restores both.
+0x007347E0	function	soutourou_reversal_in_range		Vtable +0x08: opponent distance below 700.
+0x00734830	function	soutourou_reversal_update_model		Vtable +0x2C: facing from +0x4E6, home x 1120*dir, initiator position, incoming contacts, animation completion.
+0x00734B30	function	soutourou_reversal_update_attacks		Vtable +0x28: state 4 charge, 3 body attack, 1/2 tornado; then afterimage list.
+0x00734BE0	function	soutourou_reversal_update_charge		Charge; on release state 2 (cooldown 110) above last threshold else state 1 (60); voice delay 24.
+0x00734CD0	function	soutourou_reversal_tornado_position		Position of OBJ_grg_dummy01 in scene player +0xDC.
+0x00734DC0	function	soutourou_reversal_spawn_tornado_dust		Transient effect resource 0x66 behind the tornado on the ground.
+0x00735060	function	soutourou_reversal_spawn_afterimage		0x18-byte node, ANM_4strgrg01 player at OBJ_grg_dummy01, lifetime 16, appended to +0x498/+0x49C.
+0x007352B0	function	soutourou_reversal_destroy_afterimage		Unlink afterimage node, release its player, free it.
+0x00735390	function	soutourou_reversal_update_afterimages		Count down, scale and fade afterimage nodes; destroy expired ones.
+0x00735630	function	soutourou_reversal_draw_afterimages		Draw live afterimage players with renderer 0x0060B320.
+0x007356A0	function	soutourou_reversal_update_tornado		Phase 2: move 150/update, Pan-dimensional turns at 4000, ends past 1120 and swaps sides; phase 3: landing.
+0x00735A00	function	soutourou_reversal_position_tornado_contacts		Moves the three tornado contacts and +0x410 with the tornado while combo count +0x256 is below the charge-derived limit.
+0x00735CE0	function	soutourou_reversal_steer_tornado		Within |x|<=1800: human up/down pad bits 0x1000/0x4000, CPU follows opponent height +-240; ground dust.
+0x00735FC0	function	soutourou_reversal_apply_steering		Eases vertical speed +0x4D0, moves height +0x4C8 by -120*speed (down stops below 120), sets HUD arrow.
+0x00736140	function	soutourou_reversal_update_landing		Arg 1: 12-update glide to x 1120*dir, z 0; arg 0: glide, frame 12 impact shake and sound, then four dust effects.
+0x00736410	function	soutourou_reversal_update_tornado_audio		Voice phase 7 after delay +0x4E2; loop volume by opponent distance every 3 updates; hit sounds.
+0x007365C0	function	soutourou_reversal_body_attack		Wolf Fang: contact at OBJ_str_atcdmy0 frames 9..19, claw/paw effects frames 20..34, delivers with aux ids 0x33/10.
 0x00736970	function	jiraiya_reversal_construct		Gamabunta concrete constructor called by entry2 factory; initializes private fields through8E0 and two embedded120-byte slots650/770.
 0x00736A10	function	jiraiya_reversal_destroy_fields		Gamabunta cleanup destroys players/models/emitters and owned provider before common teardown.
 0x00736CE0	function	jiraiya_reversal_initialize		Entry2 initializes descriptor858840, provider animations, initiating model, HUD, camera and attack patterns.
 0x00736EF0	function	jiraiya_reversal_initialize_emitters		Construct four held emitter instances624/628/62C/630 from descriptors8442F0/4328/4398/4360; initial side positions and later enable gates.
+0x00737160	function	jiraiya_reversal_acquire_stage_container	void jiraiya_reversal_acquire_stage_container(void * self)	Gamabunta vtable +0x44: ccs_acquire_container_by_path(reversal_definition_auxiliary_value(2)) into +0xB4, ownership byte +0xB0.
 0x007371B0	function	jiraiya_reversal_bind_animations		Binds ANM_4bnt/4jry suffix arrays and special animation names; actual initiator21 gates4jryact12.
 0x007373F0	function	jiraiya_reversal_bind_attack_patterns		Binds descriptors844AF0..844B5F into concrete attack groups320/460/600 and two slots650/770.
+0x00737790	function	jiraiya_reversal_head_anchor		Gamabunta vtable +0x38: world position of OBJ_4bnt00t0 head on player +0xDC plus offset +0x8D0 (+-360,0,-180); returns 0 and zero vector when the node is missing.
 0x007378A0	function	jiraiya_reversal_set_state		Concrete state callback; clears or activates patterns and selects Gamabunta/Jiraiya animation pairs.
-0x00737C80	function	jiraiya_reversal_state_event		State event callback activates two attack slots, sets initiating fighter controls, clears contacts or starts reset.
-0x00737E60	function	jiraiya_reversal_camera_anchor		Selects live special collision handle to calculate concrete camera position.
+0x00737AB0	function	jiraiya_reversal_update_placement		Per frame: head anchor to +0x40/+0x200, incoming sphere +0x2D0 at head+(80*facing,0,260), contact +0x5B0 at head, initiator at (facing*750,0,1100); incoming contact sets reaction state; +0x5B0 touching the opponent calls paired_action_entry(opp,3,0) when its current action category has mask 2, else clears its planar speed +0x984.
+0x00737C80	function	jiraiya_reversal_state_event		Gamabunta vtable +0x14, clash events from common 0x748310 (+0x36): 1 arm slots whose clash contact hit (+0x116), 3 mark armed slots reflected (+0x10C), 2 initiator compact control 0x62, 4 burst armed slots.
+0x00737E60	function	jiraiya_reversal_build_clash_projectile		Gamabunta vtable +0x18, called by common clash-effect creator 0x748440: places an ANM_bnttpd00 transient effect at the clash contact of the first clash-armed slot (+0x116), with its yaw +0x104 and scale +0x108.
 0x00738150	function	jiraiya_reversal_allocate_pattern_indices		Creates two-element signed-short list initialized-1 at controller30.
 0x00738200	function	jiraiya_reversal_draw		Draw initiating model and live emitted Gamabunta scenes, then common HUD; uses controller render environment.
+0x00738350	function	jiraiya_reversal_draw_projectile_shadow		Draw CMP_xshadow model +0x894 at projectile (x,2,z), scale 6.3*slot scale, alpha 0.7.
+0x00738420	function	jiraiya_reversal_predraw		Gamabunta vtable +0x1C: renderer env (gp-0x5A10) +0xE0=1500.0, +0xE4=0x40; reversal_game_render restores both afterwards.
 0x00738450	function	jiraiya_reversal_close_range		Concrete predicate accepts common opponent distance less than400.
 0x007384A0	function	jiraiya_reversal_update_main_animation		Updates Gamabunta active animation, state completion and transform.
 0x00738700	function	jiraiya_reversal_attach_initiator		Places initiating Jiraiya player at Gamabunta named node859610 and updates its animation.
 0x00738840	function	jiraiya_reversal_update		Dispatches states1/2/3/4 to concrete updates; updates two emitted slots and auxiliary effect.
 0x007389B0	function	jiraiya_reversal_release_charge		State4 release chooses attack1 or2 from last two-element pattern threshold, updates animation cooldown.
 0x00738A80	function	jiraiya_reversal_spawn_projectile		Initializes one emitted slot velocity/position/scale and lazily allocates120-byte ANM_bnttpd00 player.
+0x00738C90	function	jiraiya_reversal_update_projectiles		For each live slot (+0x114==1) move it (velocity (15*i,0,50), or (45,0,16) in phase 10) and check contacts; otherwise count +0x114 down and free its player at 1.
+0x00738E10	function	jiraiya_reversal_move_projectile		Advance slot position by velocity times shot direction +0x890 (x reversed when reflected +0x10C), yaw from atan2, update player and both contact positions.
 0x00738FA0	function	jiraiya_reversal_projectile_contact		Emitted slot collision binds descriptor+38 and delivers synthetic fighter hit; expiry/floor/bounds route cleanup and ground effect3F.
-0x007395C0	function	jiraiya_reversal_update_area_effect		Updates8E0 duration, enables collision and auxiliary effects, clears at100; control/contact flags select repeated reaction behavior.
-0x00739960	function	jiraiya_reversal_update_attack		Concrete attack state updates emission timing, special phase2 request, named anchors and particle/audio events.
+0x007393D0	function	jiraiya_reversal_burst_projectile		Projectile end: transient resource 0xC (ANM_e0x_down_03) scaled 3*scale when z<=200, emitter +0x630 at the point for 30 frames, rumble (3,2,0xC,2), common cue 0x49 velocity 0x35.
+0x007395C0	function	jiraiya_reversal_update_area_effect		Area counter +0x8E0 to 100: at 26 emitter +0x628 off and area contacts 2/3 deactivated; every 16 frames sound 0x101A; rumble on delivery, group +0x84 off on last hit; at 100 emitters +0x624/+0x62C and group off.
+0x00739780	function	jiraiya_reversal_reset_contacts		State 0 entry: re-lay four body contacts (x -750+500i, near pair z 200/100) and four area contacts (x +-{-900,-900,160,-200}, z 300/700/400/340) for the given facing.
+0x00739960	function	jiraiya_reversal_update_attack		State 1 by phase +0x640: 10 charged single shot at frame 45; 0 waits for act02 end, flips facing; 1 volley at state frames 45/55 with camera move to 110; 2 landing smoke at four Gamabunta limbs.
 0x0073A040	function	jiraiya_reversal_update_area_attack		State2 animation frame24 starts area counter;frame32 enables emitters and additional contacts.
-0x0073A270	function	jiraiya_reversal_update_body_attack		State3 frame43 activates collision60, after47 clears;distance>=500 changes synthetic reaction to3E/count10.
+0x0073A270	function	jiraiya_reversal_update_body_attack		State 3: frame 43 enables body group +0x60 with sound 0x1013, cue 0x16, rumble; frame 44 camera effect 0x844D20; after 47 off. After a delivered hit with opponent >=500 away, synthetic action +0x56/+0x58 = 0x3E/10.
 0x0073A3F0	function	katsuyu_reversal_release_resources		Release scene players DC/E0,E4/E8 helpers; drain slug list438/count460 and acid list440; release owned stage containerB4 whenB0 set.
 0x0073A510	function	katsuyu_reversal_initialize		Entry3 ccSumKatsuyu: descriptor858A80, bind animations/model, allocate120 scene playerDC, initialize state/camera/contact groups; side450 +/-120. Replace inherited one-element threshold30 with56; inherited charge advance can set current index equal count1.
 0x0073A680	function	katsuyu_reversal_acquire_stage_container	void katsuyu_reversal_acquire_stage_container(void * self)	Vtable +0x44, called by reversal_game_initialize_hud_and_common_state before +0x40 initialize: borrow published stage/ktys_kty.ccs (entry 3 path) or request it; ownership +B0, container +B4 used by katsuyu_reversal_bind_animations.
@@ -155,17 +224,20 @@ address	kind	name	type	comment
 0x0073A970	function	katsuyu_reversal_camera_anchor		Resolve OBJ_4kty 00t0 bone06 fromDC scene;capture node translation plus sideplacement450;zero output ifabsent.
 0x0073AA80	function	katsuyu_reversal_set_state		Select state 0..8 and paired Katsuyu/Tsunade animation slots; clear completion flag and substate, pending action +0x10=-1. Rates 0x150 for slug state1, 0x180 for acid state2, otherwise0x100. State3 binds descriptor+C body pattern; state4 alone sets substate1. Reaction states5..8 retain substate0, so completed animation returns to idle in katsuyu_reversal_update_model.
 0x0073AC20	function	katsuyu_reversal_draw		Render E0 participant player, slug438 andacid440 lists; select2A8 descriptor anddraw sharedcamera/HUD.
+0x0073ACA0	function	katsuyu_reversal_configure_draw_environment	void katsuyu_reversal_configure_draw_environment(void)	Katsuyu vtable 1C; raw bytes, no function initially. Borrowed render environment (GP-5A10) +E0=1000.0, byte +E4=0x40.
 0x0073ACC0	function	katsuyu_reversal_in_range		Return shared749EB0 distance<900.
 0x0073AD10	function	katsuyu_reversal_update_model		Set sideorientation;handle animationend/heldinput,statechange;capture bone anchor40 andcontact200;bound720 stageposition;advanceDC andplace scaledmodel.
 0x0073AFD0	function	katsuyu_reversal_update_initiator		AdvanceE0 Tsunade player and attach it to OBJ_eff_dummy_tndpos0 inDC with orientation offset.
 0x0073B110	function	katsuyu_reversal_update_attacks		Dispatch states1/2/3/4 to slug/acid/contact/charge helpers;update live slug andacid lists.
 0x0073B1E0	function	katsuyu_reversal_release_charge		Sharedcharge update;uponheld38release selectstate1/2 fromcurrentpatternthreshold and set40-updatecooldown.
 0x0073B2A0	function	katsuyu_reversal_update_slug_list		Walk nodes from +438, retain each next pointer +A8, and run katsuyu_reversal_update_slug.
+0x0073B300	function	katsuyu_reversal_draw_slugs	void katsuyu_reversal_draw_slugs(int self)	Walk slug list +438 via +A8; draw each node player whose retirement counter +A0 is zero.
 0x0073B360	function	katsuyu_reversal_spawn_slug		Allocate B0 node plus120 animation player bound to ANM_4ktysml00 at859738; randomized velocity, position and frame; own50-byte contact/group24; append list438/43C and increment460.
 0x0073B730	function	katsuyu_reversal_destroy_slug		Unlink B0 node, decrement +460, release animation player and collision group/contact, then free.
 0x0073B850	function	katsuyu_reversal_update_slug		Move/advance slug; ground landing emits radial effects and cue 1E, contact dispatch may hit defender, out-of-range or hit starts four-update retirement.
 0x0073BB30	function	katsuyu_reversal_slug_contact		Defender contact selects descriptor +38, delivers shared reversal hit and retires slug on success; other collision checks can retire it without a defender hit.
 0x0073BD30	function	katsuyu_reversal_update_acid_list		Walk nodes from +440, retain each next pointer +9C, and run katsuyu_reversal_update_acid.
+0x0073BD90	function	katsuyu_reversal_draw_acid	void katsuyu_reversal_draw_acid(int self)	Walk acid list +440 via +9C and draw each node's composition model at scale 1.0.
 0x0073BDE0	function	katsuyu_reversal_spawn_acid		AllocateA0 node plusA0 model;selectrandom MDL_4ktysan2a/b/c fromstagecontainer,initcontact/group24,append440/444 linkedlist.
 0x0073C0A0	function	katsuyu_reversal_destroy_acid		Unlink A0 node; retire any retained live effect, release model and collision group/contact, then free.
 0x0073C220	function	katsuyu_reversal_update_acid		Advance negative flight delay/movement, ground effect and 30-update persistence; valid contact selects descriptor +64, delivers shared reversal hit and clears group.
@@ -205,14 +277,66 @@ address	kind	name	type	comment
 0x0073F970	function	orochimaru_reversal_update_rising_attack		State1 activates five3D0+i50 contacts atframes10/16/22/28/34;frame10 spawn helper effects;after64 retire3B0 effects anddisableall;update contacts/effects73E140 and stationary3AC fade;contact latchAC emits cues17/15.
 0x0073FD10	function	orochimaru_reversal_update_travel_attack		State2/substate8=1:frame20 enables560 andeffect3C4,cue fighterevent62;frame78 enables5B0/effect3C0;frame112 disablesboth. Mouthanchor859960 updates580; AC contact relocates target Z and triggers cues. Attack controls can clear target air state.
 0x00740180	function	orochimaru_reversal_update_body_attack		State3 sets contact320 anchor340 from node859980; variant636 chooses three signed-short frame triplets for enable/disable/cue; selected frames use Manda player98; emits effect/cue17.
+0x00740360	function	sakura_reversal_construct		ccSumSakura constructor tail: zero +0x3A8/+0x3AC kunai list, +0x378 arrow HUD, +0x380/+0x384 kunai/shadow, combo/shockwave fields.
+0x007403B0	function	sakura_reversal_release_resources		Drain kunai list, release players +0xDC/+0xE0, +0xE8, +0xE4, arrow HUD +0x378, owned stage container +0xB4.
 0x007404F0	function	sakura_reversal_initialize		Vtable +0x40 of ccSumSakura: selects sakura_reversal_descriptor at +0xF4, binds CPU weights and initiator model, scene player +0xDC.
+0x007406B0	function	sakura_reversal_acquire_stage_container		Vtable +0x44: reversal_definition_auxiliary_value(5) path -> ccs_acquire_container_by_path, +0xB0/+0xB4.
+0x00740700	function	sakura_reversal_bind_animations		ANM_4skr%s: +0xB8 nut0/atc20/atc30/atc10/rdy0/dmg00/dmg01/dmg02/dmg02; +0x38C wlk0/rdy1/atc11/atc14/atc12/atc15/atc13; +0x388 ANM_2skrnut0; +0x380 CMP_4skn00t0 body; +0x384 battlegauge CMP_xshadow.
+0x007408A0	function	sakura_reversal_initialize_contacts		Body volume radius 160; two inactive radius-140 hand contacts in group +0x60 at +0x370 (left) and +0x374 (right).
+0x007409B0	function	sakura_reversal_camera_anchor		Vtable +0x38: OBJ_4skr20t0 head plus +0x3B0 offset (0,-800,0); Y below -40 clamped to 0.
+0x00740AE0	function	sakura_reversal_set_state		Vtable +0x10: state 0 idle,1 kunai,2 ground punch,3 combo,4 charge,5..8 reactions; plays +0xB8[state] on +0xDC.
+0x00740C60	function	sakura_reversal_advance_combo		Combo chain on animation end: atc11/atc12 repeats while +0x3C1 continue is set, atc13 finisher at descriptor byte +8 minus 1, atc14/atc15 recovery; state 4 hold -> rdy1.
+0x00740E60	function	sakura_reversal_draw		Vtable +0x20: initiator player, kunai list, shared draw, arrow HUD in idle.
+0x00740F00	function	sakura_reversal_configure_draw_environment		Vtable +0x1C: renderer global +0xE0=1500.0, +0xE4=0x40.
+0x00740F30	function	sakura_reversal_in_range		Vtable +0x08: opponent distance below 150.
+0x00740F80	function	sakura_reversal_update_model		Vtable +0x2C: walk, combo advance, initiator at (x,0,650), received contacts -> states 5..8, facing clamp 0.9 rad, scale 1.4.
+0x00741330	function	sakura_reversal_update_initiator		Vtable +0x30: places initiator player +0xE0 at OBJ_eff_dummy_skrpos0.
+0x00741450	function	sakura_reversal_update_walk		Idle walk along X, 16 per update, clamp +-880; human pad 0x8000/0x2000, CPU toward opponent when |dx|>=80; arrow HUD direction.
+0x00741810	function	sakura_reversal_update_attacks		Vtable +0x28: state 4 charge hold,3 combo,2 ground punch,1 kunai; shockwave timer +0x3CC; kunai list.
+0x007418E0	function	sakura_reversal_update_charge_hold		Base charge update; on release state 2 above list[last] (54) else state 1.
+0x007419B0	function	sakura_reversal_update_kunai_list		Iterates kunai nodes from +0x3A8 via next +0x90.
+0x00741A30	function	sakura_reversal_draw_kunai_list		Draws each kunai node's shadow and kunai models.
+0x00741A90	function	sakura_reversal_spawn_kunai		0xA0 node: kunai model +0x380, shadow +0x384, radius-100 contact, delay -(30+rand15); appends to +0x3A8/+0x3AC.
+0x00741D10	function	sakura_reversal_destroy_kunai		Unlinks node, releases models, contact group and node.
+0x00741E40	function	sakura_reversal_update_kunai		Delay, fall 160/update to Z<=50, life 30; landing life>=29 binds descriptor +0x38 else Stuck Kunai 0x0084506C; one hit.
+0x007421B0	function	sakura_reversal_rain_kunai		State 1: frame 53 SFX 0x16; frame 60 drops 1..6 kunai 300 apart around the opponent.
+0x00742500	function	sakura_reversal_update_shockwave		Timer +0x3CC: 0x0023CDF0 levels 3/2/1 at ticks 1/40/64; Earthquake 0x00845098 to a grounded opponent without contact test while +0x3C0 and tick<41.
+0x007426B0	function	sakura_reversal_ground_punch		State 2: frame 45 enable group, 47 shockwave+SFX 0x0E, 48 filter and effect row, 53 disable; right finger binds descriptor +0x64.
+0x00742A10	function	sakura_reversal_combo_attack		State 3: per-substate hand contacts, continue input, finisher Golden Right 0x00845040 or descriptor +0x0C; hit cooldown 4.
 0x00742FF0	function	chouji_reversal_initialize		Vtable +0x40 of ccSumChouji: selects chouji_reversal_descriptor at +0xF4, scene player +0xDC, first charge threshold 0x38.
+0x00743230	function	chouji_reversal_acquire_stage_container		ccSumChouji vtable +0x44: entry 6 fourth table word (stage/ktys_tyo.ccs) through ccs_acquire_container_by_path into +0xB0/+0xB4.
+0x00743280	function	chouji_reversal_bind_animations		ANM_4tyo%s: state list +0xB8 (nut0 act10 act20 act00 rdy0 dmg0 dmg1 dmg2 dmg2) and step list +0x510 (rdy1 act11 act12 act01..act05).
+0x007433B0	function	chouji_reversal_apply_body_palette		Rebind MDL_4tyo00t0 body in +0xDC to CLT_4tyobody/c1/c2 by initiating side color (manager +0x8C/+0xAC) when MAT_clut exists.
+0x007434B0	function	chouji_reversal_initialize_contacts		Two contacts in group +0x60 at +0x2D0 (handles +0x500/+0x504, left/right), five radius-280 contacts in group +0x84 at +0x370.
+0x00743600	function	chouji_reversal_camera_anchor		vtable +0x38: OBJ_4tyo00t0 head plus offset +0x550; y below -40 becomes 0.
+0x00743730	function	chouji_reversal_set_state		vtable +0x10: state entry (1 roll: arrows on; 3 punches: group +0x60 on; 4 charge: compact control 0x25), plays +0xB8[state].
+0x00743880	function	chouji_reversal_advance_substate		On non-looping animation completion: punch combo steps act00/02/04 or recoveries act01/03/05 by latch +0x531; roll act11 repeat and act12 roll-out; charge rdy1.
+0x00743B20	function	chouji_reversal_draw		vtable +0x20: shadow marker +0x508 when +0x534>1, shared HUD with rolling flag +0x530, arrow guide +0x50C unless finished.
+0x00743BE0	label	chouji_reversal_configure_draw_environment		vtable +0x1C (no function defined): borrowed environment (0x00609560) +0xE0 = 3200.0, +0xE4 = 0x40.
+0x00743C00	function	chouji_reversal_in_range		vtable +0x08: 1 when 50 < opponent distance < 380 (resident 0x006084D0).
+0x00743C80	function	chouji_reversal_update_model		vtable +0x2C: substate advance, camera anchor, initiator to {0,0,750}, incoming reactions, motion offset +0x540, head turn toward opponent clamp 1.35 rad.
+0x00744030	label	chouji_reversal_update_initiator		vtable +0x30: empty (jr ra).
+0x00744040	function	chouji_reversal_update_attacks		vtable +0x28: state 4 charge, 3 punches, 2 dive, 1 roll.
+0x007440D0	function	chouji_reversal_update_charge		Charge hold; on release progress >56 starts dive (state 2, HUD fade), else roll (state 1, group +0x60 on, +0x530=1, roll time = progress*2).
+0x007441B0	function	chouji_reversal_steer_roll		Held Left/Right (CPU: toward opponent x when >=80 away) moves +0x540.x by 32, clamp +-1000; sets arrow guide state.
+0x00744410	function	chouji_reversal_update_roll		Chubby Go-round: roll timer, steering, contacts at OBJ_dummy_tyoact10/11 l/r, pattern 1 hit with 4-update re-arm, act12 roll-out motion, controls 0x63/0x62.
+0x00744920	function	chouji_reversal_update_dive		Chubby Dive act20 frame events: hide 28..55, side and 5-contact row at 28, shadow marker 29..97, shake+cue 0x1F at 72, contacts off 98, controls 0x16 at 112 and 0x19/0x07 at 170; pattern 2, half damage and reaction 4 from frame 75.
+0x00745090	function	chouji_reversal_punch_impact		At a punch step's impact frame: shake 12/16, common cue 0x14, step control, camera helper, effect resource 10 (effect0x ANM_e0x_down_01) at the hand; contacts off at the step's end frame.
+0x00745400	function	chouji_reversal_update_punches		Chubby Megaton: contacts at OBJ_dummy_tyoact0%d l/r by step +0x532, combo latch from binding 1 (CPU random(10)<1), pattern 0 hit with 4-update re-arm.
 0x00745970	function	reversal_definition_auxiliary_value	char * reversal_definition_auxiliary_value(int entry)	Return reversal_definition_table[entry]+0xC: stage CCS path, statically zero and filled at overlay load by reversal_definition_table_initialize_stage_paths.
+0x00745990	function	shukaku_alternate_stage_path		Return gp-6A5C (ELF 0x00608514) -> stage/ktys_skk2.ccs; its only reader; no loader of that file found.
 0x007459A0	function	reversal_resource_index_get	int reversal_resource_index_get(int entry_index)	Own-game resident callers pass reversal entry index. Returns word at reversal_definition_table + index*0x10 +8; this field selects deferred battle resource and manager+FE.
 0x007459C0	function	reversal_entry_for_character	int reversal_entry_for_character(int character_id)	Own-game seven-entry scan at00859CD0 stride0x10 compares character ID at+4 and returns entry ordinal+0; returns-1 if unmatched.
 0x00745A30	function	reversal_game_active_side		Returns gp-0x55C0: 2 while a side-0 reversal game runs, 1 for side 1, 0 otherwise (set by reversal_game_create_for_entry, cleared by reversal_game_destroy_current).
 0x00745B20	function	reversal_set_contact_enabled		Find matching group entry by contactpointer24; toggle both groupentry andshape with supplied enabledbyte; no effect if missing.
+0x00745CD0	function	reversal_camera_shake_request	void reversal_camera_shake_request(int priority, int amplitude, int duration, int phase_mode)	With a manager, resolve the session camera (resident 00322910) and forward to camera_shake_insert; Manda travel frame 78 requests (3,2,55,0).
+0x00745D50	function	reversal_arrow_guide_construct		0x20-byte arrow guide: clears fields, visible byte +0x1C = 1. Used by Soutourou, Sakura and Chouji.
+0x00745DD0	function	reversal_arrow_guide_bind_sprite		Arrow guide helper: pulse counter -16, sprite TEX_xhanyou from container gauge into +0x18.
+0x00745E30	function	reversal_arrow_guide_configure		Orientation +0 (0 vertical pair, else horizontal), x +4, y +8, gap +0xC, scale +0x10.
+0x00745E50	function	reversal_arrow_guide_draw		When +0x1C set: two pulsing arrows; selector +0x16: 1/2 enlarge first/second, 3/4 hide first/second.
+0x00746420	function	reversal_game_holder_construct		Clears the 8-byte reversal holder (controller word, start-voice byte).
 0x00746430	function	reversal_game_destroy_current		Own-game release control locks thenvtable48 destruction andclearowner;resetactivecameraoffset.
+0x007464E0	function	reversal_game_destroy_base		Base vtable +0x48: reinstall base vtable 0x005F0380, release shared resources, destroy +0x264 env, +0x230/+0x84/+0x60 groups, +0x1E0 contact, +0x110 source; free on positive flag.
 0x007465B0	function	reversal_game_create_for_entry		Own-game entry0..6 allocate6A0/4F0/8F0/470/650/3D0/570;vtables005F05B0/560/510/4C0/470/420/3D0;commonbase00747370,entry2C0,side2C4,CPU2C8;settime100 frommanager4D8,bindstage andcontrolroles.
 0x00747080	function	reversal_set_fighter_control		Own-game locks/unlocks initiatingfighter input andflags,restoresengine control services onrelease.
 0x00747250	function	reversal_game_update		Own-game skipwithcontrollerflag20bit1 orsession3C=1;once startvoice;runcontrollerupdate andcommonprogress.
@@ -235,7 +359,9 @@ address	kind	name	type	comment
 0x00748250	function	reversal_game_bind_cpu_weights		Copy four signed halfwords into controllerF8/FA/FC/FE. Manda initialize passesdescriptor+98; subsequent fighter bind747650 replaces with descriptor+90+difficulty*8.
 0x00748280	function	reversal_game_bind_cpu_timing		Copy three signed halfwords into controller100/102/104; own-game difficulty rows858100 are90/7/32,75/6/24,60/6/16,45/5/8.
 0x007482A0	function	reversal_game_initialize_hit_factors		Set1D4=1,1D8=descriptor+4 unconditionally;earliermode4CPU0.8/0.5 stores immediately overwritten. CPU initializes2C countdownfromF8;Manda descriptor+4=0.75.
+0x00748310	function	reversal_game_set_clash_mode		Clash mode +0x36: 1 starts (flags +0x20=3 freeze update and special HUD draw, HUD slide +0x34=4); 2 lost (condition 0x0E), 3 won, 4 draw (3/4 reset charge +4) resume (flags 0, slide -4). Each calls vtable +0x14. Callers: interaction clash start/resolve.
 0x00748430	function	reversal_game_effect_callback_noop		Manda vtable0x14 callback is jr ra;nop; separatefromadjacent748440 effect factory.
+0x00748440	function	reversal_game_spawn_clash_effect		Allocates a 0x210 transient effect (0x002DAD40), lets vtable +0x18 position it, marks +0x1AC=1/+0x1AD=0 and registers it with the transient manager gp-0x57FC.
 0x007484F0	function	reversal_game_frame_callback_noop		Manda vtable0x18 callback is jr ra;nop.
 0x00748500	function	reversal_game_update_actions		Own-game inputdispatch human/CPU;skip vtable2C whileAAcountdownthen vtable30/28,attackcontactdelivery.
 0x007485C0	function	reversal_game_update_progress		Own-game decrementbudget50by58,clampzero,syncbattletimer;ifbudgetexpired ormanager4FC=3 markfinish3A;combo HUD/countdowns independent.
@@ -252,10 +378,19 @@ address	kind	name	type	comment
 0x00749D80	function	reversal_game_pattern_for_state		Return attackpattern ordinal0 forstate3,1 forstate1,2 forstate2,-1otherwise; used by hitdescriptorbind tosetAE.
 0x00749EF0	function	reversal_game_is_first_side		Manda vtable0x3C leaf returns controller2C4==0; raw lw/xor/sltiu/jrra.
 0x00749F10	function	reversal_game_report_initiator_condition		Forwards unchanged condition argument a1 to resident fighter_report_condition_event236980 with controller initiating fighterEC; callers supply0xC for outgoing hit or response3D mod5 for incoming hit; no audio.
+0x00749F40	function	reversal_game_clash_power		Clash start power: last charge-list threshold / 60.
 0x00749F80	function	reversal_game_update_charge		Every30 count ticks common SFX2F; exact pattern thresholds set pause28=10 and SFX31,advance pattern index bounded by count; increments count4 and releases hold38 after count59.
+0x0074A060	function	reversal_game_draw_special_hud		Special draw (flag +0x20 bit 1): when +0x34 nonzero draws the common HUD with renderer +0x2A8.
+0x0074A0C0	function	reversal_game_draw_charge_gauge		Draws gauge frame/ticks from sprite +0x29C and list +0x30, binding glyph +0x2A0 chosen by configured mask 0x40/0x10/0x20/0x80, threshold flash +0x2A4 scaled by +0x28.
+0x0074A740	function	reversal_game_draw_hud		Common HUD: hidden after finish; slide offset +0x34; charge gauge, then bar colored by threshold index (blue past last), alpha by fade +0x26.
 0x0074A9F0	function	reversal_game_callback_noop		Shared vtable0x34 callback forManda is jr ra;nop.
+0x0074AA00	function	chouji_reversal_destroy		vtable +0x48: release shadow marker, arrow guide, player +0xDC, owned stage container, seven contacts, then base cleanup.
+0x0074ABE0	function	sakura_reversal_destroy		Vtable +0x48: release resources, destroy contacts and base members, free when flag>0.
 0x0074ACF0	function	orochimaru_reversal_destroy		Manda vtable48: private73CF50 teardown;destroy two560 andfive3D0 contacts plus320/2D0;commonresources andembedded264/230/1E0/110/84/60 teardown;positive destruction flag frees650 owner.
 0x0074AE40	function	katsuyu_reversal_destroy		ReleaseKatsuyuownresources then3C0contact/three2D0contacts;sharedreversalresources andembeddedbasegroups;optionaldeletingfree.
+0x0074AF60	function	jiraiya_reversal_destroy		Gamabunta vtable +0x48: destroy_fields, own slots/groups/contacts, then common teardown; frees when flag>0.
+0x0074B0E0	function	soutourou_reversal_destroy		Vtable +0x48: releases player +0xDC, helper +0x4A4, owned container, afterimages, contacts, then base.
+0x0074B2E0	function	shukaku_reversal_destroy		Vtable +0x48: private release, destroy two bullet slots and three claw contacts and +2D0, then common reversal teardown; optional free.
 0x0074B640	function	jutsu_request_participant_dialogue		Selects indexed cue from per-skill table via owner54C; queues participant pending list or sends actual fighter68 identity and participant150 slot to PLVOICE producer.
 0x0074B740	function	jutsu_request_participant_compact_cue		Select actual participant ID row via74B840, signed-short selector to resident battle_voice_control_by_object1D5900. Coordinator nonzero14 suppresses; require valid189/11C fighter and row. Nonzero participantD0 rejects except source1E0; admitted target390 sets D0=20. Resource28 frame5 selector31/Jiraiya21->control37. Resource23 contact events2/5 target selectors15..17/9..11; target identity owns bank.
 0x0074B840	function	jutsu_participant_compact_cue_row		Valid participant fighter actual ID minus1 selects pair at845390; listed form-gated identities choose second pointer. Jiraiya21 pair845430 both85A4F0.
@@ -277,8 +412,11 @@ address	kind	name	type	comment
 0x0074F090	function	interaction_manager_release		Deleting-destroy the interaction manager (vtable +0x3308 slot 8) and clear gp-0x55BC; called by battle_effect_context_release before the context is freed.
 0x0074F570	function	interaction_manager_construct		Install vtable 0x006053C8, clear two primary and 2x32 auxiliary registry entries and manager state.
 0x0074F870	function	interaction_release_resource_caches		Own-game release path iterates two160-pointer record caches at owner+BB8/+E38,freeing each and clearing pointers; releases interaction linked list,then160 global interaction_jutsu_resource_cache pointers. Other subobject cleanup retained. Positive destruction argument frees owner.
+0x0074FB40	function	attack_object_get_special	int attack_object_get_special(int * slots, unsigned long side, long mode)	Scan two primary-jutsu slots (stride 8) for a live object (+0x369, registry check) whose source fighter +0x2FC is on side; mode must be 0. NA2 counterpart has the same name (source +0x31C, live +0x389).
 0x007506F0	function	interaction_registry_clear		Destroy both primaries (+0x100 slots 0x188 then 0x21C deleting destroy) and all 64 auxiliaries (+0x50 slot 8); clear entries.
 0x00751520	function	interaction_stage_cutins		Own-game side-active primary cut-in pass; predicate751740 then resource54C>115 admits source1E0 virtualD4 index0 immediate1. Resource22/23 fail numeric bound, so no Orochimaru ordinary dialogue through this route. Remaining loops manage cut-in objects/masks.
+0x00753360	function	interaction_clash_begin		Clash start; with a reversal game running sets the controller's clash mode 1, spawns its clash effect and seeds the summon side's mash count from reversal_game_clash_power.
+0x00755260	function	interaction_clash_resolve_reversal		Clash result while a reversal game runs: compares mash counts +0xA96/+0xA98, tells the jutsu actor (vtable +0x1EC 0/1/2) and the controller (reversal_game_set_clash_mode 3 won / 2 lost / 4 draw).
 0x00756EB0	function	skill_contact_record_noop		Primary vtable194 inherited by KBT00045;verified jr ra/nop. NA2 corresponding19C is overridden by7F4B60 to submit half-action-damage record.
 0x007573B0	function	interaction_preallocate_record_banks		Own-game fighter selectors+17C/+17E accept0..155 through signed map0085B160; invalid selector yields0. Admit translated resource0..159; allocate count at00849FE0+resource*8 times0x78 into two160-pointer caches at owner+BB8 and+E38 (side stride0x280). Fighter current ID70 separately allocates resource154/155 in both caches,which have no initial selector-map entry.
 0x007577B0	function	interaction_setup_jutsu_resources		Own-game code reads four configured selector words from manager+90/+94/+B0/+B4; signed selectors below0 or at least156 produce resource0,otherwise read signed jutsu_selector_resource_table at0085B160. Clear0x280 bytes at008675D0 (160 pointer slots); for nonnegative translated resources build unique0x150-byte interaction records and cache0x280-byte resource record banks. Concrete gameplay behavior not established.
@@ -375,6 +513,7 @@ address	kind	name	type	comment
 0x00798910	function	skill_combo_initialize_camera_player		Release prior owned private720 player, copy owner handles110/114/118, lookup ANM_%c%c%c_camera in provider1C8; if found allocate120 compound player and bind; records lookup flagrelative18.
 0x00798CD0	function	skill_combo_construct		UN4 combo base calls primary75EC40,installs600D60 at100;construct linkedplayer720 interface600FD8,inline7D0 effect,private720..82C state. Orochimaru resource23 derives directly.
 0x00799F20	function	skill_combo_submit_record		UN4 combo virtual190: save sourcefacing;orient both linkedfighters fromnamedspine anchors,moveclose target to100 distance withstagecorrection;OR record24 flag80000 unless82Cbit0;callprimarysubmit762E80;restore sourcefacing. Resource23 inherits.
+0x0079AF60	function	jutsu_actor_release_captured_fighters		Re-enables captured fighters' collision only when no reversal game runs or the fighter is not the reversal initiator.
 0x0079B160	function	skill_combo_bind_animations		Resource23 inherited0x26C prepares paired scene79B260; calls0x94 for source/target animation arrays,0x23C with target first animation, initializes private720 camera player798910, resets linkedfighter scales.
 0x0079B250	function	skill_combo_set_target_animation		Resource23 inherited virtual0x23C stores supplied animation pointer at actor+0x7E8; raw code.
 0x0079B260	function	skill_combo_prepare_participants		Prepares resource model/helper provider; stage type update flags85BDC0; participant positions/facing and pause state; saves source790/7A0,target7B0/7C0 and source position800; resource descriptor byte5 controls0x28 method.
@@ -564,15 +703,27 @@ address	kind	name	type	comment
 0x0083C9C0	data	item_second_badge_offsets	float[2][4]	Second badge side offsets(x,y)=(50,30),(60,30),remaining components0;screenshot identifiesR2 for both sides.
 0x0083C9E0	data	item_count_offsets	float[2][4]	Count display offset by side(x,y)=(0,27),(0,27),z0,w1.
 0x0083CC50	data	stage_select_preview_texture_names	char *[4]	TEX_mappure01..04 names; raw slot/6 selects first three for18 retail stages.
+0x00844220	data	shukaku_reversal_ambient_particle_definition		0x38 emitter for +418 (resource 80), always active at (1360,-112,0) mirrored for side 0; force 0x00844290.
+0x00844258	data	shukaku_reversal_claw_particle_definition		0x38 emitter for +41C claw sand trail (resource 80), scale 0.75; forces 0x008442B0/0x008442D0.
+0x00844290	data	shukaku_reversal_ambient_particle_force		Force descriptor for the +418 emitter.
 0x008444D0	data	katsuyu_acid_ground_particle_descriptor		38-byte ground emitter definition used by katsuyu_reversal_update_acid; resource short +0E=63, choice count zero means one. Catalog63 aliases effect0x EFF_x001 with base CLT_x001.
 0x00844510	data	katsuyu_acid_ground_particle_force		20-byte force descriptor passed as second argument to battle_particle_create at acid ground contact; copied into owned90-byte force object.
 0x00844568	data	orochimaru_reversal_auxiliary_particle_definition		0x38-byte emitter descriptor used by reversal_recreate_auxiliary_effects; one choice, cached resource80 selects PARTICLE EFF_e0xsmok11 with CLT_e0xsmok11c1 through base19.
 0x008445A0	data	orochimaru_reversal_rising_particle_definition		0x38-byte emitter descriptor; one choice, cached resource63 initially selects EFFECT0X EFF_x001 / CLT_x001 through base15; rising replaces three choices with KTYS_MND EFF_4mndgmi0/1 and EFF_plane01, and conditionally binds fourth choice to ANM_e0x_par_07.
 0x008445D8	data	orochimaru_reversal_travel_particle_definition		0x38-byte emitter descriptor for first travel effect; one choice, resource19 selects PARTICLE EFF_e0xsmok11.
 0x00844610	data	orochimaru_reversal_travel_secondary_particle_definition		0x38-byte emitter descriptor for second travel effect; one choice, resource19 selects PARTICLE EFF_e0xsmok11.
+0x008447B0	data	shukaku_reversal_animation_suffixes		Nine ANM_skk%s suffixes by state: nut0, atc00, atc02, atc08, rdy0, dmg2, dmg3, dmg0, dmg0.
+0x00844820	data	shukaku_reversal_claw_contact_radii		Claw contacts 0..2 radius 256/160/160; heights at 0x00844830 (80/60/60), x offsets at 0x00844840 (880/520/200, times side sign).
+0x00844A90	data	soutourou_body_attack_effect_bones		r finger0, l finger0, r toe0, l toe0.
+0x00844AA0	data	soutourou_body_attack_effect_frames		Frames 20/25/29: 2, 3, 4 effect bones until frame 34.
+0x00844AC0	data	jiraiya_reversal_animation_suffixes	char *[9]	nut0, act02, act03, act01, rdy0, dmg00..dmg03 for ANM_4bnt%s by state 0..8; Jiraiya uses index 0 at 4 and index 7 at 8.
 0x00844D50	data	katsuyu_reversal_animation_suffixes		Nine strings consumed by73A6D0 forANM_4kty%s atB8.
 0x00844D80	data	katsuyu_reversal_tsunade_animation_suffixes		Nine strings consumed by73A6D0 forANM_4tnd%s at414.
 0x00844E80	data	orochimaru_reversal_state_suffixes	char *[9]	Manda states0..8 suffix pointers forpairedstageanimations;0nut0,1atc10,2atc20,3atc30,4nxc0,5dmg0,6dmg1,7/8dmg2;source4 overridesnut0. Body3 uses636variant instead.
+0x00845040	data	sakura_reversal_extra_hit_patterns		Three 0x2C patterns: Golden Right 0x00845040, Stuck Kunai 0x0084506C, Earthquake 0x00845098; JP name only.
+0x00845200	data	chouji_reversal_state_animation_suffixes		Nine suffix pointers for states 0..8: nut0 act10 act20 act00 rdy0 dmg0 dmg1 dmg2 dmg2.
+0x00845230	data	chouji_reversal_step_animation_suffixes		Eight suffix pointers: rdy1 act11 act12 act01 act02 act03 act04 act05.
+0x00845300	data	chouji_reversal_punch_steps		Three {s32 control, s16 contacts-off frame, s16 impact frame}: {-1,26,24}, {5,28,26}, {8,31,30}.
 0x008453D0	data	orochimaru_jutsu_compact_cue_pair		Actual participant ID9 pair points85A4F0 twice; jutsu_participant_compact_cue_row uses base pointer, no ID9 alternate gate. Resource23 six nonnegative frame selectors resolve through this list to compact controls.
 0x00845460	data	shizune_jutsu_compact_cue_pair		Participant actual ID27 normal/alternate pointers both85A4F0(jiraiya_jutsu_compact_cue_row); selector74B840 has no ID27 alternate branch; jutsu cue selectors are distinct from fighter event indices.
 0x00845468	data	kabuto_jutsu_compact_cue_pair		Participant actual ID28 normal/alternate pointers both85A4F0; selector74B840 has no ID28 alternate branch; first32 controls0,1,2,3,4,5,8,7,8,12,13,14,15,16,17,18,19,20,9,10,11,22,23,24,25,26,27,38,39,40,36,37.
@@ -618,8 +769,20 @@ address	kind	name	type	comment
 0x00854540	data	stage_name_rectangle_tables	short[5][18][4]	Five locales of18 raw-slot (u,v,width,height) rectangles in TEX_mapname01. English0 row0(0,0,200,28),French1 row0(0,0,184,28); locales2..4 duplicateEnglish.
 0x00858100	data	reversal_cpu_timing_rows	short[12]	Four difficulty rows copied by748280 to100/102/104:90/7/32,75/6/24,60/6/16,45/5/8; CPU idle delay usesF8+prng(104).
 0x00858310	data	shukaku_reversal_descriptor		Entry 0 ccSumSyukaku descriptor: path ptr, then three 0x2C attack patterns at +0x0C (state 3/1/2), CPU weights at +0x98.
+0x0085831C	data	shukaku_reversal_claw_hit_pattern		Pattern 0/state 3 Claw of Shukaku: voice 24, final 0x10/mid 0, damage 0.02, mult 12, cap 2, hit-stop +3/+3.
+0x00858348	data	shukaku_reversal_bullet_hit_pattern		Pattern 1/state 1 Wind Style: Air Bullet Flying Pellets: voice 4, 0x10/0x10, damage 0.035, mult 6, cap 1, 0x7FFF/0x7FFF.
+0x00858374	data	shukaku_reversal_big_bullet_hit_pattern		Pattern 2/state 2 Air Bullets: voice 4, 0x10/0x10, damage 0.05, mult 8, cap 6, 0/0.
+0x008583A0	data	shukaku_reversal_cpu_weight_rows		Difficulty 0..3 F8/FA/FC/FE: 45/8/20/15, 40/8/20/20, 30/8/20/20, 24/8/20/25.
 0x008585A0	data	soutourou_reversal_descriptor		Entry 1 ccSumSoutourou descriptor: path ptr, three 0x2C attack patterns at +0x0C (state 3/1/2), CPU weights at +0x98.
+0x008585AC	data	soutourou_reversal_fang_hit_pattern		Wolf Fang, state 3: 0.02, cap 1, reactions 0x10/1, mult 4, voice 16.
+0x008585D8	data	soutourou_reversal_tornado_hit_pattern		Wolf Fang-Over-Fang, state 1: 0.035, cap 9, reactions 0x10/0x10, mult 10.
+0x00858604	data	soutourou_reversal_pan_dimensional_hit_pattern		Pan-dimensional, state 2: 0.05, cap 18, reactions 0x10/0x10, mult 10.
+0x00858630	data	soutourou_reversal_cpu_weight_rows		Four difficulty rows F8/FA/FC/FE: 45/8/20/15, 40/8/20/20, 30/8/20/20, 24/8/20/25.
 0x00858840	data	jiraiya_reversal_descriptor		Concrete base/HUD/camera/attack descriptor consumed by Gamabunta initialization.
+0x0085884C	data	jiraiya_reversal_body_hit_pattern		Pattern 0 (state 3) Toad Blade Cut: damage 0.02, reaction 0x10/0x01, final multiplier 30, cap 3, aux 0/0, voice trigger 1.
+0x00858878	data	jiraiya_reversal_projectile_hit_pattern		Pattern 1 (state 1) Water Style: Liquid Bullets: damage 0.035, reaction 0x10/0x01, final multiplier 12, cap 1, aux 0x7FFF/0x7FFF, voice trigger 1.
+0x008588A4	data	jiraiya_reversal_area_hit_pattern		Pattern 2 (state 2) Fire Style: Toad Flame Bombs: damage 0.05, reaction 0x1C/0x1B, final multiplier 3, cap 15, aux -1/1, voice trigger 1.
+0x008588D0	data	jiraiya_reversal_cpu_weight_rows	short[16]	Difficulty rows F8/FA/FC/FE: 45/8/20/15, 40/8/20/20, 30/8/20/20, 24/8/20/25.
 0x00858A80	data	katsuyu_reversal_descriptor		ccSumKatsuyu stagepath8588F0;leadingfactor0.4, three actiondescriptor groups from+C/38/64, CPU/input params+90.
 0x00858A8C	label	katsuyu_reversal_body_hit_pattern		Entry3 state3 pattern ordinal0: damage0.03, response multiplier15, final reaction0x11/intermediate4, repeat/contact cap1, pause auxiliaries7FFF/7FFF. Bound by73AA80;748E80 copies to synthetic action;749A50 admits body contacts.
 0x00858AB8	label	katsuyu_reversal_slug_hit_pattern		Entry3 state1 slug pattern ordinal1: damage0.01, response multiplier1, reaction3/intermediate1, repeat/contact cap1, pause auxiliaries7FFF/7FFF. Each73BB30 defender contact separately binds/reset synthetic hit before748F50; successful delivery retires that slug.
@@ -631,7 +794,11 @@ address	kind	name	type	comment
 0x00858D64	label	orochimaru_reversal_travel_hit_pattern		Manda travel state2: ordinal2,voice trigger state-count2 (pattern+16),finalreaction0x10/mid0x10,damage.06,responsemult12,repeat/contactcap20,pauseauxFFFF/7FFF.
 0x00858D90	data	orochimaru_reversal_cpu_weight_rows	short[16]	Difficulty0..3 four signedhalfword rows:F8/FA/FC/FE =45/8/20/15,40/8/20/20,30/8/20/20,24/8/20/25;bindfightersselectsdescriptor+90+difficulty*8.
 0x00858F90	data	sakura_reversal_descriptor		Entry 5 ccSumSakura descriptor: path ptr, three 0x2C attack patterns at +0x0C (state 3/1/2), CPU weights at +0x98.
-0x008591F0	data	chouji_reversal_descriptor		Entry 6 ccSumChouji descriptor: path ptr, three 0x2C attack patterns at +0x0C (state 3/1/2); CPU weights at +0x98.
+0x008591F0	data	chouji_reversal_descriptor		Entry 6 ccSumChouji: stage path, incoming factor 0.65, count 3, patterns +0x0C punch/+0x38 roll/+0x64 dive (states 3/1/2), CPU weight rows at +0x90.
+0x008591FC	data	chouji_reversal_punch_hit_pattern		Chubby Megaton: voice count 1, reaction 0x10/1, damage 0.02, final multiplier 12, cap 1, aux 0x7FFF/0x7FFF.
+0x00859228	data	chouji_reversal_roll_hit_pattern		Chubby Go-round: voice count 4, reaction 0x10/1, damage 0.02, final multiplier 12, cap 1, aux 0x7FFF/0x7FFF.
+0x00859254	data	chouji_reversal_dive_hit_pattern		Chubby Dive: voice count 4, reaction 0x13/1, damage 0.05, final multiplier 12, cap 1, aux 0x7FFF/0x7FFF.
+0x00859280	data	chouji_reversal_cpu_weight_rows		Four difficulty rows F8/FA/FC/FE: 45/8/20/15, 40/8/20/20, 30/8/20/20, 24/8/20/25.
 0x008597B8	label	orochimaru_reversal_animation_name_literals		ANM_4mnd%s,ANM_4orcnut0,ANM_4orc%s plus Manda/Orochimaru bodyvariantsatc30/50/40,returnatc22,chargechg0 and stationarykaz0.
 0x00859890	label	orochimaru_reversal_auxiliary_model_name		CMP_4mnd00t0 loop, bound from stageB4 into twoA0 auxiliary614 models.
 0x008598A8	label	orochimaru_reversal_rising_effect_names		EFF_4mndgmi0, EFF_4mndgmi1,EFF_plane01; optional effect0x.ccs ANM_e0x_par_07. Actual lookup/binding in73DCA0.
@@ -643,6 +810,7 @@ address	kind	name	type	comment
 0x00859CD0	data	reversal_definition_table	un4ReversalDefinition[7]	Seven 0x10-byte rows {entry, character ID, resource index, unknown zero}: {0,50,18,0}, {1,16,19,0}, {2,21,20,0}, {3,25,21,0}, {4,9,22,0}, {5,7,23,0}, {6,14,24,0}. The character lookup compares +4 and the resource getter reads +8.
 0x00859CF0	data	jiraiya_reversal_definition		Entry2, actual character21, stage resource20, zero word.
 0x00859D10	data	orochimaru_reversal_definition	un4ReversalDefinition	Verified 16-byte row: entry 4, character ID 9, deferred resource index 22, final word zero.
+0x00859D40	data	shukaku_alternate_stage_path_string		stage/ktys_skk2.ccs; referenced only through ELF pointer 0x00608514.
 0x00859FF0	data	dialogue_voice_rows		Resource-indexed rows of four signed PLVOICE filename numbers (8 bytes); read by dialogue_voice_produce_indexed and the participant dialogue producers
 0x0085A0A0	data	orochimaru_jutsu0_dialogue_row		Orochimaru ID9 resource22 four signed PLVOICE cues39/38/39/39; participant index0 selects cue39, not compact program39.
 0x0085A0A8	data	orochimaru_jutsu1_dialogue_row		Orochimaru ID9 resource23 four signed PLVOICE cues38/38/38/38; each maps English ordinal0/Japanese9 in own archive.
@@ -663,6 +831,7 @@ address	kind	name	type	comment
 0x0085A750	data	tsunade_jutsu1_dialogue_frames	short[4]	All -1: no authored-frame dialogue request for resource 52.
 0x0085A778	data	shizune_tonton_dialogue_frames		Resource57 four signed dialogue-frame entries0/-1/-1/-1; inherited update actor frame0 selects dialogue index0/cue116.
 0x0085A780	data	shizune_poison_dialogue_frames		Resource58 four signed dialogue-frame entries0/-1/-1/-1; inherited update actor frame0 selects dialogue index0/cue118.
+0x0085AC70	data	jutsu_resource_flags	uint	Array of one word per jutsu resource (count not checked), indexed by primary object +0x54C; bit 0x80 form handling, 0x1000/0x400 consulted by clash and Katsuyu slug code. NA2: 0x008CAE40 indexed by +0x56C.
 0x0085AFB0	data	tsunade_jutsu1_right_hand_name		OBJ_2cmn00t0 r hand;bone used by tsunade_jutsu1_attach_right_hand.
 0x0085B160	data	jutsu_selector_resource_table	int[156]	Complete156 signed selector words0..155;0/1=-1,other154 nonnegative unique resources0..159,not character-ID order. Six resource slots absent from this initial map:24,59,60,71,154,155. Prefix0..113 matches UN3 map; exact mapping words=-1,-1,0,1,2,3,4,5,6,7,8,9,14,15,20,21,10,11,22,23,16,17,12,13,19,18,35,36,31,32,33,34,25,26,39,40,41,42,43,44,29,30,27,28,47,48,49,50,37,38,51,52,114,115,57,58,45,46,55,56,53,54,65,66,67,68,69,70,62,85,61,84,63,86,64,87,72,73,106,107,108,109,110,111,80,81,82,83,76,77,78,79,74,75,112,113,88,89,90,91,92,93,94,95,100,101,98,99,102,103,104,105,96,97,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,156,157,158,159. Invalid selectors yield0 in setup/preallocation but direct AI consumers have no local bound.
 0x0085BE90	label	jutsu_resource_factory_cases		Resource-indexed160 branch-target table admitted by jutsu_create_for_resource; resource index is not selector or character ID. Concrete case coverage not established here.
@@ -674,4 +843,5 @@ address	kind	name	type	comment
 0x0085F490	label	orochimaru_jutsu0_animation_names		Four strings ANM_porccha01,porccha01_1,porctan2,porccha03,then gpos and hitdummies.
 0x00863380	data	skill_player_blow_watch_rtti		Typeinfo name863340 ccSkillPlayerBlowWatch used by604C10, selected by NRV001 contact result7.
 0x008637E0	function	reversal_definition_table_initialize_stage_paths	void reversal_definition_table_initialize_stage_paths(void)	BATTLE constructor-interval entry (header 0x863900..0x863918): copies each of the seven reversal descriptors' first word (stage CCS path) into reversal_definition_table entry +0xC; entry 3 gets katsuyu_reversal_descriptor's stage/ktys_kty.ccs.
+0x00867570	data	jiraiya_reversal_saved_camera_position		Camera position saved at state-1 phase 0 and interpolated from during phase 1.
 0x008675D0	data	interaction_jutsu_resource_cache	void *[160]	Own-game interaction_setup_jutsu_resources clears0x280 bytes,then indexes by translated resource; each populated pointer owns a0x280-byte bank. Not a selector-index or per-character cache.

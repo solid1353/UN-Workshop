@@ -327,6 +327,7 @@ address	kind	name	type	comment
 0x006D62E0	label	camera_shake_mix_timing_6d62e0		Shake mixer 0x006D6150 steps angle (0x006D62E0), phase (0x006D637C) and duration (0x006D6488) and adds offsets into eye +0x30 and target +0x80 every call.
 0x006D637C	label	camera_shake_mix_timing_6d637c		Shake mixer 0x006D6150 steps angle (0x006D62E0), phase (0x006D637C) and duration (0x006D6488) and adds offsets into eye +0x30 and target +0x80 every call.
 0x006D6488	label	camera_shake_mix_timing_6d6488		Shake mixer 0x006D6150 steps angle (0x006D62E0), phase (0x006D637C) and duration (0x006D6488) and adds offsets into eye +0x30 and target +0x80 every call.
+0x006D64F0	function	camera_shake_insert	void camera_shake_insert(void *camera, int priority, int amplitude, short duration, int phase_mode)	Insert into eight 8-byte shake slots at camera+0xB0 by priority/duration; phase mode 2 random, 1 0x40, 0 zero. Reached through battle_camera_request.
 0x006D6770	function	camera_field_node_start_noop	void camera_field_node_start_noop(void * node)	Empty node start slot +0x0C for ccCamera, ccDummyCamera, ccPMCCamera, ccCamera01 and ccField; verified jr ra/nop entry.
 0x006D6780	function	command_ctrl_slot_14_child_noop		No-op child slot +0x14 entry. Empty node14 for ccCamera,ccDummyCamera,ccPMCCamera,ccCamera01,ccCommand;verified jr ra/nop,vtable005DDB10/80/B0/E0 and005DDD30.
 0x006D6790	function	command_ctrl_slot_18_child_noop		No-op child slot +0x18 entry. Empty node18 scoped camera,command,field;verified jr ra/nop,vtable005DDB10..005DDBF8,005DDD30/80.
@@ -4046,6 +4047,7 @@ address	kind	name	type	comment
 0x008CA390	data	victory_tenten_first	VictoryNameRectangle	Japanese Tenten IDs13/66 first name rectangle=(U1,V1,width128,height62,localX0,localY-31,displayW0,displayH0);24-byte record.
 0x008CA3B0	data	victory_tenten_second	VictoryNameRectangle	Japanese Tenten IDs13/66 second name rectangle=(U1,V65,width122,height62,localX0,localY-31,displayW0,displayH0);24-byte record.
 0x008CADA0	data	rng_low31_switch_table	void *[11]	Case5 live0076D3C0,incoming edge for low31 consumer. | Eleven internal state targets of rng_case5_state_update; first two live0x0076CC60/0x0076CCF0; full verified length11, not6.
+0x008CAE40	data	jutsu_resource_flags	uint[197]	One word per jutsu resource, indexed by primary object +0x56C (skill_primary_event_update); bit 0x80 sets +0x13C = 2 for a form owner. UN4: 0x0085AC70 indexed by +0x54C.
 0x008CB160	data	skill_selector_resource_table	int[188]	Selector161 maps to resource/factory index165; numeric domains are distinct. | 188 signed selector-to-resource words;selectors0/1=-1;resource capacity197 is separate.
 0x008CB3E4	label	skill_hnw001_selector_entry		Selector161 table entry value165.
 0x008CB700	data	fighter_cutin_availability	unsigned char[94]	94-byte fighter availability table consulted by fighter_cutin_archive_path.

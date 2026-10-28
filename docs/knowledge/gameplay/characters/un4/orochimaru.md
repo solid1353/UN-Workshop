@@ -782,9 +782,10 @@ reason classes. UN4 `effect_remove_ordinary_classes`
 after every ordinary Ultimate Jutsu both participants lose their class 0..2
 effects with reason 3, which ends the awakening. Neither game tests effect
 `0x13`/`0x5D` by ID in a presence check (all immediate arguments to UN4
-`fighter_has_effect_id` and NA2 `fighter_has_effect`). The Manda controller
-also calls `effect_remove_ordinary_classes` with reason 1 on the initiating
-fighter in every `reversal_game_update_progress` pass.
+`fighter_has_effect_id` and NA2 `fighter_has_effect`). The common
+`reversal_game_update_progress`, which every authored-ID-1 controller runs
+each update (Manda included), calls `effect_remove_ordinary_classes` with
+reason 1 on the initiating fighter, so the awakening also ends there.
 
 All three donor UJ records have effect `0xFFFF`, as do all four native
 records listed in the
@@ -879,7 +880,13 @@ damage words above.
 base and private state from `+0x370`. `orochimaru_reversal_initialize`
 (`0x0073D330`) consumes `orochimaru_reversal_descriptor` (`0x00858D00`),
 creates two `0x120`-byte players, and initializes the initiating model,
-HUD, camera and placement. `orochimaru_reversal_set_state` (`0x0073E9D0`)
+camera and placement; vtable `+0x44`,
+`orochimaru_reversal_acquire_stage_container` (`0x0073D520`), runs first and
+borrows or requests the entry-4 stage path into `+0xB4` (ownership `+0xB0`).
+Its other overrides are `+0x08` range predicate, `+0x10` set state, `+0x1C`
+draw environment, `+0x20` draw, `+0x28` attacks, `+0x2C` model update,
+`+0x30` attached player, `+0x38` camera anchor, `+0x40` initialize and
+`+0x48` destroy; the rest are base. `orochimaru_reversal_set_state` (`0x0073E9D0`)
 selects idle 0, rising attack 1, travel attack 2, body attack 3 and charge 4.
 Incoming-contact reactions can select states 5..8. The nine paired animation
 suffixes are `nut0/atc10/atc20/atc30/nxc0/dmg0/dmg1/dmg2/dmg2`;
@@ -901,6 +908,13 @@ fighter. The private scene owns its initiating player `+0xE0` and model
 helpers `+0xE4/+0xE8`, Manda player `+0xDC`, stationary player `+0x3AC`,
 and two `0xA0` models in allocated backing storage at `+0x614`, bound to
 `CMP_4mnd00t0 loop`.
+
+`orochimaru_reversal_update_placement` (`0x0073EDE0`) forces the initiating
+fighter to (940·facing, 0, 980) through `reversal_game_set_initiator_position`
+(`0x00747F70`) every update; the Manda model sits at (1700·facing, 0, 0)
+with yaw −1.57·facing. Initialization sets the shared camera helper's offset
+to (0, 0, −500) and the first charge threshold to 56. The smoke emitters
+around Manda are four for initiating side 0 and two for side 1.
 
 `orochimaru_reversal_initialize_contacts` (`0x0073E710`) creates the
 base contact at `+0x2D0`, body contact `+0x320` in group `+0x60`, five
@@ -944,6 +958,13 @@ patterns in `orochimaru_reversal_descriptor` are:
 | Rising 1 / `0x00858D38` | 4 | 0.045 | 10 | `0x01 / 0x10` | 12 |
 | Travel 2 / `0x00858D64` | 2 | 0.06 | 20 | `0x10 / 0x10` | 12 |
 
+Their English/French names are **Divine Bite** / `Morsure Divine`,
+**Wind Style: Great Breakthrough** / `Futon : Grande percee` and
+**Evil Wanderings** / `Errances nefastes`; the German, Italian and Spanish
+slots hold `#SommonSkillOrochimaru<Lang>1..3` placeholders. Only the body
+pattern has positive `+0x26` (`0x7FFF/0x7FFF`), so each body contact adds
+two updates of model hit-stop at `+0xAA`.
+
 `orochimaru_reversal_select_body_variant` (`0x0073F8D0`) uses
 `abs(facing*1000 - opponentX)`: below 750 selects 0, below 1500 selects 1,
 otherwise 2. `orochimaru_reversal_update_body_attack` (`0x00740180`)
@@ -958,9 +979,20 @@ retires the rising effects and disables all five. `orochimaru_reversal_position_
 (`0x0073E140`) follows the initiating model's common neck and a mirrored
 radius-spaced chain. `orochimaru_reversal_update_travel_attack` (`0x0073FD10`) enables its first
 contact at frame 20, the second at 78, and disables both at 112; each has
-radius 540. It also updates defender placement/air state and consumes the
-shared contact latch for presentation. Body, rising and travel therefore
-have distinct contact ownership and frame sources.
+radius 540. It also consumes the shared contact latch `+0xAC`, on which it
+moves the defender's Z to the second contact's and plays common SFX `0x3C`.
+Before frame 79 it clears any defender hit-stop each update, and afterwards
+once when the second contact touches (`fighter_update_pause_active`,
+`hit_set_update_pause(defender, 0, 0)`). Frame 20 sends compact control
+`0x62` on the initiating fighter; frame 78 requests a camera shake
+(`reversal_camera_shake_request(3, 2, 55, 0)` → `camera_shake_insert`);
+frames 78..111 play common SFX `0x1C`/`0x1D` every fourth frame
+(`audio_play_common_event_note`). A rising contact latch shakes the camera
+(3, 2, 1, 2) and plays SFX `0x17`/`0x15`; the stationary `ANM_4mndkaz0`
+player fades in over frames 10..15 and out over 65..70. The body effect
+frame calls `battle_emit_aura_and_secondary_visual(4.0, −facing, contact)`
+and plays SFX `0x17`. Body, rising and travel therefore have distinct
+contact ownership and frame sources.
 
 `reversal_game_initialize_synthetic_hit` (`0x00747F90`) initializes action
 `+0x170` through `action_initialize_default` (resident `0x001F7680`):

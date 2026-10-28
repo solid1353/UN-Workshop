@@ -452,12 +452,26 @@ before the `+0x40` initializer; `katsuyu_reversal_bind_animations`
 resolves every Katsuyu and Tsunade animation from that `+0xB4` container.
 `katsuyu_reversal_bind_animations` (`0x0073A6D0`) resolves nine
 Katsuyu suffixes and nine Tsunade suffixes from `0x00844D50/0x00844D80`,
-using `ANM_4kty%s` / `ANM_4tnd%s`, plus `ANM_4ktyrdy1`.
+using `ANM_4kty%s` / `ANM_4tnd%s`, plus `ANM_4ktyrdy1`. Per state:
+
+| State | Katsuyu `+0xB8` | Tsunade `+0x414` |
+| --- | --- | --- |
+| 0 idle / 1 slugs / 2 acid / 3 body | `nut0` / `act10` / `act20` / `act00` | `nut0` / `act01` / `act02` / `act00` |
+| 4 charge | `rdy0`, then `rdy1` (`+0x410`) while still held | `nut0` |
+| 5 / 6 / 7 / 8 reactions | `dmg0` / `dmg1` / `dmg2` / `dmg2` | `dmg00` / `dmg01` / `dmg02` / `dmg02` |
+
 `katsuyu_reversal_set_state` (`0x0073AA80`) selects paired animations,
-rates `0x100/0x150/0x180` and the state-3 attack descriptor.
-The camera anchor is `OBJ_4kty 00t0 bone06`; the initiating model follows
-`OBJ_eff_dummy_tndpos0` through `katsuyu_reversal_update_initiator`
-(`0x0073AFD0`).
+rates `0x150` for state 1, `0x180` for state 2, `0x100` otherwise, and the
+state-3 attack descriptor. Katsuyu stands at `{2544·facing, 344, 0}`
+(third component is height) with rotation `{0, 0, −1.4·facing}`.
+The camera anchor is `OBJ_4kty 00t0 bone06` plus `{±120, 0, 0}` (+120
+for side 0); the initiating model follows `OBJ_eff_dummy_tndpos0` through
+`katsuyu_reversal_update_initiator` (`0x0073AFD0`). The initializer sets
+the main camera offset to `{0, 0, −500, 0}`, and
+`katsuyu_reversal_configure_draw_environment` (`0x0073ACA0`, vtable
+`+0x1C`) sets the borrowed render environment's `+0xE0` to 1000 and
+`+0xE4` to `0x40`. The vtable overrides every slot except `+0x0C/+0x14/
++0x18/+0x24/+0x34/+0x3C`, which keep the base methods.
 
 `katsuyu_reversal_update_attacks` (`0x0073B110`) dispatches these distinct
 authored attacks and charge-release behavior:
@@ -465,8 +479,36 @@ authored attacks and charge-release behavior:
 | State | Checked attack and lifetime |
 | --- | --- |
 | 1 | `katsuyu_reversal_emit_slugs` (`0x0073C8D0`) emits at animation frame 49: 11 at the terminal pattern value, otherwise a progress-derived count capped at 10. `katsuyu_reversal_spawn_slug` (`0x0073B360`) allocates a `0xB0` node and `0x120` player for `ANM_4ktysml00`, with contact/group storage. Contact selects descriptor `+0x38`; a successful hit starts four-update retirement. |
-| 2 | `katsuyu_reversal_emit_acid` (`0x0073C9E0`) emits at frame 49 from `OBJ_4ktydummy`: 28 nodes at progress 60, otherwise the charge-list formula below. `katsuyu_reversal_spawn_acid` (`0x0073BDE0`) owns an `0xA0` node and `0xA0` model chosen from `MDL_4ktysan2a/b/c`; negative flight delay, movement, ground effect and 30-update persistence run through `katsuyu_reversal_update_acid` (`0x0073C220`). Contact selects descriptor `+0x64`. |
-| 3 | `katsuyu_reversal_body_attack` (`0x0073CB70`) positions three embedded contacts at the main body and two named bones, enables them at frame 12 and disables them from 33. Frame 30 requests twelve radial transient effects through `katsuyu_reversal_emit_radial_effects` (`0x0073C590`), using shared effect resource `0x66`; successful emission depends on allocation and registration. |
+| 2 | `katsuyu_reversal_emit_acid` (`0x0073C9E0`) emits at frame 49 from `OBJ_4ktydummy`: 28 nodes at progress 60, otherwise the charge-list formula below. `katsuyu_reversal_spawn_acid` (`0x0073BDE0`) owns an `0xA0` node and an `0xA0` object bound to a random `CMP_4ktysan2a/b/c` composition; negative flight delay, movement, ground effect and 30-update persistence run through `katsuyu_reversal_update_acid` (`0x0073C220`). Contact selects descriptor `+0x64`. Emission plays mode cue `0x102B`. |
+| 3 | `katsuyu_reversal_body_attack` (`0x0073CB70`) positions three embedded contacts at the camera anchor and `OBJ_4kty 00t0 bone05/bone04`, enables them at frame 12 and disables them from 33. Frame 30 requests twelve radial transient effects through `katsuyu_reversal_emit_radial_effects` (`0x0073C590`), using shared effect resource `0x66`, at `{400·facing, −200, 0}`, plays common cue `0x1F` and requests a shake (`FUN_0023CDF0`: 3, 2, duration 20, mode 2); successful emission depends on allocation and registration. |
+
+#### Slug and acid motion
+
+A release at progress 1..55 emits `progress/5 + 1` slugs, capped at 10;
+progress 56 emits 11. Each slug starts at `{anchor.x + rand(160),
+rand(48), anchor.height + rand(140)}` with a random start frame and falls
+straight down by `rand(8) + 40` per update, or 8 while it is 260..460
+below the anchor. At height 8 it lands: radial effects at height 80,
+positional common cue `0x1E`, then it crawls at `facing·(rand(4) − 8)`
+per update. Beyond |x| 1600, or on any retiring contact, it stops drawing
+and is destroyed after four updates; every contact retirement creates
+smoke helper variant 2 (`battle_create_smoke_helper`, class
+`ccEffFrogAppearSmoke`). Besides a delivered hit, an opponent attack
+contact retires it (unless the opponent's active jutsu object's
+`jutsu_resource_flags` word has `0x400`, or, with no jutsu object, every contact owner has type `0x8B`
+or 9), and any other contact retires it unless the opponent's action has
+flag `0x02000000`.
+
+Each acid node waits 0..11 updates, then flies 30 updates at x −88·facing
+per update, vertical `rand(48) − 40`, sideways `rand(40)` for three in five
+nodes, scale 2..3 and fade `1 − 0.03·age`. Reaching the ground starts the
+ground emitter and 30 grounded updates; a node still flying after 30
+updates is destroyed. It can hit while flying or grounded, once.
+
+Contact radii are 336 for the controller's own receive contact and the
+three body contacts, 64 for slugs and 80 for acid. The body and acid send
+masks are `0x20080` (side 0) / `0x41000` (side 1); slugs replace
+`0x20000`/`0x40000` with `0x2000`/`0x4000`.
 
 #### Contact, damage and reactions
 
@@ -868,7 +910,8 @@ The shared entry/rebuild/return route remains in
 
 #### Stage, participants and projectiles
 
-`STAGE/KTYS_KTY.CCS` completely walks to EOF: 751 named directory records,
+`STAGE/KTYS_KTY.CCS` (CCS version `0x123`; the English and French CVM
+copies decompress to the same 686,988 bytes) completely walks to EOF: 751 named directory records,
 21 `0x0700` animations, 15 textures, 15 palettes and one `BIN_bgdata`.
 The concrete animation binder's 19 slots collapse to **16 distinct paired
 animations**: nine Katsuyu roots including separate `rdy1`, and seven TND
@@ -884,7 +927,7 @@ common-2 scene providers.
 | Camera/initiator anchors | `OBJ_4kty 00t0 bone06` wrapper 13 → typed scene 14; its model 507 is an intentional zero-part bone model, with shadow 508. `OBJ_eff_dummy_tndpos0` wrapper 25 → typed scene 26, model zero. These anchors are not missing geometry. The initiating fighter model additionally uses its separately selected body provider. |
 | Spawned slug | `ANM_4ktysml00` row 215 reaches the small-slug hierarchy and model 560 `MDL_4skty00t0 body`: three packed parts all material 561 `MAT_4skty` → texture 562 `TEX_4sktybody` → palette 567 `CLT_4sktybody`. Two parts are rigid; the third has 118 vertices and 200 weighted influences. |
 | Stage animation acid components | Four `MDL_4ktysan0*` models 526/530/532/534 each use material 528 `MAT_e25san5` → texture 529 `TEX_4ktysan0` → palette 565 `CLT_4ktysan0`. |
-| Code-created acid | `MDL_4ktysan2a/b/c` models 544/548/550 each have one ordinary part using material 546 `MAT_e25ekic01` → texture 547 `TEX_4ktysan2` → palette 566 `CLT_4ktysan2`. Model `d` also exists, but the checked spawn selector chooses a/b/c. |
+| Code-created acid | The spawn formats `CMP_4ktysan2a/b/c` (compositions 536/538/540). `MDL_4ktysan2a/b/c` models 544/548/550 each have one ordinary part using material 546 `MAT_e25ekic01` → texture 547 `TEX_4ktysan2` → palette 566 `CLT_4ktysan2`. Composition and model `d` also exist, but the spawn chooses a/b/c. |
 
 The ordinary and packed model part walks reach each selected model's declared
 endpoint using the owning UN4 readers. Model-internal subtype-0 submesh IDs
@@ -1393,6 +1436,12 @@ Complete source hashes belong to [File identities](../../../game/files/file_iden
 The donor setting-0 intro filenames are `strST_052/135/053.ahx`; its
 setting-1 names are `str`. Katsuyu's first set is `summon24..27.ahx`,
 the second `kuc`. Native files are `strST_165/166/167.ahx`.
+Katsuyu's phases 2 and 3 play when the slug and acid states reach
+update 50 and 48 (pattern `+0x16`). The body state instead plays battle
+voice control `0x5F` on the initiating fighter at update 27: row
+`0x00433F78` selects program 55, key `0x41`, which in Tsunade's banks
+resolves to Sset/Smpl 36 and Vagi 1, English sample `0x00AAE760`
+(22,050 Hz) and Japanese `0x01E4B940` (8,000 Hz) in `SNDDATA.BIN`.
 Setting 1 is audio context `+0x10 == 1`, the Japanese-voice setting of the
 established [language selector](../un3_un4_characters.md#compact-bank-set-language),
 so setting 0 is English. These code/file bindings establish exact selected

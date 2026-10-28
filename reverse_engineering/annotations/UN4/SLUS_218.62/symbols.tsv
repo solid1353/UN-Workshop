@@ -323,6 +323,7 @@ address	kind	name	type	comment
 0x00183F48	function	string_copy	void string_copy(char *out, char *source)	Inferred from an exact code match with NA2 SLPS_258.37 0x0017C380. Copy source bytes through the terminating NUL without a destination-capacity argument or bound; aligned bulk paths preserve the same unbounded copy contract.
 0x00184060	function	string_length		Count bytes to first NUL;aligned8/16-byte zero detection followed bybyte tail. sp_skill_apply_external_palette subtracts2 from thislength before forming palette basename.
 0x00184710	function	string_find_substring	char * string_find_substring(char *text, char *needle)	Inferred from an exact code match with NA2 SLPS_258.37 0x0017CAF8. Case-sensitive first substring pointer or null;empty needle start.
+0x001893C0	function	screen_fade_quad_request		Claim one of four 0x24 slots in a5: mode 3, duration a6, color t0, rectangle a0..a3; -1 when all busy. Shukaku uses (0,0,512,384).
 0x00189570	function	transition_slot_rearm		Inferred from an exact code match with NA2 SLPS_258.37 0x00183F90. Rearm existing unchecked index flags1,cursor0,duration supplied,start=previous stored end_color,end=new color; preserve rectangle, not current interpolated color.
 0x001895B0	function	settings_resource_pending	unsigned char settings_resource_pending(int param_1,int param_2)	Inferred from an exact code match with NA2 SLPS_258.37 0x00183FD0. Return pending-resource predicate; zero completes generic parent wait/close. | Return signed-halfword cursor<duration for supplied unchecked index, without activity check.
 0x001895E0	function	transition_slot_clear		Inferred from an exact code match with NA2 SLPS_258.37 0x00184000. Clear supplied unchecked index flags only.
@@ -488,6 +489,8 @@ address	kind	name	type	comment
 0x001D85B0	function	audio_bank_set_selector		UN4 own code returns boolean(sound command context006096F0->word+10 ==1). Direct-ID compact descriptor uses result*0x3A8; set0 English/set1 Japanese established by option.ccs TEX_option sprite labels and inverse audio_settings_menu_update write, persisted settings+F reloads it. UI-language index is separate.
 0x001D88B0	function	audio_request_common_or_mode_effect_cue		Shared route1D8760 mode0; low selectors0..91 use4342D0 common bank short program/keyon commands. NRV001 phase1 cue59; BlowWatch initialize1005 routes selected mode bank.
 0x001D8B00	function	audio_request_common_effect_cue_with_velocity		Admit via1D8760 then select signed program/packet/channel from eight-byte4342D0 common table; caller velocity clamped0..127. NRV001 state1 requests cue75 every fourth owner frame.
+0x001D8CB0	function	audio_request_common_effect_cue_velocity		Common SFX cue 0..91 with its table note and caller velocity 0..127 (clamped to the table maximum).
+0x001D8E80	function	audio_play_common_event_note	int audio_play_common_event_note(int event, int key, int velocity)	Route event first; else common event 0..0x5B from sfx_common_controls: program change then note-on with caller key/velocity clamped 0..127.
 0x001D9070	function	sound_request_positional		Own-game inspected positional sound entry first forwards to001D8760; fallback IDs0..5A use004342D0 eight-byte descriptors and emit program/control/extended sound commands through00609710. No CCS name lookup or effect construction.
 0x001D95F0	function	audio_start_tracked_common_effect_cue		Allocate one of eight scalar tokens, select4342D0 common cue and emit FD10 packet; NRV001 begin contact requests39 and retains token868.
 0x001D9880	function	audio_release_tracked_common_effect_cue		Emit common FD10 update using cue row and token then release matching token in context161..168. NRV001 end contact uses39.
@@ -539,6 +542,7 @@ address	kind	name	type	comment
 0x001EA770	function	fighter_schedule_action_audio		Major8 reads current action A3C, signed audioTime54, SFX50 and voice52 when category20 bit2 clear; -1 suppresses; -2/-3/-4 draw0..3 with3 suppressed and map6..8/3..5/0..2; descriptor event uses default key(-1),object1. Other majors also schedule audio.
 0x001ECF70	function	rash_coordinator_auxiliary_initialize	void rash_coordinator_auxiliary_initialize(int owner)	Find fixed n_rash container00592050; allocate bound ANM_xrush01a/03a players, TEX_xrush sprite, two0x50-byte side children. Each side resolves ANM_xrush01a/02a/04a. This donor auxiliary resource set differs from NA2 fight/gear/wait/start/kizu resources.
 0x001EF3B0	function	rash_parallel_animation_event	void rash_parallel_animation_event(int event)	Read event+10 scene target, update/copy target world matrix, emit position event1037; place one randomly selected shared indexed effect at target position with randomized scale1.5*(1+rng_signed_scaled(.2)), optionally effect4E at scale.5*(1+rng), step150. NA2 counterpart00208A50 uses same position formulas with its own effect identifiers.
+0x001F2550	function	command_list_update_availability		Command-list availability; while a reversal game runs for this side it lists the controller's current pattern instead of the fighter's actions.
 0x001F3B90	function	input_sector_widen_state_a		Own-game exact existing-effect/form adoption;complete body has no ID25 accepting case.
 0x001F3FB0	function	awakening_enter_class_seven		Require major8,current_recordA3C category20&F00000,flags24&10000,action-record(-3),phase2 and secondary timeline1D4 event0. Remove associated effects below5A reason1;apply selected_jutsu_effect182 default-1 route1;matching family sets63bit20. Shizune27/Kabuto28 take inline26/27 families; no model/identity replacement here.
 0x001F4240	function	input_sector_widen_state_b		Own-game ordinary awakening entry;ID25 removes effect23 then inserts association25 from5924E8 and sets fighter63 bit20;statistics and presentation follow.
@@ -565,12 +569,16 @@ address	kind	name	type	comment
 0x002002C0	function	actions_resolve_rows		Own-game row initializer copies0x4C-byte authored rows via fighterBC/C0/C4 and transforms action+60 authored index into working-row pointer. Actions0..3 select first twelve rows; configured jutsu owners use definition record+3C and six-row banks with46..4D remap. Action stride0x64; shares row stride with NA2 despite different action layout.
 0x00200900	function	actions_setup_working_array		Own-game initializer copies authored actions4..count-1 and configured jutsu actions0..3 into working base fighterA44 using100-byte(0x64) stride; source definitions indexed8 at005744E4. Seven leading words comprise debug pointer,another pointer,and five locale slots08..18; later logical fields begin1C. ui_language_index selects a display slot at08+4*locale when rewriting selected Ultimate-Jutsu action4..9. Calls actions row/animation helpers002002C0/00200010. | Selected selectors+17C/+17E choose owner by jutsu_selector_character;selector1 copies null action record. First working pair imports authored0/1 for even selector or2/3 for odd;second imports0/1 for even or2/3 for odd. Source packed owner/selector word1C is copied unchanged and is distinct from actual fighter current ID68. Animation names resolve through resident selector provider,not BATTLE resource map.
 0x00202100	function	fighter_apply_motion_record		Motion record consumer;valid source node kind0 allows fighter_knockback_scalar. Nonneutral source fold scales planar984 fully and vertical988 halfway,then publishes velocities and motion adjustments. Bounded effect26/27 consumer trace; wider motion flags retain own-game semantics.
+0x002071E0	function	fighter_collision_enable		Activate registrations 1..2 of the fighter query list +0xDC0; NA2 linked_fighter_restore 0x0021F980 (+0xDD0).
+0x00207250	function	fighter_collision_disable		Deactivate registrations 1..2 of the fighter query list +0xDC0; NA2 0x0021F9F0. Reversal lock disables the initiator's body collision.
 0x002074C0	function	fighter_attack_bank_registered		Counterpart of NA2 fighter_attack_bank_registered 0x0021FC40 (same call role in alternate-scene bank passes)
 0x002074F0	function	fighter_register_attack_window		Counterpart of NA2 fighter_register_attack_window 0x0021FC70: (fighter, bank, index, player, animation_result, secondary timeline)
 0x002082C0	function	hit_route_accepted		Counterpart of NA2 hit_route_accepted 0x002209A0; action flags read at +0x24 (NA2 +0x14): 0x800000 sets guard -1 under fighter +0x63 bit 7, 0x400000 clears guard
 0x00208BB0	function	hit_source_copy		Inferred from an exact code match with NA2 SLPS_258.37 0x00221460. Copy fixed0x50-byte prefix of GenericNode,return destination;source object copy,not attack-record/damage copy. | Copy exactly bytes00..4F,return destination; does not copy vtable50 or pointed-to allocations.
 0x0020C590	function	fighter_apply_action_counter_1fa		UN4 action +40 signed halfword initializes or clears fighter timer/counter group at +1FA..+214, with mode-dependent sign and action-flag gate. Called after forced reversal hit response; no HP subtraction in this routine.
 0x0020C6E0	function	fighter_timer_hold_gate		Counterpart of NA2 fighter_timer_hold_gate in alternate-scene bank passes
+0x0020C870	function	fighter_update_pause_active	int fighter_update_pause_active(void *fighter)	update_pause.current (+0x228) > 0; counterpart of NA2 fighter_timer_hold_gate 0x00224650 (+0x20C).
+0x0020C8A0	function	hit_set_update_pause	void hit_set_update_pause(void *fighter, short count, char force)	Exact counterpart of NA2 hit_set_update_pause 0x00224470 on UN4 fighter update_pause block +0x21C: unless pending bit4 or force==1, flags (old&FFF3)|3, cursors=-count, bit4 when count>0.
 0x0020CE00	function	fighter_hp_add		UN4 HP add:status62bit1 clear,state61bit8 set; HP6C+=amount cap1; optional positional feedback/descriptor cue only for nonzero flags. Timed effects use0/0.
 0x0020CF40	function	damage_calculate		UN4 calculator: flags 1 attacker +140; 2 defender +144 durability curve and nonzero staged tier +78; 10/20 effect factors; 100 attacker +164 and defender +168 stored factors. Attacker comes from defender+20. Clamps result 0..1.
 0x0020D3D0	function	damage_apply_cinematic		UN4 cinematic wrapper calculates with flag 100 only, then debits defender normalized HP +6C. Manager mode +54==2 floors HP at .01; otherwise flags62 bit1 suppresses subtraction, HP<=0 clamps zero and clears flags61 bit3. Returns defeat status.
@@ -595,6 +603,7 @@ address	kind	name	type	comment
 0x002237C0	function	action_dispatch_index		Reject zero category/blocker; jutsuF00000 adds special-admission gates; validator0 rejects,1/-1 accepts,2/3 prepare companion; pay nonzero cost then fighter_set_major_substate(8,index,mode).
 0x002241B0	function	action_stage_outcome_continuation		Current source record==opponent recovered record and outcomeA30==1 scans continuation28/currentA2C+signature08000000; validate3 dispatch else flags02000000 immediate or pendingA2E. Pending normal requires no exchangeAF0 and payload20; categoryC0000 skips ordinary exit; chain1000 delegates exchange.
 0x00224F60	function	action_reselect_allowed		Major8 current category2, motion class9AA=3,stage9AC=2,updates9B2>=5 permits immediate selection; other active major8 ordinarily stages continuation.
+0x00226E10	function	paired_action_entry		Same structure as NA2 paired_action_entry 0x0023D980: major-8 action continuation by reason 0..6 (reason 3/4 planar speed +0x984 to 30, phase 3/4, limit 12). Gamabunta's head contact calls it with reason 3.
 0x0022A660	function	action_build_chain_masks		Mode1 category1000 and current flags380 maps80/100/200 to400/800/1000; modes2/3 use opponent/current1C00 groups and random category2000/4000.
 0x0022DFE0	function	action_validate_candidate		CategoryF0000:40000/80000 concrete jutsu,10000/20000 startup requires continuation signature08000000 and combined cost; other categories return-1. Status/effects, affordability, grounded family, override and outcome/section gates produce0/1/2/3.
 0x0022E8C0	function	jutsu_slots_rewrite		Own-game tier from marker20 in fighter+63,elseHP+6C<=0.5;category1/3/2;slots4..6 or class7 slots7..9;selected record manager+98+side20,cost signed byte9 independent of tier.
@@ -616,6 +625,7 @@ address	kind	name	type	comment
 0x00239B20	function	jutsu_post_cinematic_update		Counterpart of NA2 0x0024ED40: removes both participants' (+0x24/+0x28) class 0..2 effects with reason 3 at 0x00239EA0/0x00239EB0
 0x0023B8E0	function	fighter_virtual20_noop		UN4 Tsunade vtable slot20 points here;checked raw instructions jr ra;nop.
 0x0023BE60	function	camera_registry_construct		Inferred from an exact code match with NA2 BTL.BIN 0x006D5640. Construct 0x18-byte ccCameraCtrl generic-list registry with current and previous pointers at +0x10/+0x14. | Construct primary index0/bit0 ccCameraCtrl,0x18 bytes, vtable005DDB40; phase callbacks006D59D0/006D67A0/006D67C0.
+0x0023CDF0	function	camera_shake_insert	void camera_shake_insert(void *camera, int priority, int amplitude, short duration, int phase_mode)	Insert into eight 8-byte shake slots at camera+0xB0 by priority/duration; phase mode 2 random, 1 0x40, 0 zero. Same code as NA2 0x006D64F0.
 0x0023D0A0	function	battle_owner_construct	void * battle_owner_construct(void *owner)	Inferred from an exact code match with NA2 BTL.BIN 0x00709240. Construct the four-part battle owner; allocates ccCommandCtrl into +0x04. Construct 0x10-byte owner and four subobjects including standalone field controller at +0x0C. Zero four hub pointers and allocate registries through 0x007092E0; hub is 0x10 bytes. | Construct0x10-byte primary array owner and call battle_allocate_registries.
 0x0023D500	function	battle_create_camera	long battle_create_camera(int *param_1)	Inferred from an exact code match with NA2 BTL.BIN 0x00709660. Check camera registry, create initial 0x1D0 node and insert via 0x006D57A0; when count becomes 1 write generic node root selector +0x10 zero.
 0x0023D8E0	function	field_create	long field_create(int arg1)	Inferred from an exact code match with NA2 BTL.BIN 0x00709A20. Allocate 0x90-byte ccField, construct it and append to standalone controller. Allocate 0x90 ccField, conditionally construct then append; new node guarded but destination registry not guarded.
@@ -812,6 +822,7 @@ address	kind	name	type	comment
 0x00301B90	function	battle_emit_surface_debris		Tsunade ID25 jutsu0 surface code 00D000 calls this with count30; allocate310 transient nodes, configure through battle_surface_debris_bind, register effect context. No direct CCS lookup here.
 0x00301F90	function	battle_emit_surface_contact_visual		Surface 0/1/2/3 selects ground IDs 55/60/59/58 respectively, mapping to transient resources 49/54/53/52: effect0x ANM_e0x_kin_00/gasi_00/zan_00/zasyu_00. Sets transform and surface-dependent scale; other surface values do not establish an additional valid selection.
 0x00302120	function	battle_acquire_ground_effect		IDs32..46 use pooled manager actors or fallback; fallback maps ID through5C3AC8 then binds global resource. Jiraiya Needle Jizo37 maps31.
+0x00304200	function	battle_spawn_drifting_effect		(scale, position, velocity, random lifetime span, effect resource, fade-in, fade-out): pooled transient bound to an effect resource, random angle, drifting by velocity.
 0x00304B50	function	effect_emit_ground_contact_row		Shared effect 35: first manager +0x2F0 row matching side bit (fighter +0xAF0 ? 1 : 2), flag 1 and fighter ground code +0xB9C&F0F0F0 binds a transient at position; then effect_emit_manager_ground_code. Same as NA2 0x00338990.
 0x00304D50	function	effect_emit_manager_ground_code		Ground code manager +0x3184: D000 debris, E0A000 splash, 202020/E0E000 contact variant, 60C0 effect 0x28+SFX 0x23, listed codes effect 0x28+SFX 0x1F, else nothing. Same as NA2.
 0x00304F3C	label	stage_logical_id_call_00304f3c		Logical IDs 5/10/9 have special handling; ID1 takes default.
@@ -828,6 +839,7 @@ address	kind	name	type	comment
 0x0030CCF0	function	battle_smoke_helper_update		For first four age steps invokes battle_emit_smoke_low/high from independent emission accumulators; tracks64 transient handles, schedules fades and removes helper after emissions finish, handles finish and age exceeds15. Both emitters use transient catalog26 EFF_e0ysmok03a.
 0x0030D0E0	function	battle_emit_smoke_low		Emits up to requested count while helper count +440 is below 64; each transient binds resource 26 EFF_e0ysmok03a. Uses lower initial offset and randomized velocity.
 0x0030D600	function	battle_emit_smoke_high		Counterpart to battle_emit_smoke_low; emits transient resource 26 effect0x EFF_e0ysmok03a with higher initial offset and randomized velocity.
+0x0030ECB0	function	frog_appear_smoke_construct	void * frog_appear_smoke_construct(void * self, float * position)	Smoke helper variant 2, class ccEffFrogAppearSmoke, vtable 0x005EBD40; copies position to +0x450. Katsuyu slug hits create it.
 0x00312D00	function	stage_slot_logical_id	int stage_slot_logical_id(unsigned int slot)	Raw slots 0..17 return slot+1 through 18-case jump table 005C3C80; case 312D28+10h*n loads n+1. Unsigned values >=18 return 0. S01 raw 0, logical 1.
 0x003158D0	function	battle_initialize_particle_resources		Build101 cached eight-byte particle choices from definitions576C00 (provider/name/alias/render flags), then publish609790 and generator60978C.
 0x00315EE0	function	splash_find_resource		Inferred from an exact code match with NA2 SLPS_258.37 0x001E7EB0. Borrow loaded splash container from path-pointer table0x00603060 by index through ccs_find_container.
@@ -848,10 +860,16 @@ address	kind	name	type	comment
 0x0031BB20	function	reversal_game_current_holder		Return global 0x006097E4, the holder whose first word is the running reversal game controller (or null).
 0x0031BD80	function	battle_request_reversal_transition	void battle_request_reversal_transition(int character_id, int side)	Own UN4: requires nonnull manager and character_has_reversal_controller(character_id)==1; sets flag 0x80, manager +0xFE = reversal resource index, +0x4F5 = side+1.
 0x0031C460	function	battle_state_select_stage		State7 calls battle_manager_select_stage at0031C474. Success1 seeds countdown3,requests transition,enters8;cancel-1 returns5. Same handler used by Practice and Free Battle.
+0x0031CC70	function	battle_state_after_session		Route 10 selects state 0x14 (battle_rebuild_for_pending_reversal); other routes release the session and go to 0x0F.
+0x0031CDF0	function	battle_state_end_match		Match end; in submode 2 restores stage +0xFD, resets submode and timer first.
 0x0031D2E0	function	battle_rebuild_for_pending_reversal		Own-game tears down session,backsupfighterstate;pendingstageFE andside4F5 nonzero saveoldstageFD,selectstageFC,enqueueit;shared pending form handling thenstate11.
+0x0031DAE0	function	battle_state_reset		Session field reset; clears battle_hub global and reversal holder 0x006097E4.
+0x0031DBB0	function	battle_state_prepare_timer		Session timer setup: submode 2 uses 20 s (or manager +0x4DC when not -1); otherwise configured limit, restoring the saved +0x4E8/+0x4EC when flag 0x10 is set.
 0x0031DD80	function	battle_destroy_graph		Battle graph teardown: releases presentation owners, reversal holder 0x006097E4, BATTLE transient-object manager (0x0070A690), battle owner +0x14, then battle_effect_context_release.
 0x0031E1F0	function	battle_create_graph		Own-game creates session graph;manager submode2 allocates8-byte reversalowner006097E4 andcallsBATTLEreversal_game_create_for_entry withentry/side/CPU flag;constructspausecontrollerafter.
 0x0031E9D0	function	battle_reversal_phase_update		Own-game submode2 sequence:timerexpiry setsroute6/state2;wait reversal_game_update returns1,wait30,setstate4 andrequestselector17;waitinactivepause=>state5.
+0x0031F6F0	function	battle_dispatch_phases		Three graph phases; phase 1 runs reversal_game_update on holder 0x006097E4 (unless manager +0x14==1) before fighters; phase 2 runs reversal_game_draw after fighters, before stage (mask 0xFFFE).
+0x00320870	function	battle_wait_pending_rebuild		With manager flag 0x80, waits for both top panels to settle, then sets route 10; for a reversal side or pending form also sets flag 0x10 and saves the timer.
 0x00320AC0	function	battle_update_audio_transition	void battle_update_audio_transition(void *session, unsigned char *transition_flag)	Shared battle-state audio transitions. Tail00320CF8 runs even when manager+14 is nonzero: pause-controller+10 clear/session halfword+8 zero sets+8=-1 and clears controller bit1; result+4F8=0 then requests battle event0 at00320D54, selecting preset5. No rawslot/logicalID/character music selection here.
 0x00320EA0	function	battle_session_update		Own-game session update:submode2 state5 ordefeat flags requestpendingoldstageFD,clearreversalside4F5,setroute10;preservesordinaryphaseandpauseupdates.
 0x00321560	function	bindings_get	short * bindings_get(int side)	Inferred from an exact code match with NA2 SLPS_258.37 0x001F3F10. Return the configured eight-binding array for a controller side. Support glyph consumes configured halfword index5 (byte offset0A) using side+1,Linked Attack binding.
@@ -864,6 +882,7 @@ address	kind	name	type	comment
 0x00322670	function	battle_manager_finalize_loadouts		For side1/2 call00324DB0 (jutsu/loadout) then003226E0 (default Ultimate record if zero and resource lookup). State8 invokes before queuing fighters and stage.
 0x00322C80	function	battle_manager_select_characters		Lazily create0xAC Character Select at manager+0x118, update it,draw while pending,release on result. Sole state5 caller0031C3F4; result1 proceeds to stage selection.
 0x00322DD0	function	battle_manager_select_stage		Sole direct call0031C474 in state7. Create0x140 stage/settings owner at manager+0x11C (Practice mode2 gives initial raw6),update it,copy raw result to manager+0xFC on success1,then destroy owner. Resident body00322DD0..00322EF4.
+0x00323100	function	battle_timer_subtract		remaining +0x4E0 -= 0x01000000 / a1, clamped at 0; elapsed +0x4E4 follows. Reversal progress uses it to keep the battle clock in step with its budget and to end it at finish.
 0x00323390	function	profile_roster_available		Own UN4 resident manager+4 profile, status bank atprofile+8; forwards characterID to0039CF30 then masks bit0. Used by character_select_refresh_availability; no own manager null check.
 0x003234C0	function	profile_status_clear	void profile_status_clear(int param_1,unsigned long long param_2)	Inferred from an exact code match with NA2 SLPS_258.37 0x001F5610. Clear the complete indexed character_status byte.
 0x00323530	function	profile_status_mark_bit1	void profile_status_mark_bit1(int param_1,unsigned long long param_2)	Inferred from an exact code match with NA2 SLPS_258.37 0x001F5640. Set indexed character_status bit1 while preserving other bits; inspected consumers do not establish its semantic meaning.
@@ -980,15 +999,19 @@ address	kind	name	type	comment
 0x00377730	function	jutsu_presentation_update		Own-game ordinary Ougi countdown85 starts SP Skill Play only forclassification1;status4 atbranchframe setsoutcome2 andcutsremainingstream.
 0x00378720	function	reversal_prepare_destroy		Own-game frees selector16 child sceneplayers andresources behind0x50 owner.
 0x00378940	function	reversal_presentation_update		Own-game freeze and cut-in/intro family9;countdown85 loads character reversal resource via BATTLE lookup;no SP Skill Play/contest;finish animation restoresfighterrates andrequests reversal transition(characterID,side).
+0x00379670	function	reversal_presentation_draw		Selector 16 draw: smoke player +0x20 when flag 1, then cut-in players +0x40/+0x44/+0x48 through the pause controller's camera when flag 8.
 0x00379780	function	reversal_return_presentation_update		Own-game finish-only selector17 runs shared reversal finish animation,wait2 thenexits;no streamedskill constructor.
 0x0037D870	function	pause_controller_request		Own-game normalize13..15=>13,ignore-1,filter1 blocksall,filter2 blocks0/1;begin mayredirect13 to16/17 for reversal.
 0x0037D970	function	pause_controller_opening_begin	void pause_controller_opening_begin(unsigned long long param_1,unsigned long long param_2,unsigned long long param_3,unsigned long long param_4)	Inferred from an exact code match with NA2 BTL.BIN 0x0076EF60. Opening1 passes controller,P1 character,0,0;opening2 waits byte10 clear. | Discard original second argument; forward third as mode0C and fourth as selector0D to request normalizer.
 0x0037D9A0	function	pause_controller_before_phases		Own-game selector dispatch0/1/13/16/17;16 reversal prepare,17 finish-only.
+0x0037DA60	function	pause_controller_post_update		Post-update (draw) dispatch by selector 0/1/13/16/17 under the controller's environment; skipped while filter 0x694==1 or lifecycle<2.
 0x0037DBB0	function	pause_controller_begin		Own-game clears active branch;request13 withselectedskill1 flags4 redirects to16 whenmanager+58!=2,17 when+58==2;storesmodeC,selectorD,lifecycle10=1.
 0x0037DC80	function	pause_controller_cleanup		Own-game separate release16=>0037E650,17=>0037E990,13=>0037E440;clear branch-owned resources.
 0x0037E130	function	pause_gauge_post_update		Inferred from an exact code match with NA2 BTL.BIN 0x0076F7C0. Selector0 post-update/draw callback for retained gauge child.
 0x0037E760	function	pause_reversal_prepare_pre_update		Own-game selector16 creates0x14 wrapper and0x50 owner vtable005ED6E0,variant0;callsreversal_presentation_update.
+0x0037E900	function	pause_reversal_prepare_post_update		Selector 16 draw: variant 0 reversal_presentation_draw; variant 1 draws the smoke player.
 0x0037EAA0	function	pause_reversal_finish_pre_update		Own-game selector17 creates0x14 wrapper and0x18 owner vtable005ED6D0,variant1;callsreversal_return_presentation_update.
+0x0037EC40	function	pause_reversal_finish_post_update		Selector 17 draw: variant 1 draws owner +0x10 smoke player under owner +8 renderer.
 0x00384F60	function	practice_settings_apply		Commit eight settings through manager setters; Behavior owner+7C==0 invokes practice_toggle_com(...,0,...),otherwise1. Difficulty comparison supplies force flag.
 0x003850D0	function	practice_toggle_com		Active side manager+1C selects opposite participant's COM flag bit1 at manager+A0 (active0) or80. Live fighter108/104 behavior bits5..8 clear for manual0; nonzero setsCOM and resetsAI when required.
 0x00387D30	function	camera_controller_update		Presentation dispatcher selects camera_controller_clash for controller selector+8==0x54 (NA2 mode18 homolog), then common update0038A3A0.
@@ -996,6 +1019,7 @@ address	kind	name	type	comment
 0x00388BB0	function	camera_controller_clash		Request -4 handler homolog of NA2 camera_controller_mode18: select presentation slot1, records57E6B0 or57E760 by745A30 query; after timed threshold call3885D0, then overwrite eye offset+1B0 with authored endpoint and add80 c2 only logicalID5. S01 logicalID1 gets no bias.
 0x00388E90	label	stage_logical_id_call_00388e90		Clash camera adds80 c2 only ID5; ID1 retains authored endpoint.
 0x0038BAD0	function	battle_menu_initialize_players		Initialize menu-side eligibility from manager control mode+5C. In Practice mode+54==2 with practice_behavior_get()==0, enable both player sides regardless of ordinary one-COM mode.
+0x0038ECD0	function	command_list_build		Builds the side's command list; for the reversal side lists the controller's attack-pattern names (by UI language) and glyphs.
 0x003921E0	function	easy_display_initialize		Pause menu action14: label provider003F4200 uses TEXTENG00870570[14] ->00890080 Easy Display Setup. Initialize cursor0 if profile+38 bit2 set, else1; profile through manager00609794+4. Open choice panel3 and enter menu state14.
 0x003922A0	function	easy_display_update		Pause menu Easy Display Setup: confirm cursor0 sets profile byte+38 bit2 (mask04), cursor1 clears it, preserving other bits. Cancel closes without changing setting. Uses manager00609794->profile+4, same byte whose bit0 is Practice Command Display.
 0x00395900	function	ccfm_rectangle_pairs_prepare		Own-game prepare sixrectanglepairs from512/384 fullframe dimensions,scalarboundaries1C..28,rotation2C,translation30/34;transformto centered screen coordinates. Invoked through resident callbackselector1.
@@ -1030,7 +1054,7 @@ address	kind	name	type	comment
 0x0039B390	function	ccfm_child_advance		Own-game evaluate discrete/scalar/discrete/scalar channels into child+44/+48/+4C/+50 at fixed-point delta;optionbyte+40 andgroup16+42 copied fromheader each update. Mode1constant,mode2discrete step or scalar interpolation,mode0zero. NA2same channel evaluation.
 0x0039B6A0	function	ccfm_child_release_channels		Own-game free only mode2 channel arrays,free runtime payload,clear channels/state;borrowed mode1 serialized words are not freed.
 0x0039C0F0	function	battle_particle_activate		Enable/register generator; resolve descriptor resource index1F6 or override228 into cached particle choice table, then bind choices.
-0x0039C1B0	function	battle_particle_create		Allocate280-byte generator with definition38 and up to four copied20-byte force descriptors; used by Jiraiya jutsu and Gamabunta.
+0x0039C1B0	function	battle_particle_create		Allocate280-byte generator with definition38 and up to four copied20-byte force descriptors; used by Jiraiya jutsu, Gamabunta and Manda. Counterpart of NA2 battle_generator_create 0x00349BA0.
 0x0039C540	function	battle_particle_construct		Initialize common emitter then install5ED780 vtable and battle generator fields.
 0x0039C7F0	function	battle_particle_generator_post_update		Inferred from an exact code match with NA2 SLPS_258.37 0x0034A440. Refresh four cached field pointers from emitter slot lookups.
 0x0039C8E0	function	battle_particle_bind_cached_resources		Bind cached resource choices:700 animation,900 composition,E00 effect; preserve rendering flags and optional record metadata.
@@ -1327,7 +1351,7 @@ address	kind	name	type	comment
 0x005799B8	data	jiraiya_cinematic53_palette_descriptor		Skill53 descriptor{0,0}; no authored resident palette substitutions.
 0x005799D8	data	tsunade_regeneration_palette_descriptor		Resolved skill0x39 eight-byte sp_skill_palette_substitution_descriptors entry is {0,0}; sp_skill_apply_authored_palettes has no list for D25_10. Header2510 is outside its four special header replacements.
 0x005799E0	data	tsunade_hokage_power_palette_descriptor		Resolved skill0x3A palette descriptor is {0,0}; no authored extra palette substitutions for D25_20, header2520 outside four special replacements. Participant body appearance binding remains independent.
-0x0057A1A0	label	character_battle_body_filenames		Own UN4 actual-ID filename pointer family; manager_publish_six_selections/battle_queue_fighter_ccs consume ID9 row57A1C4 ->5CF980 2orcbod1.ccs. Length not audited here.
+0x0057A1A0	label	character_battle_body_filenames		Own UN4 actual-ID filename pointer family (2xxxbod1.ccs, zero when absent); manager_publish_six_selections/battle_queue_fighter_ccs and reversal_game_bind_initiator_model consume it; ID9 row 57A1C4 -> 5CF980 2orcbod1.ccs.
 0x0057A2E0	label	character_presentation_body_filenames		Own UN4 publisher/queue actual-ID pointer family; ID9 row57A304 ->5CFDA0 1orcbod1.ccs. Length not audited here.
 0x0057A420	label	character_end_demo_filenames		Own UN4 six-selection publisher actual-ID pointer family; ID9 row57A444 ->5D0190 3orc3eye.ccs. Separate from2BOD1 and portrait.
 0x0057A560	label	character_portrait_filenames		Own UN4 per-side queue mask8 and jutsu_presentation_update consume actual-ID family; ID9 row57A584 ->5D0580 3orc3pct.ccs. Not CHARSEL1 atlas art.
@@ -1412,8 +1436,8 @@ address	kind	name	type	comment
 0x005CF020	label	sp_skill_filter_name_format		Own-game BIN_strfilter_%s withrequestheader name,truncateatdot;optionalCCFMfilterinput.
 0x005D11C0	label	audio_settings_container_filename		Literal option.ccs selected by audio_settings_menu_create_resources through audio_settings_container_filename_ptr006079C0.
 0x005D11E0	label	audio_settings_texture_name		Literal TEX_option bound by audio_settings_menu_create_resources to menu+08 sprite; holds JAPANESE/ENGLISH choices at audio_voice_choice_sprite_regions rectangles.
-0x005D29F0	label	reversal_smoke_container_name		Own-game selector16/17 findcontainer ktys_smok.
-0x005D2A00	label	reversal_smoke_animation_name		Own-game selector16/17 useANM_ktys_smok0.
+0x005D29F0	label	reversal_smoke_container_name		Own-game selector16/17 find container 'ktys_smok' (published key of modename/ktys_smok.ccs).
+0x005D2A00	label	reversal_smoke_animation_name		Own-game selector16/17 use ANM_ktys_smok0.
 0x005D4480	data	ccfm_scalar_channel_payload_sizes	unsigned int[4]	Runtime-state allocation sizes for scalar channel modes 0/1/2/3: 4/4/12/0 bytes. Mode 0 reserves unused allocation bytes; reset and advance consume state only for modes 1/2. Checked own-game bytes agree with NA2.
 0x005D4490	data	ccfm_discrete_channel_payload_sizes	unsigned int[4]	Runtime-state allocation sizes for discrete channel modes 0/1/2/3: 4/4/12/0 bytes. Mode 0 reserves unused allocation bytes; reset and advance consume state only for modes 1/2. Checked own-game bytes agree with NA2.
 0x005D6C00	data	break_smoke_burst_template		0x1F0-byte particle template: container particle, EFF_e0xsmok20; identical to NA2's 0x005D5610.
@@ -1454,6 +1478,7 @@ address	kind	name	type	comment
 0x005ED690	label	jutsu_turn_vtable		UN4 ccInputMatchRot descriptor and dispatch table: +08 jutsu_turn_update, +0C jutsu_turn_render; raw factory mode 2.
 0x005ED6A0	label	jutsu_combo_vtable		UN4 ccInputMatchHit descriptor and dispatch table: +08 jutsu_combo_update, +0C jutsu_combo_render; raw factory mode 3.
 0x005ED6B0	label	jutsu_command_vtable		UN4 ccInputMatchCmd descriptor and dispatch table: +08 jutsu_command_update, +0C jutsu_command_render; raw factory mode 1.
+0x005F0380	data	reversal_game_base_vtable		ccSum base vtable, stored at controller +0x2BC; 19 words (type, 0, then slots +0x08..+0x48).
 0x005F03D0	label	reversal_chouji_vtable		UN4 entry 6 concrete controller, retained ccSumChouji descriptor at BATTLE 00859EE8.
 0x005F0420	label	reversal_sakura_vtable		UN4 entry 5 concrete controller, retained ccSumSakura descriptor at BATTLE 00859F10.
 0x005F0470	label	reversal_manda_vtable		UN4 entry 4 concrete controller, retained ccSumManda descriptor at BATTLE 00859F38; character key 9, resource index 22.
@@ -1486,10 +1511,21 @@ address	kind	name	type	comment
 0x00607D10	label	kabuto_ultimate_record_list		Count3 followed62/63/64; character-local pointertable00583B10 ID28; defaultrecord62 at00583C88.
 0x00607DA0	label	naruto_ultimate_jutsu_list		ID57 count2 records110/111;default110;English metadata86FB10+index10hex. Skills5A/59,record111 effect64 mapsSecondStage73.
 0x00607E18	label	naruto_second_stage_ultimate_jutsu_list		ID73 count1 record153;category1 matchesit,othercategories use default0. Metadata skill5B,no post-effect.
+0x00608468	data	shukaku_bullet_descent		Two floats 10.0/24.0: per-update descent of Shukaku state-1 bullets 0/1 (gp-6B08).
+0x00608470	data	shukaku_bullet_fire_frames		Two words 70/87: ANM_skkatc00 frames that fire bullets 0/1 (gp-6B00).
+0x00608478	data	shukaku_bullet_angles		Two floats -1.9/-2.08 rad: bullet 0/1 orientation times side sign (gp-6AF8).
+0x00608498	data	gamabunta_volley_spawn_frames	unsigned char[2]	State frames 45 and 55 at which Gamabunta's uncharged state-1 volley launches projectiles 0 and 1 (read as a halfword at gp-0x6AD8).
 0x006084A8	data	orochimaru_reversal_body_variant_thresholds	float[2]	750/1500; GP60EF70 as verified own entry00100198/AC/C0, subtract6AC8;73F8D0 chooses0below750,1below1500,2otherwise.
 0x006084B0	data	orochimaru_reversal_body_contact_start_frames	short[3]	29/24/30 for bodyvariants0/1/2;740180 reads GP-6AC0.
 0x006084B8	data	orochimaru_reversal_body_contact_end_frames	short[3]	38/36/37 for bodyvariants0/1/2;740180 reads GP-6AB8.
 0x006084C0	data	orochimaru_reversal_body_effect_frames	short[3]	32/28/35 for bodyvariants0/1/2;740180 reads GP-6AB0.
+0x006084D0	data	chouji_reversal_range_bounds		Chouji in-range distance bounds 50.0 / 380.0.
+0x006084D8	data	chouji_reversal_roll_voice_times		Two halfwords: roll state update 48 (control 0x63), roll-out frame 28 (control 0x62).
+0x006084E0	data	chouji_reversal_dive_start_x		Dive model start x: -140.0 (opponent x > 0) / -664.0.
+0x006084E8	data	chouji_reversal_dive_frames		Dive frame halfwords: 112 control 0x16, 170 control 0x19/0x07, cue velocities 48/53, start 28, contacts off 98.
+0x006084F8	data	chouji_reversal_dive_marker_x		Dive shadow-marker x: 300.0 / -247.0.
+0x00608500	data	chouji_reversal_impact_effect		Punch impact: effect resource 10, scales 3.0/6.0, shake amplitudes 12/16, cue 0x14 velocities 0x35/0x38.
+0x00608514	data	shukaku_alternate_stage_path_pointer		Pointer to BATTLE stage/ktys_skk2.ccs (gp-6A5C); read only by BATTLE shukaku_alternate_stage_path.
 0x00608720	data	shizune_poison_effect_name_pointer		Pointer0x0085D578 to BATTLE literal EFF_pszndgr0, used by poison auxiliary start/update via GP-0x6850; resident entry sets GP0x0060EF70.
 0x00608C28	data	tsunade_jutsu1_dialogue_index_choices	int[2]	Dialogue indices 1/2 chosen by random(2) in tsunade_jutsu1_initialize.
 0x00608C30	data	tsunade_finish_anchor_indices		Four bytes0/1/0/2 selected by pattern; index84E590 pointers to common-2 left hand/right hand/left foot. Address from retail ELF reginfo gp0060EF70 minus6340.
@@ -1497,6 +1533,7 @@ address	kind	name	type	comment
 0x0060951C	data	arena_end_sentinel	void *	End sentinel pointer (gp-0x5A54) stored by game_arena_initialize.
 0x006096F0	data	audio_command_context_ptr	void *	Sound command-context pointer used by audio_set_bank_set/audio_bank_set_selector for word+10 compact bank choice0 English/1 Japanese; audio_settings_menu_read_current reads words+0 volume/+C output. audio_load_character_bank uses the same context for player allocations/bank transactions; request-context006096D4 is separate.
 0x00609774	data	battle_effect_context	void *	Battle effect context (gp-0x57FC); renderer descriptors at +0x2980, Gambling Shot blur borrows +0x2A00.
+0x006097E4	data	reversal_game_holder	void *	8-byte holder: word 0 ccSum controller, byte 4 start-voice-played flag; created by battle_create_graph in submode 2.
 0x00609800	data	jutsu_skill_play_owner	void *	Published by sp_skill_play_start;begin/frame/draw/end consume current cinematic owner.
 0x00609818	data	sp_skill_opponent_groups		Relocated SINF SEXC group array: 8-byte {defender s16, row count s16, row pointer}; retail has 2 groups (defenders 9 and 0x4C).
 0x0060981C	data	sp_skill_opponent_group_count		Count of sp_skill_opponent_groups read by sp_skill_resolve_opponent_skill; retail 2.
