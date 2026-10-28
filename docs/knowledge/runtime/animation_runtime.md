@@ -286,6 +286,19 @@ with default alpha 1. `matrix_multiply_entry` / `matrix_multiply` form
 it also writes `inherited_factor`, otherwise it sets bit 2. This contract is
 separate from matrix dirtiness.
 
+A model child's draw opacity is the player's `alpha` (`+0x88`) times the
+child's `inherited_factor` (`+0x84`). `projectile_compound_submit` passes
+the player's `alpha` as the scene factor to `scene_object_submit_geometry`,
+which multiplies it by the child's factor. Binding sets a materialized
+`0x0100` child's `alpha_flags` bit 0 when its scene descriptor's `+8` is
+nonzero; for such a child the draw first calls
+`scene_node_refresh_inherited_factor` (`0x0019C6E0`). That walks up parents
+while bit 0 is set, then rebuilds each `inherited_factor` downward as the
+parent's `inherited_factor` times the node's own `alpha`, clearing bit 2.
+The player node starts with flags 0, so the walk stops at it and a root
+child takes the player's `inherited_factor`. A player whose `alpha` and
+`inherited_factor` are both `a` therefore draws such a child at `a²`.
+
 A model's nonnull `transform_attachment` overrides scale through
 `AnimationModelTransformAttachment.scale_x/scale_y/scale_z` and multiplies
 position by `position_scale`, also during blending. Effects copy evaluated

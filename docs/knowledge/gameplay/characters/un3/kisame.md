@@ -8,10 +8,10 @@ Water Shark and Mad Dance ownership, overridden methods, contact definitions
 and ID-24 particle branches; input admission graph; twenty-four Ultimate
 Jutsu records selecting six films, with their soundtracks, cue rows and
 Water Clone palettes; effect `0x25` consumers; typed provider and film
-closure, including the end-demo ring's unloaded definition; compact,
-PLVOICE, SOUND intro/end-demo and common SFX selections; AI values.
-Open: what the running game shows where a definition is never loaded
-(the end-demo ring).
+closure, including the end-demo ring's unpublished definition and its
+empty animation binding; compact, PLVOICE, SOUND intro/end-demo and common
+SFX selections; AI values.
+Open: whether the doll catalog's own loads can stay published into a battle.
 
 Names come from `@annotations/UN3` and `@annotations/NA2`; addresses are live. Shared format comparisons are in [UN3 and UN4 characters](../un3_un4_characters.md).
 
@@ -262,6 +262,18 @@ only the eye file, and `battle_request_selected_character_ccs`
 The five direct callers of `doll_figure_catalog_row` (`0x00372D70`) are
 the catalog list and unlock routines at `0x002D2780..0x002D3378`; none of
 the checked battle or end-demo requests loads the ring's only definition.
+
+The ring is published only by name: eye records 74 (` c\3ksm\anm\3ksmwin00.max`)
+and 162 (` c\3ksm\anm\3ksmwin10.max`) wrap marked record 75, which
+[cross-container resolution](../../../game/files/ccs_runtime.md#cross-container-references)
+fills only from an already published container defining
+`OBJ_1ksm00t0 ring` under ` c\1ksm\max\1ksmring.max`. It requests no file.
+With `IFKSM` unpublished, `ccs_resolve_external_record_chain` (`0x001123A0`)
+returns zero and `model_bind_animation` (`0x0016F640`) leaves the ring's
+play entry empty, so `ANM_3ksmwin00/10` create no ring object
+([animation wrapper resolution](../../../game/files/ccs_runtime.md#animation-wrapper-resolution)).
+NA2's own `3EYE/3KSM3EYE.CCS` (different bytes) has the same three ring rows,
+and none of NA2's 2,310 CCS TOCs defines the ring under that namespace.
 The donor 1BOD contains one animation; the portrait contains none.
 
 UN3 `ai_tick` (`BATTLE 0x00825260`) indexes the actual fighter ID

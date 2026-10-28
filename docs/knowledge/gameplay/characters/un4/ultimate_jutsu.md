@@ -579,7 +579,10 @@ same code:
   `0x1000..0x103A`. NA2's `battle_audio_suppressed` also needs coordinator
   substate 0 before muting in state 6. Of the summons' IDs (Shukaku's
   `0x1000`, `0x1005`, `0x100A`, `0x1013`, `0x1014`; Katsuyu's `0x102B`),
-  only `0x102B`'s row has been compared.
+  every mode-0 row (UN4 `0x004345B0`, NA2 `0x003FCC90`) names the same
+  program at key `0x3C`, and each resolves to the same sample in NA2 and
+  both UN4 sets, except `0x1005` (program 5): NA2 and UN4 Japanese share
+  a 22,050 Hz clip; UN4 English has a different 11,025 Hz one.
 - `scene_child_set_transform` (`0x0019D870`) = NA2 `0x0019CB70` except the
   rotation order: UN4 applies X, Y, Z; NA2 Z, Y, X.
 - `battle_emit_aura_and_secondary_visual` (`0x0030C6F0`: transient row
