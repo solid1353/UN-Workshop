@@ -169,11 +169,15 @@ switch ($normalizedCommand) {
         if ($argumentList.Count -eq 1 -and $argumentList[0] -ieq 'deploy') {
             & (Join-Path $scripts 'deploy.ps1')
         }
+        elseif ($argumentList.Count -gt 0 -and $argumentList[0] -ieq 'pnach') {
+            $pnachArguments = @($argumentList | Select-Object -Skip 1)
+            & (Join-Path $scripts 'pnach.ps1') @pnachArguments
+        }
         elseif ($argumentList.Count -eq 0) {
             & $paths.Files.pcsx2_launch_command -Turbo
         }
         else {
-            throw 'Usage: workshop pcsx2 [deploy]'
+            throw 'Usage: workshop pcsx2 [deploy | pnach <file>|-line <line> -port <number> [-watch] [-expect <address>:<hex-bytes>]]'
         }
     }
     default {

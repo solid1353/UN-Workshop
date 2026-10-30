@@ -144,6 +144,54 @@ game. Each process receives only its own ordered file and line sets, passed as
 PCSX2's [`-pnach` and `-pnach-line`](../../../PCSX2/docs/pnach.md#command-line-pnach)
 options.
 
+### Live application
+
+`workshop pcsx2 pnach` applies a file or repeatable `-line` arguments directly
+through PINE. See `workshop help` for command syntax. `-port` is mandatory:
+the launcher begins at the configured port but skips occupied ports, including
+for a single game, and returns the actual `PinePort` with its launch result.
+
+The PowerShell entrypoint is `scripts/pcsx2/pnach.ps1`; its internal
+`pnach.py` owns parsing, application and watching. All three routes use the
+same parser and apply function. It accepts sectionless UTF-8 files (with an
+optional BOM), blank lines, `//` comments, whole-line `#` or `;` comments,
+and direct `patch=` commands targeting EE main memory. Supported types are
+`byte`, `short`, `word` and `double`; numeric values are hexadecimal and
+written little-endian. The complete batch is parsed before any write.
+Sections, CRC directives, extended codes, IOP targets, other write types and
+other commands are rejected, rather than silently interpreted differently.
+
+Every line is applied once per invocation, regardless of whether its timing
+field is 0, 1, 2 or 3. The tool does not register repeating cheats with PCSX2.
+It pauses a running VM, checks optional expectations, preserves neighbouring
+bytes when applying smaller writes, verifies the final written words, clears
+compiled-code caches and restores the previous running/paused state. Later
+lines win where writes overlap. A failure during writing can leave partial
+changes; there is no rollback. Cache clearing is attempted after any write,
+including when writing or readback fails.
+
+Repeatable `-expect <address>:<hex-bytes>` arguments require exact bytes in
+memory before any writes. Addresses are hexadecimal, optionally prefixed by
+`0x`; expected bytes are in memory order, without separators. For example,
+a `word` value of `3F800000` occupies bytes `0000803F`. Expectations are
+checked together while paused on every application. A mismatch prevents the
+entire batch. An expectation at a patched location must be updated for later
+applications; an unchanged identifying signature can instead check an overlay.
+The caller must establish that the signature identifies the intended loaded
+overlay. Parsing alone does not establish target identity or code-edit safety.
+
+`-watch` requires a file. The watcher waits up to 60 seconds for a running or
+paused game at the supplied port, applies the file initially, then applies it
+after each content change has settled for 400 ms. Invalid later saves are
+reported without applying their writes; watching continues for a corrected
+save. The file is neither added to the game's launch PNACH set nor rewritten.
+Removing a line, stopping the watcher or a failed later batch does not undo
+previous writes. A VM shutdown or lost connection ends the watcher.
+
+This one-shot behavior avoids continually reapplying mutable-state initializers.
+Clearing compiled-code caches ensures that an existing host translation is
+discarded after a code edit; writing guest memory alone does not ensure that.
+
 ## Input profiles
 
 Every game uses the tracked `@pcsx2_input_profiles/Default.ini`, which holds

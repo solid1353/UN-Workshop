@@ -1,27 +1,33 @@
 UN Workshop
 
-  workshop <game|iso-path>... [options]               Launch or replay one to three games
-  workshop resolve [source] [property]                Resolve sources and their properties
-  workshop pcsx2 deploy                               Wait and deploy the completed PCSX2 build
-  workshop pcsx2                                      Launch development PCSX2
-  workshop help                                       Show this help
+  workshop <game|iso-path>... [options]    Launch or replay one to three games
 
   Launch modes:
-    -r <name>        Create an input recording
-    -rp <name>        Replay an input recording without captures
-      -agent-replay  Agent-controlled playback; paused and surfaceless
-        -logfile <path>  Required PCSX2 log destination
-    -rps <name>        Replay and capture screenshots and savestates
-      -o <path>      Snapshot output directory
+    -r <name>              Create an input recording
+    -rp <name>             Replay an input recording without captures
+      -agent-replay        Agent-controlled playback; paused and surfaceless
+        -logfile <path>    Required PCSX2 log destination
+    -rps <name>            Replay and capture screenshots and savestates
+      -o <path>            Snapshot output directory
 
   Launch options:
-    -mc <card>       Card path or template number/name; none disconnects all slots
-    -vmc [card]      Keep changes in RAM
-    -dmc [card]      Discard writes
-    -pnach <file>    Additional PNACH; repeatable
-    -t               Turbo
-    -u               Unlimited
-    -k               Close running development PCSX2 first
+    -mc <card>            Card path or template number/name; none disconnects all slots
+    -vmc [card]           Keep changes in RAM
+    -dmc [card]           Discard writes
+    [-pnach <file>]...    Additional PNACH files
+    -t                    Turbo
+    -u                    Unlimited
+    -k                    Close running development PCSX2 first
+
+  workshop pcsx2                                                            Launch development PCSX2
+  workshop pcsx2 deploy                                                     Wait and deploy the completed PCSX2 build
+  workshop pcsx2 pnach <file> -port <number>                                Apply a PNACH file once
+  workshop pcsx2 pnach <file> -watch -port <number>                         Apply a PNACH file now and after each save
+  workshop pcsx2 pnach -line '<line>' [-line '<line>']... -port <number>    Apply supplied PNACH lines once
+    [-expect <address>:<hex-bytes>]...                                      For any PNACH form; write only if these bytes match
+
+  workshop resolve [source] [property]    Resolve sources and their properties
+  workshop help                           Show this help
 
   sources: {{SOURCES}}
   properties: {{PROPERTIES}}

@@ -21,6 +21,18 @@ SPEC.loader.exec_module(PINE)
 
 
 class PineAgentInputTests(unittest.TestCase):
+    def test_load_state_queues_slot_then_uses_pause_as_barrier(self) -> None:
+        payloads = []
+        client = object.__new__(PINE.PineClient)
+
+        def exchange(payload):
+            payloads.append(payload)
+            return b""
+
+        client.exchange = exchange
+        client.load_state(7)
+        self.assertEqual(payloads, [bytes([PINE.LOAD_STATE, 7]), bytes([PINE.PAUSE])])
+
     def test_pad_state_builds_full_dualshock_state(self) -> None:
         state = PINE.PadState.from_controls(
             ["start", "left", "cross"],
