@@ -480,6 +480,12 @@ Manual clears the fighter control/state word's behavior subfield.
 Non-Manual initializes that subfield to `1` and calls `ai_initialize`
 only when the previous subfield was zero or the comparison flag requests it.
 
+`battle_control_mode_set` (`0x001F48F0`) only writes the manager's control
+mode and side COM bits. It does not change a live fighter's controller
+subfield. Manager assignment and actor AI control are therefore separate
+state; `practice_toggle_com` normally updates the latter as well as the
+opponent's manager bit.
+
 That flag compares local Strength with its getter **after** writing Strength.
 Ordinary Practice setter success makes it false even when the value changed.
 An already-nonzero behavior subfield therefore avoids reinitialization;

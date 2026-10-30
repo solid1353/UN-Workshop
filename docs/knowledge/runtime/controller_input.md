@@ -185,6 +185,25 @@ Their human branch uses `SharedBindingInputReader.side` and configured
 binding 1, returning false for null bindings. The controlled branch can use
 `controlled_press & 1` instead.
 
+That branch requires `controller_enabled`, a valid associated fighter and
+nonzero controller-kind bits 5..8 in the fighter's word at `+0x60`. It is
+independent of the fighter's logical command mask and physical command history.
+
+Held Attack has the same split in `controller_debit_authored_chakra`
+(`0x00790870`), `controller_update_chakra_amount` (`0x007F0C40`),
+`skill_binding1_held_b` (`0x00804170`) and `skill_binding1_held_c`
+(`0x00812CF0`). The AI branch reads the skill's `controlled_press & 0x2`;
+the human branch intersects the side's shared held word with BattleInput
+binding 1. The first charge updater makes two controller-source decisions;
+the amount updater makes one after its separate fighter/resource checks.
+Publishing physical commands into BattleInput does not change this choice.
+
+The first updater ends charging when the selected hold source is absent,
+or its native charge/resource/contact exit applies. It marks `+0x5A8` and
+clears the charge-held byte at `+0x5DE` when the associated handle is valid.
+`skill_charge_is_held` (`0x00790CB0`, primary interface slot `0xF4`) returns
+that byte. Naruto's `skill_nrt_nrw_update` uses it to leave charging state 1.
+
 The jutsu-clash reader `interaction_pending_pair_call` (`0x0077C270`)
 intersects each side's shared pressed with its clash mask and increments
 its counter on any match. It counts matching-publication updates, not

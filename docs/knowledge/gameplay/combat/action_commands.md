@@ -234,6 +234,14 @@ feeds `input_history_has`, a queued AI chain bypasses the supplied mask in
 `action_select_from_signature`, and substitution reads physical history
 separately ([Substitution](../characters/substitution.md#input-path-and-history)).
 
+The ordinary fighter pass skips input selection while `update_pause.current`
+is positive. During that pause, `fighter_update_movement_slot` provides a
+separate player-only path: the controller-kind check at `0x0024DAE4` must be
+zero before it copies input, calls `action_select_from_signature` and updates
+guard-input timing. A COM-assigned fighter skips this entire path even when
+its BattleInput contains physical commands. Its physical history still
+advances, so a press during the pause is not retained for later selection.
+
 `fighter_consume_logical_input` first calls `item_input_dispatch`, then runs:
 
 1. `guard_update_input`, which consumes `0x10000000`

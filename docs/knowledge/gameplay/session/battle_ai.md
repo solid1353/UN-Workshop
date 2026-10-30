@@ -166,6 +166,12 @@ Publication copies `AiState.logical_mask`, `movement_magnitude` and
 `movement_angle` to `BattleInput`. AI input shares the human logical-command
 representation. Direct action queues coexist with that command source.
 
+Before that overwrite, fighter maintenance has already run
+`input_synthesize_hold_release` and `input_synthesize_multi_press`. Keeping
+only the triple produced by `input_object_update` would omit their later
+contributions. `ai_tick`'s entry is after those contributions and before
+publication; it has early returns that leave the prior triple untouched.
+
 ### Decision priority and ordinary-plan replacement
 
 `ai_opening_plan` returns for an occupied request latch. Otherwise it saves
@@ -460,6 +466,12 @@ above 400 forces buckets below 3 to 3.
 A wrong-facing right case writes angle approximately `-pi/2` (literal
 `-1.57`), mask 1 and magnitude 0; left uses `+1.57`, mask 2 and magnitude 0.
 These are logical direction values.
+
+Its admission call at `0x006F1B88` checks
+`fighter_reaction_variant_high(self)`: a low-byte result of 1 returns zero
+before publishing any direction. This shared correction is used by the
+scripted Practice tail and attack updater, guard reaction, state 11 and the
+ordinary reaction stages. It does not sample physical controller input.
 
 ## Alternate target-position sources and path states
 
