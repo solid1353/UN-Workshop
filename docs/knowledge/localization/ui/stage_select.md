@@ -63,6 +63,11 @@ and suppress ordinary drawing in state 7. Otherwise they submit camera and
 ring animations, then the carousel, selected-stage title/name/counters and
 arrows, followed by the legends and bottom prompts.
 
+NA2's `stage_select_random_rectangle` is `(1,81,110,30)` in the MAPSEL1
+atlas. The footer submits it unscaled at `(300,356)` through
+`sprite_draw_rectangle`, centered on that point. The word's offset within
+the picture therefore contributes to its displayed baseline.
+
 Both pass nominal OK X=400 and Back X=470 at Y=356. UN5 adds the signed
 regional offsets before submission; the examined English values give:
 

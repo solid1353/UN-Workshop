@@ -6425,6 +6425,7 @@ address	kind	name	type	comment
 0x00604AC0	data	survival_ranking_arrow_x	float[2]	X20,460 used by survival_time_ranking_draw through gp-0x5F30/-0x5F2C withY192; supplied anchors,before directional pulse offset. MCP bytes establish stored float values.
 0x00604B58	label	cc_field_name		ccField name literal.
 0x00604B60	label	generic_node_identifier		Base NO_NAME callback/data pointer at+0x14; subclasses replace it.
+0x00604BB8	data	stage_select_random_rectangle	BattleHudRectangle	MAPSEL1 footer Random picture source rectangle {u=1,v=81,width=110,height=30}; stage_select_close loads eight bytes at00715DD0 via resident gp0x0060A9F0 minus0x5E38, then submits at00715E7C with x300,y356 through sprite_draw_rectangle. The icon occupies the left part of this picture; the word starts around source u31. Rectangle helper uses unscaled width/height and a centered local offset.
 0x00604CA0	data	ninja_song_multiply_cp932	char[5]	Independent arithmetic separator bytes20 81 7E 20 00,space/fullwidth multiplication sign/space;pointed to by ninja_song_multiply_pointer.
 0x00604CF8	data	ultimate_class_rewards	short[3]	Ultimate class0/1/2 rewards100/200/300; source21 retained until reset but result21 forced0.
 0x00604D00	data	ninja_song_detail_arrow_y	float[2]	Y80,350 used by endpoint_counter_player_draw through gp-0x5CF0/-0x5CEC withX72,scale1.5; supplied anchors,before directional pulse offset.
