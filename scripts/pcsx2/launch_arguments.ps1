@@ -23,16 +23,6 @@ function Get-UnWorkshopLaunchOptions {
     }
 }
 
-function Test-UnWorkshopLaunchOption {
-    [CmdletBinding()]
-    param([Parameter(Mandatory)][string]$Token)
-
-    $options = Get-UnWorkshopLaunchOptions
-    $option = $Token.ToLowerInvariant()
-    return $option -eq '-pnach' -or $options.Values.Contains($option) -or
-        $options.Switches.Contains($option)
-}
-
 function ConvertFrom-UnWorkshopLaunchArguments {
     [CmdletBinding()]
     param(
