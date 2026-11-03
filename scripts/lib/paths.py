@@ -75,6 +75,13 @@ def _find_manifest(start: Path) -> Path:
     raise FileNotFoundError(f"Could not find {MANIFEST_NAME} above {start}")
 
 
+def _split_alias(value: str) -> tuple[str, str | None]:
+    """The root and child of an @root/child alias, with either separator; the
+    child is None when the alias names only its root."""
+    root_and_child = value[1:].replace("\\", "/").split("/", 1)
+    return root_and_child[0], root_and_child[1] if len(root_and_child) == 2 else None
+
+
 def load_workshop_paths(start: Path | None = None) -> Paths:
     """Load a Workshop manifest: roots and files, with no imports or checks."""
     root = (start or WORKSHOP_ROOT).resolve()
@@ -96,9 +103,8 @@ def load_workshop_paths(start: Path | None = None) -> Paths:
             raise ValueError(f"Invalid Workshop root {name!r}")
         resolving.add(name)
         if raw.startswith("@"):
-            parts = raw[1:].replace("\\", "/").split("/", 1)
-            parent = parts[0]
-            child = Path(parts[1] if len(parts) == 2 else "")
+            parent, child_text = _split_alias(raw)
+            child = Path(child_text or "")
             if parent not in configured or child.is_absolute() or ".." in child.parts:
                 raise ValueError(f"Invalid Workshop root alias: {raw!r}")
             base = resolve_root(parent)
@@ -122,11 +128,11 @@ def load_workshop_paths(start: Path | None = None) -> Paths:
         if not isinstance(raw, str) or not raw:
             raise ValueError(f"Invalid Workshop file {name!r}")
         if raw.startswith("@"):
-            parts = raw[1:].replace("\\", "/").split("/", 1)
-            if len(parts) != 2 or parts[0] not in roots:
+            root_name, child_text = _split_alias(raw)
+            if child_text is None or root_name not in roots:
                 raise ValueError(f"Invalid Workshop file alias: {raw!r}")
-            base = roots[parts[0]]
-            child = Path(parts[1])
+            base = roots[root_name]
+            child = Path(child_text)
         else:
             base = root
             child = Path(raw)
@@ -260,10 +266,8 @@ def _resolve_project_roots(
 
         resolving.add(name)
         if raw_value.startswith("@"):
-            root_and_child = raw_value[1:].replace("\\", "/").split("/", 1)
-            parent_name = root_and_child[0]
-            child = root_and_child[1] if len(root_and_child) == 2 else ""
-            child_path = Path(child)
+            parent_name, child = _split_alias(raw_value)
+            child_path = Path(child or "")
             if (
                 not parent_name
                 or (parent_name not in configured and parent_name not in roots)
@@ -306,12 +310,11 @@ def _resolve_project_files(
             )
 
         if raw_value.startswith("@"):
-            root_and_child = raw_value[1:].replace("\\", "/").split("/", 1)
-            if len(root_and_child) != 2 or not all(root_and_child):
+            root, child = _split_alias(raw_value)
+            if not root or not child:
                 raise ValueError(
                     f"Project file {name!r} has an invalid root alias: {raw_value!r}"
                 )
-            root, child = root_and_child
             try:
                 base_path = roots[root]
             except KeyError as exc:
@@ -353,10 +356,9 @@ def _resolve_catalog_value(
         raise ValueError(f"{label} has an invalid value: {raw_value!r}")
     if not raw_value.startswith("@"):
         return raw_value
-    root_and_child = raw_value[1:].replace("\\", "/").split("/", 1)
-    if len(root_and_child) != 2 or not all(root_and_child):
+    root_name, child = _split_alias(raw_value)
+    if not root_name or not child:
         raise ValueError(f"{label} has an invalid path: {raw_value!r}")
-    root_name, child = root_and_child
     try:
         base_path = roots[root_name]
     except KeyError as exc:
@@ -549,9 +551,8 @@ def resolve_alias(value: str, paths: Paths) -> Path:
     """Resolve @root/child syntax used by declarative profile root tables."""
     if not value.startswith("@"):
         raise ValueError(f"Project path alias must start with '@': {value!r}")
-    root_and_child = value[1:].replace("\\", "/").split("/", 1)
-    root = root_and_child[0]
-    child = root_and_child[1] if len(root_and_child) == 2 else ""
+    root, child = _split_alias(value)
+    child = child or ""
     child_path = Path(child)
     if not root or child_path.is_absolute() or ".." in child_path.parts:
         raise ValueError(f"Invalid project path alias: {value!r}")
