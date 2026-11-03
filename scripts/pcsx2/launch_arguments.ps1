@@ -1,12 +1,36 @@
 Set-StrictMode -Version Latest
 
+# The launch options that take a value, and the switches, each by the result
+# property it sets; -pnach takes a value and may repeat.
+function Get-UnWorkshopLaunchOptions {
+    [pscustomobject]@{
+        Values = [ordered]@{
+            '-rp' = 'Play'
+            '-r' = 'Record'
+            '-rps' = 'Snapshots'
+            '-o' = 'CaptureDirectory'
+            '-mc' = 'MemoryCard'
+            '-logfile' = 'LogFile'
+        }
+        Switches = [ordered]@{
+            '-dmc' = 'DiscardMemoryCardWrites'
+            '-vmc' = 'VolatileMemoryCard'
+            '-t' = 'Turbo'
+            '-u' = 'Unlimited'
+            '-k' = 'ClosePcsx2'
+            '-agent-replay' = 'AgentReplay'
+        }
+    }
+}
+
 function Test-UnWorkshopLaunchOption {
     [CmdletBinding()]
     param([Parameter(Mandatory)][string]$Token)
 
-    return $Token.ToLowerInvariant() -in @(
-        '-rp', '-r', '-rps', '-o', '-mc', '-pnach', '-dmc', '-vmc', '-t', '-u', '-k', '-agent-replay', '-logfile'
-    )
+    $options = Get-UnWorkshopLaunchOptions
+    $option = $Token.ToLowerInvariant()
+    return $option -eq '-pnach' -or $options.Values.Contains($option) -or
+        $options.Switches.Contains($option)
 }
 
 function ConvertFrom-UnWorkshopLaunchArguments {
@@ -16,30 +40,13 @@ function ConvertFrom-UnWorkshopLaunchArguments {
         [switch]$OptionsOnly
     )
 
+    $options = Get-UnWorkshopLaunchOptions
     $games = [Collections.Generic.List[string]]::new()
-    $values = [ordered]@{
-        Play = ''
-        Record = ''
-        Snapshots = ''
-        CaptureDirectory = ''
-        MemoryCard = ''
-        LogFile = ''
-    }
+    $values = [ordered]@{}
+    foreach ($name in $options.Values.Values) { $values[$name] = '' }
+    $switches = [ordered]@{}
+    foreach ($name in $options.Switches.Values) { $switches[$name] = $false }
     $pnach = [Collections.Generic.List[string]]::new()
-    $discardMemoryCardWrites = $false
-    $volatileMemoryCard = $false
-    $turbo = $false
-    $unlimited = $false
-    $closePcsx2 = $false
-    $agentReplay = $false
-    $valueOptions = @{
-        '-rp' = 'Play'
-        '-r' = 'Record'
-        '-rps' = 'Snapshots'
-        '-o' = 'CaptureDirectory'
-        '-mc' = 'MemoryCard'
-        '-logfile' = 'LogFile'
-    }
 
     for ($index = 0; $index -lt $Tokens.Count; $index++) {
         $token = [string]$Tokens[$index]
@@ -51,8 +58,8 @@ function ConvertFrom-UnWorkshopLaunchArguments {
             $pnach.Add([string]$Tokens[++$index])
             continue
         }
-        if ($valueOptions.ContainsKey($option)) {
-            $name = $valueOptions[$option]
+        if ($options.Values.Contains($option)) {
+            $name = $options.Values[$option]
             if (-not [string]::IsNullOrWhiteSpace([string]$values[$name])) {
                 throw "$option may be specified only once."
             }
@@ -62,42 +69,17 @@ function ConvertFrom-UnWorkshopLaunchArguments {
             $values[$name] = [string]$Tokens[++$index]
             continue
         }
-        switch ($option) {
-            '-agent-replay' {
-                if ($agentReplay) { throw '-agent-replay may be specified only once.' }
-                $agentReplay = $true
+        if (-not $options.Switches.Contains($option)) {
+            if ($token.StartsWith('-') -or $OptionsOnly) {
+                throw "Unknown Workshop launch option: $token"
             }
-            '-dmc' {
-                if ($discardMemoryCardWrites) {
-                    throw '-dmc may be specified only once.'
-                }
-                $discardMemoryCardWrites = $true
-            }
-            '-vmc' {
-                if ($volatileMemoryCard) {
-                    throw '-vmc may be specified only once.'
-                }
-                $volatileMemoryCard = $true
-            }
-            '-t' {
-                if ($turbo) { throw '-t may be specified only once.' }
-                $turbo = $true
-            }
-            '-u' {
-                if ($unlimited) { throw '-u may be specified only once.' }
-                $unlimited = $true
-            }
-            '-k' {
-                if ($closePcsx2) { throw '-k may be specified only once.' }
-                $closePcsx2 = $true
-            }
-            default {
-                if ($token.StartsWith('-') -or $OptionsOnly) {
-                    throw "Unknown Workshop launch option: $token"
-                }
-                $games.Add($token)
-            }
+            $games.Add($token)
+            continue
         }
+        $name = $options.Switches[$option]
+        if ($switches[$name]) { throw "$option may be specified only once." }
+        $switches[$name] = $true
+        # -dmc and -vmc may name the memory card they apply to.
         if ($option -in @('-dmc', '-vmc') -and $index + 1 -lt $Tokens.Count -and
             -not ([string]$Tokens[$index + 1]).StartsWith('-')) {
             if (-not [string]::IsNullOrWhiteSpace($values.MemoryCard)) {
@@ -107,10 +89,10 @@ function ConvertFrom-UnWorkshopLaunchArguments {
         }
     }
 
-    if ($discardMemoryCardWrites -and $volatileMemoryCard) {
+    if ($switches.DiscardMemoryCardWrites -and $switches.VolatileMemoryCard) {
         throw 'Use only one of -dmc or -vmc.'
     }
-    if ($agentReplay -and ($turbo -or $unlimited)) {
+    if ($switches.AgentReplay -and ($switches.Turbo -or $switches.Unlimited)) {
         throw '-agent-replay cannot be combined with -t or -u.'
     }
 
@@ -123,32 +105,16 @@ function ConvertFrom-UnWorkshopLaunchArguments {
     if ($pnach.Count -gt 0) {
         $launchParameters.AdditionalPnach = @($pnach)
     }
-    if ($discardMemoryCardWrites) {
-        $launchParameters.DiscardMemoryCardWrites = $true
+    foreach ($name in $switches.Keys) {
+        if ($switches[$name]) { $launchParameters[$name] = $true }
     }
-    if ($volatileMemoryCard) { $launchParameters.VolatileMemoryCard = $true }
-    if ($turbo) { $launchParameters.Turbo = $true }
-    if ($unlimited) { $launchParameters.Unlimited = $true }
-    if ($closePcsx2) { $launchParameters.ClosePcsx2 = $true }
-    if ($agentReplay) { $launchParameters.AgentReplay = $true }
 
-    [pscustomobject]@{
-        Games = @($games)
-        Play = $values.Play
-        Record = $values.Record
-        Snapshots = $values.Snapshots
-        CaptureDirectory = $values.CaptureDirectory
-        MemoryCard = $values.MemoryCard
-        LogFile = $values.LogFile
-        Pnach = @($pnach)
-        DiscardMemoryCardWrites = $discardMemoryCardWrites
-        VolatileMemoryCard = $volatileMemoryCard
-        Turbo = $turbo
-        Unlimited = $unlimited
-        ClosePcsx2 = $closePcsx2
-        AgentReplay = $agentReplay
-        LaunchParameters = $launchParameters
-    }
+    $result = [ordered]@{ Games = @($games) }
+    foreach ($name in $values.Keys) { $result[$name] = $values[$name] }
+    $result.Pnach = @($pnach)
+    foreach ($name in $switches.Keys) { $result[$name] = $switches[$name] }
+    $result.LaunchParameters = $launchParameters
+    [pscustomobject]$result
 }
 
 function Resolve-UnWorkshopMemoryCardMode {
