@@ -369,6 +369,85 @@ def _resolve_catalog_value(
     return Path(os.path.abspath(base_path / child_path))
 
 
+def _game_entry(
+    game_name: str,
+    definition: object,
+    catalog: Mapping[str, object],
+    selectors: set[str],
+    files: dict[str, Path],
+    roots: dict[str, Path],
+    content_roots: list[Path],
+    game_catalog: ModuleType,
+) -> Mapping[str, object]:
+    """One source game's aliases and configuration, adding its extracted root
+    and ISO file under its name and each alias."""
+    if not _is_selector(game_name):
+        raise ValueError(f"Invalid canonical game selector: {game_name!r}")
+    if game_name.casefold() in selectors:
+        raise ValueError(f"Duplicate game selector or alias: {game_name!r}")
+    selectors.add(game_name.casefold())
+    if not isinstance(definition, dict):
+        raise ValueError(f"Game {game_name!r} definition must be an object")
+
+    aliases = definition.get("aliases", [])
+    if not isinstance(aliases, list):
+        raise ValueError(f"Game {game_name!r} aliases must be a list")
+    for alias in aliases:
+        if not _is_selector(alias):
+            raise ValueError(
+                f"Invalid alias for game {game_name!r}: {alias!r}"
+            )
+        if alias.casefold() in selectors:
+            raise ValueError(f"Duplicate game selector or alias: {alias!r}")
+        selectors.add(alias.casefold())
+
+    config: dict[str, object] = {}
+    for config_name, raw_value in definition.items():
+        if config_name == "aliases":
+            continue
+        if not (
+            isinstance(config_name, str)
+            and config_name[:1].islower()
+            and config_name.replace("_", "").isalnum()
+        ):
+            raise ValueError(
+                f"Invalid game {game_name!r} configuration name: "
+                f"{config_name!r}"
+            )
+        config[config_name] = _resolve_catalog_value(
+            f"Game {game_name!r} configuration {config_name!r}",
+            raw_value,
+            roots,
+        )
+
+    derived = game_catalog.derive_game_paths(
+        game_name, catalog, roots["source"], content_roots
+    )
+    for name in (
+        "cheats",
+        "game_settings",
+    ):
+        config[name] = derived[name]
+
+    extracted_path = derived["extracted"]
+    game_key = game_name.casefold()
+    for kind, mapping, name, value in (
+        ("root", roots, f"source_{game_key}", extracted_path),
+        ("file", files, f"{game_key}_iso", derived["iso"]),
+    ):
+        if name in mapping:
+            raise ValueError(
+                f"Project {kind} {name!r} duplicates game catalogs"
+            )
+        mapping[name] = value
+    for alias in aliases:
+        roots.setdefault(f"source_{alias.casefold()}", extracted_path)
+        files.setdefault(f"{alias.casefold()}_iso", derived["iso"])
+    return MappingProxyType(
+        {"aliases": tuple(aliases), "config": MappingProxyType(config)}
+    )
+
+
 def _load_games(
     files: dict[str, Path],
     roots: dict[str, Path],
@@ -407,70 +486,9 @@ def _load_games(
     games: dict[str, Mapping[str, object]] = {}
     selectors: set[str] = set()
     for game_name, definition in definitions.items():
-        if not _is_selector(game_name):
-            raise ValueError(f"Invalid canonical game selector: {game_name!r}")
-        if game_name.casefold() in selectors:
-            raise ValueError(f"Duplicate game selector or alias: {game_name!r}")
-        selectors.add(game_name.casefold())
-        if not isinstance(definition, dict):
-            raise ValueError(f"Game {game_name!r} definition must be an object")
-
-        aliases = definition.get("aliases", [])
-        if not isinstance(aliases, list):
-            raise ValueError(f"Game {game_name!r} aliases must be a list")
-        for alias in aliases:
-            if not _is_selector(alias):
-                raise ValueError(
-                    f"Invalid alias for game {game_name!r}: {alias!r}"
-                )
-            if alias.casefold() in selectors:
-                raise ValueError(f"Duplicate game selector or alias: {alias!r}")
-            selectors.add(alias.casefold())
-
-        config: dict[str, object] = {}
-        for config_name, raw_value in definition.items():
-            if config_name == "aliases":
-                continue
-            if not (
-                isinstance(config_name, str)
-                and config_name[:1].islower()
-                and config_name.replace("_", "").isalnum()
-            ):
-                raise ValueError(
-                    f"Invalid game {game_name!r} configuration name: "
-                    f"{config_name!r}"
-                )
-            config[config_name] = _resolve_catalog_value(
-                f"Game {game_name!r} configuration {config_name!r}",
-                raw_value,
-                roots,
-            )
-
-        derived = game_catalog.derive_game_paths(
-            game_name, catalog, roots["source"], content_roots
-        )
-        for name in (
-            "cheats",
-            "game_settings",
-        ):
-            config[name] = derived[name]
-
-        extracted_path = derived["extracted"]
-        game_key = game_name.casefold()
-        for kind, mapping, name, value in (
-            ("root", roots, f"source_{game_key}", extracted_path),
-            ("file", files, f"{game_key}_iso", derived["iso"]),
-        ):
-            if name in mapping:
-                raise ValueError(
-                    f"Project {kind} {name!r} duplicates game catalogs"
-                )
-            mapping[name] = value
-        for alias in aliases:
-            roots.setdefault(f"source_{alias.casefold()}", extracted_path)
-            files.setdefault(f"{alias.casefold()}_iso", derived["iso"])
-        games[game_name] = MappingProxyType(
-            {"aliases": tuple(aliases), "config": MappingProxyType(config)}
+        games[game_name] = _game_entry(
+            game_name, definition, catalog, selectors, files, roots, content_roots,
+            game_catalog,
         )
     return settings, games
 
