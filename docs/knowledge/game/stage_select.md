@@ -3,7 +3,7 @@
 ## Research coverage
 
 Established: object lifetime, 24-slot limits, previews, name rectangles,
-atlas free area and carousel.
+atlas free area, carousel and footer drawing boundaries.
 Established: input sources, buttons, Random bounds and eight-state ordering.
 Evidence: static retail BTL, resident ELF and decoded `MAPSEL1.CCS`.
 Routine, field and data names come from `@annotations/NA2`.
@@ -39,6 +39,10 @@ a `0x16C`-byte `PracticePreparationOwner` through resident `heap_allocate`
 saved slot, loads resources through `stage_select_load_resources`
 (`0x00713ED0`), then resets the screen. The outer caller's setter
 subsequently selects its supplied slot.
+
+The initializer's reset call at `0x00713EB0` follows resource construction.
+Its fields have already been cleared and its choices and scene objects are
+ready; `preparation_owner_reset` adds the negative-context entry fade here.
 
 Each invocation calls `directional_players_update` (`0x00715830`), then
 `stage_select_close` (`0x00715CC0`) while the result is neither `1` nor `-1`.
@@ -135,6 +139,19 @@ the used cells 6–8. The decoded RGBA crops are not byte-identical to cells 6�
 The four preview textures are 512×512 indexed images stored bottom-up.
 The TV grid's `v = 96..455` occupies stored rows `56..415`.
 
+The carousel's TV submit call at `0x0071514C` receives the current TV object
+after its root matrix at `+0x40` and dirty byte at `+0x8D` are installed.
+The surrounding camera-depth adjustment remains active until after this
+call. It submits through resident `projectile_simple_service_submit`
+(`0x00194180`), as the carousel clump does.
+
+Submission order does not establish final draw order. Resident
+`model_dispatch_geometry` (`0x001910E0`) separates direct packets from
+alpha-ordered packets. `model_build_ordinary_vif_setup` (`0x00192AE0`)
+applies a model's `depth_offset` through a scratch projection matrix,
+changing projected Z alone. A negative offset moves depth toward the camera
+under the positive-depth reverse-Z projection without changing XY or size.
+
 
 ## Retail name-atlas rectangles and unused area
 
@@ -192,6 +209,16 @@ The fallback table has 24 Shift-JIS name pointers; its following word is zero.
 `stage_select_counter_draw` (`0x00715630`) draws `choice_index + 1` at
 `(192,270)` and `choice_count` at `(218,288)`, with at most two decimal digits
 and no leading-zero padding.
+
+## Footer drawing boundary
+
+`stage_select_close` draws the scene, selected-stage panel, arrows and title
+legend before `stage_select_footer_accept_submit` (`0x00715E14`), its first
+footer `button_icon_submit` call. Register `s1` retains the selector there.
+`stage_select_finalize_sprites` (`0x00715E84`) follows all footer draws and
+finalizes the name, counter-font, legend and digit sprites before restoring
+the caller's render context. `stage_select_arrows_draw` (`0x00715520`) uses
+each side's triggered arrow player or the shared idle arrow animation.
 
 ## Carousel
 
