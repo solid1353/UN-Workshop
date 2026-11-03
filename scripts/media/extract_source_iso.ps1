@@ -265,6 +265,9 @@ try {
         throw "Supported archives remain unexpanded: $($unsupported.FullName -join ', ')"
     }
 
+    & (Get-UnPython) -B (Join-Path $PSScriptRoot 'expand_source_textures.py') --source-dir $stageRoot --staging
+    if ($LASTEXITCODE -ne 0) { throw 'CCS texture expansion failed.' }
+
     & (Get-UnPython) -B $verifyExtractionScript --iso $IsoPath --out-dir $stageRoot --normalize-timestamps
     if ($LASTEXITCODE -ne 0) {
         throw "Recursive extraction verification failed with exit code $LASTEXITCODE."

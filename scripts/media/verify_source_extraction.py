@@ -15,6 +15,7 @@ if str(REPOSITORY) not in sys.path:
 
 import cpk
 import pidx
+import ccs
 from iso9660_reader import Iso9660, IsoRecord
 from scripts.lib.paths import load_project_paths, load_workshop_paths
 
@@ -79,7 +80,7 @@ def base_tree(root: Path) -> tuple[dict[str, Path], dict[str, Path]]:
             if not (
                 name.lower().endswith(".files")
                 and (current_path / name[:-6]).is_file()
-                and (current_path / name[:-6]).suffix.lower() in {".iso", ".cvm", ".afs", ".cpk", ".dat"}
+                and (current_path / name[:-6]).suffix.lower() in {".iso", ".cvm", ".afs", ".cpk", ".dat", ".ccs"}
             )
         ]
         for name in names:
@@ -322,6 +323,7 @@ def main() -> int:
     iso_jobs: list[tuple[Path, Path]] = [(outer_iso, outer_output)]
     afs_jobs: list[tuple[Path, Path]] = []
     script_jobs: list[tuple[Path, Path]] = []
+    texture_jobs: list[tuple[Path, Path]] = []
     cvm_files: list[Path] = []
     for path in outer_output.rglob("*"):
         if not path.is_file():
@@ -337,6 +339,14 @@ def main() -> int:
                     afs_jobs.append((path, extracted))
         elif suffix == ".cvm":
             cvm_files.append(path)
+        elif suffix == ".ccs":
+            try:
+                views = ccs.texture_views(ccs.decompressed(path.read_bytes()))
+            except (ValueError, IndexError, struct.error) as error:
+                print(f"WARNING: {path}: texture views unavailable: {error}", file=sys.stderr)
+                continue
+            if views:
+                texture_jobs.append((path, extracted))
         elif script_archive(path):
             script_jobs.append((path, extracted))
 
@@ -361,6 +371,12 @@ def main() -> int:
             raise RuntimeError(f"Missing archive extraction: {output}")
         verify_script_archive(archive, output, args.normalize_timestamps, totals)
 
+    texture_count = 0
+    for archive, output in texture_jobs:
+        if not output.is_dir():
+            raise RuntimeError(f"Missing CCS texture views: {output}")
+        texture_count += ccs.verify_views(archive, output)
+
     if args.normalize_timestamps:
         for archive, output in sorted(
             [*iso_jobs, *afs_jobs, *script_jobs, *((cvm, Path(str(cvm) + ".files")) for cvm in cvm_files)],
@@ -378,6 +394,7 @@ def main() -> int:
         f"{totals.iso_archives} ISO, {totals.cvm_archives} CVM, "
         f"{totals.afs_archives} AFS, "
         + "".join(f"{count} {label}, " for label, count in sorted(totals.script_archives.items()))
+        + f"{len(texture_jobs)} CCS texture views ({texture_count} PNGs), "
         + f"{totals.files} members, {totals.bytes} bytes"
     )
     return 0

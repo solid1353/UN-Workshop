@@ -63,7 +63,7 @@ paths; it never checks that they exist.
   headless Ghidra Java scripts and runtime setup; and the
   [GhidrAssistMCP integration](docs/runbooks/ghidrassistmcp.md).
 - `@media_scripts/`: ISO, AFS, and encrypted-CVM extractors, recursive source
-  extraction and verification, and source read-only tooling; see the
+  extraction and verification, reusable CCS texture views, and source read-only tooling; see the
   [source extraction runbook](docs/runbooks/source-extraction.md). The internal
   `ps2_icon.py` reader decodes memory-card icon geometry, shape keys and textures;
   [NA2's icon](docs/knowledge/game/files/save_icon.md) records its measured layout.

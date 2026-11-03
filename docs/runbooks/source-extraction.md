@@ -33,7 +33,8 @@ $paths = Get-UnWorkshopPaths -ProjectRoot (Get-Location).Path
 
 The command stages under `temp/source_extraction/` in the task folder,
 recursively expands CVM, inner ISO, AFS, CRI CPK (`cpk.py`) and CyberConnect2
-PIDX (`pidx.py`) containers, recognizing each by its header, verifies
+PIDX (`pidx.py`) containers, recognizing each by its header, creates supported
+CCS texture views, verifies
 file sets/bytes, normalizes timestamps, and promotes one complete
 `<ISO filename>.files` tree. It refuses to merge into an existing extraction.
 
@@ -55,6 +56,32 @@ with:
 ```
 
 The command refuses the whole source root and `@source/__old/`.
+
+## CCS texture views
+
+Supported indexed CCS textures are exported beside their container into
+`<container filename>.files/`. PNGs use each texture's filename stem; when
+stems collide, their internal namespaces distinguish them. Additional palettes
+use `<stem>.<n>.png`. The original CCS, including compressed containers, stays
+unchanged. PNGs preserve indices and palettes; alpha above the GS blend range
+is retained in the `ps2_alpha` text field.
+
+These are persistent, read-only inspection and editing references. Copy an
+image outside the source tree before editing it. The shared decoder is
+`@media_scripts/ccs.py`; it uses the pinned Python without additional packages.
+Unsupported containers or texture storage produce warnings and stay packed.
+
+Add missing views to one existing extraction without unpacking its ISO again:
+
+```powershell
+& (Join-Path $paths.media_scripts 'expand_source_textures.ps1') -SourceDir <extraction-tree>
+```
+
+The command validates existing views instead of overwriting them, creates and
+verifies missing views, and protects new files and directories as read-only.
+It retains the containing directory's timestamp. The extraction verifier checks
+view inventories and PNG bytes against their original containers; the normal
+read-only check includes the views.
 
 ## DATA.CVM
 

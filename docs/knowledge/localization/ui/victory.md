@@ -4,7 +4,8 @@
 
 Established: retail NA2 and UN5 Victory emblem geometry and animation,
 win-count artwork, name rectangles, and both battle initialization paths.
-Evidence covers native owners, records, and paired screen states.
+Evidence covers native owners, records, paired screen states, and paired
+container structures.
 Names come from `@annotations/NA2` and `@annotations/UN5`; addresses are live.
 Annotations hold routine detail and fixed-layout fields; owner views are partial.
 Open: nothing.
@@ -21,6 +22,18 @@ The Battle Results screen belongs to
 | `3EYE/ENDDEMO.CCS` | 74,520 | 79,749 |
 | `3EYE/3HAK3PCT.CCS` | 9,978 | 10,947 |
 | `3EYE/3SKN3PCT.CCS` | 14,794 | 15,922 |
+
+Haku's decompressed containers are 38,668 bytes in NA2 and 53,004 in UN5.
+Their non-texture sections, including the header and object table, are
+byte-identical. NA2's name texture is 64x64; UN5's is 256x128.
+
+ENDDEMO's decompressed containers are 299,420 bytes in NA2 and 299,472 in UN5.
+Pairing sections by type, internal filename, object name and occurrence gives
+the same set of section identities. Outside the WINNER texture and palette,
+`MDL_win`, `MDL_win_f`, `ANM_end_win01` and `ANM_end_win02`, every differing
+aligned 32-bit value resolves to the same internal filename and object name
+through its game's object table. Fifty-nine sections differ only in those
+object-ID values.
 
 The canonical NA2 and UN5 filesystems both contain 78 matching
 `3EYE/3???3PCT.CCS` resources. Seventy-four contain exactly one `TEX_name`
