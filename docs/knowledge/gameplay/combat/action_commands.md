@@ -10,7 +10,8 @@ Established: the native masks and configurable bindings, the `ccCommand`
 history and its matchers, logical-mask translation, the two double-tap tables,
 resident hold/release and multi-press synthesis, signature construction,
 selector modes and entry gates, fixed-chain masks, working-array setup, and the
-static action data of all 78 character definitions.
+static action data of all 78 character definitions. The separate fighter and
+command-object input-reset domains are established.
 Open: nothing.
 
 Routines, structures and data are named by the NA2 annotations in
@@ -71,6 +72,23 @@ and [Battle lifecycle](../session/battle_lifecycle.md#battle-update-cadence)).
 Capacity is therefore 300 or 150 records. **Inference:** this keeps the
 history span constant across both pacing settings. Matcher windows are record
 counts and are not divided.
+
+### Separate reset domains
+
+`input_history_clear` (`0x002171C0`), using `input_sample_clear`
+(`0x00217240`), clears the fighter's logical triple, its 32 `InputSample`
+triples and `input_history_index`. It does not clear the separately allocated
+`BattleInput` ring or the current action/queue. The inspected direct resident
+caller is `fighter_init`; this is not a whole-program caller census.
+
+`input_history_construct` (`0x006EF600`) allocates the command ring and
+initializes its indices before binding side and pad. `bindings_init_defaults`
+(`0x006EF780`) and `bindings_copy` (`0x006EF7B0`) load bindings without resetting
+that ring. `input_record_init` (`0x006EF390`) clears one record's held/edge,
+angle and magnitude fields, preserving padding; it does not reset owning
+indices, logical publication or fighter history. These routines do not
+establish one complete reset API for an active input object.
+Queue cleanup is owned by [Battle AI](../session/battle_ai.md#action-record-selection-and-direct-queues).
 
 ### Normalization
 
@@ -484,6 +502,22 @@ Named examples (display text without reading markup):
 All are category 1 except Naruto 35 and Deidara 29 (category `0x10`). The
 Gaara and Deidara alternatives are switched by their variant routines
 ([Awakening](../characters/awakening.md#deidara-and-gaara-character-variants)).
+The bounded slots-21..26 comparison below distinguishes the signed
+`continuation` and category byte (`streak_exempt`) from the full `category`
+word. Every sampled full category word is 1.
+
+| Definition | Continuation/category-byte pairs for slots 21..26 |
+| --- | --- |
+| Naruto (57), `naruto_actions` (`0x004D9D50`) | `-1/0, 21/1, 22/2, 23/3, 23/3, 23/3` |
+| Kazekage Gaara (59), `gaara_kazekage_actions` (`0x004E4C60`) | Same pairs as Naruto |
+| Deidara (64), `deidara_actions` (`0x00500B30`) | `-1/0, 21/1, 22/2, 22/2, 22/2, 22/2` |
+
+Gaara's slot 24 signature is `0x00100212`, versus Naruto's `0x00100211`.
+Equal slot numbers and chain positions therefore do not establish equal
+command eligibility, and a later record can identify a chain rather than an
+isolated action. Working availability also changes under the
+[Gaara/Deidara variant routines](../characters/awakening.md#deidara-and-gaara-character-variants).
+
 Character records are owned by
 [Character assets](../../game/character_assets.md#character-records). The
 The Command Chart and 1P/2P Commands read the working arrays but take no part in
