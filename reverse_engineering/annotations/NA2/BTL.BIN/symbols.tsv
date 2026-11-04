@@ -1079,6 +1079,7 @@ address	kind	name	type	comment
 0x00728A80	function	commands_hud_clear	void commands_hud_clear(int param_1)	Clear/hide Commands HUD when setting OFF.
 0x00728B00	function	commands_hud_update	void commands_hud_update(unsigned long long param_1)	Commands key1 OFF calls clear/hide helper. | Require match/nonnull trackingA0;tracker outputs initially-1/0,nonzero lowbyte result admits guide state update before HUD maintenance/key1 hide;command index may remain-1,not every countdown decrement needs new command.
 0x00728BF0	function	commands_hud_draw	void commands_hud_draw(unsigned long long param_1)	Commands key1 OFF skips command display draw.
+0x00728CB4	label	commands_hud_auxiliary_draw_call		Final call in commands_hud_draw after command/completion display and sprite resets; passes owner+0xA4 to empty function 0x007292F0. The call has no additional local key1 test, but its sole resident caller at 0x001EDCAC gates entry to the entire draw on Commands key1 On and coordinator state zero.
 0x00728CD0	function	commands_hud_stop_guide	void commands_hud_stop_guide(CommandsHudAudioOwner *owner)	Parent wrapper invokes guide stop;key1 draw gate separate.
 0x00728D90	function	guide_voice_initialize	void guide_voice_initialize(GuideVoice *guide)	Clear bytes3/4/5 and countdown0A only;prior_member8 untouched.
 0x00728DB0	function	guide_voice_cleanup	void guide_voice_cleanup(GuideVoice *guide)	Clear bytes3/4/5,countdown0A only;no stream stop.

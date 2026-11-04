@@ -811,7 +811,12 @@ is therefore unspecified until first selection writes it.
 owns the arena contract.
 
 `battle_state_wait_graph` chooses owner update/stop under coordinator/match
-gates. Key 1 controls drawing, not that branch.
+gates. Key 1 controls drawing, not that branch. Its call to
+`commands_hud_draw` at `0x001EDCAC` is skipped entirely when key 1 is Off;
+the ungated-looking guide draw at that function's tail still inherits this
+outer gate. The earlier `battle_loop_active` call at `0x001EDB90` precedes
+the gate. `commands_hud_construct_children` owns two independent 512x384
+contexts at owner `+0x50/+0x54`; completion text uses `+0x54`.
 `commands_hud_update` calls `fighter_build_action_statistics` before guide
 update; success can still output index `-1`, so each idle decrement does not
 require a new command. Tracking belongs to [Practice mode](../modes/practice_mode.md).

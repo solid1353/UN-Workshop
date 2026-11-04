@@ -7,6 +7,7 @@ measurement, and selected-row behavior.
 
 Established: secondary output height, selected-row displacement, tracking,
 ordinary-space advance, boxed widths and horizontal leading-bearing scaling.
+The extra-icon callback token format is also established.
 Routine and field names come from `@annotations/NA2` and `@annotations/UN5`;
 their comments hold code-level detail, and all cited addresses are live.
 Open: nothing.
@@ -51,6 +52,14 @@ two local Y units up. UN5 `ui_draw_selected_boxed_text` (`0x00389B30`)
 enables shadow state and draws the foreground with the input origin and
 rectangle unchanged. The selected-row jump is native NA2 behavior and is
 independent of font metrics or caller positioning.
+
+## Controller icon tokens
+
+The extra-icon forms `<iconETC0>` through `<iconETC9>` resolve to callback IDs
+17–26 in both `font_measure_markup` and `font_draw_text`. After the `<icon`
+prefix, both read the digit at body offset 3 and consume five body bytes,
+including `>`. Omitting the character before the digit leaves the body
+unrecognized rather than consuming the icon tag.
 
 ## Tracking and ordinary spaces
 

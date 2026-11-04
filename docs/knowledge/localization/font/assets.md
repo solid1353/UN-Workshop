@@ -18,6 +18,12 @@ Retail file identities are owned by
 selects SF1 plus SF1C for mode 0 and GF4 plus GF4C for nonzero mode. Raster
 and palette selection stay paired; GRF4 remains a separate ruby atlas.
 
+`font_bind_raster` (`0x00189740`) replaces the selected raster and its primary
+and secondary descriptors. Changing the renderer's metric flag alone retains
+the existing face. Face selection also changes shared texture filtering and
+CLUT state; restoring only the renderer's palette pointer does not restore
+the shared CLUT installed by `font_bind_palette`.
+
 `font_load_resource` (`0x00184100`) routes type 1 to `font_parse_raster`
 (`0x00184240`) and type 2 to `font_parse_palette` (`0x00184630`).
 `FontResource.raster` owns the raster asset; `FontResource.palette` holds the
