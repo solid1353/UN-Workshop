@@ -160,6 +160,10 @@ rows. Native row count is nine and logical spacing is `26.8`.
 | Title | `controls_title_rectangle` centered at `(256,26)` |
 | Footer | Y=`356`; regional X anchors below |
 
+All three center-cell sprite families use the same row coordinate calculation.
+`sprite_draw_rectangle` centers the complete source rectangle at those
+coordinates; visible artwork retains its position within that rectangle.
+
 `options_controls_confirm` (`0x00387E10`) moves Up/Down within `0..8`,
 wrapping at either end. Circle (`0x20`) enters mode `2` and stages the row
 value. Cross (`0x40`) confirms only when both players are in mode `0` or `1`;
