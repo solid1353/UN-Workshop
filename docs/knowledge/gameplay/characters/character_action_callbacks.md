@@ -65,6 +65,14 @@ Guy therefore produces action `0x30`'s continuation window in code. Its
 consumer belongs to
 [Combat action execution](../combat/combat_action_execution.md#continuation-and-common-exit-decisions).
 
+Naruto (57), `naruto_character_record` (`0x004DAD80`), uses
+`naruto_callbacks` (`0x004D56D0`), whose zero-based slot 2 is
+`naruto_channel3` (`0x00299520`). Its callback-local action `0x2A` combines
+`previous_action_outcome == 1`, facing, opponent distance and vertical delta
+before approaching a target-relative vertical position. This is one bounded
+consumer of [prior outcome](../combat/combat_action_execution.md#prior-outcome-byte-lifetime);
+local `0x2A` does not identify a universal selected index or named move.
+
 ## Held phases controlled by animation wraps
 
 `fighter_advance_animation` detects a decrease from the saved unsigned frame,

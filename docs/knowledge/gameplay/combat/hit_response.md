@@ -875,6 +875,13 @@ effect `0x4A` can turn a paired `0x5D` into `0x5F` and redirect `0x61`.
   did not change, binding 1 → `(6,0x60)`.
 
 At default thresholds both inputs choose `0x5F` before the automatic exit.
+For nonnegative input thresholds, binding 1 cannot override a `0x5E/0x5F`
+transition already made in this call: the state setter resets the primary
+cursor to zero, and the final binding-1 gate reads that new cursor.
+`fighter_prepare_action_state` and `recovery_init` do not rewrite the input
+threshold for those destinations. Negative thresholds have not been proved
+reachable by the inspected standard and overlay entries.
+
 `downed_first_event` primes the rejection count to 1 and clears the action
 lock, yet `0x5D` stays ineligible for action entry. `0x5E` and `0x60` exit to
 neutral and `0x5F` to `(3,0x20)`. `0x5E` rises with constant 125, `0x5F` with
@@ -890,6 +897,12 @@ in `0x5E`, `0x60` and `0x5F` below cursor 3 forces `(0,0x0B)` (`ACT_BST_0`)
 when `section` equals halfword `+0x324`, halfword `+0x9F0` is zero, the
 fighter is in the grounded-family variant (`fighter_reaction_variant_high` is
 zero) and no exchange role is set.
+
+On a `0x5F` exit into major 8, `recovery_exit_cleanup` (`0x00235200`) can also
+write `previous_action_outcome = 1` when the destination record has category
+bit 2 clear and flags bit 2 set. This producer has separate gates from the
+rejection-count changes. Its downstream consumers belong to
+[Prior outcome byte lifetime](combat_action_execution.md#prior-outcome-byte-lifetime).
 
 `0x61` (`H` after `col0`) moves on when external mode is set or the cursor
 passes `0x13`: to `0x62` with the enable bit, otherwise through a dummy-record
