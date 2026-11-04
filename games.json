@@ -27,7 +27,8 @@
       "serial": "ULUS-10349"
     },
     "UNH3": {
-      "platform": "psp"
+      "platform": "psp",
+      "serial": "ULUS-10518"
     }
   }
 }
