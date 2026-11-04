@@ -678,9 +678,17 @@ states 15/17/37/42, the point route and opponent-support reaction.
 
 Resident `action_queue_set` independently checks index, fighter/context state,
 record category/mode and resources. It returns zero on rejection, including
-selector result -1, and one only after installation. Normal success installs
+selector result -1. Normal success returns one after installing
 `queued_chain` and up to four category-indexed `chain_slots` by following
 `continuation`; a special path replaces `pending_action` instead.
+
+In the active-major-8 special route, the reference is the pending record when
+present, otherwise `current_record`. A missing reference, signature bit
+`0x08000000`, category bits `0x000C0000`, or equality with the requested
+record each return one without installing a new queue or pending slot.
+These branches are established in `action_queue_set` (`0x0021D380`); static
+reachability of every gate combination is not established. Return one alone
+therefore does not prove queue installation.
 
 `action_select_from_signature` gives an installed chain precedence over the
 logical mask in the same update. `action_queue_dispatch` starts category 0,
@@ -688,6 +696,22 @@ optionally installs category 1 as pending, then advances through 2/3 as pending
 action becomes -1. Suppressed input, admission failure, invalid/exhausted slots
 or leaving class 8 clears the retained chain. This is a bounded four-category
 chain rather than a command FIFO.
+The initial dispatcher ignores `action_dispatch_index`'s return before
+staging category 1 and setting `chain_phase` to 2. Dispatch can therefore
+advance the chain without proving action entry. The dispatcher also does not
+propagate `fighter_set_action_state`'s result; an unforced same-state request
+returns zero. Queue installation, consumption and an actual action restart
+are separate observations.
+
+Queue admission during AI synthesis precedes the ordinary phase/exit pass;
+logical input selection follows that pass. A guard or recovery exit can
+therefore change admission between those two boundaries. Their ordering is
+owned by [Ordinary dispatch order](../combat/combat_action_execution.md#ordinary-dispatch-order).
+
+`action_entry_cleanup` (`0x0021D200`) clears the queue root, category slots,
+phase and pending action. It performs no action exit, input-history clear or
+resource restore. Its inspected direct resident caller is `fighter_init`;
+that bounded caller screen does not exclude overlay or indirect calls.
 [Combat action execution](../combat/combat_action_execution.md) owns general
 execution.
 
