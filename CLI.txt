@@ -1,6 +1,7 @@
 UN Workshop
 
   workshop <game|iso-path>... [options]    Launch or replay one to three games
+                                           PSP games run in PPSSPP and take no launch mode or option
 
   Launch modes:
     -r <name>              Create an input recording

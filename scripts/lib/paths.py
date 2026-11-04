@@ -444,7 +444,8 @@ def load_project_paths(
                 "cheats",
                 "game_settings",
             ):
-                config[name] = derived[name]
+                if name in derived:
+                    config[name] = derived[name]
 
             extracted_path = derived["extracted"]
             game_key = game_name.casefold()

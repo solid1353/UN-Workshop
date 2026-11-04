@@ -21,6 +21,13 @@
     "UN5": {
       "serial": "SLES-55605",
       "crc": "C071D4C1"
+    },
+    "UNH2": {
+      "platform": "psp",
+      "serial": "ULUS-10349"
+    },
+    "UNH3": {
+      "platform": "psp"
     }
   }
 }

@@ -191,13 +191,40 @@ function Close-UnWorkshopUserPcsx2Processes {
     }
 }
 
-function Wait-UnWorkshopPcsx2Window {
+# A PSP UMD image's ISO 9660 system identifier is PSP GAME, as PPSSPP's loader
+# checks; anything else is a PS2 image.
+function Get-UnWorkshopIsoPlatform {
+    param(
+        [Parameter(Mandatory)]
+        [string]$IsoPath
+    )
+
+    $buffer = [byte[]]::new(40)
+    $stream = [IO.File]::OpenRead($IsoPath)
+    try {
+        [void]$stream.Seek(16 * 2048, [IO.SeekOrigin]::Begin)
+        $read = $stream.Read($buffer, 0, $buffer.Length)
+    }
+    finally {
+        $stream.Dispose()
+    }
+    $systemId = [Text.Encoding]::ASCII.GetString($buffer, 8, 32).Trim(" `0")
+    if ($read -eq $buffer.Length -and $systemId -cin @('PSP GAME', '"PSP GAME"')) {
+        return 'psp'
+    }
+    return 'ps2'
+}
+
+function Wait-UnWorkshopGameWindow {
     param(
         [Parameter(Mandatory)]
         [Diagnostics.Process]$Process,
 
         [Parameter(Mandatory)]
         [string]$Game,
+
+        [Parameter(Mandatory)]
+        [string]$Emulator,
 
         [Parameter(Mandatory)]
         [int]$TimeoutSeconds
@@ -207,14 +234,14 @@ function Wait-UnWorkshopPcsx2Window {
     while ([DateTime]::UtcNow -lt $deadline) {
         $Process.Refresh()
         if ($Process.HasExited) {
-            throw "PCSX2 process $($Process.Id) for $Game exited before creating a window."
+            throw "$Emulator process $($Process.Id) for $Game exited before creating a window."
         }
         if ($Process.MainWindowHandle -ne [IntPtr]::Zero) {
             return
         }
         Start-Sleep -Milliseconds 100
     }
-    throw "PCSX2 did not create a window for $Game within $TimeoutSeconds seconds."
+    throw "$Emulator did not create a window for $Game within $TimeoutSeconds seconds."
 }
 
 $recordingName = if ($PSCmdlet.ParameterSetName -eq 'Play') {
@@ -269,6 +296,7 @@ foreach ($requestedGame in $Games) {
             throw "ISO does not exist: $isoPath"
         }
         $selector = [IO.Path]::GetFileNameWithoutExtension($isoPath)
+        $platform = Get-UnWorkshopIsoPlatform -IsoPath $isoPath
     }
     else {
         $selector = $target.ToLowerInvariant()
@@ -276,9 +304,12 @@ foreach ($requestedGame in $Games) {
             -Game $selector `
             -ProjectRoot $paths.Project
         $isoPath = [IO.Path]::GetFullPath([string]$resolved.iso)
-        $cheatsPath = [IO.Path]::GetFullPath([string]$resolved.cheats)
-        if (Test-Path -LiteralPath $cheatsPath -PathType Leaf) {
-            $defaultPnach = [string[]]@($cheatsPath)
+        $platform = [string]$resolved.platform
+        if ($platform -eq 'ps2') {
+            $cheatsPath = [IO.Path]::GetFullPath([string]$resolved.cheats)
+            if (Test-Path -LiteralPath $cheatsPath -PathType Leaf) {
+                $defaultPnach = [string[]]@($cheatsPath)
+            }
         }
     }
     if (-not $seenImages.Add($isoPath)) {
@@ -296,7 +327,9 @@ foreach ($requestedGame in $Games) {
     else {
         $defaultPnach
     }
-    $additionalPnachPaths)
+    if ($platform -eq 'ps2') {
+        $additionalPnachPaths
+    })
     $pnachLines = if (
         $null -ne $PnachLinesByGame -and
         $PnachLinesByGame.ContainsKey($selector)
@@ -321,6 +354,7 @@ foreach ($requestedGame in $Games) {
     }
     $selectedGames.Add([pscustomobject]@{
         Selector = $selector
+        Platform = $platform
         IsoPath = $isoPath
         MemoryCardPath = $memoryCardOverridePath
         MemoryCardMode = $memoryCardMode
@@ -348,11 +382,34 @@ if ($null -ne $UnlimitedForFramesByGame) {
     }
 }
 
+# PSP games run in PPSSPP, which takes only their cheats (CwCheat files and
+# lines through the PNACH options), frame-limited fast-forward, muting and
+# window placement.
+$pspGames = @($selectedGames | Where-Object { $_.Platform -eq 'psp' })
+if ($pspGames.Count -gt 0) {
+    $pspList = $pspGames.Selector -join ', '
+    if ($PSCmdlet.ParameterSetName -ne 'Normal') {
+        throw "Input recordings run only in PCSX2; PSP games cannot use -rp, -rps or -r: $pspList"
+    }
+    if ($Turbo -or $Unlimited -or $ReadOnlySettings -or
+        -not [string]::IsNullOrWhiteSpace($LogFile) -or
+        -not [string]::IsNullOrWhiteSpace($MemoryCard) -or
+        $DiscardMemoryCardWrites -or $VolatileMemoryCard) {
+        throw "PSP games take only cheats and frame-limited fast-forward, not -t, -u, -ro, -logfile or memory card options: $pspList"
+    }
+}
+
 $pcsx2Root = $paths.Pcsx2Dev
 $pcsx2Launcher = [IO.Path]::GetFullPath(
     $paths.Files.pcsx2_launch_command
 )
+$ppssppLauncher = [IO.Path]::GetFullPath(
+    $paths.Files.ppsspp_launch_command
+)
 $requiredFiles = @($pcsx2Launcher)
+if ($pspGames.Count -gt 0) {
+    $requiredFiles += $ppssppLauncher
+}
 $requiredFiles += @($selectedGames.IsoPath)
 $requiredFiles += @(
     foreach ($game in $selectedGames) {
@@ -550,6 +607,22 @@ public static class UnWorkshopLaunchWindow
 
     $workingArea = [Windows.Forms.Screen]::PrimaryScreen.WorkingArea
 }
+
+# A game's tile in the working area, left to right in launch order: left, top,
+# width and height.
+function Get-UnWorkshopWindowTile {
+    param(
+        [Parameter(Mandatory)]
+        [int]$Index,
+
+        [Parameter(Mandatory)]
+        [int]$Count
+    )
+
+    $left = $workingArea.X + [Math]::Floor($workingArea.Width * $Index / $Count)
+    $right = $workingArea.X + [Math]::Floor($workingArea.Width * ($Index + 1) / $Count)
+    return [int[]]@($left, $workingArea.Y, $right - $left, $workingArea.Height)
+}
 $gameList = $selectedGames.Selector -join ', '
 $action = if ($AgentReplay) {
     "launch surfaceless agent replay for $gameList"
@@ -578,6 +651,43 @@ try {
     $nextPinePort = $pinePortBase
     for ($index = 0; $index -lt $selectedGames.Count; $index++) {
         $game = $selectedGames[$index]
+        if ($game.Platform -eq 'psp') {
+            $ppssppParameters = @{
+                IsoPath = $game.IsoPath
+                PassThru = $true
+            }
+            if (@($game.Pnach).Count -gt 0) {
+                $ppssppParameters.Cheats = $game.Pnach
+            }
+            if (@($game.PnachLines).Count -gt 0) {
+                $ppssppParameters.CheatLines = $game.PnachLines
+            }
+            if ($game.UnlimitedForFrames -gt 0) {
+                $ppssppParameters.FastForwardForFrames = $game.UnlimitedForFrames
+            }
+            if ($selectedGames.Count -gt 1) {
+                $ppssppParameters.Mute = $true
+                # Start in its tile; PPSSPP doesn't save it as its window position.
+                $ppssppParameters.Window = Get-UnWorkshopWindowTile `
+                    -Index $index `
+                    -Count $selectedGames.Count
+            }
+            $process = & $ppssppLauncher @ppssppParameters
+            $launchedGames.Add([pscustomobject]@{
+                Index = $index
+                Game = $game.Selector
+                Emulator = 'PPSSPP'
+                Process = $process
+                PinePort = $null
+            })
+            Wait-UnWorkshopGameWindow `
+                -Process $process `
+                -Game $game.Selector `
+                -Emulator 'PPSSPP' `
+                -TimeoutSeconds $WindowWaitSeconds
+            continue
+        }
+
         while ($usedPinePorts.Contains($nextPinePort)) {
             $nextPinePort++
         }
@@ -654,13 +764,15 @@ try {
         $launchedGames.Add([pscustomobject]@{
             Index = $index
             Game = $game.Selector
+            Emulator = 'PCSX2'
             Process = $process
             PinePort = $pinePort
         })
         if (-not $AgentReplay) {
-            Wait-UnWorkshopPcsx2Window `
+            Wait-UnWorkshopGameWindow `
                 -Process $process `
                 -Game $game.Selector `
+                -Emulator 'PCSX2' `
                 -TimeoutSeconds $WindowWaitSeconds
         }
     }
@@ -679,22 +791,17 @@ try {
     for ($index = 0; $index -lt $gameCount; $index++) {
         $launch = $launchedGames[$index]
         if ($gameCount -gt 1 -and -not $AgentReplay) {
-            $left = $workingArea.X + [Math]::Floor(
-                $workingArea.Width * $index / $gameCount
-            )
-            $right = $workingArea.X + [Math]::Floor(
-                $workingArea.Width * ($index + 1) / $gameCount
-            )
+            $tile = Get-UnWorkshopWindowTile -Index $index -Count $gameCount
             $moved = [UnWorkshopLaunchWindow]::MoveWindow(
                 $launch.Process.MainWindowHandle,
-                $left,
-                $workingArea.Y,
-                $right - $left,
-                $workingArea.Height,
+                $tile[0],
+                $tile[1],
+                $tile[2],
+                $tile[3],
                 $true
             )
             if (-not $moved) {
-                throw "Windows rejected the PCSX2 window-placement request for $($launch.Game)."
+                throw "Windows rejected the $($launch.Emulator) window-placement request for $($launch.Game)."
             }
         }
 

@@ -27,6 +27,9 @@ mute every PCSX2 instance. `-t` selects Turbo, while `-u` selects Unlimited;
 these speed options are mutually exclusive. Each result reports the ordered
 game, process, PINE port, and window position.
 
+PSP games launch in PPSSPP instead, with the restrictions in
+[PPSSPP tooling](ppsspp.md).
+
 `-k` closes every running development PCSX2 before launching. Launches of two or
 three games do this automatically, except agent replays. Snapshot replays never
 close PCSX2 and reject `-k`. Each PCSX2 gets five seconds to close before it is
