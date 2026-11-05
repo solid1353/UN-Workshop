@@ -6,11 +6,13 @@ user-facing syntax is available through `workshop help`.
 
 ## Game and path resolution
 
-The development installation keeps screenshots (including hotkey GS dumps),
+The development installation keeps screenshots,
 videos, and per-game settings in Workshop's `@pcsx2_files/screenshots/`,
 `@pcsx2_files/videos/`, and `@pcsx2_files/gamesettings/`. Savestates remain in
 `@pcsx2_savestates/`. These locations are selected by the installation's
 `[Folders]` settings.
+Standalone GS dumps use `@pcsx2_dev/gs_dumps/`; emulated USB printer output
+uses `@pcsx2_dev/prints/`, selected by `GSDumps` and `Prints` in `[Folders]`.
 
 `workshop resolve` returns every available source game and, when invoked inside
 a configured project, every available project build. Supplying a game returns
@@ -230,7 +232,7 @@ A savestate folder holds the game's memory at the moment it was saved
 ## GS dumps
 
 `@pcsx2_scripts/gs_dump.py` reads PCSX2 GS dumps (`.gs` or `.gs.zst`, from
-the `screenshots` folder) to find why something draws differently in two games or
+`@pcsx2_dev/gs_dumps/`) to find why something draws differently in two games or
 builds. `list` prints one frame's image uploads, local moves and draw batches
 in submission order, with the GS state of the context each draw's PRIM
 selects; `diff` diffs that list between two dumps. Textures and palettes are
