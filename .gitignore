@@ -14,5 +14,8 @@ __pycache__/
 pcsx2/*
 /pcsx2_files/sstates/
 /pcsx2_files/PCSX2.ini
+/pcsx2_files/screenshots/
+/pcsx2_files/videos/
+/pcsx2_files/gamesettings/
 *.ps2
 !/pcsx2_files/memory_cards/templates/*.ps2

@@ -6,6 +6,12 @@ user-facing syntax is available through `workshop help`.
 
 ## Game and path resolution
 
+The development installation keeps screenshots (including hotkey GS dumps),
+videos, and per-game settings in Workshop's `@pcsx2_files/screenshots/`,
+`@pcsx2_files/videos/`, and `@pcsx2_files/gamesettings/`. Savestates remain in
+`@pcsx2_savestates/`. These locations are selected by the installation's
+`[Folders]` settings.
+
 `workshop resolve` returns every available source game and, when invoked inside
 a configured project, every available project build. Supplying a game returns
 all of its resolved properties; supplying a property prints only that value,
@@ -51,6 +57,7 @@ convenient; deployment continues automatically, and the command returns when
 it finishes or fails.
 
 Deployment reads the completed build directly without staging another copy.
+It installs the executable, symbols, and the shared zlib-ng compression runtime.
 If its source files change while waiting, deployment is cancelled. Results are
 appended to Workshop's `@logs/pcsx2-deploy.log`. The
 [deployment script](../scripts/pcsx2/deploy.ps1) owns the deployed file selection
@@ -223,7 +230,7 @@ A savestate folder holds the game's memory at the moment it was saved
 ## GS dumps
 
 `@pcsx2_scripts/gs_dump.py` reads PCSX2 GS dumps (`.gs` or `.gs.zst`, from
-the `snaps` folder) to find why something draws differently in two games or
+the `screenshots` folder) to find why something draws differently in two games or
 builds. `list` prints one frame's image uploads, local moves and draw batches
 in submission order, with the GS state of the context each draw's PRIM
 selects; `diff` diffs that list between two dumps. Textures and palettes are

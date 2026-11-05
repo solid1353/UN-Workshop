@@ -55,7 +55,8 @@ try {
     $files = @(
         foreach ($name in @(
             'pcsx2-qtx64-avx2-dev.exe',
-            'pcsx2-qtx64-avx2-dev.pdb'
+            'pcsx2-qtx64-avx2-dev.pdb',
+            'z.dll'
         )) {
             $source = Join-Path $paths.Pcsx2Fork $name
             $info = Get-Item -LiteralPath $source
@@ -144,7 +145,7 @@ try {
         }
     }
 
-    # Install symbols first, then the executable, while keeping both locked.
+    # Install dependencies and symbols before the executable, while holding every destination.
     for ($fileIndex = $files.Count - 1; $fileIndex -ge 0; $fileIndex--) {
         $file = $files[$fileIndex]
         $file.DestinationStream.SetLength($file.SourceStream.Length)
