@@ -65,6 +65,11 @@ holds `selected_support` and resolved `support_selector`.
 side-order byte is nonzero. `support_config_pair_side1` installs support
 sentinel `0x26` for side 1.
 
+Before that normalization, `manager_resolve_selected_support` (`0x001F5010`)
+maps No Support `0x25` to selected support `0x24` and resolved selector `0x44`.
+It preserves that pair when called again. Ordinary selections resolve through
+the BTL support lookup helpers before the manager saves its configuration.
+
 Selection `0x26` is deterministic. `support_config_resolve` (`0x00885C30`)
 canonicalizes primary via `character_to_base`, retaining original on `-1`,
 then reads `support_candidate_rows`; missing primary returns `0`.
