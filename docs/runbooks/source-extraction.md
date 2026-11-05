@@ -26,7 +26,7 @@ paths, never the source tree.
 ## ISO extraction
 
 ```powershell
-. '<UN Workshop>/scripts/lib/paths.ps1'
+. '<UN-Workshop>/scripts/lib/paths.ps1'
 $paths = Get-UnWorkshopPaths -ProjectRoot (Get-Location).Path
 & (Join-Path $paths.media_scripts 'extract_source_iso.ps1') -IsoPath <path>
 ```
