@@ -4,6 +4,7 @@
     "tools": "tools",
     "scripts": "scripts",
     "pcsx2_scripts": "@scripts/pcsx2",
+    "ppsspp_scripts": "@scripts/ppsspp",
     "ghidra_scripts": "@scripts/ghidra",
     "ghidra_mcp_work": "reverse_engineering/ghidraMCP",
     "media_scripts": "@scripts/media",
@@ -18,7 +19,8 @@
     "pcsx2_savestates": "@pcsx2_files/sstates",
     "pcsx2_input_profiles": "@pcsx2_files/input_profiles",
     "pcsx2_input_recordings": "@pcsx2_files/input_recordings",
-    "pcsx2_memory_cards": "@pcsx2_files/memory_cards"
+    "pcsx2_memory_cards": "@pcsx2_files/memory_cards",
+    "ppsspp_dev": "ppsspp"
   },
   "files": {
     "source_catalog": "games.json",
@@ -26,6 +28,7 @@
     "pcsx2_launch_command": "@pcsx2_scripts/launch.ps1",
     "pcsx2_game_launch_command": "@pcsx2_scripts/launch_games.ps1",
     "pcsx2_pine_command": "@pcsx2_scripts/pine.py",
+    "ppsspp_launch_command": "@ppsspp_scripts/launch.ps1",
     "ghidra_runtime": "@ghidra_scripts/runtime.ps1"
   }
 }

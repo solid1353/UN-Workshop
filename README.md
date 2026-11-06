@@ -51,13 +51,16 @@ paths; it never checks that they exist.
   - `ffmpeg`: gyan.dev's essentials build, whose bin folder `Get-UnFfmpeg`
     returns. It decodes the PSP games' ATRAC3plus audio.
 - `games.json`: stable source-game selectors, aliases, serials, and CRCs, and
-  NA2's clean ISO size and SHA-256.
+  NA2's clean ISO size and SHA-256. A PSP game's entry says `"platform": "psp"`
+  and needs no CRC.
 - `@pcsx2_files/`: the [input profile](docs/pcsx2.md#input-profiles) every
   game uses, and ignored default and test cards. Consuming projects own the
   games' [content alias](../../PCSX2/docs/content_folders.md#content-aliases)
   files under `games/` and their input recordings.
 - `@pcsx2_scripts/`: reusable PCSX2 launch, worker-copy, PINE,
   marker-editing and GS dump utilities.
+- `@ppsspp_scripts/`: the PPSSPP launch that the game launcher uses for PSP
+  games ([PPSSPP tooling](docs/ppsspp.md)).
 - `@ghidra_scripts/`: cross-game import, export, manifest, and
   read-only tooling for the [disassembly trees](docs/disassembly.md); reusable
   headless Ghidra Java scripts and runtime setup; and the

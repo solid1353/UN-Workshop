@@ -19,3 +19,6 @@ pcsx2/*
 /pcsx2_files/gamesettings/
 *.ps2
 !/pcsx2_files/memory_cards/templates/*.ps2
+
+# PPSSPP
+ppsspp/*

@@ -117,6 +117,18 @@ def _content_file(name: str, content_roots: list[Path]) -> Path:
     return matches[0] if matches else content_roots[-1] / "games" / name
 
 
+PLATFORMS = ("ps2", "psp")
+
+
+def game_platform(selector: str, catalog: Mapping[str, object]) -> str:
+    """The game's console: ``ps2`` unless its definition names another."""
+    canonical_name, definition, _ = find_definition(selector, catalog)
+    platform = definition.get("platform", "ps2")
+    if platform not in PLATFORMS:
+        raise ValueError(f"Game {canonical_name!r} platform must be one of {PLATFORMS}")
+    return platform
+
+
 def derive_game_paths(
     selector: str,
     catalog: Mapping[str, object],
@@ -124,14 +136,18 @@ def derive_game_paths(
     content_roots: list[Path],
 ) -> dict[str, Path]:
     canonical_name, definition, _ = find_definition(selector, catalog)
-    _required_text(definition.get("serial"), f"Game {canonical_name!r} serial")
-    _required_text(definition.get("crc"), f"Game {canonical_name!r} crc")
-    return {
+    paths = {
         "iso": source_root / f"{canonical_name}.iso",
         "extracted": source_root / f"{canonical_name}.iso.files",
-        "cheats": _content_file(f"{canonical_name}.pnach", content_roots),
-        "game_settings": _content_file(f"{canonical_name}.ini", content_roots),
     }
+    if game_platform(selector, catalog) == "ps2":
+        # PCSX2 identifies a PS2 game by serial and CRC and keeps its PNACH and
+        # settings in the content roots; PPSSPP needs none of them.
+        _required_text(definition.get("serial"), f"Game {canonical_name!r} serial")
+        _required_text(definition.get("crc"), f"Game {canonical_name!r} crc")
+        paths["cheats"] = _content_file(f"{canonical_name}.pnach", content_roots)
+        paths["game_settings"] = _content_file(f"{canonical_name}.ini", content_roots)
+    return paths
 
 
 def resolve_game(
@@ -143,12 +159,14 @@ def resolve_game(
     project_root = project_root.resolve() if project_root is not None else None
     catalog = load_catalog(workshop_root)
     source_root, content_roots = _content_roots(workshop_root, project_root)
-    return {
+    resolved = {
         name: os.path.abspath(path)
         for name, path in derive_game_paths(
             selector, catalog, source_root, content_roots
         ).items()
     }
+    resolved["platform"] = game_platform(selector, catalog)
+    return resolved
 
 
 def resolve_game_property_names(
