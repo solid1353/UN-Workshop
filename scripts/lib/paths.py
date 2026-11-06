@@ -75,6 +75,13 @@ def _find_manifest(start: Path) -> Path:
     raise FileNotFoundError(f"Could not find {MANIFEST_NAME} above {start}")
 
 
+def _split_alias(value: str) -> tuple[str, str | None]:
+    """The root and child of an @root/child alias, with either separator; the
+    child is None when the alias names only its root."""
+    root_and_child = value[1:].replace("\\", "/").split("/", 1)
+    return root_and_child[0], root_and_child[1] if len(root_and_child) == 2 else None
+
+
 def load_workshop_paths(start: Path | None = None) -> Paths:
     """Load a Workshop manifest: roots and files, with no imports or checks."""
     root = (start or WORKSHOP_ROOT).resolve()
@@ -96,9 +103,8 @@ def load_workshop_paths(start: Path | None = None) -> Paths:
             raise ValueError(f"Invalid Workshop root {name!r}")
         resolving.add(name)
         if raw.startswith("@"):
-            parts = raw[1:].replace("\\", "/").split("/", 1)
-            parent = parts[0]
-            child = Path(parts[1] if len(parts) == 2 else "")
+            parent, child_text = _split_alias(raw)
+            child = Path(child_text or "")
             if parent not in configured or child.is_absolute() or ".." in child.parts:
                 raise ValueError(f"Invalid Workshop root alias: {raw!r}")
             base = resolve_root(parent)
@@ -122,11 +128,11 @@ def load_workshop_paths(start: Path | None = None) -> Paths:
         if not isinstance(raw, str) or not raw:
             raise ValueError(f"Invalid Workshop file {name!r}")
         if raw.startswith("@"):
-            parts = raw[1:].replace("\\", "/").split("/", 1)
-            if len(parts) != 2 or parts[0] not in roots:
+            root_name, child_text = _split_alias(raw)
+            if child_text is None or root_name not in roots:
                 raise ValueError(f"Invalid Workshop file alias: {raw!r}")
-            base = roots[parts[0]]
-            child = Path(parts[1])
+            base = roots[root_name]
+            child = Path(child_text)
         else:
             base = root
             child = Path(raw)
@@ -186,35 +192,18 @@ def _validate_launch_settings(settings: Mapping[str, object]) -> None:
             raise ValueError(f"Project launch_settings.default must define {name}")
 
 
-def load_project_paths(
-    start: Path | None = None,
-    *,
-    include_imports: bool = True,
-    include_games: bool = True,
-) -> Paths:
-    """Load a consuming project's manifest over the Workshop it imports.
-
-    Without imports, only the project's own roots and files are loaded. Without
-    games, its settings and game catalog are not loaded.
-    """
-    manifest_path = _find_manifest(start or Path.cwd())
-    data = json.loads(manifest_path.read_text(encoding="utf-8"))
-    configured = data.get("roots")
-    if not isinstance(configured, dict) or not configured:
-        raise ValueError("Project path manifest has no roots")
-
-    repository = manifest_path.parent.resolve()
-    roots: dict[str, Path] = {"repository": repository}
-    files: dict[str, Path] = {}
-    local_files = data.get("files")
-    if not isinstance(local_files, dict) or not local_files:
-        raise ValueError("Project path manifest has no files")
-
-    imports = data.get("imports", {})
-    if not isinstance(imports, dict):
-        raise ValueError("Project path manifest imports must be an object")
+def _merge_imports(
+    imports: Mapping[str, object],
+    repository: Path,
+    configured: Mapping[str, object],
+    local_files: Mapping[str, object],
+    roots: dict[str, Path],
+    files: dict[str, Path],
+) -> dict[str, Mapping[str, Path]]:
+    """Add each imported Workshop's roots and files that the project does not
+    define itself; return each import's own roots."""
     imported_roots: dict[str, Mapping[str, Path]] = {}
-    for import_name, raw_manifest in imports.items() if include_imports else ():
+    for import_name, raw_manifest in imports.items():
         if (
             not isinstance(import_name, str)
             or not import_name
@@ -249,7 +238,16 @@ def load_project_paths(
             if name in files:
                 raise ValueError(f"Duplicate imported file: {name!r}")
             files[name] = value
+    return imported_roots
 
+
+def _resolve_project_roots(
+    configured: Mapping[str, object],
+    repository: Path,
+    roots: dict[str, Path],
+) -> None:
+    """Add the project's own roots, each repository-relative or below another
+    root."""
     resolving: set[str] = set()
 
     def resolve_root(name: str) -> Path:
@@ -268,10 +266,8 @@ def load_project_paths(
 
         resolving.add(name)
         if raw_value.startswith("@"):
-            root_and_child = raw_value[1:].replace("\\", "/").split("/", 1)
-            parent_name = root_and_child[0]
-            child = root_and_child[1] if len(root_and_child) == 2 else ""
-            child_path = Path(child)
+            parent_name, child = _split_alias(raw_value)
+            child_path = Path(child or "")
             if (
                 not parent_name
                 or (parent_name not in configured and parent_name not in roots)
@@ -298,6 +294,14 @@ def load_project_paths(
     for name in configured:
         resolve_root(name)
 
+
+def _resolve_project_files(
+    local_files: Mapping[str, object],
+    repository: Path,
+    roots: Mapping[str, Path],
+    files: dict[str, Path],
+) -> None:
+    """Add the project's own files, each within the repository or its root."""
     for name, raw_value in local_files.items():
         if not isinstance(raw_value, str) or not raw_value:
             raise ValueError(
@@ -306,12 +310,11 @@ def load_project_paths(
             )
 
         if raw_value.startswith("@"):
-            root_and_child = raw_value[1:].replace("\\", "/").split("/", 1)
-            if len(root_and_child) != 2 or not all(root_and_child):
+            root, child = _split_alias(raw_value)
+            if not root or not child:
                 raise ValueError(
                     f"Project file {name!r} has an invalid root alias: {raw_value!r}"
                 )
-            root, child = root_and_child
             try:
                 base_path = roots[root]
             except KeyError as exc:
@@ -342,127 +345,198 @@ def load_project_paths(
             raise ValueError(f"Project file {name!r} must remain within {scope}")
         files[name] = configured_path
 
-    settings: dict[str, object] | None = None
-    games: dict[str, Mapping[str, object]] = {}
-    settings_path = (
-        files.get("project_settings") if include_imports and include_games else None
-    )
-    if settings_path is not None:
-        if not settings_path.is_file():
-            raise FileNotFoundError(f"Project settings not found: {settings_path}")
-        settings = json.loads(settings_path.read_text(encoding="utf-8"))
-        if not isinstance(settings, dict):
-            raise ValueError("Project settings must be an object")
-        _validate_launch_settings(settings)
-        source_catalog_path = files.get("source_catalog")
-        workshop_roots = imported_roots.get("workshop")
-        if source_catalog_path is None or workshop_roots is None:
-            raise ValueError("Project game catalogs require the Workshop import")
-        if not source_catalog_path.is_file():
-            raise FileNotFoundError(
-                f"Source game catalog not found: {source_catalog_path}"
+
+def _resolve_catalog_value(
+    label: str, raw_value: object, roots: Mapping[str, Path]
+) -> object:
+    """A game configuration value: an integer, text, or an @root/child path."""
+    if isinstance(raw_value, int) and not isinstance(raw_value, bool):
+        return raw_value
+    if not isinstance(raw_value, str) or not raw_value:
+        raise ValueError(f"{label} has an invalid value: {raw_value!r}")
+    if not raw_value.startswith("@"):
+        return raw_value
+    root_name, child = _split_alias(raw_value)
+    if not root_name or not child:
+        raise ValueError(f"{label} has an invalid path: {raw_value!r}")
+    try:
+        base_path = roots[root_name]
+    except KeyError as exc:
+        raise ValueError(
+            f"{label} references unknown project root {root_name!r}"
+        ) from exc
+    child_path = Path(child)
+    if child_path.is_absolute() or ".." in child_path.parts:
+        raise ValueError(f"{label} must remain within {root_name!r}")
+    return Path(os.path.abspath(base_path / child_path))
+
+
+def _game_entry(
+    game_name: str,
+    definition: object,
+    catalog: Mapping[str, object],
+    selectors: set[str],
+    files: dict[str, Path],
+    roots: dict[str, Path],
+    content_roots: list[Path],
+    game_catalog: ModuleType,
+) -> Mapping[str, object]:
+    """One source game's aliases and configuration, adding its extracted root
+    and ISO file under its name and each alias."""
+    if not _is_selector(game_name):
+        raise ValueError(f"Invalid canonical game selector: {game_name!r}")
+    if game_name.casefold() in selectors:
+        raise ValueError(f"Duplicate game selector or alias: {game_name!r}")
+    selectors.add(game_name.casefold())
+    if not isinstance(definition, dict):
+        raise ValueError(f"Game {game_name!r} definition must be an object")
+
+    aliases = definition.get("aliases", [])
+    if not isinstance(aliases, list):
+        raise ValueError(f"Game {game_name!r} aliases must be a list")
+    for alias in aliases:
+        if not _is_selector(alias):
+            raise ValueError(
+                f"Invalid alias for game {game_name!r}: {alias!r}"
             )
-        catalog = {
-            "sources": json.loads(
-                source_catalog_path.read_text(encoding="utf-8")
-            ).get("sources"),
-        }
-        game_catalog = _game_catalog()
-        content_roots = list(
-            dict.fromkeys((roots["pcsx2_files"], workshop_roots["pcsx2_files"]))
+        if alias.casefold() in selectors:
+            raise ValueError(f"Duplicate game selector or alias: {alias!r}")
+        selectors.add(alias.casefold())
+
+    config: dict[str, object] = {}
+    for config_name, raw_value in definition.items():
+        if config_name == "aliases":
+            continue
+        if not (
+            isinstance(config_name, str)
+            and config_name[:1].islower()
+            and config_name.replace("_", "").isalnum()
+        ):
+            raise ValueError(
+                f"Invalid game {game_name!r} configuration name: "
+                f"{config_name!r}"
+            )
+        config[config_name] = _resolve_catalog_value(
+            f"Game {game_name!r} configuration {config_name!r}",
+            raw_value,
+            roots,
         )
 
-        def resolve_catalog_value(label: str, raw_value: object) -> object:
-            if isinstance(raw_value, int) and not isinstance(raw_value, bool):
-                return raw_value
-            if not isinstance(raw_value, str) or not raw_value:
-                raise ValueError(f"{label} has an invalid value: {raw_value!r}")
-            if not raw_value.startswith("@"):
-                return raw_value
-            root_and_child = raw_value[1:].replace("\\", "/").split("/", 1)
-            if len(root_and_child) != 2 or not all(root_and_child):
-                raise ValueError(f"{label} has an invalid path: {raw_value!r}")
-            root_name, child = root_and_child
-            try:
-                base_path = roots[root_name]
-            except KeyError as exc:
-                raise ValueError(
-                    f"{label} references unknown project root {root_name!r}"
-                ) from exc
-            child_path = Path(child)
-            if child_path.is_absolute() or ".." in child_path.parts:
-                raise ValueError(f"{label} must remain within {root_name!r}")
-            return Path(os.path.abspath(base_path / child_path))
+    derived = game_catalog.derive_game_paths(
+        game_name, catalog, roots["source"], content_roots
+    )
+    for name in (
+        "cheats",
+        "game_settings",
+    ):
+        config[name] = derived[name]
 
-        definitions = catalog["sources"]
-        if not isinstance(definitions, dict) or not definitions:
-            raise ValueError("Game catalog has no non-empty 'sources' section")
-        selectors: set[str] = set()
-        for game_name, definition in definitions.items():
-            if not _is_selector(game_name):
-                raise ValueError(f"Invalid canonical game selector: {game_name!r}")
-            if game_name.casefold() in selectors:
-                raise ValueError(f"Duplicate game selector or alias: {game_name!r}")
-            selectors.add(game_name.casefold())
-            if not isinstance(definition, dict):
-                raise ValueError(f"Game {game_name!r} definition must be an object")
-
-            aliases = definition.get("aliases", [])
-            if not isinstance(aliases, list):
-                raise ValueError(f"Game {game_name!r} aliases must be a list")
-            for alias in aliases:
-                if not _is_selector(alias):
-                    raise ValueError(
-                        f"Invalid alias for game {game_name!r}: {alias!r}"
-                    )
-                if alias.casefold() in selectors:
-                    raise ValueError(f"Duplicate game selector or alias: {alias!r}")
-                selectors.add(alias.casefold())
-
-            config: dict[str, object] = {}
-            for config_name, raw_value in definition.items():
-                if config_name == "aliases":
-                    continue
-                if not (
-                    isinstance(config_name, str)
-                    and config_name[:1].islower()
-                    and config_name.replace("_", "").isalnum()
-                ):
-                    raise ValueError(
-                        f"Invalid game {game_name!r} configuration name: "
-                        f"{config_name!r}"
-                    )
-                config[config_name] = resolve_catalog_value(
-                    f"Game {game_name!r} configuration {config_name!r}",
-                    raw_value,
-                )
-
-            derived = game_catalog.derive_game_paths(
-                game_name, catalog, roots["source"], content_roots
+    extracted_path = derived["extracted"]
+    game_key = game_name.casefold()
+    for kind, mapping, name, value in (
+        ("root", roots, f"source_{game_key}", extracted_path),
+        ("file", files, f"{game_key}_iso", derived["iso"]),
+    ):
+        if name in mapping:
+            raise ValueError(
+                f"Project {kind} {name!r} duplicates game catalogs"
             )
-            for name in (
-                "cheats",
-                "game_settings",
-            ):
-                config[name] = derived[name]
+        mapping[name] = value
+    for alias in aliases:
+        roots.setdefault(f"source_{alias.casefold()}", extracted_path)
+        files.setdefault(f"{alias.casefold()}_iso", derived["iso"])
+    return MappingProxyType(
+        {"aliases": tuple(aliases), "config": MappingProxyType(config)}
+    )
 
-            extracted_path = derived["extracted"]
-            game_key = game_name.casefold()
-            for kind, mapping, name, value in (
-                ("root", roots, f"source_{game_key}", extracted_path),
-                ("file", files, f"{game_key}_iso", derived["iso"]),
-            ):
-                if name in mapping:
-                    raise ValueError(
-                        f"Project {kind} {name!r} duplicates game catalogs"
-                    )
-                mapping[name] = value
-            for alias in aliases:
-                roots.setdefault(f"source_{alias.casefold()}", extracted_path)
-                files.setdefault(f"{alias.casefold()}_iso", derived["iso"])
-            games[game_name] = MappingProxyType(
-                {"aliases": tuple(aliases), "config": MappingProxyType(config)}
-            )
+
+def _load_games(
+    files: dict[str, Path],
+    roots: dict[str, Path],
+    imported_roots: Mapping[str, Mapping[str, Path]],
+) -> tuple[dict[str, object], dict[str, Mapping[str, object]]]:
+    """The project settings and its source games, adding each game's
+    extracted root and ISO file."""
+    settings_path = files["project_settings"]
+    if not settings_path.is_file():
+        raise FileNotFoundError(f"Project settings not found: {settings_path}")
+    settings = json.loads(settings_path.read_text(encoding="utf-8"))
+    if not isinstance(settings, dict):
+        raise ValueError("Project settings must be an object")
+    _validate_launch_settings(settings)
+    source_catalog_path = files.get("source_catalog")
+    workshop_roots = imported_roots.get("workshop")
+    if source_catalog_path is None or workshop_roots is None:
+        raise ValueError("Project game catalogs require the Workshop import")
+    if not source_catalog_path.is_file():
+        raise FileNotFoundError(
+            f"Source game catalog not found: {source_catalog_path}"
+        )
+    catalog = {
+        "sources": json.loads(
+            source_catalog_path.read_text(encoding="utf-8")
+        ).get("sources"),
+    }
+    game_catalog = _game_catalog()
+    content_roots = list(
+        dict.fromkeys((roots["pcsx2_files"], workshop_roots["pcsx2_files"]))
+    )
+
+    definitions = catalog["sources"]
+    if not isinstance(definitions, dict) or not definitions:
+        raise ValueError("Game catalog has no non-empty 'sources' section")
+    games: dict[str, Mapping[str, object]] = {}
+    selectors: set[str] = set()
+    for game_name, definition in definitions.items():
+        games[game_name] = _game_entry(
+            game_name, definition, catalog, selectors, files, roots, content_roots,
+            game_catalog,
+        )
+    return settings, games
+
+
+def load_project_paths(
+    start: Path | None = None,
+    *,
+    include_imports: bool = True,
+    include_games: bool = True,
+) -> Paths:
+    """Load a consuming project's manifest over the Workshop it imports.
+
+    Without imports, only the project's own roots and files are loaded. Without
+    games, its settings and game catalog are not loaded.
+    """
+    manifest_path = _find_manifest(start or Path.cwd())
+    data = json.loads(manifest_path.read_text(encoding="utf-8"))
+    configured = data.get("roots")
+    if not isinstance(configured, dict) or not configured:
+        raise ValueError("Project path manifest has no roots")
+
+    repository = manifest_path.parent.resolve()
+    roots: dict[str, Path] = {"repository": repository}
+    files: dict[str, Path] = {}
+    local_files = data.get("files")
+    if not isinstance(local_files, dict) or not local_files:
+        raise ValueError("Project path manifest has no files")
+
+    imports = data.get("imports", {})
+    if not isinstance(imports, dict):
+        raise ValueError("Project path manifest imports must be an object")
+    imported_roots = _merge_imports(
+        imports if include_imports else {},
+        repository,
+        configured,
+        local_files,
+        roots,
+        files,
+    )
+    _resolve_project_roots(configured, repository, roots)
+    _resolve_project_files(local_files, repository, roots, files)
+
+    settings: dict[str, object] | None = None
+    games: dict[str, Mapping[str, object]] = {}
+    if include_imports and include_games and "project_settings" in files:
+        settings, games = _load_games(files, roots, imported_roots)
 
     return Paths(
         manifest_path,
@@ -477,9 +551,8 @@ def resolve_alias(value: str, paths: Paths) -> Path:
     """Resolve @root/child syntax used by declarative profile root tables."""
     if not value.startswith("@"):
         raise ValueError(f"Project path alias must start with '@': {value!r}")
-    root_and_child = value[1:].replace("\\", "/").split("/", 1)
-    root = root_and_child[0]
-    child = root_and_child[1] if len(root_and_child) == 2 else ""
+    root, child = _split_alias(value)
+    child = child or ""
     child_path = Path(child)
     if not root or child_path.is_absolute() or ".." in child_path.parts:
         raise ValueError(f"Invalid project path alias: {value!r}")
