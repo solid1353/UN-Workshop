@@ -170,9 +170,9 @@ context are borrowed. `gauge_container_setup` binds `battlegauge`,
 
 `gauge_update` orders `hud_chakra_rate_update`,
 `hud_chakra_reservation_update`, `gauge_players_update`, then the rotating
-icon phase. The total, named `BtlGauge.threshold` in annotations, is current
-plus requested reservation. It is upper-clamped to 15 by reducing the display
-current only. Fighter chakra is not written.
+icon phase. `BtlGauge.display_total` is current plus requested reservation.
+It is upper-clamped to 15 by reducing the display current only. Fighter
+chakra is not written.
 
 | Display total | Category | Animation-rate target |
 | --- | ---: | ---: |

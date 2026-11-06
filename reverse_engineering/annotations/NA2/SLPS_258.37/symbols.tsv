@@ -182,6 +182,7 @@ address	kind	name	type	comment
 0x0010F3E8	label	widescreen_hook_constructor_projection_unit_scale		Constructor supplies1/1 to renderer_set_centered_viewport.
 0x0010F430	function	renderer_set_centered_viewport		Derive center offsets from half caller rectangle width/height then forward rectangle,offsets,scales to abi_float_arguments_consume; mixed scalar/general parameter ordering remains unestablished.
 0x0010F480	function	renderer_set_depth_endpoints		Four instructions write depth_far+0x294 and depth_near+0x298 without camera refresh; endpoints independent of near/far planes; mixed scalar/general parameter ordering remains unestablished.
+0x0010F490	function	image_transfer_list_submit		Walk a linked list of image transfers from the first word of its argument and append one GS image-transfer packet for each; sprite_submit_texture's only use, for Sprite.image_transfers when the sprite has no texture.
 0x0010F6B0	function	image_transfer_append_packet_chain		Append first/last DMA tags through environment+8 allocation-list header; empty list sets header+4/+8,nonempty links prior tail.address after optional(QWC+1)*16 adjustment. Renderer+0x3C is not accessed.
 0x0010F720	function	image_transfer_get_qword_count		Single lw return of descriptor+8; no destination store. Descriptor-array wrapper uses returned QWC only to advance optional source override.
 0x0010F790	function	texture_readback	void texture_readback(int texture)	Read the texture pixels used by zg_break_screen_task for grayscale screen capture.

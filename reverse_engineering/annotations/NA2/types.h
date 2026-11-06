@@ -3027,7 +3027,7 @@ typedef struct BtlGauge {
     CcsContainer * container;
     Fighter * fighter;
     void *fill_sprite; void *threshold_sprite; void *marker_sprite; int marker_cell; float marker_scale; unsigned char category; unsigned char _unknown_21[3]; float current; float previous; float reserved_request; float reserved_display;
-    float threshold;
+    float display_total; // current plus staged chakra, clipped to 15
     float rate; float pulse_phase; unsigned char reservation_blink; unsigned char blink_count; unsigned char _unknown_42[2];
     CcsAnimationPlayer * fading_player;
     CcsAnimationPlayer * threshold_player;
@@ -3036,7 +3036,7 @@ typedef struct BtlGauge {
     unsigned char fading_active;
     unsigned char state_active;
     unsigned char _pad_0053[0x1];
-    float threshold_fade;
+    float fading_fade;
     float state_fade;
 void *secondary_context; void *view_helper; unsigned char feedback_enabled; unsigned char _unknown_65[3]; float icon_phase;
 } BtlGauge;
@@ -4073,9 +4073,9 @@ typedef struct SettingsParent { int state; int availability[2]; unsigned char _u
 
 typedef struct SettingsSelector { int phase; unsigned char _unknown_04[0x18]; int input_source; unsigned int pressed; unsigned int secondary; unsigned int held; } SettingsSelector;
 
-typedef struct PracticeWrapper { int input_source; int context; void *vtable; PracticeSettings *child; } PracticeWrapper;
+typedef struct PracticeWrapper { int input_source; int confirming_port; void *vtable; PracticeSettings *child; } PracticeWrapper;
 
-typedef struct StartMenuHost { int state; int input_source; int secondary_state1; int context; int selection; int repeat_countdown; int command_count; int commands[7]; PracticeWrapper *module; void *render_context; unsigned char _unknown_40[4]; void *transition; unsigned char _unknown_48[0x1c]; float transition_x; unsigned char _unknown_68[4]; float transition_scale; float transition_step; unsigned char _unknown_74[0x10]; float panel_center_y; void *panel_display; void *owned_handle; unsigned char _unknown_90[0x30]; int effect_handle; int asynchronous_result; void *asynchronous_owner; } StartMenuHost;
+typedef struct StartMenuHost { int state; int input_source; int secondary_state1; int confirming_port; int selection; int repeat_countdown; int command_count; int commands[7]; PracticeWrapper *module; void *render_context; unsigned char _unknown_40[4]; void *transition; unsigned char _unknown_48[0x1c]; float transition_x; unsigned char _unknown_68[4]; float transition_scale; float transition_step; unsigned char _unknown_74[0x10]; float panel_center_y; void *panel_display; void *owned_handle; unsigned char _unknown_90[0x30]; int effect_handle; int asynchronous_result; void *asynchronous_owner; } StartMenuHost;
 
 typedef struct PracticePreparationOwner { int state; int input_source; int reinitialize; int context; int choice_count; int choices[24]; int choice_index; float carousel_displacement; unsigned char _unknown_7c[4]; unsigned int fade_handle; int result; int result_countdown; int random_ticks; int update_count; float random_phase; unsigned char _unknown_98[4]; unsigned int input_primary; unsigned int input_secondary; unsigned int input_directional; SettingsParent *settings; void *mapsel_container; void *scene_draw_list; void *sprite_draw_list; void *legend_sprite; void *name_sprite; void *counter_font; void *digit_sprite; void *camera_animation; void *selection_animation; void *ring_animation1; void *ring_animation2; void *arm_animation; void *tv_animation; void *titlebox; void *carousel; void *owned_objects[24]; CcsModelInstance *big_preview_model; CcsTextureChunk *preview_textures[4]; void *arrow_animation; unsigned char arrow_trigger[2]; unsigned char _unknown_162[2]; void *extra_objects[2]; } PracticePreparationOwner;
 
@@ -6759,7 +6759,7 @@ typedef struct PaletteReflectionWrapper { void *vtable; PaletteScriptOwnerView *
 
 typedef struct SamplingRenderContextView { unsigned char _unknown_0000[8]; unsigned short width; unsigned short height; unsigned char _unknown_000c[0x190]; short framebuffer_base; unsigned char _unknown_019e[0xe]; unsigned char framebuffer_format; } SamplingRenderContextView;
 
-typedef struct SpriteTextureBindingView { unsigned char _unknown_0000[0xd8]; unsigned long long tex0_state; unsigned long long tex1_state; unsigned char _unknown_00e8[4]; CcsTextureChunk *texture; CcsClut *clut; } SpriteTextureBindingView;
+typedef Sprite SpriteTextureBindingView;
 
 typedef struct CcsTextureInitDescriptor { unsigned short flags; unsigned char pixel_format; unsigned char width_log2; unsigned char height_log2; unsigned char extra_levels; unsigned char alpha_reference; unsigned char _unknown_0007; short level_coordinates[8]; void *pixels; } CcsTextureInitDescriptor;
 
@@ -6775,7 +6775,7 @@ typedef struct JutsuSelectRow { unsigned char _unknown_00[4]; int character; sho
 
 typedef struct JutsuSelectMenuView { unsigned char _unknown_00[0x34]; int character; } JutsuSelectMenuView;
 
-typedef struct ProjectedTextGeometryView { int disabled; unsigned int geometry_flags; unsigned char _unknown_0008[0x18]; int rectangle_count; int rectangle_capacity; unsigned char _unknown_0028[4]; void *packet; unsigned char _unknown_0030[0x10]; float opacity; float local_x; float local_y; float rotation; float x; float y; float width; float height; int source_width; int source_height; int source_u_fixed4; int source_v_fixed4; int source_mode; } ProjectedTextGeometryView;
+typedef Sprite ProjectedTextGeometryView;
 
 typedef struct UiTransitionSlot { unsigned short flags; short cursor; short duration; short second_duration; short intermediate_duration; unsigned char _unknown_000a[2]; float x; float y; float width; float height; unsigned int start_color; unsigned int end_color; } UiTransitionSlot;
 
@@ -7138,7 +7138,7 @@ typedef struct ScreenPositionView { void *sprite; void *prompt_sprite; void *leg
 
 typedef struct OptionsRootView { unsigned char owns_archive; unsigned char _unknown_01[3]; void *archive; void *render_context; void *prompt_context; void *decoration_player; void *camera_player; void *background_player; void *label_sprite; void *selection_sprite; void *prompt_sprite; void *help; unsigned char _unknown_2c[8]; int transition_slot; short phase; short selected_row; unsigned char _unknown_3c[8]; OptionsControlsView *controls; void *audio; ScreenPositionView *display; void *save_dialog; unsigned int pressed; unsigned int repeated; } OptionsRootView;
 
-typedef struct OptionsSpriteColorView { unsigned char _unknown_00[0x90]; unsigned long long red_green; unsigned long long blue; } OptionsSpriteColorView;
+typedef Sprite OptionsSpriteColorView;
 
 typedef struct CharacterResourceLookupHolder { void **resources; unsigned int count; } CharacterResourceLookupHolder;
 
@@ -7328,3 +7328,5 @@ typedef struct StageLineChangeRule {
 } StageLineChangeRule;
 
 typedef struct AudioStreamFade { unsigned char flags; unsigned char seconds; unsigned short ratio; short target; short step; int _unknown_08; } AudioStreamFade;
+
+typedef struct Sprite { int disabled; unsigned int geometry_flags; int batch_selector; int rectangle_qwords; unsigned long long gif_tag[2]; int rectangle_count; int rectangle_capacity; int packet_qwords; void *packet; int skip_frame_register; unsigned char _pad_0034[4]; unsigned long long frame_register; float opacity; float local_x; float local_y; float rotation; float x; float y; float width; float height; int source_width; int source_height; int source_u_fixed4; int source_v_fixed4; int source_mode; int depth; unsigned long long frame_bits; unsigned long long test_register; unsigned long long zbuf_bits; unsigned long long red_green; unsigned long long blue; unsigned long long corner_colors[6]; void *render_context; int blend_state; unsigned long long tex0_state; unsigned long long tex1_state; void *image_transfers; CcsTextureChunk *texture; CcsClut *clut; unsigned char _pad_00f4[4]; } Sprite;
