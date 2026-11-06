@@ -621,7 +621,7 @@ function Get-UnWorkshopWindowTile {
 
     $left = $workingArea.X + [Math]::Floor($workingArea.Width * $Index / $Count)
     $right = $workingArea.X + [Math]::Floor($workingArea.Width * ($Index + 1) / $Count)
-    return [int[]]@($left, $workingArea.Y, $right - $left, $workingArea.Height)
+    return [int[]]@($left, $workingArea.Y, ($right - $left), $workingArea.Height)
 }
 $gameList = $selectedGames.Selector -join ', '
 $action = if ($AgentReplay) {
