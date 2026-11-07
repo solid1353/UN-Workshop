@@ -51,6 +51,8 @@ param(
 
     [switch]$ClosePcsx2,
 
+    [switch]$LastGameAudio,
+
     [string]$ProjectRoot,
 
     [string]$InputRecordingsRoot,
@@ -74,6 +76,9 @@ if ($Surfaceless -and ($Snapshots -or $AgentReplay)) {
 }
 # These launches have no window to wait for, tile or make room for.
 $noWindow = $AgentReplay -or $Surfaceless
+if ($LastGameAudio -and ($noWindow -or $Snapshots)) {
+    throw '-aud needs a windowed launch.'
+}
 if ($AgentReplay) {
     if ([string]::IsNullOrWhiteSpace($Play) -or $Snapshots) {
         throw '-agent-replay requires -rp and cannot be combined with -rps.'
@@ -762,7 +767,8 @@ try {
                     $ppssppParameters.ReadOnlySettings = $true
                 }
                 if ($selectedGames.Count -gt 1) {
-                    $ppssppParameters.Mute = $true
+                    $ppssppParameters.Mute = -not ($LastGameAudio -and
+                        $index -eq $selectedGames.Count - 1)
                     # Start in its tile; PPSSPP doesn't save it as its window position.
                     $ppssppParameters.Window = Get-UnWorkshopWindowTile `
                         -Index $index `
@@ -802,7 +808,8 @@ try {
         $nextPinePort++
 
         $pcsx2Arguments = @('-pine-port', [string]$pinePort)
-        if ($selectedGames.Count -gt 1) {
+        if ($selectedGames.Count -gt 1 -and
+            -not ($LastGameAudio -and $index -eq $selectedGames.Count - 1)) {
             $pcsx2Arguments += '-mute'
         }
         $launchParameters = @{

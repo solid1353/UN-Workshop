@@ -794,6 +794,8 @@ address	kind	name	type	comment
 0x002F47A0	function	pause_item_open		Dispatches the selected pause item ID (0..14) through the jump table at 0x005FC600; item 14 is Easy Display Setup (easy_display_open).
 0x002F83F0	function	easy_display_open		Pause state 14: cursor 0 when profile byte +0x5F bit 6 is set, else 1.
 0x002F84B0	function	easy_display_update		Easy Display dialog: confirm sets profile byte +0x5F bit 6 for cursor 0 and clears it for cursor 1; cancel closes.
+0x002FEA20	function	render_callback_owner_apply_record		Same record layout as NA2 0x0036EC20
+0x002FEDE0	function	ccfm_auxiliary_draw_owner_apply_record		Same record layout as NA2 0x0036F140
 0x002FF430	function	sp_skill_auxiliary_update		Active renderer auxiliary evaluates four counted time segments at descriptor+0/C/18/24; entries use328/18/360/30 byte data respectively; last channel controls fog.
 0x002FF910	function	battle_particle_cached_palette		Resolve cached particle choice: return base pointer for selector zero; otherwise find its owning CCS and look up CLT_%sc%d using the base effect name after EFF_ and cached palette selector.
 0x002FF9D0	function	battle_particle_publish		Publish emitter to manager;when no explicit resources230 choose signed238 else206,bind table6A31BC+index*8,count nibble1FA defaults1,then register typed resources.
@@ -1153,7 +1155,7 @@ address	kind	name	type	comment
 0x0047BE7C	data	effect_state_name_textures		Effect-indexed name suffixes; effect 0x24 = mn_tuku.
 0x0047C010	data	sp_skill_camera_reject_ranges	void *[256]	Per-skill {count, frame ranges}; for defenders 0x23/0x30/0x32/0x33/0x35/0x38 a matching frame rejects the camera auxiliary.
 0x0047C1F0	data	anbu_kakashi_cinematic_camera_admission_entry	unsigned int	Skill78 range pointer0;sp_skill_defender_camera_admission294770 supplies no per-range exclusion for this skill.
-0x0047C248	label	sp_skill_auxiliary_table		Per-skill pointer table retained at player+10; per-request begin dereferences request-ordinal row into scene auxiliary initialization.
+0x0047C248	label	sp_skill_auxiliary_table		Per-skill pointer table retained at player+10; each entry points at per-request filter record pointers. Record: four banks {s16 interval count, frame list, intervals or fog rows} in CCFM order, then fog name count and list (stride 0x1E); filled by sp_skill_filter_records_initialize
 0x0047C308	label	kakashi_cinematic_auxiliary_entries		Skills30..33 table47C248+skill*4 pointers6A0FC4/C8/CC/D0; referenced data546030,548AA0,54A2D0,54C0F0. Scene renderer data, not audio.
 0x0047C3E0	data	itachi_cinematic_auxiliary_entries	uint[5]	Skills66..6A pointers to request-ordinal scene auxiliary arrays006A109C..006A10AC.
 0x0047C3F4	data	kisame_cinematic_auxiliary_entries	void *[6]	Skills6B..70 select request-ordinal auxiliary arrays6A10B0/B4/B8/BC/C0/C4; selected adjacent two requests have four zero timed counts.
@@ -1243,6 +1245,7 @@ address	kind	name	type	comment
 0x00670AB4	data	green_beast_cinematic_request	un3SkillRequestRow	Skill79:GreenImpact,name669DB8;main str/d32_301e.ccs at66FEC0;extra0;stream1;pair66ECD0 -> str/d32_301.ccs66ECC0. Resident ELF row,not SINF.
 0x00670AC8	data	sound_four_fourth_hokage_cinematic_requests	un3SkillRequestRow[11]	Skills 7A..84: d34..d38 _101/_301 pairs (the _301 films are base-to-Second-Stage transformations with form-body extras) and d39_301.
 0x00673590	label	summon_scene_mappings		Eight16-byte rows mapping index/character/scene/zero; IDs04,10,15,01,19,09,07,0E map scenes20,21,22,22,23,24,25,26.
+0x006777F0	function	sp_skill_filter_records_initialize		Startup: copies each filter bank (0xC bytes, fog bank plus name list 0x14) from static data into the records sp_skill_auxiliary_table reaches, which the executable holds empty; each copy loads source then destination with lui/addiu
 0x00689130	data	green_beast_vtable	unsigned int[12]	Concrete fighter vtable installed by green_beast_construct at fighter+50;extent beyond12 words not established.
 0x00689160	data	anbu_kakashi_vtable	unsigned int[12]	Twelve words;destroy206200 and AI206280, remaining nonnull methods match ordinary Kakashi common methods.
 0x00689260	data	kisame_vtable		Installed by kisame_construct; ID24 concrete fighter.

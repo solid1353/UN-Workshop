@@ -180,6 +180,23 @@ are also in UN3's 191. The 13 UN3-only names are the `muffler` chain
 `PL/1CMNBOD1.CCS` lacks UN3's `1cmn00t0 cloth3`, `joe d`, and `joe01` object
 and model rows.
 
+**Observation:** NA2 adds `l momo` and `r momo` bones under the thighs, each
+with a `momo d` end bone, in `1CMNBOD1` and the checked `1SSKBOD1`; `cloth d`
+moves from `cloth3` to `cloth2`. `CMP_1cmn00t0 trall` lists each `momo` after its
+foot and omits `joe01` and `cloth3`. In `D02_10.CCS`, both `momo` bones hold the
+same offset from their thigh, `(1.5268, 0, 0)`, on all 412 frames. NA2's films
+give `momo d`, like other `d` bones, tracks on rows with no object, so those
+tracks do nothing.
+
+**Observation:** A composition section holds its ID, its member count, the
+member IDs, and nine floats per member (position, rotation, scale).
+
+**Inference (high confidence):** The bytes after a deformable model's header
+are positions in its composition. `MDL_1ssk00t0 body` lists 7 and 11, the two
+`momo` bones in `CMP_1ssk00t0 trall`, and a film's composition of a character
+keeps the body's order; `D02_10.CCS` differs only among `eye1`, `eye2` and
+`mou1`, which the mesh's list omits.
+
 **Observation:** Checking every external `2cmnbod1` reference in the thirteen
 UN3-only `2???BOD1` files against NA2's provider: `jry`, `guy`, `szn`, `kbt`,
 and `anb` resolve completely. `kks`, `orc`, `itc`, `ksm`, `krn`, `nrz`, and

@@ -634,8 +634,9 @@ NA2 cinematic row's sound byte name the same control.
 Each film's per-request scene auxiliary descriptors
 (`sp_skill_auxiliary_table`, read by `sp_skill_auxiliary_update`) hold
 four counted channels with `0x328`, `0x18`, `0x360` and `0x30`-byte
-records, the same blocks as NA2's `CCFM` filter payloads; for every film
-of IDs 20..39 all four counts are zero.
+records, the same blocks as NA2's `CCFM` filter payloads, which the
+executable fills at startup
+([filter data](../../../runtime/rendering/draw_2d_owners.md#un3-filter-data)).
 
 The soundtracks are stereo 48,000 Hz ADX files. The cue rows only play the
 defender's bank, and no checked film routine requests PLVOICE members, so

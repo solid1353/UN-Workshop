@@ -237,6 +237,18 @@ after the first stops. `sp_skill_play_begin` uses the same pair/category
 gate for `sp_skill_substitute_support_resources`, so voice and resources
 depend on the support.
 
+A linked film carries the support's body in its own files; none of the ten
+requests lists an extra resident. The substitution recolours the stream's
+`EXT_1<abbreviation>00t0 body` with `CLT_1<abbreviation>body`, or
+`CLT_1<abbreviation>bodyc<n>` for an alternate colour, from the film's main
+resident, the abbreviation being `character_model_abbreviations` of
+`support_character_id`. For an admitted pair, battle loading also reads
+`support_cinematic_archive_path`'s `3bsc/3<abbreviation>3bsc.ccs`, which
+holds one indexed `sp_<abbreviation>` image (Naruto's is 256×128), and the
+linked intro binds it
+(`jutsu_presentation_bind_support_portrait`, BTL `0x00769270`). The disc's
+nine are those of the nine supports in the table.
+
 ### Start and early endings
 
 Nothing reads Start during a presentation. The start menu stays closed

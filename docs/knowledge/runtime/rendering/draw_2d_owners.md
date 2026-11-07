@@ -622,6 +622,19 @@ This closes the authored source extent in that retail STR cohort. Arbitrary
 payloads or other indirect callers remain outside it; destination and sampling
 ownership still follow the packet contract.
 
+#### UN3 filter data
+
+UN3 has no `BIN_strfilter_*` objects: `sp_skill_auxiliary_table` (`0x0047C248`)
+reaches the same banks, by skill and request, in the executable. A record holds
+four banks in CCFM's order, each `{s16 interval count, frame list, rows}`, then
+fog's name count and list at stride `0x1E`. A timed bank's rows are
+`{s16 record count, records}` per interval, with records laid out as NA2's;
+fog's rows are already the `0x30` runtime rows. The executable holds these
+records empty, and `sp_skill_filter_records_initialize` (`0x006777F0`) copies
+each bank in from static data at startup, loading the source then the
+destination with `lui`/`addiu`. `sp_skill_auxiliary_update` (`0x002FF430`)
+draws them as `ccfm_owner_draw` does, without a child timeline.
+
 ## Clipping and coordinate ownership
 
 The viewport setter `abi_float_arguments_consume` (`0x0010E460`) sets

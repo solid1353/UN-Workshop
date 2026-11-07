@@ -18,6 +18,7 @@ function Get-UnWorkshopLaunchOptions {
             '-t' = 'Turbo'
             '-u' = 'Unlimited'
             '-k' = 'ClosePcsx2'
+            '-aud' = 'LastGameAudio'
             '-agent-replay' = 'AgentReplay'
             '-surfaceless' = 'Surfaceless'
         }

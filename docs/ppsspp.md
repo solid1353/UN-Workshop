@@ -23,8 +23,8 @@ differences:
   [debugger](#debugger-client) on the first free port from 28111, on this
   machine only.
 
-Launches of two or three games mute it and start it in its tile through
-`--window`, then tile it like the PCSX2 windows. A single launch uses
+Launches of two or three games mute it, unless it is the last game with `-aud`,
+and start it in its tile through `--window`, then tile it like the PCSX2 windows. A single launch uses
 `--centered-window`. A recording cannot span PSP and PS2 games. `-k` and
 launches of two or three games close every running development emulator,
 PPSSPP included.

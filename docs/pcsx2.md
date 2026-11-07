@@ -31,8 +31,8 @@ launch opens a centered window through PCSX2's `-centered-window`
 Launches of two or three games tile them left to right in argument order, each
 window an equal share of the screen width, and keep them there through PCSX2's
 `-no-recenter`, which stops game starts from recentering the windows; they also
-mute every PCSX2 instance. `-t` selects Turbo, while `-u` selects Unlimited;
-these speed options are mutually exclusive. Each result reports the ordered
+mute every PCSX2 instance, except the last one with `-aud`. `-t` selects Turbo,
+while `-u` selects Unlimited; these speed options are mutually exclusive. Each result reports the ordered
 game, process, PINE or debugger port, and window position.
 
 PSP games launch in PPSSPP instead, with the differences in
