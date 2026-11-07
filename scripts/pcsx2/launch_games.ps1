@@ -137,7 +137,7 @@ function Get-UnWorkshopConfiguredPinePort {
     return $port
 }
 
-function Get-UnWorkshopUserPcsx2Processes {
+function Get-UnWorkshopUserEmulatorProcesses {
     param(
         [Parameter(Mandatory)]
         [string[]]$Roots
@@ -151,7 +151,7 @@ function Get-UnWorkshopUserPcsx2Processes {
             ) + [IO.Path]::DirectorySeparatorChar
         }
     )
-    foreach ($process in @(Get-Process -Name 'pcsx2*' -ErrorAction SilentlyContinue)) {
+    foreach ($process in @(Get-Process -Name 'pcsx2*', 'PPSSPP*' -ErrorAction SilentlyContinue)) {
         try {
             $processPath = [IO.Path]::GetFullPath([string]$process.Path)
         }
@@ -166,17 +166,17 @@ function Get-UnWorkshopUserPcsx2Processes {
     }
 }
 
-# Ask each development PCSX2 instance to close; force-stop it after five seconds.
-function Close-UnWorkshopUserPcsx2Processes {
+# Ask each development emulator to close; force-stop it after five seconds.
+function Close-UnWorkshopUserEmulatorProcesses {
     [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)]
         [string[]]$Roots
     )
 
-    foreach ($process in @(Get-UnWorkshopUserPcsx2Processes -Roots $Roots)) {
+    foreach ($process in @(Get-UnWorkshopUserEmulatorProcesses -Roots $Roots)) {
         if (-not $PSCmdlet.ShouldProcess(
-            "PCSX2 process $($process.Id) ($($process.Path))",
+            "Emulator process $($process.Id) ($($process.Path))",
             'close before launch'
         )) {
             continue
@@ -242,20 +242,6 @@ function Wait-UnWorkshopGameWindow {
         Start-Sleep -Milliseconds 100
     }
     throw "$Emulator did not create a window for $Game within $TimeoutSeconds seconds."
-}
-
-$recordingName = if ($PSCmdlet.ParameterSetName -eq 'Play') {
-    Resolve-UnWorkshopRecordingName `
-        -Name $Play `
-        -Root $inputRecordingsRoot
-}
-elseif ($PSCmdlet.ParameterSetName -eq 'Record') {
-    Resolve-UnWorkshopRecordingName `
-        -Name $Record `
-        -Root $inputRecordingsRoot
-}
-else {
-    $null
 }
 
 $memoryCardOverridePath = Resolve-UnWorkshopMemoryCardPath `
@@ -339,10 +325,12 @@ foreach ($requestedGame in $Games) {
     else {
         [string[]]@()
     }
+    # A PSP recording holds its saves, so replays run on a copy instead of discarding them.
+    $pspAnalysis = $platform -eq 'psp' -and ($Snapshots -or $AgentReplay)
     $memoryCardMode = Resolve-UnWorkshopMemoryCardMode `
         -DiscardMemoryCardWrites:$DiscardMemoryCardWrites `
-        -VolatileMemoryCard:$VolatileMemoryCard `
-        -DefaultDiscard:$Snapshots
+        -VolatileMemoryCard:($VolatileMemoryCard -or $pspAnalysis) `
+        -DefaultDiscard:($Snapshots -and -not $pspAnalysis)
     $gameUnlimitedForFrames = if (
         $null -ne $UnlimitedForFramesByGame -and
         $UnlimitedForFramesByGame.ContainsKey($selector)
@@ -356,7 +344,10 @@ foreach ($requestedGame in $Games) {
         Selector = $selector
         Platform = $platform
         IsoPath = $isoPath
-        MemoryCardPath = $memoryCardOverridePath
+        MemoryCardPath = if ($platform -eq 'psp') {
+            Resolve-UnWorkshopSavesPath -Saves $MemoryCard -SavesRoot $paths.PpssppSaves
+        }
+        else { $memoryCardOverridePath }
         MemoryCardMode = $memoryCardMode
         Pnach = $pnach
         PnachLines = $pnachLines
@@ -382,21 +373,44 @@ if ($null -ne $UnlimitedForFramesByGame) {
     }
 }
 
-# PSP games run in PPSSPP, which takes only their cheats (CwCheat files and
-# lines through the PNACH options), frame-limited fast-forward, muting and
-# window placement.
+# PSP games run in PPSSPP. A recording belongs to the emulator that made it.
 $pspGames = @($selectedGames | Where-Object { $_.Platform -eq 'psp' })
-if ($pspGames.Count -gt 0) {
-    $pspList = $pspGames.Selector -join ', '
-    if ($PSCmdlet.ParameterSetName -ne 'Normal') {
-        throw "Input recordings run only in PCSX2; PSP games cannot use -rp, -rps or -r: $pspList"
-    }
-    if ($Turbo -or $Unlimited -or $ReadOnlySettings -or
-        -not [string]::IsNullOrWhiteSpace($LogFile) -or
-        -not [string]::IsNullOrWhiteSpace($MemoryCard) -or
-        $DiscardMemoryCardWrites -or $VolatileMemoryCard) {
-        throw "PSP games take only cheats and frame-limited fast-forward, not -t, -u, -ro, -logfile or memory card options: $pspList"
-    }
+$pspRecording = $pspGames.Count -gt 0 -and $PSCmdlet.ParameterSetName -ne 'Normal'
+if ($pspRecording -and $pspGames.Count -ne $selectedGames.Count) {
+    throw "A recording cannot span PSP and PS2 games: $($pspGames.Selector -join ', ')"
+}
+if ($pspRecording -and $DiscardMemoryCardWrites) {
+    throw "A PSP recording holds its saves; use -vmc instead of -dmc: $($pspGames.Selector -join ', ')"
+}
+if ($pspRecording) {
+    $inputRecordingsRoot = [IO.Path]::GetFullPath($paths.PpssppInputRecordings)
+}
+$recordingExtension = if ($pspRecording) { '.ppr' } else { '.p2m2' }
+$recordingName = if ($PSCmdlet.ParameterSetName -eq 'Play') {
+    Resolve-UnWorkshopRecordingName `
+        -Name $Play `
+        -Root $inputRecordingsRoot `
+        -Extension $recordingExtension
+}
+elseif ($PSCmdlet.ParameterSetName -eq 'Record') {
+    Resolve-UnWorkshopRecordingName `
+        -Name $Record `
+        -Root $inputRecordingsRoot `
+        -Extension $recordingExtension `
+        -CreateParent:$pspRecording
+}
+else {
+    $null
+}
+$pspRecordingPath = if ($pspRecording) {
+    Join-Path $inputRecordingsRoot $recordingName
+}
+else {
+    $null
+}
+if ($PSCmdlet.ParameterSetName -eq 'Play' -and $pspRecording -and
+    -not (Test-Path -LiteralPath $pspRecordingPath -PathType Leaf)) {
+    throw "Input recording does not exist: $pspRecordingPath"
 }
 
 $pcsx2Root = $paths.Pcsx2Dev
@@ -482,7 +496,7 @@ if ($Snapshots) {
     }
 
     $snapshotPinePorts = @()
-    if ($selectedGames.Count -gt 1) {
+    if ($selectedGames.Count -gt 1 -and -not $pspRecording) {
         $nextPinePort = Get-UnWorkshopConfiguredPinePort -Pcsx2Root $pcsx2Root
         $usedPinePorts = [Collections.Generic.HashSet[int]]::new()
         foreach ($endpoint in [Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().GetActiveTcpListeners()) {
@@ -512,6 +526,29 @@ if ($Snapshots) {
     try {
         for ($index = 0; $index -lt $selectedGames.Count; $index++) {
             $game = $selectedGames[$index]
+            if ($game.Platform -eq 'psp') {
+                $ppssppParameters = @{
+                    IsoPath = $game.IsoPath
+                    Headless = $true
+                    InputRecording = $pspRecordingPath
+                    CaptureDirectory = $captureDirectories[$index]
+                    CaptureMode = $InputRecordingCaptureMode
+                    DiscardSaves = $game.MemoryCardMode.DiscardMemoryCardWrites
+                    VolatileSaves = $game.MemoryCardMode.VolatileMemoryCard
+                    PassThru = $true
+                }
+                if (-not [string]::IsNullOrWhiteSpace($game.MemoryCardPath)) {
+                    $ppssppParameters.Saves = $game.MemoryCardPath
+                }
+                if (@($game.Pnach).Count -gt 0) {
+                    $ppssppParameters.Cheats = $game.Pnach
+                }
+                if (@($game.PnachLines).Count -gt 0) {
+                    $ppssppParameters.CheatLines = $game.PnachLines
+                }
+                $snapshotProcesses.Add((& $ppssppLauncher @ppssppParameters))
+                continue
+            }
             $launchParameters = @{
                 IsoPath = $game.IsoPath
                 InputRecording = $recordingName
@@ -628,7 +665,7 @@ $action = if ($AgentReplay) {
     "launch surfaceless agent replay for $gameList"
 }
 elseif ($selectedGames.Count -gt 1) {
-    "close configured user PCSX2 instances, launch $gameList, and tile their windows"
+    "close configured user emulators, launch $gameList, and tile their windows"
 }
 else {
     "launch $gameList"
@@ -638,7 +675,7 @@ if (-not $PSCmdlet.ShouldProcess($pcsx2Root, $action)) {
 }
 
 if (($selectedGames.Count -gt 1 -and -not $AgentReplay) -or $ClosePcsx2) {
-    Close-UnWorkshopUserPcsx2Processes -Roots @($paths.Pcsx2Dev)
+    Close-UnWorkshopUserEmulatorProcesses -Roots @($paths.Pcsx2Dev, $paths.PpssppDev)
 }
 
 $usedPinePorts = [Collections.Generic.HashSet[int]]::new()
@@ -649,12 +686,45 @@ foreach ($endpoint in [Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalPr
 $launchedGames = [Collections.Generic.List[object]]::new()
 try {
     $nextPinePort = $pinePortBase
+    $nextDebuggerPort = 28111
     for ($index = 0; $index -lt $selectedGames.Count; $index++) {
         $game = $selectedGames[$index]
         if ($game.Platform -eq 'psp') {
+            while ($usedPinePorts.Contains($nextDebuggerPort)) {
+                $nextDebuggerPort++
+            }
+            if ($nextDebuggerPort -gt 65535) {
+                throw 'No free debugger port remains in the configured range.'
+            }
+            $debuggerPort = $nextDebuggerPort
+            [void]$usedPinePorts.Add($debuggerPort)
+            $nextDebuggerPort++
+
             $ppssppParameters = @{
                 IsoPath = $game.IsoPath
+                DebuggerPort = $debuggerPort
                 PassThru = $true
+            }
+            if (-not [string]::IsNullOrWhiteSpace($game.MemoryCardPath)) {
+                $ppssppParameters.Saves = $game.MemoryCardPath
+            }
+            if ($game.MemoryCardMode.DiscardMemoryCardWrites) {
+                $ppssppParameters.DiscardSaves = $true
+            }
+            if ($game.MemoryCardMode.VolatileMemoryCard) {
+                $ppssppParameters.VolatileSaves = $true
+            }
+            if (-not [string]::IsNullOrWhiteSpace($LogFile)) {
+                $ppssppParameters.LogFile = $LogFile
+            }
+            if ($PSCmdlet.ParameterSetName -eq 'Play') {
+                $ppssppParameters.InputRecording = $pspRecordingPath
+            }
+            elseif (
+                $PSCmdlet.ParameterSetName -eq 'Record' -and
+                $index -eq $selectedGames.Count - 1
+            ) {
+                $ppssppParameters.CreateInputRecording = $pspRecordingPath
             }
             if (@($game.Pnach).Count -gt 0) {
                 $ppssppParameters.Cheats = $game.Pnach
@@ -662,15 +732,32 @@ try {
             if (@($game.PnachLines).Count -gt 0) {
                 $ppssppParameters.CheatLines = $game.PnachLines
             }
-            if ($game.UnlimitedForFrames -gt 0) {
-                $ppssppParameters.FastForwardForFrames = $game.UnlimitedForFrames
+            if ($AgentReplay) {
+                $ppssppParameters.Headless = $true
             }
-            if ($selectedGames.Count -gt 1) {
-                $ppssppParameters.Mute = $true
-                # Start in its tile; PPSSPP doesn't save it as its window position.
-                $ppssppParameters.Window = Get-UnWorkshopWindowTile `
-                    -Index $index `
-                    -Count $selectedGames.Count
+            else {
+                if ($game.UnlimitedForFrames -gt 0) {
+                    $ppssppParameters.FastForwardForFrames = $game.UnlimitedForFrames
+                }
+                if ($Turbo) {
+                    $ppssppParameters.Turbo = $true
+                }
+                if ($Unlimited) {
+                    $ppssppParameters.Unlimited = $true
+                }
+                if ($ReadOnlySettings) {
+                    $ppssppParameters.ReadOnlySettings = $true
+                }
+                if ($selectedGames.Count -gt 1) {
+                    $ppssppParameters.Mute = $true
+                    # Start in its tile; PPSSPP doesn't save it as its window position.
+                    $ppssppParameters.Window = Get-UnWorkshopWindowTile `
+                        -Index $index `
+                        -Count $selectedGames.Count
+                }
+                else {
+                    $ppssppParameters.CenteredWindow = $true
+                }
             }
             $process = & $ppssppLauncher @ppssppParameters
             $launchedGames.Add([pscustomobject]@{
@@ -679,12 +766,15 @@ try {
                 Emulator = 'PPSSPP'
                 Process = $process
                 PinePort = $null
+                DebuggerPort = $debuggerPort
             })
-            Wait-UnWorkshopGameWindow `
-                -Process $process `
-                -Game $game.Selector `
-                -Emulator 'PPSSPP' `
-                -TimeoutSeconds $WindowWaitSeconds
+            if (-not $AgentReplay) {
+                Wait-UnWorkshopGameWindow `
+                    -Process $process `
+                    -Game $game.Selector `
+                    -Emulator 'PPSSPP' `
+                    -TimeoutSeconds $WindowWaitSeconds
+            }
             continue
         }
 
@@ -767,6 +857,7 @@ try {
             Emulator = 'PCSX2'
             Process = $process
             PinePort = $pinePort
+            DebuggerPort = $null
         })
         if (-not $AgentReplay) {
             Wait-UnWorkshopGameWindow `
@@ -810,6 +901,7 @@ try {
             Game = $launch.Game
             ProcessId = $launch.Process.Id
             PinePort = $launch.PinePort
+            DebuggerPort = $launch.DebuggerPort
             Position = if ($AgentReplay) {
                 'surfaceless'
             }

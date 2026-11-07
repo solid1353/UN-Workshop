@@ -11,7 +11,38 @@ param(
     # Left, top, width and height.
     [int[]]$Window,
 
+    [switch]$CenteredWindow,
+
     [switch]$Mute,
+
+    [switch]$Turbo,
+
+    [switch]$Unlimited,
+
+    [switch]$ReadOnlySettings,
+
+    [string]$LogFile,
+
+    # A save folder, or none for no memory stick.
+    [string]$Saves,
+
+    [switch]$DiscardSaves,
+
+    [switch]$VolatileSaves,
+
+    [string]$InputRecording,
+
+    [string]$CreateInputRecording,
+
+    # Runs PPSSPPHeadless, without a window.
+    [switch]$Headless,
+
+    [string]$CaptureDirectory,
+
+    [ValidateSet('full', 'screenshots', 'savestates')]
+    [string]$CaptureMode = 'full',
+
+    [int]$DebuggerPort = 0,
 
     [Parameter(ValueFromRemainingArguments)]
     [string[]]$Arguments,
@@ -34,9 +65,35 @@ if ($PSBoundParameters.ContainsKey('Window') -and (
 )) {
     throw '-Window requires left, top, width and height, with a width and height of at least 20.'
 }
+if ($Headless -and ($Window -or $CenteredWindow -or $Mute -or $Turbo -or $Unlimited -or
+    $ReadOnlySettings -or $CreateInputRecording)) {
+    throw '-Headless takes no window, sound, speed, settings or recording options.'
+}
+if ($CaptureDirectory -and -not $Headless) {
+    throw '-CaptureDirectory requires -Headless.'
+}
 
-$executable = [IO.Path]::GetFullPath(
-    (Join-Path $paths.PpssppDev 'PPSSPPWindows64.exe')
+$installation = [IO.Path]::GetFullPath($paths.PpssppDev)
+# A closing quote after a backslash would be taken for an escaped one.
+function Format-PpssppArgument {
+    param(
+        [Parameter(Mandatory)][string]$Option,
+        [Parameter(Mandatory)][string]$Value
+    )
+
+    return "`"$Option=$($Value -replace '\\+$', '$0$0')`""
+}
+
+if ($LogFile) {
+    $LogFile = [IO.Path]::GetFullPath($LogFile)
+    $logDirectory = Split-Path -Parent $LogFile
+    if (-not (Test-Path -LiteralPath $logDirectory -PathType Container)) {
+        throw "Log directory does not exist: $logDirectory"
+    }
+}
+
+$executable = Join-Path $installation $(
+    if ($Headless) { 'PPSSPPHeadless.exe' } else { 'PPSSPPWindows64.exe' }
 )
 if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) {
     throw "PPSSPP executable does not exist: $executable"
@@ -62,8 +119,22 @@ $resolvedCheats = @(
 
 # The fork's run-only options: none of them is saved to ppsspp.ini.
 $launchArguments = @()
+if ($Headless) {
+    # Headless reads no config of its own. Replays need the settings they were recorded with.
+    $memstick = Join-Path $installation 'memstick'
+    $launchArguments += @(
+        (Format-PpssppArgument '--memstick' $memstick),
+        (Format-PpssppArgument '--appendconfig' (Join-Path $memstick 'PSP\SYSTEM\ppsspp.ini')),
+        '--graphics=vulkan'
+    )
+}
+else {
+    $launchArguments += Format-PpssppArgument '--controlconfig' (
+        [IO.Path]::GetFullPath($paths.Files.ppsspp_controls)
+    )
+}
 foreach ($cheatPath in $resolvedCheats) {
-    $launchArguments += "`"--cheats=$cheatPath`""
+    $launchArguments += Format-PpssppArgument '--cheats' $cheatPath
 }
 foreach ($cheatLine in @($CheatLines)) {
     if (-not [string]::IsNullOrWhiteSpace($cheatLine)) {
@@ -76,8 +147,50 @@ if ($FastForwardForFrames -gt 0) {
 if ($PSBoundParameters.ContainsKey('Window')) {
     $launchArguments += @('--windowed', "--window=$($Window -join ',')")
 }
+if ($CenteredWindow) {
+    $launchArguments += '--centered-window'
+}
 if ($Mute) {
     $launchArguments += '--mute'
+}
+if ($Turbo) {
+    $launchArguments += '--turbo'
+}
+if ($Unlimited) {
+    $launchArguments += '--unlimited'
+}
+if ($ReadOnlySettings) {
+    $launchArguments += '--read-only-settings'
+}
+if ($LogFile) {
+    $launchArguments += if ($Headless) { '--log' } else { Format-PpssppArgument '--log' $LogFile }
+}
+if ($Saves -ieq 'none') {
+    $launchArguments += '--no-memstick'
+}
+elseif ($Saves) {
+    $launchArguments += Format-PpssppArgument '--savedata' ([IO.Path]::GetFullPath($Saves))
+}
+if ($DiscardSaves) {
+    $launchArguments += '--discard-savedata'
+}
+if ($VolatileSaves) {
+    $launchArguments += '--volatile-savedata'
+}
+if ($InputRecording) {
+    $launchArguments += Format-PpssppArgument '--input-recording' $InputRecording
+}
+if ($CreateInputRecording) {
+    $launchArguments += Format-PpssppArgument '--input-recording-create' $CreateInputRecording
+}
+if ($CaptureDirectory) {
+    $launchArguments += @(
+        (Format-PpssppArgument '--input-recording-capture-dir' $CaptureDirectory),
+        "--input-recording-capture-mode=$CaptureMode"
+    )
+}
+if ($DebuggerPort -gt 0) {
+    $launchArguments += @("--debugger=$DebuggerPort", '--debugger-local')
 }
 if ($Arguments) {
     $launchArguments += @(
@@ -90,10 +203,16 @@ if ($IsoPath) {
 
 $startArguments = @{
     FilePath = $executable
-    WorkingDirectory = [IO.Path]::GetFullPath($paths.PpssppDev)
+    WorkingDirectory = $installation
 }
 if ($launchArguments.Count -gt 0) {
     $startArguments.ArgumentList = $launchArguments
+}
+if ($Headless) {
+    $startArguments.NoNewWindow = $true
+    if ($LogFile) {
+        $startArguments.RedirectStandardError = $LogFile
+    }
 }
 if ($Wait) {
     $startArguments.Wait = $true

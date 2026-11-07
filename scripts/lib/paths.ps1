@@ -191,6 +191,9 @@ function Get-UnWorkshopPaths {
         InputRecordings = & $optional $roots 'pcsx2_input_recordings'
         MemoryCards = & $optional $roots 'pcsx2_memory_cards'
         PpssppDev = & $optional $roots 'ppsspp_dev'
+        PpssppFork = & $optional $roots 'ppsspp_fork'
+        PpssppInputRecordings = & $optional $roots 'ppsspp_input_recordings'
+        PpssppSaves = & $optional $roots 'ppsspp_saves'
         ResolveGame = & $optional $files 'game_resolver'
         Roots = $roots
         Files = $files
@@ -252,14 +255,15 @@ function Resolve-UnWorkshopRecordingName {
         [string]$Name,
         [Parameter(Mandatory)]
         [string]$Root,
+        [string]$Extension = '.p2m2',
         [switch]$CreateParent
     )
 
     if ([string]::IsNullOrWhiteSpace($Name) -or [IO.Path]::IsPathRooted($Name)) {
         throw 'Input recording must be a relative path.'
     }
-    if (-not $Name.EndsWith('.p2m2', [StringComparison]::OrdinalIgnoreCase)) {
-        $Name = "$Name.p2m2"
+    if (-not $Name.EndsWith($Extension, [StringComparison]::OrdinalIgnoreCase)) {
+        $Name = "$Name$Extension"
     }
     $recordingRoot = [IO.Path]::GetFullPath($Root)
     $recordingPrefix = $recordingRoot.TrimEnd(

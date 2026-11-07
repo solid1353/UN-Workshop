@@ -33,15 +33,15 @@ window an equal share of the screen width, and keep them there through PCSX2's
 `-no-recenter`, which stops game starts from recentering the windows; they also
 mute every PCSX2 instance. `-t` selects Turbo, while `-u` selects Unlimited;
 these speed options are mutually exclusive. Each result reports the ordered
-game, process, PINE port, and window position.
+game, process, PINE or debugger port, and window position.
 
-PSP games launch in PPSSPP instead, with the restrictions in
+PSP games launch in PPSSPP instead, with the differences in
 [PPSSPP tooling](ppsspp.md).
 
-`-k` closes every running development PCSX2 before launching. Launches of two or
-three games do this automatically, except agent replays. Snapshot replays never
-close PCSX2 and reject `-k`. Each PCSX2 gets five seconds to close before it is
-force-stopped.
+`-k` closes every running development emulator before launching. Launches of two
+or three games do this automatically, except agent replays. Snapshot replays
+never close an emulator and reject `-k`. Each emulator gets five seconds to close
+before it is force-stopped.
 
 `workshop pcsx2` launches development PCSX2 without a game in Turbo.
 

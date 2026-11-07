@@ -59,8 +59,11 @@ paths; it never checks that they exist.
   files under `games/` and their input recordings.
 - `@pcsx2_scripts/`: reusable PCSX2 launch, worker-copy, PINE,
   marker-editing and GS dump utilities.
-- `@ppsspp_scripts/`: the PPSSPP launch that the game launcher uses for PSP
-  games ([PPSSPP tooling](docs/ppsspp.md)).
+- `@ppsspp_files/`: the [bindings](docs/ppsspp.md#bindings) every PSP game
+  uses, and ignored saves and input recordings.
+- `@ppsspp_scripts/`: reusable PPSSPP launch, deployment, debugger, live cheat,
+  marker-editing, savestate and GE dump utilities
+  ([PPSSPP tooling](docs/ppsspp.md)).
 - `@ghidra_scripts/`: cross-game import, export, manifest, and
   read-only tooling for the [disassembly trees](docs/disassembly.md); reusable
   headless Ghidra Java scripts and runtime setup; and the

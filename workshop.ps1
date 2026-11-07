@@ -180,6 +180,26 @@ switch ($normalizedCommand) {
             throw 'Usage: workshop pcsx2 [deploy | pnach <file>|-line <line> -port <number> [-watch] [-expect <address>:<hex-bytes>]]'
         }
     }
+    'ppsspp' {
+        $argumentList = @(
+            $Arguments |
+                Where-Object { -not [string]::IsNullOrEmpty($_) }
+        )
+        $ppssppScripts = $paths.Roots.ppsspp_scripts
+        if ($argumentList.Count -eq 1 -and $argumentList[0] -ieq 'deploy') {
+            & (Join-Path $ppssppScripts 'deploy.ps1')
+        }
+        elseif ($argumentList.Count -gt 0 -and $argumentList[0] -ieq 'cheat') {
+            $cheatArguments = @($argumentList | Select-Object -Skip 1)
+            & (Join-Path $ppssppScripts 'cheat.ps1') @cheatArguments
+        }
+        elseif ($argumentList.Count -eq 0) {
+            & $paths.Files.ppsspp_launch_command -Turbo
+        }
+        else {
+            throw 'Usage: workshop ppsspp [deploy | cheat <file>|-line <line> -port <number> [-watch] [-expect <address>:<hex-bytes>]]'
+        }
+    }
     default {
         $launch = ConvertFrom-UnWorkshopLaunchArguments -Tokens @(
             $Action

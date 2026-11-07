@@ -22,3 +22,5 @@ pcsx2/*
 
 # PPSSPP
 ppsspp/*
+/ppsspp_files/input_recordings/
+/ppsspp_files/saves/

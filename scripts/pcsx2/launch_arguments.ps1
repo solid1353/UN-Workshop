@@ -125,6 +125,44 @@ function Resolve-UnWorkshopMemoryCardMode {
     }
 }
 
+# A PSP game's saves are a folder of save directories, named like a memory card.
+function Resolve-UnWorkshopSavesPath {
+    [CmdletBinding()]
+    param(
+        [string]$Saves,
+        [Parameter(Mandatory)][string]$SavesRoot
+    )
+
+    if ($Saves -ieq 'none') { return 'none' }
+    if ([string]::IsNullOrWhiteSpace($Saves)) { return $null }
+    if ([IO.Path]::IsPathRooted($Saves)) {
+        return [IO.Path]::GetFullPath($Saves)
+    }
+    $candidate = Join-Path $SavesRoot $Saves
+    if ((Test-Path -LiteralPath $candidate) -or
+        [IO.Path]::GetFileName($Saves) -cne $Saves) {
+        return [IO.Path]::GetFullPath($candidate)
+    }
+
+    $templates = Join-Path $SavesRoot 'templates'
+    $matchingTemplates = @(
+        if (Test-Path -LiteralPath $templates -PathType Container) {
+            Get-ChildItem -LiteralPath $templates -Directory |
+                Where-Object {
+                    $_.Name -ieq $Saves -or ($_.Name -match '^([0-9]+)_(.+)$' -and
+                        ($Saves -ieq $Matches[1] -or $Saves -ieq $Matches[2]))
+                }
+        }
+    )
+    if ($matchingTemplates.Count -gt 1) {
+        throw "Ambiguous saves template '$Saves': $($matchingTemplates.Name -join ', ')"
+    }
+    if ($matchingTemplates.Count -eq 1) {
+        return $matchingTemplates[0].FullName
+    }
+    return [IO.Path]::GetFullPath($candidate)
+}
+
 function Resolve-UnWorkshopMemoryCardPath {
     [CmdletBinding()]
     param(

@@ -20,7 +20,12 @@
     "pcsx2_input_profiles": "@pcsx2_files/input_profiles",
     "pcsx2_input_recordings": "@pcsx2_files/input_recordings",
     "pcsx2_memory_cards": "@pcsx2_files/memory_cards",
-    "ppsspp_dev": "ppsspp"
+    "ppsspp_dev": "ppsspp",
+    "ppsspp_fork": "../../PPSSPP",
+    "ppsspp_files": "ppsspp_files",
+    "ppsspp_savestates": "@ppsspp_dev/memstick/PSP/PPSSPP_STATE",
+    "ppsspp_input_recordings": "@ppsspp_files/input_recordings",
+    "ppsspp_saves": "@ppsspp_files/saves"
   },
   "files": {
     "source_catalog": "games.json",
@@ -29,6 +34,7 @@
     "pcsx2_game_launch_command": "@pcsx2_scripts/launch_games.ps1",
     "pcsx2_pine_command": "@pcsx2_scripts/pine.py",
     "ppsspp_launch_command": "@ppsspp_scripts/launch.ps1",
+    "ppsspp_controls": "@ppsspp_files/controls.ini",
     "ghidra_runtime": "@ghidra_scripts/runtime.ps1"
   }
 }
