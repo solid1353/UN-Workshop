@@ -225,6 +225,13 @@ signed replacement skill ID:
 support ([Support mechanics](support_mechanics.md#setup-and-selected-support))
 and cached primary ID. A primary `0xFF` would match any fighter,
 but no retail row uses it; no match returns `-1`.
+`support_cinematic_pair_admitted` (BTL `0x008861C0`) scans the table the same
+way and returns whether a row matched. Character Select draws one marker beside
+the support's name (`character_selector_draw_support_name`): Special Combos
+when `support_pair_setup_event` admits the pair, else the linked Cinematic
+Jutsu marker when `support_linked_jutsu_pair_admitted` (BTL `0x00886140`) finds
+it in `support_linked_jutsu`'s five rows, else the linked Ultimate Jutsu marker
+when `support_cinematic_pair_admitted` does.
 The primary IDs were initialized from the manager's current side IDs by
 `battle_create_graph` and `pause_controller_update`.
 For tier `0`, `jutsu_find_record_by_skill` resolves the replacement in
