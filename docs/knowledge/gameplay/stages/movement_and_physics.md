@@ -422,6 +422,15 @@ while a hit requires that attribute to remain eligible. Transitions route
 ineligibility, input change, side contact, release and completion to stop,
 detach, or ordinary running/falling.
 
+`surface_input_classify` reads logical input for those transitions: bit `0x8`
+is release, bit `0x1` or `0x2` by the surface's facing continues, and a facing
+that differs from the surface's asks for a detach. No input changes nothing,
+so `0x13` holds with no time limit. A fighter on a surface keeps
+`orientation[1]` at the wall pitch (`-pi/2` observed on axis 2).
+`fighter_action_exit` has no surface case, so the axis bits stay set through
+`fighter_set_action_state`; the transitions, response entry and substitution
+call `item_fighter_air_setup` themselves first.
+
 `item_fighter_air_setup` clears the surface-axis bits. A requested detach
 also offsets X away from the surface by half scaled width, publishes ordinary
 facing, and clears grounded. A changed-direction detach from `0x13` can enter
