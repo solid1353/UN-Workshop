@@ -164,6 +164,14 @@ The next template slot copies the REF tag from `EnginePadContext.setup_packet`.
 when display setup is regenerated. Its allocation request is
 `0x140 + 0x40 * floor(display_width / 64)`, outside the frame packet pool.
 
+The packet opens every chain. It copies the render buffer to the display buffer
+through context 2 in 64-pixel-wide sprites, keeping the display buffer's alpha,
+then clears the render buffer's colour and depth with one sprite. That sprite's
+RGBAQ holds `EnginePadContext.packed_display_value`;
+`engine_set_packed_display_value` rewrites it in place at quadword `qwc - 3`.
+Because the copy comes first, a list built in one pass is rendered by the next
+pass's chain and reaches the display buffer with the chain after that.
+
 `engine_root_update` (`0x001081B0`) increments `update_counter`, assembles
 the current chains, and submits the master chain through
 `display_submit_vif1_chain` only while `setup_request` is negative.
@@ -239,6 +247,12 @@ and DISPLAY1 from the selected display values. Otherwise it adjusts the
 selected draw environment through `gs_draw_environment_adjust_field`,
 using the observed GS field bit. It then calls `gs_paired_environments_submit`
 and saves the bank.
+
+The two banks select the same buffers. `engine_install_display_interrupt` first
+gives them opposite buffers, then overwrites bank 0 to draw to the first colour
+region and display the second, and copies bank 0's display environment and draw
+state over bank 1. Selecting the other bank therefore swaps nothing, and the
+screen changes only through the [setup packet's copy](#frame-chain-and-vif1-submission).
 
 `gs_paired_environments_submit` selects one `0x28`-byte
 `GsDisplayEnvironment` and sends its separately paired draw packet from

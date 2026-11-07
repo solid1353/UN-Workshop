@@ -2,7 +2,7 @@
 
 ## Research coverage
 
-Established: display-count pacing, its writers/readers, output mode and flips,
+Established: display-count pacing, its writers/readers, output mode,
 the direct engine-counter consumers, battle draw callbacks that change state,
 whole-frame streamed rates, and soundtrack coupling.
 Evidence is static across the resident ELF, BTL and ETC; ADV is excluded.
@@ -82,7 +82,7 @@ retail never enables: the sole `ccs_play_start` caller,
 and `ccs_stream_player_construct` clears `play_flags` in the only store to it.
 The viewer's divisor scaling therefore applies to no retail movement.
 
-## Display output and buffer flip
+## Display output
 
 `engine_root_initialize` requests a 512 by 448 display through
 `engine_configure_display`, with `EnginePadContext.setup_request` equal to 0.
@@ -95,12 +95,16 @@ request mode is zero. `gs_reset_and_configure_output` resets the GS and calls
 field mode, displaying alternate lines of one 448-line frame buffer. Movies
 configure their own dimensions before playback.
 
-During ordinary configured output, each engine update selects the other
-display buffer once through `display_environment_select`, writes its
-`DISPFB1`/`DISPLAY1` values and records GS CSR field bit 13 in
-`EnginePadContext.display_field`. **Inference:** at divisor 2, each rendered
-image remains for two consecutive fields, showing both its even and odd
-lines. At divisor 1, each field would come from a different update.
+Rendering goes to one colour buffer and the screen shows another, with no buffer
+swap. Each engine update's chain opens by [copying the render to the displayed
+buffer](rendering/render_submission.md#frame-chain-and-vif1-submission). The
+update also selects the other display bank once through
+`display_environment_select`, but [both banks hold the same
+buffers](rendering/render_submission.md#display-and-draw-environments), so
+that only rewrites the same `DISPFB1`/`DISPLAY1` values and records GS CSR
+field bit 13 in `EnginePadContext.display_field`. **Inference:** at divisor 2,
+each copied image remains for two consecutive fields, showing both its even and
+odd lines. At divisor 1, each field would come from a different update.
 
 ## Engine update counter readers
 
