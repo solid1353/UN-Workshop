@@ -118,7 +118,9 @@ try {
     "work": "work",
     "scripts": "scripts",
     "pcsx2_scripts": "@scripts/pcsx2",
+    "ppsspp_scripts": "@scripts/ppsspp",
     "pcsx2_dev": "pcsx2",
+    "ppsspp_dev": "ppsspp",
     "pcsx2_fork": "pcsx2/fork",
     "pcsx2_files": "pcsx2_files",
     "pcsx2_input_recordings": "@pcsx2_files/input_recordings",
@@ -129,7 +131,8 @@ try {
     "project_settings": "game.json",
     "game_resolver": "@scripts/lib/resolve_game.py",
     "pcsx2_launch_command": "@pcsx2_scripts/launch.ps1",
-    "pcsx2_game_launch_command": "@pcsx2_scripts/launch_games.ps1"
+    "pcsx2_game_launch_command": "@pcsx2_scripts/launch_games.ps1",
+    "ppsspp_launch_command": "@ppsspp_scripts/launch.ps1"
   }
 }
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'paths.json')
