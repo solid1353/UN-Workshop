@@ -43,6 +43,10 @@ or three games do this automatically, except agent replays. Snapshot replays
 never close an emulator and reject `-k`. Each emulator gets five seconds to close
 before it is force-stopped.
 
+`-surfaceless` runs PCSX2 without a window, focus or sound, and leaves other
+emulators open. The launch result carries the process, so its caller can stop it.
+`-rps` and `-agent-replay` already run this way, and PSP games reject it.
+
 `workshop pcsx2` launches development PCSX2 without a game in Turbo.
 
 Speed selection is positive throughout the launcher: callers may request

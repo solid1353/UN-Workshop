@@ -60,7 +60,8 @@ function Invoke-UnWorkshopGameLaunch {
         [switch]$Turbo,
         [switch]$Unlimited,
         [switch]$ClosePcsx2,
-        [switch]$AgentReplay
+        [switch]$AgentReplay,
+        [switch]$Surfaceless
     )
 
     $games = @($Games | Where-Object { -not [string]::IsNullOrEmpty($_) })
@@ -105,6 +106,7 @@ function Invoke-UnWorkshopGameLaunch {
     if ($Unlimited) { $parameters.Unlimited = $true }
     if ($ClosePcsx2) { $parameters.ClosePcsx2 = $true }
     if ($AgentReplay) { $parameters.AgentReplay = $true }
+    if ($Surfaceless) { $parameters.Surfaceless = $true }
     if (-not [string]::IsNullOrWhiteSpace($LogFile)) {
         $parameters.LogFile = $LogFile
     }
@@ -219,6 +221,7 @@ switch ($normalizedCommand) {
             -Turbo:$launch.Turbo `
             -Unlimited:$launch.Unlimited `
             -ClosePcsx2:$launch.ClosePcsx2 `
-            -AgentReplay:$launch.AgentReplay
+            -AgentReplay:$launch.AgentReplay `
+            -Surfaceless:$launch.Surfaceless
     }
 }

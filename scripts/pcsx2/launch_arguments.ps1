@@ -19,6 +19,7 @@ function Get-UnWorkshopLaunchOptions {
             '-u' = 'Unlimited'
             '-k' = 'ClosePcsx2'
             '-agent-replay' = 'AgentReplay'
+            '-surfaceless' = 'Surfaceless'
         }
     }
 }

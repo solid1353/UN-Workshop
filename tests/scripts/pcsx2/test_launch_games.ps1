@@ -43,6 +43,7 @@ foreach ($expectedOption in @(
     '-u',
     '-k',
     '-agent-replay',
+    '-surfaceless',
     '-logfile <path>'
 )) {
     Assert-WorkshopLaunchTest `
@@ -167,12 +168,13 @@ param(
     [switch]$Unlimited,
     [switch]$ClosePcsx2,
     [switch]$AgentReplay,
+    [switch]$Surfaceless,
     [UInt64]$UnlimitedForFrames,
     [string]$ProjectRoot
 )
 $pnachCount = if ($null -eq $PnachByGame) { 0 } else { $PnachByGame.Count }
 $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.Count }
-"[fake] games=$($Games -join ',') play=$Play record=$Record snapshots=$Snapshots capture=$CaptureDirectory memory=$MemoryCard discard=$DiscardMemoryCardWrites volatile=$VolatileMemoryCard readOnly=$ReadOnlySettings pnaches=$pnachCount additionalPnaches=$($AdditionalPnach -join '|') lineSets=$lineSetCount turbo=$Turbo unlimited=$Unlimited close=$ClosePcsx2 frames=$UnlimitedForFrames project=$ProjectRoot log=$LogFile agentReplay=$AgentReplay"
+"[fake] surfaceless=$Surfaceless games=$($Games -join ',') play=$Play record=$Record snapshots=$Snapshots capture=$CaptureDirectory memory=$MemoryCard discard=$DiscardMemoryCardWrites volatile=$VolatileMemoryCard readOnly=$ReadOnlySettings pnaches=$pnachCount additionalPnaches=$($AdditionalPnach -join '|') lineSets=$lineSetCount turbo=$Turbo unlimited=$Unlimited close=$ClosePcsx2 frames=$UnlimitedForFrames project=$ProjectRoot log=$LogFile agentReplay=$AgentReplay"
 '@ | Set-Content -NoNewline -LiteralPath (Join-Path $repository 'scripts\pcsx2\launch_games.ps1')
 
     Push-Location $repository
@@ -190,6 +192,11 @@ $lineSetCount = if ($null -eq $PnachLinesByGame) { 0 } else { $PnachLinesByGame.
         Assert-WorkshopLaunchTest `
             -Condition ($play.Contains("games=UN5,$isoTarget play=practice-menu record=")) `
             -Message 'Paired playback was not forwarded to the shared launcher.'
+
+        $surfaceless = (& .\workshop.ps1 UN5 -surfaceless) -join "`n"
+        Assert-WorkshopLaunchTest `
+            -Condition ($surfaceless.Contains('surfaceless=True')) `
+            -Message '-surfaceless was not forwarded to the shared launcher.'
 
         $agentReplay = (
             & .\workshop.ps1 UN5 -rp practice-menu `

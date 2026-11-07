@@ -10,6 +10,8 @@ param(
     [Parameter(ParameterSetName = 'Play')]
     [switch]$AgentReplay,
 
+    [switch]$Surfaceless,
+
     [string]$LogFile,
 
     [Parameter(ParameterSetName = 'Play')]
@@ -67,6 +69,11 @@ if ($DiscardMemoryCardWrites -and $VolatileMemoryCard) {
 if ($Snapshots -and $ClosePcsx2) {
     throw '-k cannot be combined with -rps.'
 }
+if ($Surfaceless -and ($Snapshots -or $AgentReplay)) {
+    throw '-rps and -agent-replay already run surfaceless.'
+}
+# These launches have no window to wait for, tile or make room for.
+$noWindow = $AgentReplay -or $Surfaceless
 if ($AgentReplay) {
     if ([string]::IsNullOrWhiteSpace($Play) -or $Snapshots) {
         throw '-agent-replay requires -rp and cannot be combined with -rps.'
@@ -615,7 +622,7 @@ if ($pinePortBase + $selectedGames.Count - 1 -gt 65535) {
     throw "Not enough PINE ports remain after configured port $pinePortBase."
 }
 
-if (-not $AgentReplay) {
+if (-not $noWindow) {
     Add-Type -AssemblyName System.Windows.Forms
     if (-not ('UnWorkshopLaunchWindow' -as [type])) {
         Add-Type -TypeDefinition @'
@@ -664,6 +671,9 @@ $gameList = $selectedGames.Selector -join ', '
 $action = if ($AgentReplay) {
     "launch surfaceless agent replay for $gameList"
 }
+elseif ($Surfaceless) {
+    "launch $gameList surfaceless"
+}
 elseif ($selectedGames.Count -gt 1) {
     "close configured user emulators, launch $gameList, and tile their windows"
 }
@@ -674,7 +684,7 @@ if (-not $PSCmdlet.ShouldProcess($pcsx2Root, $action)) {
     return
 }
 
-if (($selectedGames.Count -gt 1 -and -not $AgentReplay) -or $ClosePcsx2) {
+if (($selectedGames.Count -gt 1 -and -not $noWindow) -or $ClosePcsx2) {
     Close-UnWorkshopUserEmulatorProcesses -Roots @($paths.Pcsx2Dev, $paths.PpssppDev)
 }
 
@@ -731,6 +741,9 @@ try {
             }
             if (@($game.PnachLines).Count -gt 0) {
                 $ppssppParameters.CheatLines = $game.PnachLines
+            }
+            if ($Surfaceless) {
+                throw '-surfaceless runs PCSX2 games only.'
             }
             if ($AgentReplay) {
                 $ppssppParameters.Headless = $true
@@ -804,6 +817,9 @@ try {
             $launchParameters.PinePort = $pinePort
             $launchParameters.Remove('Arguments')
         }
+        if ($Surfaceless) {
+            $launchParameters.Surfaceless = $true
+        }
         if (-not [string]::IsNullOrWhiteSpace($LogFile)) {
             $launchParameters.LogFile = $LogFile
         }
@@ -818,10 +834,10 @@ try {
                 $launchParameters.UnlimitedForFrames = $game.UnlimitedForFrames
             }
         }
-        if ($selectedGames.Count -eq 1 -and -not $AgentReplay) {
+        if ($selectedGames.Count -eq 1 -and -not $noWindow) {
             $launchParameters.CenteredWindow = $true
         }
-        elseif (-not $AgentReplay) {
+        elseif (-not $noWindow) {
             # Keep the tiled position: game starts would otherwise recenter it.
             $launchParameters.NoRecenter = $true
         }
@@ -859,7 +875,7 @@ try {
             PinePort = $pinePort
             DebuggerPort = $null
         })
-        if (-not $AgentReplay) {
+        if (-not $noWindow) {
             Wait-UnWorkshopGameWindow `
                 -Process $process `
                 -Game $game.Selector `
@@ -869,7 +885,7 @@ try {
     }
 
     $gameCount = $launchedGames.Count
-    if ($gameCount -gt 1 -and -not $AgentReplay) {
+    if ($gameCount -gt 1 -and -not $noWindow) {
         foreach ($launch in $launchedGames) {
             [UnWorkshopLaunchWindow]::ShowWindowAsync(
                 $launch.Process.MainWindowHandle,
@@ -881,7 +897,7 @@ try {
 
     for ($index = 0; $index -lt $gameCount; $index++) {
         $launch = $launchedGames[$index]
-        if ($gameCount -gt 1 -and -not $AgentReplay) {
+        if ($gameCount -gt 1 -and -not $noWindow) {
             $tile = Get-UnWorkshopWindowTile -Index $index -Count $gameCount
             $moved = [UnWorkshopLaunchWindow]::MoveWindow(
                 $launch.Process.MainWindowHandle,
@@ -902,7 +918,7 @@ try {
             ProcessId = $launch.Process.Id
             PinePort = $launch.PinePort
             DebuggerPort = $launch.DebuggerPort
-            Position = if ($AgentReplay) {
+            Position = if ($noWindow) {
                 'surfaceless'
             }
             elseif ($gameCount -eq 1) {
@@ -918,7 +934,7 @@ try {
                 'middle'
             }
         }
-        if ($AgentReplay) {
+        if ($noWindow) {
             $result.Process = $launch.Process
         }
         [pscustomobject]$result

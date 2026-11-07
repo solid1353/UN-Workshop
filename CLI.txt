@@ -19,6 +19,7 @@ UN Workshop
     -t                    Turbo
     -u                    Unlimited
     -k                    Close running development emulators first
+    -surfaceless          PCSX2 without a window, focus or sound
 
   workshop pcsx2                                                            Launch development PCSX2
   workshop pcsx2 deploy                                                     Wait and deploy the completed PCSX2 build
