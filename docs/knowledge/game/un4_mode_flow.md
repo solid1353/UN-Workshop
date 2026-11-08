@@ -3,7 +3,7 @@
 ## Research coverage
 
 Established statically: resident startup's language-selection dependency,
-New Game's directory-check branch,
+the text overlay's load slot, New Game's directory-check branch,
 Mode Select's Practice result, Practice's selection and loading states,
 participant fields, raw stage ownership, manual-opponent settings, and the
 Command Display and Easy Display flags.
@@ -31,7 +31,11 @@ state does not bypass this earlier wait.
 `splash_update` state 3 calls `ui_language_reload_resources`
 (`0x003F50F0`) to load the selected text overlay, adjusts audio resources
 if the language changed, starts audio readiness work, then constructs the
-splash sequence. These steps precede MOTHER's outer loop. States 2 and 3
+splash sequence. `TEXTENG.BIN` or `TEXTFRN.BIN` loads whole at `0x0086A000`,
+the address `ui_text_load_address` (`0x00606F18`) holds, a fixed slot between
+the ELF's `.bss` end `0x006B8200` and the heap start `0x0089D980`. This
+routine and `ui_language_set_and_load` (`0x003F4FA0`) load it only when the
+language changes. These steps precede MOTHER's outer loop. States 2 and 3
 of that outer loop run logos and title; state 5
 runs `new_game_start`, state 6 Load Game, and state 7 `game_scene_update`.
 New Game allocates the `0xCF0` manager at `0x00609794`, initializes its
@@ -74,6 +78,13 @@ at `+0x84/+0xA4`; bit 1 of the entries' first byte selects COM control.
 flags. `battle_manager_finalize_loadouts` (`0x00322670`) prepares each
 side's jutsu and chooses its native default Ultimate record when absent,
 before state 8 queues the fighters.
+
+UN4's Practice has no starting-Health setting: `practice_settings_apply`
+(`0x00384F60`) commits eight values, Command Display, Behavior and profile
+bytes `+0x41..+0x44`, none of them HP, and its English text names none.
+`fighter_load_character_record` (`0x001FC390`) adds starting HP from word 7
+of the descriptor each character's constructor passes it, so a fighter
+always starts at its character's HP.
 
 In Practice, `practice_behavior_set` (`0x003241B0`) and
 `practice_behavior_get` (`0x00324290`) use profile `+0x40`, reached through

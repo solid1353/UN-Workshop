@@ -1068,6 +1068,8 @@ address	kind	name	type	comment
 0x0039CE90	function	audio_apply_persisted_settings		Load settings+0C volume,+0E output mode,+0F compact bank set, forwarding last byte to audio_set_bank_set:0 English,1 Japanese as established by sound-menu sprite identity/inverse write. Persisted selector is independent of physical character/streamed member indices.
 0x0039CF30	function	profile_character_status_load		Own UN4 indexed byte load suppliedbank+7D8+characterID;profile_roster_available suppliesprofile+8,so statusbyteprofile+7E0+ID. CharacterSelectID9 availability readsbit0 atprofile+7E9; no boundscheck here.
 0x0039CFF0	function	profile_stage_is_unlocked	int profile_stage_is_unlocked(void *profile, int slot)	Return bit for raw slot from profile+82C dword array:word=slot/32,mask=1<<(slot%32).Stage Select passes0..17 without logical-ID remapping.
+0x0039E820	function	mode_select_construct_resources		Save engine packed display value (frame clear colour) at +0xD0, set it white, load modesel1.ccs and build Mode Select's players.
+0x0039F500	function	mode_select_cleanup		Release Mode Select's players and modesel1.ccs, then restore the clear colour saved at +0xD0.
 0x003A2FE0	function	character_select_portrait_texture		Own UN4 formats TEX_purecharsel%02d using supplied bank+1; requires supplied container orcharsel1.ccs and resolves namedtexture. Not a3PCT loader.
 0x003A3AC0	function	character_select_name_rectangle_copy		Own UN4 selected/fixed/form display ID indexes twelve-byte metadata00582090. Name rectangle reads shorts+6/+8/+A,returns{u+1,v+1,width-2,30}; ID9 row5820FC raw{208,224,120} ->{209,225,118,30}. Locked fallback separate0058207E.
 0x003A3C30	function	character_select_has_fixed_fighter		Own UN4 tests fixedchoice word+24 in1..77 and roster_character_valid zero; used to override empty/locked presentation. Orochimaru9 passes numeric/filter part.
@@ -1152,6 +1154,7 @@ address	kind	name	type	comment
 0x003EF590	function	list_collect_pad_input	void list_collect_pad_input(unsigned long long param_1,unsigned long param_2)	Inferred from an exact code match with NA2 SLPS_258.37 0x003832C0. Source-selector bits 0/1 choose ports 0/1; selector&3==0 skips handling, otherwise OR selected pressed/repeat words and pass them to list_handle_pad_input without clearing/retaining shared events. Mode Select modal uses selector 3.
 0x003F3BE0	function	jutsu_record_get		Own-game locale-selected table pointer00608128+ui_language_index*4,index stride0x10;English table0086FB10 in TEXTENG.BIN;returns un4UltimateJutsuRecord pointer.
 0x003F4AE0	function	audio_settings_help_text		Return language-table00608280[ui_language_index()][sound settings selected row]. audio_settings_menu_update requests current row0..2 or reset help row3; text table pointer initialization is separate.
+0x003F4FA0	function	ui_language_set_and_load	void ui_language_set_and_load(int language)	Clamp language to 0..1; when it differs from requested 006082E0, load its TEXTENG/TEXTFRN.BIN at ui_text_load_address at once; store requested and loaded index.
 0x003F50B0	function	ui_language_set_index		Clamp language argument to0..1, default0 for out of range, and store UI-language index006082E0. Language selector confirmation calls this through row mapping00584D10; resources are reloaded afterward by splash_update state3.
 0x003F50F0	function	ui_language_reload_resources		If requested UI language006082E0 differs from loaded006082E4, build language-specific TEXTENG.BIN/TEXTFRN.BIN path using00584CB0, load resource synchronously, then update loaded index. Called by splash_update state3 after selector confirmation.
 0x003F51D0	function	ui_language_index		Return current UI-language index from gp-0x6C90; Stage Select chooses its locale rectangle bank directly.
@@ -1507,6 +1510,7 @@ address	kind	name	type	comment
 0x00601500	data	tsunade_wave_vtable		ccSkillTND000Wave resident vtable;transient9B0 object allocated by tsunade_jutsu0_create_wave;table ends before601590.
 0x00601860	data	jutsu_jry000_vtable		Installed by UN4 jutsu_jry000_construct at actor100; RTTI862E10->862DF0 ccSkillJRY000.
 0x00602990	label	orochimaru_jutsu1_vtable		Resource23 ccSkillORO001 interface at+100:21C/220=7841B0/7843D0,F4/F8=784250/7843C0,240=784560 noop,250/254=784430/784440,26C=79B160 shared animation binder,138=79DB40 accepted event.
+0x00606F18	label	ui_text_load_address		Address TEXTENG.BIN/TEXTFRN.BIN load whole at: 0x0086A000, a fixed slot between bss end 0x006B8200 and heap start 0x0089D980.
 0x00606FD0	data	sound_afs_parent_handle		Halfword 255 used by afs_startup_load_archive index 0 for SOUND.AFS and by family-0 nested partition loading.
 0x006079C0	data	audio_settings_container_filename_ptr	char *	Pointer to audio_settings_container_filename005D11C0 option.ccs consumed by audio_settings_menu_create_resources.
 0x006079C8	data	audio_settings_texture_name_ptr	char *	Pointer to audio_settings_texture_name005D11E0 TEX_option passed to sprite_create_named_texture by audio_settings_menu_create_resources.
@@ -1517,6 +1521,7 @@ address	kind	name	type	comment
 0x00607D10	label	kabuto_ultimate_record_list		Count3 followed62/63/64; character-local pointertable00583B10 ID28; defaultrecord62 at00583C88.
 0x00607DA0	label	naruto_ultimate_jutsu_list		ID57 count2 records110/111;default110;English metadata86FB10+index10hex. Skills5A/59,record111 effect64 mapsSecondStage73.
 0x00607E18	label	naruto_second_stage_ultimate_jutsu_list		ID73 count1 record153;category1 matchesit,othercategories use default0. Metadata skill5B,no post-effect.
+0x00608128	label	jutsu_record_tables		Per-language Ultimate Jutsu record table pointers for jutsu_record_get; English and French both 0x0086FB10 in the text slot.
 0x00608468	data	shukaku_bullet_descent		Two floats 10.0/24.0: per-update descent of Shukaku state-1 bullets 0/1 (gp-6B08).
 0x00608470	data	shukaku_bullet_fire_frames		Two words 70/87: ANM_skkatc00 frames that fire bullets 0/1 (gp-6B00).
 0x00608478	data	shukaku_bullet_angles		Two floats -1.9/-2.08 rad: bullet 0/1 orientation times side sign (gp-6AF8).

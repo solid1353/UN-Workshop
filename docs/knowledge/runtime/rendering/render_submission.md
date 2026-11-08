@@ -3,7 +3,8 @@
 ## Research coverage
 
 Established: render-pool ownership, rotating packet lists, priority/tree ordering,
-frame submission, DMA continuation/completion, and paired GS environments.
+frame submission, DMA continuation/completion, paired GS environments, and
+each game's frame clear colour.
 Names and partial structure views come from `@annotations/NA2`.
 Evidence is static retail code.
 Open: nothing.
@@ -171,6 +172,16 @@ RGBAQ holds `EnginePadContext.packed_display_value`;
 `engine_set_packed_display_value` rewrites it in place at quadword `qwc - 3`.
 Because the copy comes first, a list built in one pass is rendered by the next
 pass's chain and reaches the display buffer with the chain after that.
+
+That clear colour is what a frame shows wherever nothing draws, and what
+additive draws add to. NA2's `resident_flow_dispatch` (`0x001E0EE0`) and
+`btl_transition_prepare` (`0x0038E140`) set it to black, so every battle and
+Ultimate Jutsu clears to black; Mode Select sets white and restores the saved
+value. UN3 clears battles to black the same way (`game_main_task` and the
+call at `0x00303C88`). UN4's `game_main_task` and `splash_update` set white,
+its title sets white and fade levels, and Mode Select saves, sets white and
+restores, with no call on the way into battle: its Practice launch, which
+skips logos and title, clears its films to white.
 
 `engine_root_update` (`0x001081B0`) increments `update_counter`, assembles
 the current chains, and submits the master chain through

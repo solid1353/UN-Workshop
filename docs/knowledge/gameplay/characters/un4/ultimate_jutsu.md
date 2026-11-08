@@ -11,7 +11,8 @@ the common controller base (vtable, update/draw hosting, fighter lock,
 clash interface, timer and stage lifetime) and its effect services
 against NA2's;
 the Naruto, Jiraiya, Tsunade and Orochimaru films' and summon stages'
-external providers against NA2's files; no UN4 film uses the transformed
+external providers against NA2's files, the unselected films' models against
+NA2's textures; no UN4 film uses the transformed
 filter bank. Each move's own resources and methods belong to its character
 comparison; summon controllers whose fighter has none are recorded under
 the authored-ID-1 route. Nothing shared remains open.
@@ -50,9 +51,11 @@ record-index list selected by character ID in `jutsu_character_lists`
 and its independent signed cost tier. Cost tiers 0/1/2 become 5/10/15 chakra.
 Class 7 also copies the effect into fighter `+0x182`.
 
-`jutsu_record_get` (`0x003F3BE0`) selects the locale table through the
-pointer vector at `0x00608128`, then indexes `0x10`-byte records. Its checked
-English table is `jutsu_name_table`, `TEXTENG.BIN 0x0086FB10`.
+`jutsu_record_get` (`0x003F3BE0`) selects the locale table through
+`jutsu_record_tables` (`0x00608128`), then indexes `0x10`-byte records. Its
+checked English table is `jutsu_name_table`, `TEXTENG.BIN 0x0086FB10`; the
+French entry holds the same address, since both text files load in one
+[slot](../../../game/un4_mode_flow.md#startup-and-practice-entry).
 
 | Offset | `un4UltimateJutsuRecord` field | Consumer |
 | --- | --- | --- |
@@ -189,6 +192,16 @@ definition in six of the films; both games' `EFFECT0X` and NA2's own
 also have no stored definition, as recorded in the
 [Orochimaru comparison](orochimaru.md#manda-stage-and-code-selected-effects).
 
+NA2's copies of the films no NA2 record selects keep UN4's own models, even
+where their provider's NA2 texture is laid out differently. `D64_10E` and
+`D64_25E` carry UN4's ponytail `c\1ddr\max\1ddrheir.max`, whose material
+binds `TEX_1ddrbody`; NA2's `PL/1DDRBOD1` lays that texture out differently
+from UN4's, so in NA2 the ponytail shows other parts of it. NA2's own
+`D64_20E` and `D64_35E` carry a ponytail of the same size that differs in 408
+bytes. `D59_20E`'s second Gaara body `1gawbod2.max` and `1gawlcloth.max`
+likewise bind `TEX_1gawbody`, which NA2's `PL/1GAWBOD1` changes in small
+areas; NA2's own `D59_10E` carries its versions of both.
+
 `sp_skill_play_start` (`0x003308A0`) resolves a replacement skill before
 request and hit-descriptor lookup. It allocates a `0x301`-byte owner and
 `0x2E0`-byte streamed player, with four `0x10000` blocks in each ring.
@@ -277,7 +290,9 @@ The film soundtrack comes from `audio_prepare_skill_soundtrack`
 (`0x001D7850`): for skills 0..145 it requests music preset 9 with
 `STREAM.AFS` member skill for English voices and skill + 146 for Japanese
 (`audio_bank_set_selector`). The checked tracks are stereo 24 kHz ADX
-except English member 111 (48 kHz). NA2's routine (`0x001D5BE0`) uses
+except English member 111 (48 kHz); the Japanese ones checked (242, 256, 257,
+270) also have NA2's film-track header: type 3, version 4, high-pass 500, no
+loop. NA2's routine (`0x001D5BE0`) uses
 member = skill in a single 184-member bank. There is no separate film cue
 table; each hit row's sound byte is the cue.
 
@@ -955,7 +970,8 @@ eligible threshold, or phase zero before the first threshold, and builds
 a translation from the chosen XYZ triple. UN4 does not fill undeclared
 defender entries. NA2 fills entries through ID 93 after a short table with
 a shared cleared `0xC0`-byte buffer; it does not map same-name fighters
-between games. NA2 then applies its independently authored
+between games. NA2's copies of `d59_20`, `d64_10`, `d64_25` and `d68_10`,
+which no NA2 record selects, keep UN4's 78 entries. NA2 then applies its independently authored
 [position dispatch](../ultimate_jutsu_cinematics.md#defender-specific-draw-and-placement-dispatch).
 The [Shizune/Kabuto tables](shizune_kabuto.md#shizunekabuto-offsets-filters-and-resident-scripts)
 show both changed ID coverage and changed same-name position values.

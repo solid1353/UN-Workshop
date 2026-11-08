@@ -5518,6 +5518,7 @@ address	kind	name	type	comment
 0x005AB380	label	sp_skill_frame_scripts		Resident appearance/helper script pointervector indexedbyresolvedskill-1;unsignedindex> B5 usesentry0. Beginretainspointeratowner160/164;frameinterpretsop1/2two-word rows,op3four-wordrows,op0terminatoronlywhenthreshold<currentframe.
 0x005AB5F0	data	tsunade_regeneration_frame_script_entry		Resolved skill0x9E indexes sp_skill_frame_scripts by skill-1; stored pointer zero, no resident op1/2/3 appearance/helper script for D25_10.
 0x005AB5F4	data	tsunade_hokage_power_frame_script_entry		Resolved skill0x9F indexes sp_skill_frame_scripts by skill-1; stored pointer zero, no resident op1/2/3 appearance/helper script for D25_20.
+0x005AB668	data	sp_skill_damage_offset_name_format	char[15]	BIN_damoffs_%s; sp_skill_play_begin formats the streamed container's header name at 0x0035ACE8 and finds it through the case-sensitive optional lookup; a miss leaves no defender offsets.
 0x005AB678	data	strmcmn_ccs_path	char[12]	Required common stream-container name. | strmcmn.ccs common stream archive.
 0x005AB688	data	skill_request_blob_name	char[13]	Object name BIN_strtbln4; its 0x2400 runtime object's inline bytes hold the relocatable SINF request table. | BIN_strtbln4 SINF resource contains branch table and skill request tables.
 0x005AB6C0	data	sp_skill_defender_node_name_format	char[16]	EXT_1cmn00t0 %s; common cinematic node name.

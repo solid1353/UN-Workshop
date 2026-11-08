@@ -2,7 +2,8 @@
 
 ## Research coverage
 
-Established: opponent selection, side/role setup, authored appearance and
+Established: opponent selection, side/role setup, the names of a stream's
+optional offsets and filter, authored appearance and
 texture/draw switches and how UN3 keeps its appearance substitutions, defender draw/placement/matrix gates, bone replacement,
 popup interruption, selected geometry providers, and the resident BSS globals
 for opponent groups, optional switch tables and the derived main path.
@@ -108,7 +109,13 @@ establish their layout:
 `sp_skill_play_begin` (`0x0035A070`) runs for each request. It retains
 `container` and the first resident request's `main_container`, binds defender
 body/eye/mouth resources to `EXT_1cmn00t0`, and finds the attacker body through
-the side-formatted `EXT_1xxx00t0 body` name. Appearance lookup uses each side's
+the side-formatted `EXT_1xxx00t0 body` name. It names the stream's optional
+defender offsets and filter after the stream's header name,
+`sp_skill_damage_offset_name_format` (`0x005AB668`) and
+`skill_stream_filter_resource_format` (`0x005AB760`, any extension removed),
+and finds each through the case-sensitive optional lookup, so a stream whose
+header name differs from those objects' suffix, even in letter case only,
+plays without them. Appearance lookup uses each side's
 own retained flags. After installing resources and the time limit, setup
 increments `request_ordinal`. Callback order belongs to
 [CCS runtime](../../game/files/ccs_runtime.md#per-request-lifecycle-in-playdecode).
