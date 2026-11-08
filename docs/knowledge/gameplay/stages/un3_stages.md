@@ -249,7 +249,7 @@ Two resident byte/word tables are also indexed by `scene_index`:
 | Table | Contract | S04 |
 | --- | --- | --- |
 | `effect_4a_stage_intensity` (`0x004F78A0`), 27 bytes | `effect_4a_secondary_update` (`0x001FF710`) passes the byte, or `0xBF` without a context or for an index of 28 or more, to `effect_4a_submit_tint_packet` mode 2. That packet is NA2's `0x002C80C0` mode-3 packet with the byte as RGB. | `0x7F` |
-| `stage_music_tracks` (`0x00388E20`), 27 words | The battle music preset at `0x001860F0` passes the word as the member of sound descriptor 0 to `audio_select_music_track`. Descriptor 0 is `SOUND.AFS` partition 0, 89 members. Scenes 0..19 use members 5..24. | member 8: stereo 48 kHz looped ADX, 2,721,271 samples |
+| `stage_music_tracks` (`0x00388E20`), 27 words | The battle music preset at `0x001860F0` passes the word as the member of sound descriptor 0 to `audio_select_music_track`. Descriptor 0 is `SOUND.AFS` partition 0, 89 members. Scenes 0..19 use members 5..24, and summon scenes 20..26 use 27, 26, 26, 26, 26, 25 and 25. | member 8: stereo 48 kHz looped ADX, 2,721,271 samples |
 
 Six of the nine shared-content pairs keep UN3's intensity byte; NA2 slots
 8, 9 and 15 change scenes 2, 13 and 12's `CF`, `AF` and `5F` to `AF`, `5F`

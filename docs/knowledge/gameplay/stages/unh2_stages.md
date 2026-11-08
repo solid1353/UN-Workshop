@@ -185,8 +185,18 @@ default.
 `audio_play_mode_music` (`0x08A3E7EC`) plays the scene's
 `stage_music_tracks` row unless its override is set. Rows of `music_rows`
 (`0x08AF5F88`, 12 bytes: path, loop flag, volume) 0..10 are
-`sound/bgm/stage00.at3`..`stage10.at3`: scene 5 plays `stage03`, 18
-`stage08` and 19 `stage09`, each looping at volume 150. The files are RIFF
+`sound/bgm/stage00.at3`..`stage10.at3`, each looping at volume 150.
+
+| Scenes | 0 | 1 | 2 | 4 | 5 | 10 | 12 | 13 | 18 | 19 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Track | `stage00` | `stage01` | `stage02` | `stage04` | `stage03` | `stage05` | `stage06` | `stage07` | `stage08` | `stage09` |
+
+The other scenes have no archive, and no scene plays `stage10`. In
+`cmn/text.bin`'s stage names, which follow scene order, these ten scenes are
+Ichiraku Ramen Shop, Hokage Great Stone Faces, Chunin Exam Stadium, The
+Forest of Death, Kikyo Castle Keep, Survival Exercise Ground, Hidden Leaf Hot
+Spring, Hidden Leaf Forest, Outside the Mugenjo and Inside the Mugenjo; the
+others are `dmy_` placeholders. The files are RIFF
 ATRAC3plus at 44.1 kHz, stereo: the `fact` chunk gives the encoder delay
 and the `smpl` loop counts samples from the decoder's first output, the
 delay included.

@@ -323,7 +323,7 @@ All are indexed by scene without a range check.
 | `stage_navigation_authored_routes` | `BATTLE.BIN` `0x008251A0`, 18 pointers to 64 rows of 12 bytes | `0x00746A40` copies all 64 rows (UN3 stops at -1); a null pointer skips the copy |
 | `stage_effect_intensity` | `SLUS_215.75` `0x004AD2D0`, 18 bytes | `effect_stage_intensity_tint_update` (`0x001E0BB0`), no default |
 | `stage_render_coefficients` | `SLUS_215.75` `0x004424C0`, two floats per scene | `stage_apply_render_coefficients` (`0x002DAA30`) |
-| `stage_music_tracks` | `SLUS_215.75` `0x00419B50`, a word per scene | `audio_apply_music_preset` (`0x002B8090`): member of `SOUND.AFS/000` unless the context `+0x1AC` override is set |
+| `stage_music_tracks` | `SLUS_215.75` `0x00419B50`, a word per scene: 5, 5, 7, 7, 8, 8, 11, 11, 10, 10, 4, 4, 12, 12, 9, 9, 6, 6 for scenes 0..17, so each pair of scenes shares a track | `audio_apply_music_preset` (`0x002B8090`): member of `SOUND.AFS/000` unless the context `+0x1AC` override is set |
 | `stage_scene_variants` | `SLUS_215.75` `0x00442470` | `0x002D8D10` selects the `_a` suffix of `BLT_bg`/`BLT_obj` for even scenes and `_b` for odd ones; each archive holds only its own |
 | `stage_scene_auxiliary_filenames` | `SLUS_215.75` `0x00440070` | `3eye/3eye%s` paths |
 | `stage_scene_rectangle_lists` | `SLUS_215.75` `0x0043EFA0`, 32-byte records of section, line, endpoint, side byte and rectangle | `stage_rectangle_x_offset` (`0x0027C9E0`): the x offset out of the first rectangle of the fighter's section containing a position. Only `actor_target_rectangle_x_offset` (`0x0027CB10`) calls it, for two actor update methods (call sites `0x00278618`, `0x0027A39C`); the first adds it to a fighter's x before placing it. No stage code reads the table. |
