@@ -713,9 +713,9 @@ address	kind	name	type	comment
 0x002946D0	function	battle_scene_lock_active_b		Same body as battle_scene_lock_active.
 0x00294770	function	sp_skill_defender_camera_admission		Only defender IDs38h/35h/23h/32h/33h/30h consult skill-indexed47C010 range list; inclusive matching frame rejects camera auxiliary,otherwise admit. Other IDs always admit.
 0x002948B0	function	sp_skill_update_camera_auxiliary		Ask sp_skill_defender_camera_admission with defender ID,skill,frame; temporarily use request+1CC/1C8 contexts then update retained auxiliary6C,restore previous globals.
-0x00294A40	function	sp_skill_swap_material_palettes		For each {CLT,MAT} pair, appends c2 (flag 4) or c1 (other nonzero flags) to the CLT name and sets MAT +4 to that palette.
+0x00294A40	function	sp_skill_swap_material_palettes		For each {CLT,MAT} pair, appends c2 (flag 4) or c1 (other nonzero flags) to the CLT name, keeping the base name at flags 0, and sets MAT +4 to that palette.
 0x00294BE0	function	sp_skill_apply_object_palette_record		Record {container or null, OBJ, CLT for flag 1, CLT for flag 4}: binds the selected palette to the object's model.
-0x00294CF0	function	sp_skill_apply_appearance_substitutions		At request begin: hard-coded stream codes (d23_101 etc.) swap MAT palettes; when attacker appearance flags &5 are set, applies the skill's sp_skill_palette_record_lists entries.
+0x00294CF0	function	sp_skill_apply_appearance_substitutions		At request begin: stream codes 0x230101 (d23_101), 0x100102 (d10_102), 0x30202 (d03_202) and 0x10204 (d01_204) call sp_skill_swap_material_palettes with 14/1/1/11 pairs at 0x5F3340/0x5F2FB0/0x5F2F88/0x5F2EF0 whatever the appearance flags; then, only when the attacker's appearance flags &5 are set, applies each record of the skill's sp_skill_palette_record_lists entry through sp_skill_apply_object_palette_record.
 0x00294EA0	function	sp_skill_play_completion_task		While scene task readiness true, advance retained request player then service state1; finish task each call. No own damage/audio-row loop.
 0x00294F10	function	sp_skill_play_update		Apply timed appearance commands and per-skill defender-position table; select signedXYZ triple against threshold list and build translation matrix; update cinematic scene auxiliary and final camera helper.
 0x002952B0	function	sp_skill_play_frame		Delegates sp_skill_update_camera_auxiliary only; this UN3 frame callback has no own audio/hit-row loop.
@@ -1222,10 +1222,37 @@ address	kind	name	type	comment
 0x005E4F80	data	kisame_grand_whirlpool_defender_positions		Count2; short thresholds1,173; defender1 selected triples zero.
 0x005E8E30	data	anbu_hazy_moon_defender_positions		Skill 0x78 placement: count 4, thresholds 0x005E8720 {1,103,263,320}, per-defender four XYZ triples.
 0x005E9630	label	green_beast_cinematic_defender_positions		Skill79 defender-position descriptor,count5,frames5E8F20={1,97,145,231,254},defender indexed signedXYZ pointer rows follow; every used opponent's data remains dependency.
+0x005F2EF0	data	naruto_ninja_handbook_palette_swaps		d01_204: 11 {CLT,MAT} pairs CLT/MAT_nrt_tex_f, g, j, l, n, r, t, s1, s2, x, y.
+0x005F2F88	data	lee_mad_dance_palette_swaps		d03_202: 1 {CLT,MAT} pair {CLT_e03kousoku00, MAT_e03kousoku00}.
+0x005F2FB0	data	haku_d10_102_palette_swaps		d10_102: 1 {CLT,MAT} pair {CLT_e10haku03, MAT_e10haku3}.
 0x005F3340	data	itachi_nightmare_phantom_palette_swaps		d23_101: 14 {CLT,MAT} pairs e23_itc_syutu01, e23_ita_nut00, e23_itc_nut00/01/_a.._k.
+0x005F3510	data	naruto_rasengan_palette_record		Skill 0x06 (list 0x6A1134): {main, EXT_1hand01t0 body, CLT_e01hand01c1, CLT_e01hand01c2}.
+0x005F3520	data	naruto_blazing_rasengan_palette_record		Skill 0x07 (list 0x6A1138): {main, EXT_1hand01t0 body, CLT_e01hand01c1, CLT_e01hand01c2}.
+0x005F3830	data	combo_rasengan_palette_record_naruto		Skill 0x0B (list 0x47CBE0, 3 records): {1nrtbod1, EXT_1nrt00t0 body, CLT_1nrtbodyc1, CLT_1nrtbodyc2}.
+0x005F3860	data	combo_rasengan_palette_record_clone		Skill 0x0B: {1nrtbod1, EXT_1nrt01t0 body, CLT_1nrtbodyc1, CLT_1nrtbodyc2}.
+0x005F38C0	data	combo_rasengan_palette_record_jiraiya		Skill 0x0B: {1jrybod1, EXT_1jry00t0 body, CLT_1jrybodyc1, CLT_1jrybodyc2}, colored by the attacker's flags.
+0x005F39F0	data	lee_gates_body_palette_record		Skills 0x16 (list 0x47CBF0) and 0x17 (list 0x47CC00): {main, EXT_1roc10t0 body, CLT_1rocbod2c1, CLT_1rocbod2c2}.
+0x005F3A20	data	true_hidden_lotus_palette_record_body0		Skill 0x16: {main, EXT_1roc10t0 body0, CLT_1rocbod2c1/c2}; d03_201 has no such object, so it applies nothing.
+0x005F3A50	data	true_hidden_lotus_palette_record_body1		Skill 0x16: {main, EXT_1roc10t0 body1, CLT_1rocbod2c1/c2}; d03_201 has no such object, so it applies nothing.
+0x005F3A90	data	mad_dance_arm_palette_record		Skill 0x17: {main, EXT_1rocarm11, CLT_1rocarm1c1, CLT_1rocarm1c2}.
+0x005F3AC0	data	mad_dance_leg_palette_record		Skill 0x17: {main, EXT_1roc40t0 reg1, CLT_1rocbod2c1, CLT_1rocbod2c2}.
+0x005F3AF0	data	mad_dance_afterimage_palette_record_100		Skill 0x17: {main, EXT_1roc100t0 body, CLT_1rocbod2c1, CLT_1rocbod2c2}.
+0x005F3B20	data	mad_dance_afterimage_palette_record_101		Skill 0x17: {main, EXT_1roc101t0 body, CLT_1rocbod2c1, CLT_1rocbod2c2}.
+0x005F3B90	data	primary_lotus_of_love_palette_record_guy		Skill 0x1A (list 0x6A1160, 2 records): {1guybod1, EXT_1guy00t0 body, CLT_1guybodyc1, CLT_1guybodyc2}, colored by the attacker's flags.
+0x005F3BF0	data	primary_lotus_of_love_palette_record_lee		Skill 0x1A: {1rocbod1, EXT_1roc00t0 body, CLT_1rocbodyc1, CLT_1rocbodyc2}.
 0x005F3D60	data	kakashi_cinematic_palette_record_bod1		{1kksbod1, EXT_1kks10t0 body, CLT_1kksbodyc1, CLT_1kksbodyc2}: palette by attacker appearance flag 1/4.
 0x005F3D90	data	kakashi_cinematic_palette_record_bod2		{1kksbod2, EXT_1kks10t0 body, CLT_1kksbodyc1, CLT_1kksbodyc2}.
 0x005F3DB0	data	guy_cinematic_palette_record_bod1		{1guybod1, EXT_1guy00t0 body, CLT_1guybodyc1, CLT_1guybodyc2}; second Eternal Rivals record.
+0x005F3EC0	data	water_clone_palette_record_01		Skill 0x3A (list 0x47CC38, 3 records): {main, EXT_2zbz01t0 body, CLT_2zbzbodyc1, CLT_2zbzbodyc2}; d11_102e carries its own 2zbz fight body.
+0x005F3EF0	data	water_clone_palette_record_02		Skill 0x3A: {main, EXT_2zbz02t0 body, CLT_2zbzbodyc1, CLT_2zbzbodyc2}.
+0x005F3F20	data	water_clone_palette_record_03		Skill 0x3A: {main, EXT_2zbz03t0 body, CLT_2zbzbodyc1, CLT_2zbzbodyc2}.
+0x005F3F70	data	head_family_palette_record		Skill 0x3D (list 0x6A1180): {main, EXT_st4000t0 body, CLT_st40bodyc1, CLT_st40bodyc2}.
+0x005F40C0	data	kankuro_mantle_palette_record		Skill 0x50 (list 0x47CC50, 6 records): {main, EXT_1mnt00t0 mant, CLT_1krsmantc1, CLT_1krsmantc2}; d18_101e carries Crow and its mantle under c\1knk.
+0x005F4110	data	kankuro_crow_palette_record_body		Skill 0x50: {main, EXT_1krs00t0 body, CLT_1krsbodyc1, CLT_1krsbodyc2}.
+0x005F4140	data	kankuro_crow_palette_record_head		Skill 0x50: {main, EXT_1krs00t0 head01, CLT_1krsbodyc1, CLT_1krsbodyc2}.
+0x005F4170	data	kankuro_crow_palette_record_joe		Skill 0x50: {main, EXT_1krs00t0 joe, CLT_1krsbodyc1, CLT_1krsbodyc2}.
+0x005F41A0	data	kankuro_crow_palette_record_face01		Skill 0x50: {main, EXT_1krs00t0 face01, CLT_1krsbodyc1, CLT_1krsbodyc2}.
+0x005F41D0	data	kankuro_crow_palette_record_face02		Skill 0x50: {main, EXT_1krs00t0 face02, CLT_1krsbodyc1, CLT_1krsbodyc2}.
 0x005F49A0	data	itachi_sun_god_palette_record		Skill 0x6A: OBJ_e23itc01 with CLT_e23itc01c1/c2.
 0x005F6F20	data	audio_settings_model_animation_name	char[12]	UN3 ANM_onkyo01 animation name bound to settings model at menu+0x7C; voice-choice switch/light nodes are found on this model.
 0x005F6F48	data	settings_option_container_name	char[7]	UN3 option container name used to bind settings-menu sprite textures.

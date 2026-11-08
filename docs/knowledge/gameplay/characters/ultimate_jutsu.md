@@ -686,6 +686,12 @@ Per-skill data (184 retail skills, `0..0xB7`):
 | Playability lists | skill bytes are `u8`, so a skill above 255 never classifies |
 | Film soundtrack | `audio_prepare_skill_soundtrack` plays `STREAM.AFS` member = skill only below `0xB8` |
 
+`sp_skill_frame_scripts` rows have the ops and widths of UN3's
+`sp_skill_timed_command_scripts` (`0x0047C728`): `{1,frame}` and `{2,frame}`
+start and stop the screen effect, `{3,frame,side offset,flag}` sets a
+participant's appearance flag, and `0` ends. UN3 indexes its table by skill,
+NA2 by skill - 1.
+
 `STREAM.AFS` has 184 entries. Member 0 and the members of ten skills no
 playable record selects are empty: `0x4A`, `0x4D`, `0x56`, `0x66`,
 `0x67`, `0x75`, `0x80`, `0x9A`, `0xA0`, `0xA8`; the eleventh such skill,

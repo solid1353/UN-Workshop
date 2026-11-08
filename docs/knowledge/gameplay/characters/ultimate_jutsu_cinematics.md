@@ -3,7 +3,7 @@
 ## Research coverage
 
 Established: opponent selection, side/role setup, authored appearance and
-texture/draw switches, defender draw/placement/matrix gates, bone replacement,
+texture/draw switches and how UN3 keeps its appearance substitutions, defender draw/placement/matrix gates, bone replacement,
 popup interruption, selected geometry providers, and the resident BSS globals
 for opponent groups, optional switch tables and the derived main path.
 Open: the intended optional-body constant/resource, the capacity of the
@@ -179,6 +179,20 @@ arrays through `model_instance_duplicate_arrays` (`0x00198B10`) with
 in the selected resident container through `SpSkillPaletteTarget.palette`.
 Missing required lookups omit the substitution; this does not establish a
 shipped lookup miss.
+
+`sp_skill_play_begin` applies a skill's entries after rebinding the attacker's
+and defender's bodies (`sp_skill_play_begin_apply_appearance_rows`). It reads
+the request row by skill with no upper bound, sends an entry whose target
+starts with `EXT` to the external routine and any other to the material
+routine, and applies entries with the default costume too, through the
+unsuffixed palette.
+
+UN3 keeps these substitutions in its executable instead.
+`sp_skill_palette_record_lists` gives each skill `{container, target,
+CLT…c1, CLT…c2}` records, applied only when the attacker's flags masked with
+`5` are set. `sp_skill_apply_appearance_substitutions` also swaps material
+palettes in code for streams `d23_101`, `d10_102`, `d03_202` and `d01_204`,
+whatever the flags, with the unsuffixed palette when they are zero.
 
 | Skill | Entries | Representative substitutions |
 | ---: | ---: | --- |

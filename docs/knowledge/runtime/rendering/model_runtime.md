@@ -4,7 +4,8 @@
 
 Established: geometry routes and ownership, hierarchy and bone matrices,
 animation binding, CPU skinning, ordinary vertex-stream meanings, and morph
-gates/arithmetic/mutation, and equal UN3 and NA2 packed position values.
+gates/arithmetic/mutation, equal UN3 and NA2 packed position values, and
+which body files hold property geometry in each game.
 Names and per-routine detail come from `@annotations/NA2` and `@annotations/UN3`.
 Open: nothing.
 
@@ -467,3 +468,11 @@ The assets agree too: the packed body models that `2FIRBOD1`, `2HAKBOD1`,
 `2ANKBOD1` and the other shared characters' body files hold in both games have
 equal scalars and the same or similar coordinate extents, and their body
 compositions the same bone offsets with unit scale.
+
+Only two UN3 body files draw their body as property geometry: `2ZBZBOD1` and
+`CMN/2CMNBOD1`, each with one selector-3 part, file flags `0x3806` and mode
+`0`. NA2 keeps `2CMNBOD1`'s as property geometry with mode `0x440` and rebuilt
+`2ZBZBOD1`'s as packed geometry: flags `0x3804`, 17 parts, mode `0x440`. Of
+NA2's `PL` files only `2FIRCHA0` holds selector-3 geometry. The mode fields
+NA2 decodes are in
+[UN3 models and animations under NA2](../../game/files/ccs_runtime.md#un3-models-and-animations-under-na2).
