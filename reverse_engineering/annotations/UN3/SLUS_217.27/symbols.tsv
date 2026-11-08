@@ -680,6 +680,8 @@ address	kind	name	type	comment
 0x00284A70	function	game_scene_update		Dispatches battle_manager scene +0x54: 0 mode_select_scene_update; 1 by mode +0x58 (1, 2 battle_stage_transition_update, 5, 6, 7 practice_mode_update, 0xB demo_battle_mode_update); 2, 3, 4; 5 returns to the title.
 0x00285070	function	mode_select_scene_update		States 0..3 load the menu; state 4 runs it (0x00285240) and stores its result; state 6 maps result 1/2/5/6/7 to scene 1 and that mode, 8/9/10 to scenes 3/2/4, -1 to scene 5.
 0x00285BA0	function	practice_mode_update		Mode 7. State 0 sets stage 0, P1 ID 1, P2 ID 2, default loadouts and control mode 1 (2 when +0xA38 is set). State 3 Character Select (1/3/5/7 confirm; bit pair asks customization), 4 customization, 5 Stage Select (0x00286450) into +0x61, 6 battle_request_match_resources, 9 builds the battle owner, 10 runs it.
+0x00285D48	label	practice_player1_id_load		Practice state 0's li v1,1: Player 1's character ID, stored to battle_manager +0x62 before its default loadouts are derived.
+0x00285D54	label	practice_player2_id_load		Practice state 0's li v1,2: Player 2's character ID, stored to battle_manager +0x63 before its default loadouts (+0x6C/+0x6E) are derived.
 0x00287630	function	battle_stage_transition_update	void battle_stage_transition_update(void)	State12 destroys running battle owner; pending side7C!=0 saves current61 to7D, adopts7B, queues at288D70 and commits, state8 waits loader/fence then requires archive at28822C before owner construction; release288AB0 only if7C==0; state0C for class5C==2 releases2886BC, restores61 from7D, requires saved archive2886DC without enqueue, reclassifies, releases again288748; bounded branches do not prove every battle mode/lifetime.
 0x00289750	function	demo_battle_mode_update		Mode 0xB attract battle: cycles demo index 0..8, plays up to three rounds, Start exits.
 0x0028A700	function	battle_request_match_resources		Calls battle_request_selected_character_ccs for sides 0, 1 and 2, queues the stage archive of +0x61, commits, and sets the loader word gp-0x5AA8 to 2.
@@ -711,15 +713,15 @@ address	kind	name	type	comment
 0x00293AE0	function	item_metadata_row		Returns item_metadata + code*12: kind u16, flags u16, amount float, direct effect s32 (NA2 layout).
 0x00293D20	function	item_metadata_kind		Kind byte of item_metadata_row(code).
 0x002946D0	function	battle_scene_lock_active_b		Same body as battle_scene_lock_active.
-0x00294770	function	sp_skill_defender_camera_admission		Only defender IDs38h/35h/23h/32h/33h/30h consult skill-indexed47C010 range list; inclusive matching frame rejects camera auxiliary,otherwise admit. Other IDs always admit.
-0x002948B0	function	sp_skill_update_camera_auxiliary		Ask sp_skill_defender_camera_admission with defender ID,skill,frame; temporarily use request+1CC/1C8 contexts then update retained auxiliary6C,restore previous globals.
+0x00294770	function	sp_skill_defender_optional_body_allowed		Only defender IDs 0x38/0x35/0x23/0x32/0x33/0x30 consult the skill's sp_skill_optional_body_hide_ranges list; a frame inside an inclusive range returns 0, which skips drawing the defender's optional body; otherwise 1. Counterpart of NA2 sp_skill_defender_body_draw_allowed; no camera involvement.
+0x002948B0	function	sp_skill_draw_defender_optional_body		Unless sp_skill_defender_optional_body_allowed(defender, skill, frame) is 0, draws the defender's optional body (owner+0x6C, built at begin from CMP_1cmn00t0 trall) through FUN_0032c0e0 with request+1CC/1C8 contexts, restoring the previous globals.
 0x00294A40	function	sp_skill_swap_material_palettes		For each {CLT,MAT} pair, appends c2 (flag 4) or c1 (other nonzero flags) to the CLT name, keeping the base name at flags 0, and sets MAT +4 to that palette.
 0x00294BE0	function	sp_skill_apply_object_palette_record		Record {container or null, OBJ, CLT for flag 1, CLT for flag 4}: binds the selected palette to the object's model.
 0x00294CF0	function	sp_skill_apply_appearance_substitutions		At request begin: stream codes 0x230101 (d23_101), 0x100102 (d10_102), 0x30202 (d03_202) and 0x10204 (d01_204) call sp_skill_swap_material_palettes with 14/1/1/11 pairs at 0x5F3340/0x5F2FB0/0x5F2F88/0x5F2EF0 whatever the appearance flags; then, only when the attacker's appearance flags &5 are set, applies each record of the skill's sp_skill_palette_record_lists entry through sp_skill_apply_object_palette_record.
 0x00294EA0	function	sp_skill_play_completion_task		While scene task readiness true, advance retained request player then service state1; finish task each call. No own damage/audio-row loop.
 0x00294F10	function	sp_skill_play_update		Apply timed appearance commands and per-skill defender-position table; select signedXYZ triple against threshold list and build translation matrix; update cinematic scene auxiliary and final camera helper.
-0x002952B0	function	sp_skill_play_frame		Delegates sp_skill_update_camera_auxiliary only; this UN3 frame callback has no own audio/hit-row loop.
-0x002952D0	function	sp_skill_play_begin		Per-request callback binds attacker/defender body/face resources and camera target; tables47C248/47C958 install scene auxiliary and counted defender-position thresholds; increment request ordinal86.
+0x002952B0	function	sp_skill_play_frame		Delegates sp_skill_draw_defender_optional_body only; this UN3 frame callback has no own audio/hit-row loop.
+0x002952D0	function	sp_skill_play_begin		Per-request callback binds attacker/defender body/face resources and camera target; tables47C248/47C958 install scene auxiliary and counted defender-position thresholds; builds the defender's optional body at owner+0x6C from CMP_1cmn00t0 trall unless defender 10 plays stream 0x200302; increment request ordinal86.
 0x00295E00	function	sp_skill_play_end		Release optional scene auxiliary/render environment; update session outcome; non-interrupted allowed modes ask ultimate_jutsu_record_form and replace side identity only nonzero form when slotD not1. Green Beast selected2B/3C effects return0.
 0x00296030	function	sp_skill_build_requests		Build main resident plus extra resident requests(flags1000), then stream requests(first400,remaining0) from request row counts+8/+9.
 0x00296140	function	battle_character_pair_prepare	void battle_character_pair_prepare(unsigned int param_1,unsigned int param_2)	Inferred from an exact code match with NA2 SLPS_258.37 0x0035CE20. Prepare character-pair resources after session presentation children using both IDs. | Publish both character selections then build shared nine-entry appearance holders through character_appearance_holders_initialize; called by battle_create_graph and sp_skill_play_begin; distinct from later local end-demo lookup setup.
@@ -1153,7 +1155,7 @@ address	kind	name	type	comment
 0x0047BE0C	data	anbu_kakashi_ultimate_mode1_default	unsigned int	ID30 mode1 default global record365 Hazy Moon.
 0x0047BE10	label	green_beast_ultimate_mode1_default		ID32 entry in mode1 default halfword table47BDD0 is record368.
 0x0047BE7C	data	effect_state_name_textures		Effect-indexed name suffixes; effect 0x24 = mn_tuku.
-0x0047C010	data	sp_skill_camera_reject_ranges	void *[256]	Per-skill {count, frame ranges}; for defenders 0x23/0x30/0x32/0x33/0x35/0x38 a matching frame rejects the camera auxiliary.
+0x0047C010	data	sp_skill_optional_body_hide_ranges	void *[256]	Per-skill {count, frame ranges}; for defenders 0x23/0x30/0x32/0x33/0x35/0x38 a matching frame hides the defender's optional body.
 0x0047C1F0	data	anbu_kakashi_cinematic_camera_admission_entry	unsigned int	Skill78 range pointer0;sp_skill_defender_camera_admission294770 supplies no per-range exclusion for this skill.
 0x0047C248	label	sp_skill_auxiliary_table		Per-skill pointer table retained at player+10; each entry points at per-request filter record pointers. Record: four banks {s16 interval count, frame list, intervals or fog rows} in CCFM order, then fog name count and list (stride 0x1E); filled by sp_skill_filter_records_initialize
 0x0047C308	label	kakashi_cinematic_auxiliary_entries		Skills30..33 table47C248+skill*4 pointers6A0FC4/C8/CC/D0; referenced data546030,548AA0,54A2D0,54C0F0. Scene renderer data, not audio.
@@ -1201,8 +1203,8 @@ address	kind	name	type	comment
 0x004E4F80	data	guy_effect_voice_event_list	unsigned short[33]	Guy20 effect21 compact controls; events0/18/19->110/136/137,programs0/26/27,key3D instead of base3C.
 0x004F78A0	data	effect_4a_stage_intensity	unsigned char[27]	Per scene_index tint intensity for effect_4a_secondary_update; values differ from NA2's for shared stages.
 0x004FC160	data	anbu_kakashi_katana_name	char[20]	OBJ_2anb00t0 katana; channel5 transforms this named player only when actual fighterID is not30.
-0x00512470	data	kakashi_origin_camera_reject_ranges		Skill 0x30: one inclusive frame range 80..92 (0x00512468) rejecting the camera auxiliary for defenders 0x23/0x30/0x32/0x33/0x35/0x38.
-0x005124A0	data	itachi_nightmare_phantom_camera_reject_ranges		Skill 0x66: one range, frames 60..275.
+0x00512470	data	kakashi_origin_optional_body_hide_ranges		Skill 0x30: one inclusive frame range 80..92 (0x00512468) hiding the optional body of defenders 0x23/0x30/0x32/0x33/0x35/0x38.
+0x005124A0	data	itachi_nightmare_phantom_optional_body_hide_ranges		Skill 0x66: one range, frames 60..275.
 0x005124D0	label	green_beast_cinematic_camera_exclusion		Skill79 camera-admission descriptor count1,pointer5124C8 -> inclusiveframe232..253;only six special defender IDs use this list.
 0x00591B50	label	green_beast_cinematic_main_auxiliary		Skill79 request0 auxiliary descriptor;all4 counted12-byte channels at0/C/18/24 zero.
 0x00591F60	label	green_beast_cinematic_stream_auxiliary		Skill79 request1 auxiliary descriptor;all4 counted12-byte channels at0/C/18/24 zero.

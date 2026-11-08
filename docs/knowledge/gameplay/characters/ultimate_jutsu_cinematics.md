@@ -273,6 +273,13 @@ only for `0x49/0x30`; the override changes the `0x30` case.
 Ordinary `0x84/0x88` omit `426..539` for
 `{0x3B,0x30,0x38,0x33,0x32,0x49,0x4B}`.
 These gates affect rendering, not damage, contest state or cinematic stopping.
+
+UN3 keeps the same hiding in `sp_skill_optional_body_hide_ranges`
+(`0x0047C010`): per skill, a range count and inclusive `{start, end}` frame
+halfwords, always for the six default defenders, read by
+`sp_skill_defender_optional_body_allowed`. Against Kidomaru, the hidden
+optional body includes his fourth arm, which disappears in those frames
+(runtime observation).
 Visible body animation within the omitted ranges remains unestablished.
 
 `sp_skill_adjust_defender_position` (`0x003571F0`) selects from

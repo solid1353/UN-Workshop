@@ -535,9 +535,12 @@ skill-indexed tables, and `sp_skill_play_begin` (`0x002952D0`) and
   small negative Y values that differ per defender. NA2 stores the same
   shape in a stream's `_damOffs` blob
   ([UN4 defender position tracks](../un4/ultimate_jutsu.md#defender-position-tracks)).
-- **Camera rejection** (`sp_skill_camera_reject_ranges`, `0x0047C010`).
-  `sp_skill_defender_camera_admission` rejects the camera auxiliary inside a
-  listed frame range, only for defenders `0x23`, `0x30`, `0x32`, `0x33`,
+- **Optional-body hiding** (`sp_skill_optional_body_hide_ranges`, `0x0047C010`).
+  `sp_skill_defender_optional_body_allowed` skips drawing the defender's
+  optional body, which `sp_skill_play_begin` builds from
+  `CMP_1cmn00t0 trall`, inside a listed frame range, as NA2's
+  `sp_skill_defender_draw_gates` do. It does not touch the camera. It
+  applies only for defenders `0x23`, `0x30`, `0x32`, `0x33`,
   `0x35` and `0x38` (Kidomaru, Second Stage Sasuke, Possessed Gaara, Super
   Choji, Second Stage Kidomaru, Second Stage Kimimaro). Only skill `0x66`
   has a list: frames 60..275.
@@ -584,7 +587,7 @@ donor's five scene families. Startup voice belongs to
 
 This section covers every UN3 Ultimate Jutsu film; the Itachi values are
 its examples. UN3 films carry no hit rows, and
-`sp_skill_play_frame` (`0x002952B0`) only updates the camera auxiliary.
+`sp_skill_play_frame` (`0x002952B0`) only draws the defender's optional body.
 
 **Damage.** `ultimate_jutsu_contest_construct` (`0x002D4240`) zeroes
 `jutsu_contest_damage_total` (`0x006A3A74`), and

@@ -3,7 +3,8 @@
 ## Research coverage
 
 Static evidence establishes cache capacities, mount/preload ordering, path
-routing, sector I/O, AFS selection, and transport/queue ownership.
+routing, the IOP disc search's limits, sector I/O, AFS selection, and
+transport/queue ownership.
 Open: nothing.
 
 ## Evidence and annotation owners
@@ -65,6 +66,22 @@ Clearing resets all four cache-control words. Replacement clears old state
 before initialization, and a miss never inserts a new entry. FLIST is a
 location cache, not an authoritative list: explicit-device opens can access
 unlisted files.
+
+## Disc name search
+
+A lookup by name that FLIST does not answer goes through `disc_search_file`,
+and a movie open through `cdvd_query_recovery_task`; both reach the IOP's
+`sceCdSearchFile` through `disc_search_file_rpc`. NA2 loads the IOP modules of
+`MODULES/IOPRP300.IMG`, which the disassembly trees do not hold, so its
+`CDVDMAN` was read from the image's raw bytes: `sceCdSearchFile` is export 10
+at module offset `0x9A14`.
+
+The search needs a path starting with `\` and walks at most eight directory
+levels. It then reads only the first 2,048-byte sector of the final directory
+(`0xAE3C`, one sector into a 2,048-byte buffer) and caches at most 64 of its
+records, `.` and `..` included, stopping early at a zero-length record. The
+name match scans only that cache, so a file whose record lies past the
+directory's first sector or past its 64th record is not found.
 
 ## `DATA.CVM` mount and root directory
 

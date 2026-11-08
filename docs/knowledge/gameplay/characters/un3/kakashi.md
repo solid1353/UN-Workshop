@@ -576,7 +576,7 @@ count, a frame-threshold list and a pointer per UN3 defender ID 0..56
 `sp_skill_play_update` (`0x00294F10`) translates the defender by the
 triple of the current threshold interval.
 
-| Skill | Placement descriptor | Frame thresholds | Camera reject range | Palette records |
+| Skill | Placement descriptor | Frame thresholds | Optional-body hide range | Palette records |
 | --- | --- | --- | --- | --- |
 | `0x30` | `kakashi_origin_defender_positions` `0x005C7D60` | 1, 189, 241 | 80..92 | `1kksbod1` |
 | `0x31` | `kakashi_double_charge_defender_positions` `0x005C8560` | 1, 139, 202 | none | `1kksbod1` |
@@ -584,10 +584,10 @@ triple of the current threshold interval.
 | `0x33` | `eternal_rivals_defender_positions` `0x005C91D0` | 1, 210, 249, 296 | none | `1kksbod2`, `1guybod1` |
 
 In skill `0x30` the triples are small per-defender corrections within
--140..+32 units, mostly on one axis. The camera reject range
-(`kakashi_origin_camera_reject_ranges`, `0x00512470`) only applies to
+-140..+32 units, mostly on one axis. The optional-body hide range
+(`kakashi_origin_optional_body_hide_ranges`, `0x00512470`) only applies to
 defender IDs `0x23,0x30,0x32,0x33,0x35,0x38`, through
-`sp_skill_defender_camera_admission` (`0x00294770`).
+`sp_skill_defender_optional_body_allowed` (`0x00294770`).
 `sp_skill_apply_appearance_substitutions` (`0x00294CF0`) applies the
 palette records (`kakashi_cinematic_palette_record_lists`,
 `0x0047CEB0`) when the attacker's appearance flags include 1 or 4:

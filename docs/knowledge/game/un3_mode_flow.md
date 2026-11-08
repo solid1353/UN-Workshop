@@ -42,7 +42,7 @@ does no Practice setup of its own.
 
 | State | Work |
 | ---: | --- |
-| 0 | Stage `0`, Player 1 ID `1` (Naruto), Player 2 ID `2` (Sasuke), their default loadouts, and control mode `1` (Player 2 COM), or `2` when the active side `+0xA38` is nonzero. |
+| 0 | Stage `0`, Player 1 ID `1` (Naruto) and Player 2 ID `2` (Sasuke), loaded at `practice_player1_id_load` and `practice_player2_id_load`, their default loadouts, and control mode `1` (Player 2 COM), or `2` when the active side `+0xA38` is nonzero. |
 | 3 | Character Select. Results `1/3/5/7` confirm; `result >> 1` marks the sides that customize. Each side then goes through `battle_side_finalize_loadout`. |
 | 4 | Customization, only for marked sides. |
 | 5 | Stage Select (`0x0082FCD0`); its result is the scene index in `+0x61`. |

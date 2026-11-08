@@ -414,9 +414,9 @@ described under [Kakashi cinematics](kakashi.md#cinematics).
 The timed command script at `0x0047C908` is zero and the
 palette-record list at `0x0047D0F0` is zero/zero, so Hazy Moon has
 no timed screen or appearance commands and no costume palette records.
-The camera-reject entry at `0x0047C1F0` is zero, so
-`sp_skill_defender_camera_admission` (`0x00294770`) admits the
-camera auxiliary for every defender.
+The optional-body hide entry at `0x0047C1F0` is zero, so
+`sp_skill_defender_optional_body_allowed` (`0x00294770`) draws the
+defender's optional body for every defender.
 
 Neither film file contains a queued tag-`0x0108` command or an audio
 section. Film damage, soundtracks and cue rows follow

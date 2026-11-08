@@ -249,7 +249,14 @@ requests lists an extra resident. The substitution recolours the stream's
 `EXT_1<abbreviation>00t0 body` with `CLT_1<abbreviation>body`, or
 `CLT_1<abbreviation>bodyc<n>` for an alternate colour, from the film's main
 resident, the abbreviation being `character_model_abbreviations` of
-`support_character_id`. For an admitted pair, battle loading also reads
+`support_character_id`. Before that it applies each row of
+`sp_skill_support_palette_rows` (`0x005AB9C0`, 19 rows of skill, container,
+palette and target) whose skill matches: a null container means the main
+resident, and a target starting with `MAT` takes the palette as a material's,
+any other as a stream model's. `<n>` is the support's costume byte, which
+`sp_skill_play_begin` reads at `+0x0C + side × 3` of the table at
+`gp-0x3168`; `0` keeps the base palette. Only these rows and the main copy
+follow the support's costume. For an admitted pair, battle loading also reads
 `support_cinematic_archive_path`'s `3bsc/3<abbreviation>3bsc.ccs`, which
 holds one indexed `sp_<abbreviation>` image (Naruto's is 256×128), and the
 linked intro binds it

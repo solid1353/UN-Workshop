@@ -414,12 +414,13 @@ All four counted time channels (`+0/+0xC/+0x18/+0x24`) are zero
 in both selected descriptors. The selected appearance-script pointer at
 `0x0047C90C` is null and palette-substitution pair at `0x0047D0F8`
 is zero.
-`sp_skill_defender_camera_admission` (`0x00294770`) nevertheless
+`sp_skill_defender_optional_body_allowed` (`0x00294770`) nevertheless
 has a skill-specific exclusion: descriptor `0x005124D0` selects one
-inclusive frame range 232..253. Only defenders
-`0x38/35/23/32/33/30` consult it; other defenders always admit.
-`sp_skill_play_frame` (`0x002952B0`) delegates camera auxiliary
-update, without the own audio/hit-row loop found in NA2's frame callback.
+inclusive frame range 232..253, in which the defender's optional body is
+not drawn. Only defenders `0x38/35/23/32/33/30` consult it; other
+defenders always draw it. `sp_skill_play_frame` (`0x002952B0`) delegates
+that drawing, without the own audio/hit-row loop found in NA2's frame
+callback.
 
 Film damage and audio follow
 [UN3 cinematic damage and audio](itachi.md#un3-cinematic-damage-and-audio).
