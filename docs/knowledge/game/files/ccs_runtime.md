@@ -1071,9 +1071,10 @@ UN2's own `0x0201` reader (`0x0016E7D0`, version `0x111`) reads one `u` and
 one `v` under clear bit 2 and stores each times 4096 minus the material
 descriptor's matching offset, where NA2's stores the value whole; UN2's
 materials and descriptors have no scale fields. Its `0x0101` reader
-(`0x0016EC80`) matches NA2's. **Observed:** in Curse's third part a UN2
+(`0x0016EC80`) matches NA2's. **Observed:** in Curse Mark's third part a UN2
 film playing in NA2 poses every bone of the face chain with the same local
-and world matrices as in UN2, and its eye material draws the same sheet cell.
+and world matrices as in UN2, and its eye and mouth materials draw the same
+sheet cells.
 
 Camera fields omitted by flags require a resolved target: the missing-target
 branch still reads eight floats and can consume a following header.
