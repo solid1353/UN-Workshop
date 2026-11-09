@@ -428,6 +428,15 @@ in slot 0, which `hud_gameplay_icons_bind` places at scale 1.2 on the top
 parent's emblem cell center (`hud_frame_cell_offset_get`), so it covers the
 emblem. Class 0 and 4 effects take a free slot 1..25 at scale 0.8 in a row at
 Y 90, from X 24 in steps of 16, mirrored for side 1.
+A slot's icon comes from `hud_status_icon_map`, `0x87` effect and
+`battle_hud_sprite_records` index pairs; an effect it doesn't list uses
+`hud_status_glyph_set`'s record `0x5B`. A record holds a 30×30 spot (u, v,
+width, height), a sprite layer and a `hud_sprite_colors` tint whose low three
+bytes are R, G and B with `0x80` as full. Awakening records 63–65 (Sannin Mode
+`0x57`, Mitotic Regeneration `0x22` and its after-effect `0x23`) use layer 2
+and match `TEX_xicon`'s glyphs: kanji in NA2 (忍, 再, 反), English
+abbreviations in UN5 (Nin, Reg, Bck). UN5's BTL.BIN holds the same three tables
+at file offsets `0x212280`, `0x211CB0` and `0x211C40`.
 This membership display is not another gameplay update; node effects belong to
 [Battle items and status effects](../projectiles_and_items/battle_items_and_status_effects.md#per-fighter-storage).
 
