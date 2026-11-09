@@ -14,6 +14,8 @@ param(
 
     [string]$LogFile,
 
+    [string]$SavestateFolder,
+
     [Parameter(ParameterSetName = 'Play')]
     [switch]$Snapshots,
 
@@ -829,6 +831,9 @@ try {
         }
         if (-not [string]::IsNullOrWhiteSpace($LogFile)) {
             $launchParameters.LogFile = $LogFile
+        }
+        if (-not [string]::IsNullOrWhiteSpace($SavestateFolder)) {
+            $launchParameters.SavestateFolder = $SavestateFolder
         }
         if (-not $AgentReplay) {
             if ($Turbo) {

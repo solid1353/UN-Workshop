@@ -47,6 +47,11 @@ before it is force-stopped.
 emulators open. The launch result carries the process, so its caller can stop it.
 `-rps` and `-agent-replay` already run this way, and PSP games reject it.
 
+`-savestates <folder>` gives every launched PCSX2 that folder for the run's
+savestates, through the fork's
+[`-savestate-folder`](../../../PCSX2/docs/launch_options.md#process-overrides),
+so automated saves never touch `@pcsx2_savestates`.
+
 `workshop pcsx2` launches development PCSX2 without a game in Turbo.
 
 Speed selection is positive throughout the launcher: callers may request
@@ -220,7 +225,9 @@ shared input settings. Edit it through Controller Settings.
 
 `@pcsx2_scripts/pine.py` is the client for the development fork's
 [PINE opcodes](../../../PCSX2/docs/pine_agent_control.md), including agent
-input, replay analysis, and the full-state pad encoder. Its connections time
+input, replay analysis, the full-state pad encoder, and savestate saves and
+loads. A save replies before PCSX2 writes the state; its `GS.gs.zst`, which
+appears last, marks it complete. Its connections time
 out after three seconds, so clients follow these rules:
 
 - Keep each agent or replay step short enough to finish within the timeout.
@@ -232,9 +239,12 @@ out after three seconds, so clients follow these rules:
 
 ## Savestates
 
-A savestate folder holds the game's memory at the moment it was saved
-(`eeMemory.bin`, the 32 MiB EE RAM) and a GS dump of its frame
-(`GS.gs.zst`), which [`gs_dump.py`](#gs-dumps) lists and diffs.
+Every savestate folder holds the game's memory at the moment it was saved
+(`eeMemory.bin`, the 32 MiB EE RAM), that frame's `Screenshot.png`, and a GS
+dump of the four frames that follow (`GS.gs.zst`), which
+[`gs_dump.py`](#gs-dumps) lists and diffs. The dump is missing only when
+emulation stopped before those frames ran or `SaveStateGSDump` is off
+([fork savestates](../../../PCSX2/docs/input_recording_capture.md#marker-capture)).
 
 ## GS dumps
 

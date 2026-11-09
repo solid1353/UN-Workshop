@@ -1,0 +1,2 @@
+address	kind	name	type	comment
+0x006B8BC0	function	home_film_viewer_update		Ultimate Jutsu film viewer: pick a character, one of its parts (sp_skill_index_by_character rows' part lists) and an opponent; loads both bodies from their body-file table, plays the film, and Triangle (pressed 0x10) after the hold is released plays sound 0x53 and latches request 2.

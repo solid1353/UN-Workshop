@@ -32,7 +32,8 @@ address	kind	name	type	comment
 0x004004A0	data	character_definition_table		34 (factory, record) pairs for IDs 0..33; ID 26 is Doto.
 0x00408950	data	sp_skill_cue_descriptors		Per jutsu_cinematic_rows row {12-byte cue rows, second pointer}, as the US table.
 0x00408C40	data	sp_skill_part_soundtracks		Pointer per jutsu_cinematic_rows row to four halfwords: STREAM.AFS member of each part (-1 none).
-0x00409B60	data	audio_character_banks		12-byte rows (SNDDATA offset, header bytes, sample bytes) by character - 1; Doto row 25: 0xB2E000, 0x1240, 0x6A9C0.
+0x00408DE0	data	battle_voice_controls		8-byte compact voice control rows {program, ..., key at +3}; first 40 rows byte-identical to the US release's 0x00418A00.
+0x00409B60	data	audio_character_banks		12-byte rows (SNDDATA offset, header bytes, sample bytes) by character - 1; Doto row 25: 0xB2E000, 0x1240, 0x6A9C0; Sasuke's voices are 22,050 Hz.
 0x00409E10	data	audio_plvoice_descriptors		33 eight-byte descriptors (handle 0x32 + outer index, member count +6), then 0xFF sentinel; outer index = character - 1, Doto 25 (133 members).
 0x00409F20	data	audio_archive_descriptor_lists		Per-family descriptor list pointers; family 3 = audio_plvoice_descriptors.
 0x0040A2B4	data	jutsu_cinematic_frame_scripts		Word [char*3 + level]: per-part frame-script pointers; zero for Doto.

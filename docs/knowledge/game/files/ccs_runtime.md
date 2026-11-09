@@ -10,7 +10,7 @@ UN4's animation-wrapper/evaluator path for unresolved records.
 Names and layouts come from
 `@annotations/NA2`, `@annotations/UN3` and `@annotations/UN4`;
 annotations hold the per-routine detail. All addresses are live. Evidence is
-static.
+static, apart from one marked observation of a running game.
 UN3 models and animations under NA2 are compared through conversion,
 NA2's extra model-mode decoding and the animation work initializers and
 evaluators.
@@ -944,13 +944,25 @@ first pad presses the listed button after the hold point is released.
 | Game | Battle caller | Viewer caller, button, sound |
 | --- | --- | --- |
 | NA2 | BTL `jutsu_presentation_update` (`0x00769790`) | ETC `etc_skill_play_wait` (`0x006C0D80`), Cross, `0x33` |
+| UN2 | `jutsu_presentation_update` (`0x002F4DF0`) | HOME `home_film_viewer_update` (`0x006B8BC0`), Triangle, `0x53` |
 | UN3 | `ultimate_jutsu_presentation_update` (`0x002E36D0`) | HOME `home_film_viewer_update`, Triangle, `0x53` |
 | UN4 | `jutsu_presentation_update` (`0x00377730`) | HOME `home_film_viewer_wait` (`0x006C28F0`), Triangle, `0x33` |
 | UN5 | BTL `jutsu_presentation_update` (`0x00780F90`) | ETC `etc_skill_play_wait` (`0x006D40D0`), Triangle, `0x33` |
 
-The latch is `0x0018D670` in UN3, `0x001DCA50` in UN4 and `0x001D2F30` in
-UN5. NA2's `ccs_play_loop` also has a pad viewer whose Start stops the
-scene, but only play flags `0x60` enable it, and retail never sets them.
+The latch is `sp_skill_player_latch_stop_skip` (`0x00266E60`) in UN2,
+`0x0018D670` in UN3, `0x001DCA50` in UN4 and `0x001D2F30` in UN5. NA2's
+`ccs_play_loop` also has a pad viewer whose Start stops the scene, but only
+play flags `0x60` enable it, and retail never sets them.
+
+Below the latches, `ccs_step_streamed_blocks` reads the container's play
+control halfword (`+0xA4` in NA2, `+0x1E4` in UN2's `0x0016DE70`, which has
+the same logic): with bit 0 set it consumes no rate and holds the frame, and
+bit 2 lets one step through and clears itself. The player sets bit 0 itself
+when a step reaches `last_frame`. A negative step seeks back through the
+checkpoint table at `+0x3C` (`+0x48` in UN2) and returns at once without one.
+**Observed:** in
+battle, a streamed Ultimate Jutsu container has no table (`+0x3C` zero with a
+nonzero header count), so it can hold and step forward but never back.
 
 ### Per-request lifecycle in `PlayDecode`
 
@@ -1054,6 +1066,14 @@ directory runtimes.
 | `0x1C01` / `ccs_frame_tag_1c01` | `F` for each clear bit `2,4,8`, then `2F` for clear bit `0x10`. |
 | `0x1D01` / `ccs_frame_tag_1d01` | `F` for each clear bit `2,4,8,0x10`. |
 | `0x2201` / `ccs_frame_tag_2201` | No ID/flags lookup: 12-byte header with ignored first dword, packet count `H` at `+4`, padding `H` at `+6`, and dwords-per-packet `U` at `+8`, then that many fixed-width packets. Publishes each available ring slot only when the global owner is zero or this container; otherwise consumes and discards its words. |
+
+UN2's own `0x0201` reader (`0x0016E7D0`, version `0x111`) reads one `u` and
+one `v` under clear bit 2 and stores each times 4096 minus the material
+descriptor's matching offset, where NA2's stores the value whole; UN2's
+materials and descriptors have no scale fields. Its `0x0101` reader
+(`0x0016EC80`) matches NA2's. **Observed:** in Curse's third part a UN2
+film playing in NA2 poses every bone of the face chain with the same local
+and world matrices as in UN2, and its eye material draws the same sheet cell.
 
 Camera fields omitted by flags require a resolved target: the missing-target
 branch still reads eight floats and can consume a following header.

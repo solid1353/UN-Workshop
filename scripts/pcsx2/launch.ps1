@@ -24,6 +24,8 @@ param(
 
     [string]$LogFile,
 
+    [string]$SavestateFolder,
+
     [switch]$Turbo,
 
     [switch]$Unlimited,
@@ -216,6 +218,11 @@ if ($PSBoundParameters.ContainsKey('PinePort')) {
 }
 if (-not [string]::IsNullOrWhiteSpace($LogFile)) {
     $launchArguments += @('-logfile', "`"$resolvedLogFile`"")
+}
+if (-not [string]::IsNullOrWhiteSpace($SavestateFolder)) {
+    $launchArguments += @(
+        '-savestate-folder', "`"$([IO.Path]::GetFullPath($SavestateFolder))`""
+    )
 }
 if ($memoryCardMode.DiscardMemoryCardWrites) {
     $launchArguments += '-discard-memory-card-writes'

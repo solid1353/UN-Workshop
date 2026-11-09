@@ -1,5 +1,9 @@
 address	kind	name	type	comment
 0x00100230	function	game_arena_initialize	void game_arena_initialize(void)	Allocates one block of 0x01FFE000 minus the 0x00847000 heap start plus 0xA000, less 0x100; the arena ends at (block end - 0x20) aligned down to 16, where it writes the end node.
+0x0016DE70	function	ccs_step_streamed_blocks		Advance/seek streamed frames, NA2's logic at UN2 offsets: frame +0x1CC, last +0x1D0, rate +0x1D8 with remainder +0x1DA, play control +0x1E4 (bit 0 holds, bit 2 one step, 0x20 restart, 0x40 reparse), runtime flags +0x1E6 (4|0x10 at stream end); backward needs the checkpoint table +0x48.
+0x0016E190	function	ccs_parse_streamed_block_range		Frame-stream dispatch by tag over the reader at container +0xA8 (0x0101 0x0016EC80, 0x0201 0x0016E7D0, 0x0108, 0x05xx/06xx/08xx, 0x1801..0x2201); marker 0xFF01 stores the checkpoint into +0x48 while below +0x1D4.
+0x0016E7D0	function	ccs_frame_tag_0201		Material frame for UN2's version 0x111: ID/flags, then floats u and v for clear bit 2 (both); each material of the target's vector (play table +0xA0, 8-byte rows) stores u*4096 and v*4096 minus its descriptor's offsets (+0x0C -> +0x10/+0x12) at +0x14/+0x16. No scale fields.
+0x0016EC80	function	ccs_frame_tag_0101		Object frame, NA2's widths and masks: 3F position (flags & 0xE clear), 3F Euler degrees, 3F scale (flags & 0x380 clear), F alpha, U visibility; a 0x0100 child with a base vector at +0xA0 adds its position and takes its scale from base +0x10, as NA2 does.
 0x0017D760	function	game_main_task		Main loop on the state object gp-0x68C0: 1 soft reset, 2 logos 0x0017E4F0, 3 0x0017E8A0, 4 title menu 0x0017E9D0 (builds the fade object gp-0x68EC), 5 0x0017F8C0, 6 new_game_start, 7 load 0x00241480, 8 game_scene_update. Enters state 2 at 0x0017D9A4.
 0x00183E80	function	fighter_voice_event_list		Alternate list for ID 1/31 with effect 0xD, 2 with 0xE, 3 with 0x10, 20 with 0x21; pairs at 0x00381A50.
 0x00183FC0	function	fighter_play_voice_event		Events 0..35: list from fighter_voice_event_list -> battle_voice_control(program, character, position); events 0x1B/0x1C rate-limited by +0x6A (60).
@@ -24,6 +28,7 @@ address	kind	name	type	comment
 0x00194C80	function	hit_replacement_record		
 0x00194DF0	function	receiver_retained_hit_count		Receiver hit count read by byakugan_hinata_hit_response.
 0x001974B0	function	fighter_has_chakra		True when fighter +0x5C >= the given amount, unless 0x001EC4E0 reports a block.
+0x001979E0	function	fighter_jutsu_chakra_debit		Releases the staged reservation (0x00197A80), then unless 0x001EC560 or the fighter's flags block it subtracts the cost from chakra +0x5C, floored at 0; jutsu_connection_try passes the record's +0x18 cost before jutsu_connection_start.
 0x00199EB0	function	guard_enter_response		Guard selector short +0x2A (+5 airborne), update pause +0x32, rejection +0x34.
 0x0019AA10	function	substitution_attack_admits		Rejects record flags 0x10000 or 0x40000000 (NA2 0x2000000|0x8000); timing word +0x14 (NA2 byte +0x1A).
 0x0019E1F0	function	fighter_movement_speed_update		Movement actions by +0x15A: 0x11/0x10/0x0F ease speed +0x754; 0x0E (ACT_RUN_0) also runs fighter_periodic_surface_effects with the run's frame (+0x174).
@@ -38,7 +43,10 @@ address	kind	name	type	comment
 0x001B0410	function	capture_update_sender_grounding		Flags 0x40000 with category 8 = NA2 flags 0x04000000 with 0x200; reads streak short +0x1E where NA2 reads streak_exempt.
 0x001B0960	function	capture_compute_approach		Behavior mask 0xFF0 (NA2 0x7C).
 0x001B1D40	function	action_build_chain_masks		Chain categories 0x10/0x20/0x40, mode-1 flag group 0xF00000, exchange group 0x0F000000.
+0x001B5D80	function	jutsu_connection_try		On a connecting Ultimate Jutsu hit: level from the performed action record's flags +0xC & 0xF000 (0x1000/0x2000/0x4000 -> 0/1/2), passed (move a1,s3 at 0x001B61AC) to jutsu_connection_start; counts statistics first.
 0x001BFA40	function	battle_director_jutsu		Director event 5: after the film applies jutsu_damage_total to the defender through the damage calculator (flag 0x100), Practice floor 0.01, then restores both fighters.
+0x001C0AE0	function	battle_director_update		Director update: dispatches states 0..5 through 0x0049B570 (0 none, 5 battle_director_jutsu), then calls 0x001BE9E0, 0x001C3360 and 0x001BECD0 with the director in a0.
+0x001C29F0	function	battle_graph_create		Creates both fighters from battle_manager +0x42/+0x43 and their settings, publishes them at +0x1F8/+0x1FC, links each fighter's +0x38 opponent, then the two +0x200/+0x204 objects.
 0x001E0BB0	function	effect_stage_intensity_tint_update		Reads stage_effect_intensity[scene byte +0x41] and passes it to the mode-2 tint packet 0x001E04E0; UN3's effect_4a_secondary_update reads its table the same way but defaults out-of-range scenes.
 0x001E7840	function	sealed_orochimaru_create		Allocates 0x1D30 bytes and calls sealed_orochimaru_construct.
 0x001E7890	function	sealed_orochimaru_construct		Base fighter constructor, vtable 0x00550F40, record +0x40 = fighter +0xAF0 (animation lookup), +0x30 = fighter +0xD60 (working actions), then fighter_load_character_record.
@@ -82,7 +90,7 @@ address	kind	name	type	comment
 0x0022F6B0	function	stage_break_debris_parse		Equals UN3 stage_break_debris_parse: four token-7 pieces ('%s_a%d'), 20 particles, gravity 9.8, bounce 0.6, damping 0.8.
 0x00233760	function	stage_emit_feedback		Numeric stage feedback dispatch, then a nonnegative common sound.
 0x002372D0	function	battle_manager_construct		Builds the manager; battle_manager_defaults sets its fields.
-0x00237760	function	battle_manager_defaults		Scene index +0x41 0, P1/P2 character +0x42/+0x43 1/2, COM flags +0x46/+0x47 0, active side +0x26C 0 (constructor); profile +0x58 Practice Behavior 1, +0x5D bits 0..4 set.
+0x00237760	function	battle_manager_defaults		Scene index +0x41 0, P1/P2 character +0x42/+0x43 1/2 (li a1,1 at 0x00237E04; li v0,2 at 0x00237E0C), COM flags +0x46/+0x47 0, active side +0x26C 0 (constructor); profile +0x58 Practice Behavior 1, +0x5D bits 0..4 set.
 0x0023BE30	function	battle_mode_support_gate		1 except mode 6 (context +0x287 bit 0) and modes 1/4 (bit 0 of mode record +0x5D); gates the support points.
 0x0023BE90	function	battle_setting_flag1_set		Bit 1 of profile byte +0x5D (mode 6: +0x287). Not Command Display: fighter setup 0x00188F60 sets fighter +0x140 while it is clear, and a BATTLE.BIN COM routine (0x00739A60 area) acts only while it is set.
 0x0023BEF0	function	battle_setting_flag1_get		Bit 1 of profile byte +0x5D in modes 1 and 4, +0x287 in mode 6, 0 in modes 5 and 8, else 1.
@@ -103,11 +111,14 @@ address	kind	name	type	comment
 0x0025FAE0	function	audio_load_character_bank		Loads audio_character_banks[character - 1] for a side (RPC 0x9400, bind 0x9056+side) and stores the index at context +0x9C/+0x9D.
 0x00260F90	function	audio_bind_skill_cues		Binds sp_skill_cue_descriptors[row] to the audio context (+0x130/+0x134) and stores the row (+0x13C).
 0x00261230	function	audio_write_pending_stream		Row = slot*0x14: bank = character - 1, member, slot, alternate family, pending 1.
+0x00263440	function	sp_skill_apply_stream_recolours		Per played part: by stream identifier, rebinds a few films' named models to the side's costume palettes and swaps per-stream palette/material pairs for attacker (flags&5) or defender costume; no case for Sasuke's d02 streams.
 0x00264720	function	sp_skill_play_frame		Per-frame: part script (type 1/2/3 commands: create/destroy helper, participant face swap) and position samples; no hits or damage.
 0x00264C30	function	sp_skill_play_begin		Per played part: binds participants, begins the contest stage for this part with window = stage row window adjusted +-30 by HP gap and ended at least 90 frames before the part's last frame; loads part position samples.
 0x00265E20	function	sp_skill_build_requests		Resident 0x1000, extras 0x1000, then each part's own stream (first 0x400); nonzero start part queues that part alone.
 0x00266070	function	sp_skill_play_start		Builds the SP Skill Play task from sp_skill_table row; checks extra bodies; start part from param_7 high half.
+0x00266750	function	sp_skill_play_destroy		Frees the skill-play owner's resources and the owner (clears sp_skill_play_owner), then destroys the contest and clears gp-0x6588.
 0x00266970	function	sp_skill_play_current_part		Returns the play task's part ordinal (+0x76), current frame and stream identifier (BCD of DCC_L_P name digits).
+0x00266E60	function	sp_skill_player_latch_stop_skip		Latches request + 1 into the film's stream player stop (+0x279) and skip (+0x27A) bytes while each is zero; jutsu_presentation_update passes 1 on contest outcome 2.
 0x002678F0	function	ccs_stream_player_run		Stream player task: prepares the row's soundtrack (0x00261290), loads residents, streams parts, destroys loaded containers.
 0x0026EE10	function	jutsu_camera_apply_preset_record		Installs a 0xB0-byte camera preset's tracking sources, positions, offsets and controls.
 0x0027C9E0	function	stage_rectangle_x_offset		Walks the current scene's stage_scene_rectangle_lists for records matching the given section; for the first rectangle containing the position returns the x offset to its edge chosen by the record's side byte, else 0.
@@ -145,6 +156,12 @@ address	kind	name	type	comment
 0x002C80A0	function	jutsu_contest_construct		Contest: attacker side +0x18, IDs +0x19/+0x1A, level +0x1E, stage +0x1B, mode +0x1C6C from jutsu_contest_modes; clears jutsu_damage_total.
 0x002C86A0	function	jutsu_contest_resolve		When both sides finish a stage, adds jutsu_stage_damage[ID][level][stage]% (x0.66 on defender win, +bonus byte on attacker flag) to jutsu_damage_total; modes 1..3 compare counts.
 0x002C8DD0	function	jutsu_contest_begin_stage		Stage = part index: loads both sides' input specs from jutsu_contest_stage_rows, window lengths, sets +0x1B.
+0x002C9150	function	jutsu_contest_side_init		Initializes a contest side: mode +0xC88, side index +0xAC9 (0 reads port 0 and battle_manager +0x46), sprites, window 210, result +0xC46 and bonus +0xC47 clear.
+0x002C96A0	function	jutsu_contest_side_parse_spec		Parses a side's input spec into codes +0xC2A (count +0xC28): Shift-JIS circle, square, triangle, cross give 0..3, rN a random code avoiding the previous N, @ sets the bonus flag +0xC47.
+0x002C9CE0	function	jutsu_contest_side_update		Per-side contest reader by mode +0xC88: 0 jutsu_contest_command_update, 3 jutsu_contest_rotation_update, any other jutsu_contest_mash_update.
+0x002C9D60	function	jutsu_contest_command_update		Mode 0 side: in state 4 enters its spec's codes in order from its port's newly pressed face buttons (pad record gp-0x6960 + side*0x78, +0x84, masked 0xF0) against jutsu_contest_command_masks; a wrong press locks it 10 updates (+0xC26). All entered gives result +0xC46 = 1, the window +0xC14 running out 2. COM flag battle_manager +0x46/+0x47, read each update, switches to the CPU plan at +0xC4A.
+0x002CA590	function	jutsu_contest_mash_update		Modes 1 and 2 side: counts presses of the side's button (mask from 0x004F5A68 by +0xCAA) into +0xC48; result +0xC46 = 1 when the window ends, so counts alone decide the stage.
+0x002CAFD0	function	jutsu_contest_rotation_update		Mode 3 side: tracks either stick through 32 sectors (pad record +0x65/+0x66 magnitude, +0x68/+0x6C angle) and counts quarter turns into +0xC48; result +0xC46 = 1 when the window ends.
 0x002D5C10	function	stage_build_doll_ai_targets		Training dolls (subtype 0x25) into scene +0x40C/+0x410, without the +0x148 check.
 0x002D5FC0	function	stage_build_breakable_ai_targets		Section COM prop-target lists (scene +0x404/+0x408) from category-8 objects with +0x148 == 1.
 0x002D63A0	function	stage_prepare_doll_nodes		Runs after each category-3 record, as UN3's does.
@@ -171,7 +188,8 @@ address	kind	name	type	comment
 0x002EB210	function	stage_flash_allowed		0 while in battle and the last active jutsu actor uses resource 1 (2nrtcha0.ccs)
 0x002EB2A0	function	stage_bind_ice_resources		Scenes 16/17 resolve the archive's EFF_e0x_ice to stage +0x2F0; scene 17 also binds rock compositions.
 0x002EB5F0	function	stage_glare_apply_scene_row		Copies stage_scene_effect_defaults row [scene] (rows 0,1,2,4,9,10 overridden on the stack) into the enable byte *a1 and glare pass +0x84 colour, +0x88 amount, +0x8C second colour.
-0x002F4DF0	function	jutsu_presentation_update		Cut-in, then sp_skill_play_start at countdown 20 with level = selector - 13; waits for the first stream's hold, then releases it.
+0x002EF0D0	function	battle_pause_controller_update		Pause controller update: while +0x10 is nonzero dispatches selector +0x0D: 13..15 jutsu_presentation_update (every update of an Ultimate Jutsu, film included), 0 and 1 other presentations.
+0x002F4DF0	function	jutsu_presentation_update		Cut-in, then sp_skill_play_start at countdown 20 with level = selector - 13; waits for the first stream's hold, then releases it. In state 5 a contest outcome (+0x1C) of 2 latches request 1 into the film's stream player through sp_skill_player_latch_stop_skip.
 0x002FB5E0	function	battle_apply_scenario_effects		Applies listed scenario effects 0x3B..0x49 to the controlled fighter; with byte 0x006A4CB4 == 3 and 0x006A4CB6 == 0xC gives ID 31 effect 0x0D with lifetime -2.
 0x0032D390	function	practice_toggle_com		Targets the side opposite +0x26C (P2 when 0): stores COM flag +0x47/+0x46; MANUAL clears the fighter's +0x50 behavior bits, otherwise sets them to 1 when zero or when requested.
 0x003307C0	function	jutsu_camera_apply_stage_adjusted_preset		Applies a jutsu camera preset; on scene 0, kinds 3,8,9,10,0x10,0x13,0x21,0x27,0x2A,0x2E,0x34,0x37 with a section-1 participant at 730<|x|<1000, height 300..700 use presets 0x8D..0x90.
@@ -179,10 +197,11 @@ address	kind	name	type	comment
 0x00331EA0	function	jutsu_camera_reset		Ends the current shot: state +0x34 becomes -1 (param 1, hand back through 0x001C1240) or 0 (switch straight back); posts request 6 at +0x24; clears byte +0x134 of gp-0x6804 -> +0x10 -> +0x14
 0x00331F50	function	jutsu_camera_kind1_update		Shot kind 1; sub-kind 2 sets state +0x34 to 1
 0x0033B430	function	jutsu_camera_apply_state		State +0x34: 1 shows the jutsu camera, 0 switches straight back to the battle camera, -1 hands back through 0x001C1240.
-0x00381A50	data	voice_event_pointer_pairs		{normal, alternate} 36-event lists per ID-1.
+0x00381A50	data	voice_event_pointer_pairs		{normal, alternate} 36-event lists per ID-1: halfword voice controls indexed by voice event; Sasuke's normal list maps event e to control e for 0..25.
 0x00381B60	data	action_sfx_map		93 halfword common events per action sound selector.
 0x00381D40	data	response_motion_table		0x18-byte rows for substates 0x27..0x54.
 0x00382190	data	null_action_record		PL_ATK_NULL 0x58-byte action copied for selector 1.
+0x0038B050	data	sasuke_ultimate_jutsu_actions		Sasuke's (ID 2) three Ultimate Jutsu action records, 0x58 apart: PL02_ATK_SPL0 'Barrage' (+0xC 0x1000), SPL1 'Curse Mark' (0x2000), SPL2 'Chidori' (0x4000); +8 is the English name the move list shows, which for SPL1 differs from sp_skill_table's title 'Curse'.
 0x003F8480	data	sealed_orochimaru_callbacks		Seven slots; slots 1..4 populated (0x001E7B30, 0x001E7B40, 0x001E7E40, 0x001E8020).
 0x003F84A0	data	sealed_orochimaru_animation_names		156 ANM_ name pointers; pcmn names then pfor names.
 0x003FBA70	data	sealed_orochimaru_actions		46 action records, 0x58-byte stride; +0x00 debug name PL29_ATK_*, +0x50 phase-row pointer.
@@ -208,7 +227,7 @@ address	kind	name	type	comment
 0x00410FD0	data	effect_resource_rows		150 rows of 24 bytes: container, resource, kind and alias of each numeric effect.
 0x004128A0	data	generator_resource_rows		102 rows of 16 bytes: common container/resource and palette alias per generator resource selector.
 0x00418570	data	sp_skill_cue_descriptors		Per sp_skill_table row {cue rows, second pointer}; cue rows are 12 bytes {u16 frame, u16 part ordinal, u32 voice control, ..., key byte +0xB}, ended by frame 0xFFFF.
-0x00418860	data	sp_skill_part_soundtracks		Pointer per sp_skill_table row to four halfwords: STR.AFS member of each part (-1 none).
+0x00418860	data	sp_skill_part_soundtracks		Pointer per sp_skill_table row to four halfwords: STR.AFS member of each part in play order (-1 none).
 0x00418A00	data	battle_voice_controls		145 eight-byte AudioControl rows.
 0x00418E90	data	audio_common_controls		Common sound event rows, 8 bytes each; byte 0 the common-bank program.
 0x00419768	data	audio_common_bank_descriptor	unsigned int[3]	SNDDATA.BIN offset 0, header 0x57E0, samples 0xE02D0.
@@ -221,7 +240,7 @@ address	kind	name	type	comment
 0x00440070	data	stage_scene_auxiliary_filenames	char *[18]	Archive file names formatted into 3eye/3eye%s by 0x002ED240.
 0x00440970	data	support_voice_rows		Per-character SOUND bank-2 member halfwords for support calls (0x002B85E0); ID 29 row 0x0055ED20.
 0x004415E8	data	sp_skill_level_index		3 halfwords per character ID at +2 (levels 1..3) -> sp_skill_level_rows index or -1; IDs 27..30, 32, 33 are -1.
-0x004415EA	data	sp_skill_index_by_character		Halfword sp_skill_table row per character*3+level; -1 none.
+0x004415EA	data	sp_skill_index_by_character		s16 sp_skill_table row per fighter ID*3+level (level 0..2); -1 or lower none.
 0x00442470	data	stage_scene_variants	int[18]	Per-scene 0/1 copied to stage control +0x94 by 0x002D8D10; stage_scene_construct appends suffix _a/_b (0x004423D0) to BLT_bg/BLT_obj, the names each archive holds.
 0x004424C0	data	stage_render_coefficients	float[18][2]	Two render coefficients per scene; NA2 factory 17 tokens 0/1.
 0x004425D0	data	stage_scene_effect_defaults		18 x 16-byte screen glare rows by scene: enable byte, packed colour (A,B,G,R), float amount, packed second colour; stage_glare_apply_scene_row overrides rows 0,1,2,4,9,10 colours on its stack copy. Row 11 disabled.
@@ -231,6 +250,7 @@ address	kind	name	type	comment
 0x004F3EF1	data	jutsu_stage_damage		Bytes [ID*15 + level*5 + stage]: four stage damage percents and a bonus percent.
 0x004F4160	data	jutsu_contest_stage_rows		0xC-byte rows [(ID-1)*0x90 + level*0x30 + stage*0xC]: attacker spec, defender spec (strings such as r0r1r2r2), window halfword (90; 0 unused), byte +10.
 0x004F53ED	data	jutsu_contest_modes		Contest mode byte per ID*3 + level.
+0x004F5950	data	jutsu_contest_command_masks	unsigned short[4]	Face-button mask per command code 0..3: 0x20, 0x80, 0x10, 0x40.
 0x005002F0	data	jutsu_camera_ichiraku_platform_rectangles	float[4][4]	x -1000..-730 and 730..1000, height 300..700.
 0x00509FC0	data	nine_tailed_naruto_select_name		English roster name Nine-Tailed Naruto followed by ifnrx.ccs.
 0x00542460	data	sp_skill_table		0x14-byte rows: title, resident path, extra-body count byte, part count byte, extra-body list, part list of {caption, stream}. ID 31 rows 90..92.
@@ -239,11 +259,14 @@ address	kind	name	type	comment
 0x00555EC0	data	sealed_orochimaru_jutsu0_vtable		Resource 55 actor; overrides +0x4C 0x007ECC10, +0xBC/+0xC0/+0xC4 0x007EA420/0x007EA4B0/0x007EA500, +0x104 0x007EABC0, +0x184 0x007ECA50, +0x194 0x007E9D70, +0x198 0x007EA050.
 0x0055F79C	data	ai_water_chakra_threshold	float	2.5: COM water reaction threshold (as UN3).
 0x0055FD84	data	arena_end	void *	Arena end node (gp-0x69EC) stored by game_arena_initialize; also copied to gp-0x69E0.
-0x0055FF54	data	battle_manager		gp-0x681C: +4 profile, +0x38 scene, +0x3C mode, +0x40 control mode, +0x41 stage scene index, +0x42/+0x43 P1/P2 character, +0x46/+0x47 P1/P2 COM flag, +0x26C active side.
+0x0055FEEC	data	battle_hub		gp-0x6884: battle graph hub; +0x0C the battle director (state +0x10, local state +0x14, counter +0x18, level +0x1C, participants +0x20/+0x24).
+0x0055FF54	data	battle_manager		gp-0x681C: +4 profile, +0x38 scene, +0x3C mode, +0x40 control mode, +0x41 stage scene index, +0x42/+0x43 P1/P2 character, +0x46/+0x47 P1/P2 COM flag, +0x1F8/+0x1FC side 0/1 fighters (battle_graph_create), +0x26C active side.
+0x0056009C	data	sp_skill_play_owner		gp-0x66D4: current skill-play owner; +0x04 the current part's container, +0x76 parts begun (sp_skill_play_begin increments it after starting contest stage n). Cleared by sp_skill_play_destroy.
 0x005601EC	data	jutsu_damage_total	float	Accumulated Ultimate Jutsu damage fraction, applied once by battle_director_jutsu after the film.
 0x005601F0	data	jutsu_post_film_effect		Byte: stage row byte +10 written at each stage start; applied to the attacker after the film when the defender survives.
 0x005601F4	data	stage_wind_strength	float	Published by stage_wind_update (gp-0x657C).
 0x00560208	data	stage_glare_enabled		gp-0x6568: stage owner draws its glare pass after the stage while set (scene row enable; lightning sets it during flashes).
+0x00560218	data	battle_pause_controller		gp-0x6558: presentation controller jutsu_connection_start requests selector 13 + level from; battle_director_jutsu waits for its +0x10 byte and halfwords +0x9E8/+0x9EE/+0xA88/+0xA8E to clear.
 0x00560344	data	stage_sway_coarse_sine	float *	
 0x00560348	data	stage_sway_sine	float *	
 0x0056034C	data	stage_sway_cosine	float *	

@@ -11,6 +11,7 @@ from typing import Mapping, Sequence
 
 READ32 = 0x02
 WRITE32 = 0x06
+SAVE_STATE = 0x09
 LOAD_STATE = 0x0A
 STATUS = 0x0F
 SCREENSHOT = 0x11
@@ -240,6 +241,16 @@ class PineClient:
 
     def pause(self) -> None:
         self.command(PAUSE)
+
+    def save_state(self, slot: int) -> None:
+        if not 0 <= slot <= 255:
+            raise ValueError("savestate slot is outside 0..255")
+        # SaveState is queued by PCSX2 and replies before the state is
+        # written. The fork's GS dump of a savestate needs the next four
+        # frames to run, so no pause barrier follows: callers wait for the
+        # savestate's files instead.
+        if self.exchange(bytes([SAVE_STATE, slot])):
+            raise RuntimeError("PINE SaveState returned unexpected data")
 
     def load_state(self, slot: int) -> None:
         if not 0 <= slot <= 255:
@@ -622,6 +633,8 @@ def parse_args() -> argparse.Namespace:
     get_states.add_argument("slots", nargs="+", type=integer)
     release = commands.add_parser("release")
     release.add_argument("slots", nargs="*", type=integer)
+    save_state = commands.add_parser("save-state")
+    save_state.add_argument("slot", type=integer)
     load_state = commands.add_parser("load-state")
     load_state.add_argument("slot", type=integer)
     read = commands.add_parser("read")
@@ -645,6 +658,9 @@ def main() -> int:
         elif args.command == "pause":
             client.pause()
             print(client.status())
+        elif args.command == "save-state":
+            client.save_state(args.slot)
+            print(f"savestate slot {args.slot} queued")
         elif args.command == "load-state":
             client.load_state(args.slot)
             print(f"savestate slot {args.slot} loaded; paused")

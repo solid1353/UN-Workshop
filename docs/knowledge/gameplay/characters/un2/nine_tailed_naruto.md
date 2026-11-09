@@ -305,9 +305,11 @@ equivalents by sample bytes:
 
 ## Voice
 
-Battle voice is compact. `audio_character_bank_descriptor` row 31 gives the
-bank at `SNDDATA.BIN` offset `0xDE6800`, header `0x1240`, samples
-`0x67210`; it is not Naruto's bank (ID 1, offset `0x2FA800`).
+Battle voice is compact. `audio_load_battle_character_banks` reads
+`audio_character_banks` (`0x00419780`) at the character ID minus one, so ID
+31's row 30 gives the bank at `SNDDATA.BIN` offset `0xD82000`, header
+`0x1BE0`, samples `0x622A0`, beside Naruto's row 0 (`0x299800`, the same
+header size).
 `battle_voice_control` (`0x002B8760`) plays `battle_voice_controls`
 (`0x00418A00`, 145 rows) on the side's bank, as NA2 does.
 
@@ -353,9 +355,25 @@ are per character.
 UN2 has no per-frame hit rows. Damage builds up during the film and is
 debited once after it, like UN3:
 
-1. `jutsu_connection_start` (`0x00189920`) starts battle-director event 5
-   and presentation selector 13 + level. `jutsu_presentation_update`
-   (`0x002F4DF0`) shows the cut-in and calls `sp_skill_play_start`.
+1. `jutsu_connection_try` (`0x001B5D80`) takes the level from the performed
+   action record's flags (`+0xC & 0xF000`: `0x1000`, `0x2000`, `0x4000` give
+   0, 1, 2). The move list names each Ultimate Jutsu by that record's English
+   name (`+8`), which can differ from its `sp_skill_table` title: Sasuke's
+   level 1 is "Curse Mark" there and "Curse" in the table
+   (`sasuke_ultimate_jutsu_actions`, `0x0038B050`). It debits the record's chakra cost
+   (`fighter_jutsu_chakra_debit`, `0x001979E0`) and passes the level
+   (`move a1,s3` at `0x001B61AC`) to `jutsu_connection_start`
+   (`0x00189920`), which starts battle-director event 5 with the attacker
+   and its `+0x38` opponent, and presentation selector 13 + level. The
+   director is `battle_hub` (`0x0055FEEC`) `+0x0C`;
+   `battle_director_update` (`0x001C0AE0`) runs it every update, state 0
+   doing nothing. `jutsu_presentation_update`
+   (`0x002F4DF0`) shows the cut-in and calls `sp_skill_play_start`;
+   `battle_pause_controller_update` (`0x002EF0D0`) runs it on every update
+   of the Ultimate Jutsu. **Observed:** the director update does not run
+   while the film plays. The film's skill-play owner is `sp_skill_play_owner`
+   (`0x0056009C`): `+0x04` the current part's container, `+0x76` the parts
+   begun.
 2. `sp_skill_play_start` builds the requests (`sp_skill_build_requests`,
    `0x00265E20`): resident file and extra bodies (`0x1000`), then each part's
    own stream in order, the first with `0x400`, which holds it until the
@@ -365,22 +383,38 @@ debited once after it, like UN3:
    `jutsu_damage_total` (`0x005601EC`).
 3. As each part begins, `sp_skill_play_begin` (`0x00264C30`) starts contest
    stage *n* = part *n* (`jutsu_contest_begin_stage`, `0x002C8DD0`). The
-   stage row in `jutsu_contest_stage_rows` (`0x004F4160`, 12 bytes per ID,
-   level and stage) gives each side's input spec (strings such as `r0r1r2r2`),
+   stage row in `jutsu_contest_stage_rows` (`0x004F4160`, 12 bytes per
+   stage, four stages per level and three levels per ID, indexed from ID 1
+   where the other tables index from ID 0) gives each side's input spec (strings such as `r0r1r2r2`),
    a 90-frame input window (70 or 75 on four parts) and, at byte `+10`, an
    effect stored in `jutsu_post_film_effect` (`0x005601F0`), so the last
    part started decides it. The window grows or shrinks by up to 30
    frames with the attacker's HP lead (by the lead beyond 10 points, capped
    at 30 from a 40-point lead) and is cut so that it ends at least 90 frames
    before the part's last frame.
-4. When both sides finish a stage, `jutsu_contest_resolve` (`0x002C86A0`)
+4. Each side reads its own pad every update (`jutsu_contest_side_update`,
+   `0x002C9CE0`); side 0 is Player 1's, whoever attacks. In mode 0
+   (`jutsu_contest_command_update`, `0x002C9D60`) a side enters its spec's
+   buttons in order (`jutsu_contest_side_parse_spec`, `0x002C96A0`;
+   `jutsu_contest_command_masks`, `0x004F5950`), and a wrong button locks it
+   for 10 updates. Entering them all gives result 1; the window running out
+   first gives result 2. Mash (modes 1 and 2) and rotation (mode 3) sides
+   count presses or quarter turns and always end with result 1. A side whose
+   battle-manager COM flag (`+0x46`, `+0x47`) is 1 follows a CPU plan
+   instead; the flag is read on every update.
+5. When both sides finish a stage, `jutsu_contest_resolve` (`0x002C86A0`)
    adds that stage's percent from `jutsu_stage_damage` (`0x004F3EF1`, five
    bytes per ID and level: four stage percents and a bonus) to the total. A
    defender win scales the stage by 0.66; the attacker's bonus flag adds the
-   bonus percent. In modes 1..3 the stage instead compares the two sides'
-   counts; a defender lead beyond the mode's threshold gives outcome 2 and
-   0.66 of the stage.
-5. After the film, `battle_director_jutsu` (`0x001BFA40`) applies the whole
+   bonus percent. In mode 0 the stage's outcome is the attacker's result. In
+   modes 1..3 the stage instead compares the two sides' counts; a defender
+   lead beyond the mode's threshold gives outcome 2 and 0.66 of the stage, and
+   any other count gives the attacker's result, 1. On outcome 2
+   `jutsu_presentation_update` latches request 1 into the film's stream player
+   (`sp_skill_player_latch_stop_skip`, `0x00266E60`). **Inference:** as in
+   NA2, this skips the film's remaining parts, so an attacker who leaves a
+   command stage unanswered loses the rest of the film.
+6. After the film, `battle_director_jutsu` (`0x001BFA40`) applies the whole
    total to the defender through the damage calculator with flag `0x100`
    (`0x00196A20`); Practice stops at HP 0.01. Unless the defender was
    defeated, it then applies `jutsu_post_film_effect` to the attacker
@@ -396,7 +430,10 @@ appearance bit 1; each runs once the frame passes its threshold. Position
 samples come from `sp_skill_position_tables` (`0x0041A160`, same
 indexing): per part a threshold count, halfword thresholds and one pointer
 per defender ID 0..33 to XYZ halfword triples. The films hold no `0x0108`
-command sections. `sp_skill_play_begin` has two hard-coded cases: with
+command sections. `sp_skill_play_begin` also runs
+`sp_skill_apply_stream_recolours` (`0x00263440`), which by stream identifier
+rebinds or swaps a few models' palettes for either side's costume, for many
+characters' films but none of Sasuke's. It has two hard-coded cases: with
 defender Haku (ID 10) it builds `MDL_1hak00t0 mask` from `1hakbod1` on the
 mouth slot and clears the eye slots, except in stream `D20_3_2`; in stream
 `D07_3_2` it hides `OBJ_1skr20t0 bod`. It compares a stream identifier
@@ -406,7 +443,9 @@ Film sound comes from three sources:
 
 - **Soundtrack.** Each part has its own ADX in `STR.AFS` (183 members,
   stereo 48,000 Hz type 3), listed per row in `sp_skill_part_soundtracks`
-  (`0x00418860`, four halfword members, -1 none). The stream player
+  (`0x00418860`, a pointer per row to four halfword members, one per part).
+  In the Japanese release's `STREAM.AFS`, Sasuke's parts' members 9..19
+  match the English ones in number and length to 0.2 s. The stream player
   (`ccs_stream_player_run`, `0x002678F0`) calls
   `audio_prepare_skill_soundtrack` (`0x002B98B0`), which requests music
   preset 9: part 1's track on stream channel 1, paused.
@@ -424,7 +463,12 @@ Film sound comes from three sources:
   instead. The rows use controls 0, 3, 4, 12..18, 20 and 22; 182 of the
   183 parts have a control-20 row, usually the last.
 - **Start shout.** `battle_director_jutsu` plays the attacker's compact
-  voice event 9 + level, 11 updates into director event 5. This character
+  voice event 9 + level (level 0..2), 11 updates into director event 5;
+  where the event list maps event *e* to control *e*, as Naruto's and
+  Sasuke's do, that is the program of the same number at key 60. The
+  Japanese release reads its banks from its own `audio_character_banks`
+  (`0x00409B60`) through the same control rows (`0x00408DE0`); Sasuke's
+  three shouts are 22,050 Hz there and 16,000 Hz in English. This character
   also shouts from its callback (voice events 6/7/8 in actions 40..42).
 
 No film routine requests `PLVOICE.AFS`; its consumer is

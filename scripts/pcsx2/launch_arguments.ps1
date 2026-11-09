@@ -11,6 +11,7 @@ function Get-UnWorkshopLaunchOptions {
             '-o' = 'CaptureDirectory'
             '-mc' = 'MemoryCard'
             '-logfile' = 'LogFile'
+            '-savestates' = 'SavestateFolder'
         }
         Switches = [ordered]@{
             '-dmc' = 'DiscardMemoryCardWrites'
