@@ -5,7 +5,7 @@
 Established: ordinary retail NA2 HUD ownership, ordering, visibility, meter/clock
 presentation, root displays, transforms and cleanup. Names and routine detail
 come from `@annotations/NA2`.
-Open: nothing.
+Open: which code, if any, draws `battlegauge.ccs`'s `TEX_xsouef` sparkles.
 
 This document describes unmodified retail NA2 (`SLPS-25837`). File identities
 and address conventions belong to
@@ -161,7 +161,16 @@ Only selected key `0x25` with a fighter can substitute `0x5E`: it requires
 `BtlGauge` owns three sprites, three `ANM_ef_gau02a/01a/00a` players
 and a `0x50`-byte view helper; parent, fighter, container and secondary
 context are borrowed. `gauge_container_setup` binds `battlegauge`,
-`TEX_xgauge` and `TEX_xgauge3`.
+`TEX_xgauge` and `TEX_xgauge3`, creating the sprites through
+`hud_chakra_create_sprites` and then the players through
+`gauge_players_construct` (call at `0x0071D428`); `hud_top_release` frees
+them through `gauge_players_release` (call at `0x0071AC3C`).
+
+The same `battlegauge.ccs` holds `TEX_xsouef`, a 128-by-128 sheet of six gold
+sparkle frames in two columns of three rows; the first frame's five-point star
+spans texels 18..47 by 5..31. BTL keeps the name at `0x008ADF80`, after the
+`battlegauge.ccs` name that `cutin_resources_initialize` loads, but no code
+reference to it has been found.
 
 `hud_chakra_reset` initializes current/previous samples from
 `Fighter.chakra` and requested/displayed reservation from
@@ -211,8 +220,24 @@ active flags and fades remain local to the child. The array contract belongs to
 Draw orders fill/thresholds, optional feedback when `feedback_enabled`,
 then the rotating icon. Feedback draws only active players in the secondary
 context, all three centered on the icon at `hud_chakra_icon_offset`, and
-restores the previous context. The icon clears rotation afterward;
-the wrapper resets all three sprites.
+restores the previous context. The icon clears rotation afterward; the
+wrapper resets all three sprites. `hud_chakra_feedback_draw` builds one matrix
+at `0.24` times the parent scale, mapped through the context's camera to the
+icon's anchor at depth 500, and copies it into each player's `+0x40` (axis
+rows, then the translation row) with `+0x8D` set. It writes `fading_fade` and
+`state_fade` to those players' opacity at `+0x88`; the threshold player's is
+not written. It then submits the fading, threshold and state players through
+`projectile_compound_submit` at `0x0071EC00`, `0x0071EC18` and `0x0071EC30`.
+
+The players' `0x0102` object tracks in `battlegauge.ccs` place their content
+around that anchor, the animation's origin. `ANM_ef_gau00a`, the state
+player's charging spiral (121 frames), holds `OBJ_ef_rasen01..05` at the
+origin and moves `OBJ_ef_glow01..04` from about 46–53 units out, starting at
+-20°, 109°, -78° and 162°, into exactly (0,0). `ANM_ef_gau01a`, the threshold
+player, keeps `OBJ_ef_ring01..05`, `OBJ_ef_glow01/02` and `OBJ_ef_light01` at
+the origin. `ANM_ef_gau02a`, the fading player, keys `OBJ_ef_gauge00`'s
+scale from 1.0 and drifts `OBJ_ef_glow01..07` on separate offset paths.
+
 `hud_chakra_icon_draw` centers the icon, `hud_chakra_icon_rectangle`
 (233,1,21,21), at the parent draw position plus `hud_chakra_icon_offset`
 (66,38), X mirrored for side 1, at the parent scale, rotated by `2π` times the

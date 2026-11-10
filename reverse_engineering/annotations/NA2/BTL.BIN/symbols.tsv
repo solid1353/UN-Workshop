@@ -3596,6 +3596,7 @@ address	kind	name	type	comment
 0x008AD89C	data	skill_resource196_response28_definition	InteractionDefinition	Resource196 2bdycha4.ccs ccSkillSAIxNRW definition0; response28,category0x40000, multiplier bits0x3f800000. Factory0x00775FB0 and interface194 skill_combo_submit_record join to inherited skill_primary_submit_record. Metadata owner31, action1, selector62 <r喧乱|けんらん>・<r超獣偽画絵巻|ちょうじゅうぎがえまき>. This is authored route availability, not ordinary-play execution.
 0x008AD8E4	label	owner_descriptor_transfer_table		Live owner-ID pointer table stride8,signed index0..0xC4; selected row byte4/5 gates descriptor transfer; identity unassigned. | First pointer of8-byte selector0..196 rows resolves live skill descriptors;ANB damage uses descriptorF4 each contribution;common setup uses same signed-base sequence.
 0x008ADE08	label	skill_hnw_definition_row		Resource165 descriptor row:count4 and fixed definition pointer8ACB10;count is four bytes before pointer-table indexing base.
+0x008ADF80	data	battlegauge_sparkle_texture_name	char[16]	"TEX_xsouef": battlegauge.ccs's 2x3 sheet of gold sparkle frames; no code reference found.
 0x008AE0C0	label	attachment_roc_hair1		Literal used by attachment_model_rows.
 0x008AE0E0	label	attachment_default_name		Literal used by attachment_model_rows.
 0x008AE0F8	label	attachment_roc_archive		Literal used by attachment_model_rows.
