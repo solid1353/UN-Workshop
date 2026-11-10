@@ -4,7 +4,8 @@
 
 Established: retail NA2 renderer lifetimes, column-vector transforms,
 projection/viewport/2D conversions, primary/display ownership and publication,
-exact scale inheritance through scoped camera copies, UI renderer
+the primary slot's writers and first viewport reset, camera refresh's two
+scale reads, screen-to-world callers, exact scale inheritance through scoped camera copies, UI renderer
 ownership, streamed borrowing, draw-time resets and draw scratch.
 The checked renderer methods' shifted matrix/vector output bounds, selected
 callback bulk-write destinations, concrete draw-callback output paths and the
@@ -118,6 +119,22 @@ If it is a different environment borrowing the primary renderer, only that
 environment's slot changes. Other borrowed references retain their existing
 pointer. The swap retains `owns_renderer`; that byte describes environment
 ownership, not ownership of its temporary binding.
+
+`default_renderer` therefore always holds the primary's owned renderer or a
+scoped copy made from it, at any nesting depth: each bind copies whatever the
+active environment held. Its known writers are publication and that
+bind/restore. `scene_renderer_set` has only those two callers, resident
+references to `0x0060919C` only read it, and the two callers of
+`draw_environment_replace_renderer` (`0x001FA9F0` and `BTL.BIN:0x0077744C`)
+replace other environments' renderers.
+
+The first viewport reset of the primary after registration is
+`transition_pool_initialize`, reached through `font_services_initialize` at
+`engine_root_allocate` call `0x00106128`; it publishes scales `(1,1)`. The
+display reconfiguration in `engine_root_initialize` (call `0x00106058`) runs
+before the primary is registered. Later reconfigurations, each ending in
+`renderer_list_refresh_viewports`, run from `engine_root_update` when
+`setup_request` is not negative and pacing bypass is clear.
 
 The scale pair has these publication rules:
 
@@ -313,6 +330,10 @@ and `gY` be `display_vertical_factor`; let `theta` be the renderer's
 `field_of_view`, `sx/sy` its projection scales, and `cx/cy` its projection centers.
 It computes `d=2*tan(theta*pi/360)`, `F=W/d` and `F512=512/d`, storing `F` in
 `focal_coefficient`. The focal coefficients coincide only when `W=512`.
+It reads `sx` twice: at `0x0010DD3C` for the configured projection, whose
+stack copy at `+0x3C` also feeds `device_affine`, and at `0x0010DED0` for the
+fixed-reference projection. Horizontal size therefore follows `F` and `sx`,
+not the viewport width: a narrower viewport crops without shrinking content.
 
 Before camera composition, the configured projection has diagonal coefficients
 `F*sx` and `F*sy*gY`, homogeneous output `w'=z`, and center contributions
@@ -433,6 +454,11 @@ to the selected renderer.
 | `renderer_get_device_rectangle` / `renderer_get_device_rectangle_fixed4` | Return device XY endpoints as floats / four-fraction-bit integers; no point projection. |
 | `renderer_get_pixel_viewport` / `renderer_get_pixel_viewport_fixed4` | Return pixel viewport bounds as floats / four-fraction-bit integers. |
 | `renderer_get_camera_reference` | Copy the inverse-camera-derived reference vector. |
+
+`renderer_screen_depth_to_world` has one resident caller, `jutsu_hit_popups_draw`
+(`0x0035C700`), and six BTL callers: `0x006B6384`, `hud_combo_draw`
+(`0x006B7438`), `0x006B86CC`, `item_auxiliary_draw` (`0x00712CEC`),
+`0x007131EC` and `hud_chakra_feedback_draw` (`0x0071EA30`); ETC has none.
 
 **Inference, high confidence:** the depth-specified screen-to-world utility is
 not a general inverse of the projection. It uses fixed center `(256,192)` and

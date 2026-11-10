@@ -4,7 +4,8 @@
 
 Established: shared-2D consumers, the direct primitive-emitter census, all 62
 direct presentation-rectangle requests, colored covers, oversized masks,
-bounded atlas/text, authored CCS owners, interaction regions, selected cursor
+bounded atlas/text, authored CCS owners, interaction regions, the movie frame
+draw, selected cursor
 and computed-callback paths, extended/directional sprite and scrollbar
 attachments, framebuffer coordinate ownership, 71 scoped
 transition-pool setups, BTL cover/window identities, native help backing,
@@ -371,9 +372,39 @@ not give the coverage throughout both animations.
 IDs `20/21`, material `1412` and texture `1413`. Its model-space X bounds
 are `-529.75..530`, Z `-397.25..397.5`; all four paired texture coordinates
 are `(4,251)`. This constant-sample backing is separate from the machine's
-15 object tracks, the tube and secondary backing model. Model-space extents
-and source sampling identify these owners, not final projected or widened
-coverage. Source identities are retained in annotations.
+15 object tracks, the tube and secondary backing model. Source identities are
+retained in annotations.
+
+### Screen-sized panels
+
+Front-end and presentation CCS scenes draw their backdrops as flat models in
+front of a scene camera. Most of these cameras sit at `(0,-635.78,0)` with Euler
+`(90,0,0)` and field of view `43.913`, so at depth `635.78` one world unit is
+about one logical pixel; `ENDDEMO.CCS` and `BATTLEGAUGE.CCS`'s `ANM_xflash` use
+`(0,-619.27,0)` at `45`, and `OUGI.CCS` looks down `-Z` from `(0,0,222.42)` at
+`45`. The frame-0 placements and cameras give these horizontal reaches in
+512-wide logical units, measured from the screen center; a texture span of a
+few texels is a near-uniform sample:
+
+| Container | Model (object placement) | Texture span | Screen X |
+| --- | --- | --- | --- |
+| `MODESEL1.CCS` | `MDL_mode_back` (`OBJ_mode_back` at Y `396.7`) | 0×0 | `±326` |
+| `MAPSEL1.CCS` | `MDL_back01` | 4×3 | `-377..311` |
+| `VS.CCS` | `MDL_vs_back3` | 1×0 | `±315` |
+| `OPTION.CCS` | `MDL_op_back` | 0×1 | `-285..301` |
+| `CHARSEL1.CCS` | `MDL_back00`, a relief 23 units deep | artwork | `±318` |
+| `3EYE/ENDDEMO.CCS` | `MDL_black_panel`; `MDL_back_ef01/02`, `MDL_haikei` | 0×0; artwork | `±266`; `±256` |
+| `OUGI.CCS` | `MDL_ougi_back`, `MDL_obi01/02`, `MDL_obi_b01/02`; `MDL_obi01b2/02b2`; `MDL_back_pt01..03` | 0×0; artwork; artwork | `±551`, `±711`; `±323`; `±201..272` |
+| `BATTLEGAUGE.CCS` | `MDL_xc_line1/2`, `MDL_xc_back`, `MDL_x_flash_panel` | 1×1, 0×0, 4×8 | `±259`, `±277`, `±259` |
+| `CMN/GAUGE.CCS` | `MDL_back_panel`, `MDL_xb_back` | 3×4, 0×0 | `±266`, `-277..293` |
+| `LOADING/SPLOAD.CCS` | `MDL_splback`, `MDL_spl_obi01`; `MDL_back_a01/b01/c01`, `MDL_back_ef01/02` | 0×0, 9×0; artwork | `±302`, `±276`; `±258..260` |
+| `MODENAME/MODE2CMN.CCS` | `MDL_black_efb01`, `MDL_mode2obi1a/2a`; the same five `back_*` artwork panels | 0×0, 0×4; artwork | `±307`, `±286`; `±258..260` |
+| `XNINKA.CCS` | `MDL_xback01` | 0×0 | `±256` |
+| `CONTINUE.CCS` | `MDL_obi01` | 0×2 | `±277` |
+
+[`ccs_scene.py`](../../../../scripts/media/ccs_scene.py) reproduces these values from the
+containers. It reads ordinary meshes and frame-0 keys only and ignores parent
+chains.
 
 `hud_combo_draw` (`BTL.BIN:0x006B7100`) similarly mixes atlas digits with an
 optional authored animation. It reconstructs the animation's world anchor
@@ -453,6 +484,7 @@ Other framebuffer producers bypass the shared 2D matrix:
 | --- | --- |
 | `sampling_texture_capture` (`0x0019DCD0`) | Source is the display-sized framebuffer; destination width/height halve independently to fit the texture. The display-width gate and texture scissor are owned by [Sampling texture resource consumer](texture_material_runtime.md#sampling-texture-resource-consumer). |
 | `image_transfer_copy` (`0x00109430`) | Caller rectangle supplies source UVs; destination and context-2 scissor use copy dimensions directly. Screen-break capture is later consumed by `stream_break_draw` (`0x003730C0`) as authored projected geometry. |
+| `gs_build_transfer_draw_packets` (`0x00104850`) | Decoded MPEG macroblocks upload to texture base `0x3C0`; each column of up to 64 pixels then draws as a linear-filtered textured sprite at 16 device units per pixel, placed from the device rectangle of `render_context_holder`'s renderer plus the movie's offsets. |
 | `projection_controller_composite` (`0x0018BF90`) | Destination comes from renderer device bounds, while source UV dimensions come from the target. [Shadow rendering](shadow_rendering.md) owns the complete pass. |
 
 ## Bounded packet, cursor and callback classification
