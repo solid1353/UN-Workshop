@@ -383,29 +383,52 @@ front of a scene camera. Most of these cameras sit at `(0,-635.78,0)` with Euler
 about one logical pixel; `ENDDEMO.CCS` and `BATTLEGAUGE.CCS`'s `ANM_xflash` use
 `(0,-619.27,0)` at `45`, and `OUGI.CCS` looks down `-Z` from `(0,0,222.42)` at
 `45`. The frame-0 placements and cameras give these horizontal reaches in
-512-wide logical units, measured from the screen center; a texture span of a
-few texels is a near-uniform sample:
+512-wide logical units, measured from the screen center. A texture span counts
+1/256 of the texture's width and height, so a span of a few units is a
+near-uniform sample; the seamless tiles named below are sampled about once
+across their panel:
 
 | Container | Model (object placement) | Texture span | Screen X |
 | --- | --- | --- | --- |
 | `MODESEL1.CCS` | `MDL_mode_back` (`OBJ_mode_back` at Y `396.7`) | 0×0 | `±326` |
 | `MAPSEL1.CCS` | `MDL_back01` | 4×3 | `-377..311` |
-| `VS.CCS` | `MDL_vs_back3` | 1×0 | `±315` |
+| `VS.CCS` | `MDL_vs_back3`, a cream sheet with a round hole of radius about `142` around each side's disc, open toward the screen edge, where the disc's flat-colored rectangle `MDL_char1_back1`/`MDL_char2_back1` (`±163.1` at X `∓169.4`) and the ring `MDL_vs_ring1/2` show through | 1×0 | `±315` |
 | `OPTION.CCS` | `MDL_op_back` | 0×1 | `-285..301` |
-| `CHARSEL1.CCS` | `MDL_back00`, a relief 23 units deep | artwork | `±318` |
-| `3EYE/ENDDEMO.CCS` | `MDL_black_panel`; `MDL_back_ef01/02`, `MDL_haikei` | 0×0; artwork | `±266`; `±256` |
+| `CHARSEL1.CCS` | `MDL_back00`: its first four vertices are a flat backdrop at depth 0; the rest is a relief of frame pieces up to 23 units in front | 0×1; `charsel01` atlas pieces | `±256`; `±318` |
+| `3EYE/ENDDEMO.CCS` | `MDL_black_panel`; `MDL_haikei`: its first four vertices are the sky quad at depth 0, the rest a red disc fan of radius 96 around `(-110, 78)` at depth `-0.5`, where `MDL_sunlight`'s rays and `MDL_win` also center; `MDL_back_ef01/02`: a 2×2 grid of quads, each repeating U `0..256` on its own; `MDL_thunder`, `MDL_wind` (`ANM_end_haikei02`) | 0×0; 11×31; seamless tiles `enddemo02/03`; figure artwork cut at its outer edge | `±266`; `±259`; `±256`; `-259..-59`, `-22..258` |
 | `OUGI.CCS` | `MDL_ougi_back`, `MDL_obi01/02`, `MDL_obi_b01/02`, `MDL_ougi_white`; `MDL_obi01b2/02b2`; `MDL_back_pt01..03` | 0×0; artwork; artwork | `±551`, `±327`, `±298`; `±323`; `±201..272` |
 | `BATTLEGAUGE.CCS` | `MDL_xc_line1/2`, `MDL_xc_back`, `MDL_x_flash_panel` | 1×1, 0×0, 4×8 | `±259`, `±277`, `±259` |
 | `CMN/GAUGE.CCS` | `MDL_back_panel`, `MDL_xb_back` | 3×4, 0×0 | `±266`, `-277..293` |
-| `LOADING/SPLOAD.CCS` | `MDL_splback`, `MDL_spl_obi01`; `MDL_back_a01/b01/c01`, `MDL_back_ef01/02` | 0×0, 9×0; artwork | `±302`, `±276`; `±258..260` |
-| `MODENAME/MODE2CMN.CCS` | `MDL_black_efb01`, `MDL_mode2obi1a/2a`, `MDL_mode2back03`; the same five `back_*` artwork panels | 0×0, 0×4, 0×0; artwork | `±307`, `±286`, `±290`; `±258..260` |
-| `XNINKA.CCS` | `MDL_xback01` | 0×0 | `±256` |
+| `LOADING/SPLOAD.CCS` | `MDL_splback`, `MDL_spl_obi01`; `MDL_back_a01/b01/c01`, `MDL_back_ef01/02` | 0×0, 9×0; seamless tiles `splback1/2/3` | `±302`, `±276`; `±258..260` |
+| `MODENAME/MODE2CMN.CCS` | `MDL_black_efb01`, `MDL_mode2obi1a/2a`, `MDL_mode2back03`; the same five `back_*` panels | 0×0, 0×4, 0×0; seamless tiles `mode2back1/2/3` | `±307`, `±286`, `±290`; `±258..260` |
+| `XNINKA.CCS` | `MDL_xback01`; the Ninja Song details page's paper `MDL_xback_ma01..03` and patterned borders `MDL_xback_mb01..06` (`ANM_xninka02a`, borders at X `∓224`) | 0×0; 14×68; 31×64, one atlas tile repeated by geometry | `±256`; `±207`; `-264..-198`, `198..265` |
+| `HOME.CCS` (Collection) | `MDL_haikei`: its first four vertices, the back plane at depth 0, are a cream field, and an orange disc of radius `160.5` centered at `(-197.4, 126.2)` lies in front; `MDL_home_back`, the root menu's collage; the cream wipe strips `MDL_hf_01..04` (`ANM_home_flash_b` at X `-30`, `ANM_home_flash_a` at `783`); the pink smears `MDL_hf_a`, resting at about `309..828`; the list paper `MDL_back_panel`, `±128.7` with 10-unit border strips, whose `ANM_home_panel1/2` X keys slide between `395` and `127` and `ANM_home_panel3/4` between `-395` and `-127`; the figure viewer adds a root X of `45` | 0×0, 0×0 disc; artwork; 0×0; 108×24; 58×18 | `±265`, disc to `-358`; `±261`; `-291..293`; `309..828`; `-2..256` at rest on the right |
 | `CONTINUE.CCS` | `MDL_obi01` | 0×2 | `±277` |
 | `STR/D57_20E.CCS` | `MDL_e57air01a`, `MDL_e57air01b` (cloud layers held on screen; observed mid-scene, not frame 0) | artwork | `±254`, `±304` |
 
 [`ccs_scene.py`](../../../../scripts/media/ccs_scene.py) reproduces these values from the
 containers. It reads ordinary meshes and frame-0 keys only and ignores parent
-chains.
+chains. [`ccs_model.py`](../../../../scripts/media/ccs_model.py) lists one
+model's vertices, which shows the back planes, discs and per-quad texture
+runs these rows describe.
+
+The versus screen draws each side's own elements in `settings_side_panel_draw`
+(`BTL.BIN:0x006BFB80`), called for side 0 then side 1 from `0x006C0A3C`. Its
+side is at panel `+0x04`. It places the fighter name at logical X `96`/`416`
+and Y `34`, the support name at `110`/`402` and Y `74`, and the plaque from
+`96`/`416` in `0x006BF7B0`; `0x006BECA0` draws the fighter portrait at world
+`(∓160, 0, 50)` through the draw environment at `+0x4C` and the support
+portrait at `(∓160, 0, -60)` through `+0x58`. All of these sprites submit
+before it returns, so they take the default renderer's `transform_2d` at that
+time. The two portraits' environment renderers have viewports reaching 64
+logical units past the screen edge on their side, to logical `-64` and `576`,
+so the display, not the viewport, cut them at its edge. Their
+GS scissor is packed from the renderer's `packed_left/right` at `+0x260` only
+when `ordered_controller_list_process` (`0x00109DE8..0x00109E04`) prepends
+each environment's setup packet at the frame's end. In `VS.CCS`, `ANM_vs_ring1/2` and `ANM_win_lose1/2` spin the rings
+(`EXT_mapring1/2`) and the win/loss wheels (`EXT_wheel1a/2a/1b/2b`) about
+their own origins with animated rotation, at constant positions; the discs,
+swirls and win/loss boxes keep constant rotations.
 
 `hud_combo_draw` (`BTL.BIN:0x006B7100`) similarly mixes atlas digits with an
 optional authored animation. It reconstructs the animation's world anchor
@@ -579,6 +602,20 @@ band whose edges pass through its corners, and a 16-sided vignette of outer
 radius `330` around `(256,192)`, just past the corners' `320`. With
 `ccfm_reference_width` changed to `683`, the copied bands kept their
 512-based size.
+
+The screen-lines effect, created by `screen_lines_create` (`0x00338480`) and
+used for a Cinematic Jutsu's falling lines, is a renderer owner in the effect
+manager with vtable `0x005DB980`. `screen_lines_spawn` (`0x0032A450`) places
+each of its 32 lines at integer X `0..511` and Y `0..383`, and
+`effect_screen_sprites_third` respawns a line once it leaves that 512-by-384
+field. `screen_lines_draw` (`0x00329B80`) submits each line as two gradient
+quads through its sprite at `+0x40`, in sprite batch selector 6 (gouraud
+colored quads, GIF tag template `0x005BFB60`). It then submits two half-field
+gradients through its sprite at `+0x138`, black at alpha `0x60` at the field's
+edge fading to clear at its center: the top and bottom halves for directions
+0 and 1 at `+0x474`, the left and right halves otherwise, sized from the field
+width and height at `+0xA1C`/`+0xA20`. Both sprites take the shared 2D of the
+effect manager environment at `+0x110` when they submit.
 
 Other packets in those owners have separate contracts:
 

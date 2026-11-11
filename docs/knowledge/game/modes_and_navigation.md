@@ -381,6 +381,14 @@ visible value to `NORMAL`; the help/status line reads
 
 ## Collection
 
+Picking Collection, Mode Select's update (`battle_mode_selector_update`)
+queues `home.ccs` and starts the load queue; its exit sets manager mode 6,
+sends `audio_request_frontend_command(1)` and destroys `option.ccs`,
+`modesel1.ccs` and the held `charsel1.ccs`, `mapsel1.ccs` and `setting.ccs`.
+Mode 6's handler, `manager_snapshot_state6`, waits for the load queue to go
+idle, selects the ETC overlay and builds Collection, whose
+`collection_resources_initialize` requires `home.ccs`.
+
 The Collection root has three entries:
 
 1. Characters

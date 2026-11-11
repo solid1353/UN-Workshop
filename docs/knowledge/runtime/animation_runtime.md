@@ -178,6 +178,17 @@ to runtime mode 5; these modes are not the original file selectors.
 | Scalar | `animation_scalar_init` / `animation_scalar_evaluate` | 0: caller default; 1: constant, `0x10`; 2: relative linear, `0x10`. |
 | Packed color | `animation_color_init` / `animation_color_evaluate` | Modes 1/2, `0x10`; packed endpoints converted to RGB before interpolation. |
 
+`ccs_read_vector_curve` stores a mode-2 vector curve as a word count
+followed by 16-byte records: the first holds time 0 and the base X/Y/Z, each
+later one a duration in 1/256 frames and X/Y/Z deltas from the previous key,
+and the last a zero delta to the animation's end. The count covers every
+record but that last one when the final key ends the animation. The `0x0102`
+key descriptor keeps its channel modes at `+0x04`, position mode in the low
+three bits, and its position curve at `+0x08`; a parsed animation lists its
+`{record, key}` pairs at `+0x18` and their count at `+0x1C`. A pair's record
+is the animation's `EXT_` reference to the object, such as `HOME.CCS`'s
+`EXT_back_panel`, which binding later resolves to the `OBJ_` record.
+
 Linear scalar/vector curves use unsigned elapsed/duration values in
 `AnimationScalarWork`, `AnimationVectorWork` and their segment types.
 Advancing adds delta, consumes segments only while `duration < elapsed`,

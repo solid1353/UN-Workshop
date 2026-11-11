@@ -8,8 +8,8 @@ and input contest, resolves damage and outcome, and drives the CPU side.
 Established: Ultimate Jutsu admission and presentation, every contest class,
 input retention, CPU scoring and results, cinematic damage, support-dependent
 voices, branch frames, the interruption animation's transforms and bindings,
-Start handling and early film endings, and the sizes and bounds of the
-record and per-skill tables.
+Start handling and early film endings, Collection's playback, and the sizes
+and bounds of the record and per-skill tables.
 Names come from `@annotations/NA2`.
 Open: nothing.
 
@@ -376,6 +376,48 @@ passes through `jutsu_contest_start` to `jutsu_contest_create`.
 Pair-specific skill replacement runs before constructing the player.
 Request setup, draw callbacks and participant substitutions belong to
 [Ultimate Jutsu cinematics](ultimate_jutsu_cinematics.md).
+
+### Collection playback
+
+Collection's viewer plays a film without a fight. Each character's list
+comes from `collection_skill_lists` (ETC `0x006DE8F0`): 60 rows
+`{character, count, name}` in Collection's order, the count at
+`0x00607048`, each holding the next `count` of the 168 16-byte
+`collection_skill_records` (ETC `0x006DDE70`) `{unlock id, cost, skill,
+name}`. `collection_skill_lists_build` (ETC `0x006BF040`) copies the
+viewer's character's rows and builds the opponent list from the 75-row
+`collection_master_roster` (count at `0x00606F08`), keeping the characters
+`profile_roster_available` admits; the opponent cursor starts on the first.
+A row plays only when its unlock id's grouped profile byte is at least 2.
+Its initialization,
+`etc_skill_ccs_acquire` (ETC `0x006BE710`), loads `pl/1cmnbod1.ccs` and
+`strmcmn.ccs` through `ccs_load_if_absent` and runs
+`sp_skill_relocate_request_table`. Confirming a list row,
+`collection_skill_open` (ETC `0x006C0500`) takes the attacker from the
+viewer's character at `+0x10`, replaced through the 15-row skill-to-fighter
+table at ETC `0x006E2C80` for a film another body performs, and the defender
+at `+0x24` from the row's entry at `+0x30`. It calls
+`audio_skill_play_pending_set(0)` (`0x001D94D0`), which sets the
+`AudioCommandContext` byte at `+0x4D`, queues both characters' `pl/%s`
+archives, the names coming from the character table at `0x00402710`, and
+enters state 5. `etc_skill_play_start` (ETC `0x006C0AF0`)
+waits for its white cover and the load queue, takes both containers, calls
+`battle_character_pair_prepare(attacker, defender)`, clears manager
+`+0x54` and `+0x7C`, and calls
+`sp_skill_play_start(0, attacker, defender | flags, skill, -1)`. The
+defender descriptor's bit 16 is set when the defender is the attacker's own
+character, or the skill's linked partner from the ten-row table at ETC
+`0x006E2D00`. `etc_skill_play_wait` then holds the viewer's task, one
+`task_wait_current(1)` per frame, while that byte stays set. It clears the
+frame colour with `engine_set_packed_display_value(0)` and gives the active
+render environment `+0x138 = 1000.0` and `+0x124 = 1`. Once
+`ccs_stream_player_hold_point` reports the film's first hold point it releases
+it, clears the secondary transition pool and from then on stops the film
+on Cross with `ccs_stream_player_latch_stop_skip(player, 2)`. Afterwards it
+calls `sp_skill_play_destroy`, `battle_character_pair_release` and
+`audio_request_frontend_command(4)`, releases both containers, restores the
+frame colour, zeroes both render-environment fields and returns the viewer to
+its list.
 
 ## Contest objects
 
