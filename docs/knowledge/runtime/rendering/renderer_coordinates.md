@@ -724,7 +724,23 @@ Hierarchy and accumulated matrices belong to
 [Model runtime](model_runtime.md#composition-hierarchy-and-matrix-lifetime).
 
 `model_dispatch_geometry` composes
-`context.device_matrix=renderer.device_projection*context.model_matrix`.
+`context.device_matrix=renderer.device_projection*context.model_matrix`
+with the `matrix_multiply` call at `0x0019123C`, where `s4` holds the model
+instance and `s3` the draw context. Both matrices are column-major; a point's
+X and Y divided by its W give GS pixels, with the screen center at 2048,
+and W is its distance in front of the camera. The renderer's `+0x200` and
+`+0x210` vectors hold the draw's pixel limits, which
+`model_classify_bounds` loads: X `1792..2304` and Y `1824..2272` for a
+full-screen draw. The context's device matrix serves that visibility test and
+packed geometry only: `model_build_ordinary_vif_setup` (`0x00192AE0`),
+reached only from `model_dispatch_geometry`, composes the matrix it uploads
+for ordinary geometry again, into its packet at `+0x60`, from the draw
+environment renderer's `device_projection` and the model matrix times the
+uniform scale (`matrix_multiply` at `0x00192DDC`), or from the depth-offset
+projection (`0x00192DC8`). `model_submit_packed_geometry` copies the context's
+device matrix into its packet unless the instance has a depth offset; then
+it first composes the context's device matrix again from the depth-offset
+projection and the model matrix (`0x001903F4`).
 With `runtime_flags & 0x100000`, it first replaces the world basis using its XYZ
 column lengths as diagonal scales times `inverse_camera_rotation`, restores
 world translation and redirects `model_matrix`. Both branches then use

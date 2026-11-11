@@ -20,6 +20,7 @@ function Get-UnWorkshopLaunchOptions {
             '-u' = 'Unlimited'
             '-k' = 'ClosePcsx2'
             '-aud' = 'LastGameAudio'
+            '-mute' = 'Mute'
             '-agent-replay' = 'AgentReplay'
             '-surfaceless' = 'Surfaceless'
         }

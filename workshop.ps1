@@ -61,6 +61,7 @@ function Invoke-UnWorkshopGameLaunch {
         [switch]$Unlimited,
         [switch]$ClosePcsx2,
         [switch]$LastGameAudio,
+        [switch]$Mute,
         [switch]$AgentReplay,
         [switch]$Surfaceless
     )
@@ -107,6 +108,7 @@ function Invoke-UnWorkshopGameLaunch {
     if ($Unlimited) { $parameters.Unlimited = $true }
     if ($ClosePcsx2) { $parameters.ClosePcsx2 = $true }
     if ($LastGameAudio) { $parameters.LastGameAudio = $true }
+    if ($Mute) { $parameters.Mute = $true }
     if ($AgentReplay) { $parameters.AgentReplay = $true }
     if ($Surfaceless) { $parameters.Surfaceless = $true }
     if (-not [string]::IsNullOrWhiteSpace($LogFile)) {
@@ -224,6 +226,7 @@ switch ($normalizedCommand) {
             -Unlimited:$launch.Unlimited `
             -ClosePcsx2:$launch.ClosePcsx2 `
             -LastGameAudio:$launch.LastGameAudio `
+            -Mute:$launch.Mute `
             -AgentReplay:$launch.AgentReplay `
             -Surfaceless:$launch.Surfaceless
     }

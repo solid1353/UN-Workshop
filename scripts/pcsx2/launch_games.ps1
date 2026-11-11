@@ -55,6 +55,8 @@ param(
 
     [switch]$LastGameAudio,
 
+    [switch]$Mute,
+
     [string]$ProjectRoot,
 
     [string]$InputRecordingsRoot,
@@ -80,6 +82,9 @@ if ($Surfaceless -and ($Snapshots -or $AgentReplay)) {
 $noWindow = $AgentReplay -or $Surfaceless
 if ($LastGameAudio -and ($noWindow -or $Snapshots)) {
     throw '-aud needs a windowed launch.'
+}
+if ($LastGameAudio -and $Mute) {
+    throw 'Use only one of -aud or -mute.'
 }
 if ($AgentReplay) {
     if ([string]::IsNullOrWhiteSpace($Play) -or $Snapshots) {
@@ -780,6 +785,9 @@ try {
                 if ($ReadOnlySettings) {
                     $ppssppParameters.ReadOnlySettings = $true
                 }
+                if ($Mute) {
+                    $ppssppParameters.Mute = $true
+                }
                 if ($selectedGames.Count -gt 1) {
                     $ppssppParameters.Mute = -not ($LastGameAudio -and
                         $index -eq $selectedGames.Count - 1)
@@ -822,8 +830,8 @@ try {
         $nextPinePort++
 
         $pcsx2Arguments = @('-pine-port', [string]$pinePort)
-        if ($selectedGames.Count -gt 1 -and
-            -not ($LastGameAudio -and $index -eq $selectedGames.Count - 1)) {
+        if ($Mute -or ($selectedGames.Count -gt 1 -and
+            -not ($LastGameAudio -and $index -eq $selectedGames.Count - 1))) {
             $pcsx2Arguments += '-mute'
         }
         $launchParameters = @{

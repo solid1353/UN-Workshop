@@ -5,8 +5,9 @@
 Established: opponent selection, side/role setup, the names of a stream's
 optional offsets and filter, authored appearance and
 texture/draw switches and how UN3 keeps its appearance substitutions, defender draw/placement/matrix gates, bone replacement,
-popup interruption, selected geometry providers, and the resident BSS globals
-for opponent groups, optional switch tables and the derived main path.
+popup interruption, selected geometry providers, the resident BSS globals
+for opponent groups, optional switch tables and the derived main path, and
+the screen-held panels, domes and distortion lenses of sampled films.
 Open: the intended optional-body constant/resource, the capacity of the
 derived main-path buffer, targets across every cinematic, accumulated matrix orientation and visible body animation in
 omitted-draw ranges. Names come from `@annotations/NA2`; comments and types
@@ -24,6 +25,34 @@ record identities to [CCS object types](../../game/files/ccs_object_types.md);
 character palette ownership to [Character assets](../../game/character_assets.md);
 curve evaluation to [Animation runtime](../../runtime/animation_runtime.md);
 cue rows to [Battle audio](../session/battle_audio.md#authored-cinematic-frame-rows).
+
+## Screen-held panels
+
+Films cover the screen with flat effect models held in front of their
+camera, each sized to the 4:3 screen with a small margin. White flashes and
+letterbox bars are the shared boards `MDL_e00board01_w` and `MDL_e00board01_b`
+(` e\00\max\e00board01.max`), as in `D81_20` and `D65_10`; `D92_10`'s green
+band `MDL_e92img01b` and its speed-line sheets `MDL_e92syt02a/b` face the
+camera the same way. A distant backdrop can be tilted: `D68_20`'s sky
+`MDL_e68sky02` is a flat plane whose corners' depths differ by about 8%.
+`D70_25`'s smoke instead comes from strongly tilted sheets
+(`MDL_e21windw02_a..e`), and `D58_50`'s background from 3D pieces
+(`MDL_e58bgcla..d`), which `D62_50` shares. Speed lines can be several
+copies of one flat piece, each from one screen edge toward the middle:
+`D69_20` draws `MDL_e00line46a` (` e\00\max\e00line46.max`) that way, with
+no depth offset. Some screen covers are domes around the camera rather than
+flat panels: `D58_50`'s expanding air disc `MDL_e58air5a` (frame 28) spans
+the whole 4:3 width with its far corners 1.21–1.40 times as deep as its near
+ones, and `D69_20`'s green disc `MDL_e69back03` (frame 168) 1.53–2.56 times.
+These are frames sampled through PINE while the film plays, not every film.
+
+Distortion lenses are `ygm` models, such as `D58_50`'s `MDL_58ygm_a` and
+`D57_25`'s `MDL_e57zygm02_b`, which about forty films carry. Before one draws,
+the film copies the screen with sprites to its own buffer, and the lens draws
+that copy back blended at half, through a destination-alpha test. Its texture
+coordinates follow its own projected vertices, clamped to the copy: in
+`D58_50` frame 28 each vertex samples about 0.63 of its distance from the
+screen center, a zoom, in both directions.
 
 ## Addresses
 

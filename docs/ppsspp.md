@@ -24,7 +24,8 @@ differences:
   machine only.
 
 Launches of two or three games mute it, unless it is the last game with `-aud`,
-and start it in its tile through `--window`, then tile it like the PCSX2 windows. A single launch uses
+and start it in its tile through `--window`, then tile it like the PCSX2 windows; `-mute` mutes
+it in any launch. A single launch uses
 `--centered-window`. A recording cannot span PSP and PS2 games. `-k` and
 launches of two or three games close every visible development emulator,
 PPSSPP included.

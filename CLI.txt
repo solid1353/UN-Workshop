@@ -20,6 +20,7 @@ UN Workshop
     -u                      Unlimited
     -k                      Close visible development emulators first
     -aud                    Keep the last game's sound in a launch of two or three games
+    -mute                   Mute every launched game
     -surfaceless            PCSX2 without a window, focus or sound
     -savestates <folder>    PCSX2 saves and loads this run's savestates there
 

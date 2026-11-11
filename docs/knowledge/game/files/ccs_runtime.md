@@ -426,7 +426,10 @@ those uses.
 Retail namespace text retains source paths. `PL/1NRTBOD1.CCS` uses
 ` c\1nrt\max\1nrtbod1.max`; the jutsu stream refers to marked
 `#c\1nrt\max\1nrtbod1.max`, `#c\2nrt\max\2nrtbod1.max`
-and `#c\1cmn\max\1cmnbod1.max`.
+and `#c\1cmn\max\1cmnbod1.max`. A film's effect models name sources under
+`e\`, such as `D81_20`'s ` e\81\max\e81tree02.max` and the shared
+` e\00\max\e00board01.max`; a loaded `CcsRecord.namespace_name` points at
+that text, leading space included.
 UN3's body namespace strings agree, with an extra
 ` x\name\nrt\name.bmp` row.
 
@@ -952,7 +955,11 @@ first pad presses the listed button after the hold point is released.
 The latch is `sp_skill_player_latch_stop_skip` (`0x00266E60`) in UN2,
 `0x0018D670` in UN3, `0x001DCA50` in UN4 and `0x001D2F30` in UN5. NA2's
 `ccs_play_loop` also has a pad viewer whose Start stops the scene, but only
-play flags `0x60` enable it, and retail never sets them.
+play flags `0x60` enable it, and retail never sets them. Play flag bit 1,
+which retail never sets either, draws `ccs_player_status_overlay_draw`'s
+PLAY/PAUSE/END, frame and name after each frame's scene, on an overlay
+environment of its own with `global_font_draw_state` bound to it. The flags
+come from `CcsStreamPlayer.play_flags` (`+0x27C`) when each part starts.
 
 Below the latches, `ccs_step_streamed_blocks` reads the container's play
 control halfword (`+0xA4` in NA2, `+0x1E4` in UN2's `0x0016DE70`, which has
