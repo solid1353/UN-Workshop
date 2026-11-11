@@ -353,6 +353,13 @@ callback bodies belong to the
 
 ## Concurrent payload contributions
 
+`effect_generic_construct` copies `AwakeningEffectRecord` `+0x04..+0x54` to
+node `+0x68..+0xB8`, so each node field below is the record field `0x64`
+lower: jump height at record `+0x1C`, knockback `+0x20`, size target
+`+0x24`, HP recovery `+0x28`, guard damage `+0x2C`, chakra recovery `+0x30`,
+hit chakra debit `+0x34`, then the HP and chakra entry and expiry deltas
+`+0x38..+0x44`.
+
 Payload reducers read gameplay nodes with `lifetime != 0`, including
 negative sentinels. Display selection, the last-success cache and the
 awakening marker do not control contributions. Different IDs contribute
@@ -385,10 +392,14 @@ HP-recovery fold. Effect `77` alone halves those requests. The immediate
 item HP branch also uses the fold, but direct effect-entry HP deltas bypass
 that scaler.
 
-`hit_effect_chakra_debit` reads the linked fighter's `payload_98` maximum,
-checks record flags and requests a debit on the receiver; there is no paired
-credit. The debit includes record/caller scaling and cannot exceed current
-chakra. Ordinary spend suppression remains.
+`hit_effect_chakra_debit` makes the holder's opponent lose chakra on each
+hit the holder lands: `hit_classify_pair` calls it with scale 1.0 for hit
+results 1 and -1, not for guarded ones. It reads the attacker's `payload_98`
+maximum and skips take-down (flag `0x2000000`), jutsu (`0xC0000`) and
+Ultimate Jutsu (`0xF00000`) records. The receiver loses
+`maximum * (signed ActionRecord byte +0x2D % 5 + 1)` chakra units of its 15,
+capped at its current chakra, so 0.15 costs it 1 to 5% of a full gauge a
+hit. There is no paired credit, and ordinary spend suppression remains.
 
 The rate fold returns neutral 1 under `fighter_restore_gate_b`, majors 5/6,
 or major 8 with `action_current_category_c0000`. Suppression changes the
@@ -822,6 +833,26 @@ requests, let `r` be the requested/default value and `s` be
 | `0D..89` | `r` |
 
 Negative computed values clamp to zero before integer conversion.
+
+`fighter_load_character_record` copies `s` from character record `+0xCC`.
+The 74 playable records author:
+
+| `s` | Characters |
+| ---: | --- |
+| `0.8` | Shino Aburame (Classic) `11`, Kidomaru `23`, Second Stage Kidomaru `35`, Shino Aburame `4F` |
+| `0.85` | Kankuro (Classic) `12`, Kankuro `3C` |
+| `0.9` | Gaara (Classic) `04`, Shikamaru Nara (Classic) `05`, The Third Hokage `16`, Second Stage Sasuke Uchiha `30`, Possessed Gaara `32`, Super Choji `33`, Second Stage Jirobo `34`, Second Stage Tayuya `36`, Second Stage Sakon `37`, Second Stage Kimimaro `38`, Kazekage Gaara `3B`, Shikamaru Nara `44`, Jiraiya `53` |
+| `0.95` | Neji Hyuga (Classic) `06`, Neji Hyuga `41` |
+| `1.0` | Every record not listed |
+| `1.1` | Naruto Uzumaki (Nine-Tailed) `2F`, Deidara `40`, Nine-Tailed Fourth Awakened State `49` |
+| `1.2` | Naruto Uzumaki (Classic) `01`, Choji Akimichi (Classic) `0E`, Jirobo `22`, The First Hokage `2A`, Naruto Uzumaki `39`, Granny Chiyo `3E`, Sasori `3F`, Sasori (Puppet) `4B`, Choji Akimichi `51` |
+| `1.3` | Konohamaru Ninja Squad `28`, Hanabi Hyuga `29`, Loopy Fist Lee `31` |
+| `1.35` | Orochimaru `59` |
+| `1.4` | Sakura Haruno (Classic) `07`, Ino Yamanaka (Classic) `0F`, Tayuya `24`, Ino Yamanaka `52` |
+| `1.5` | Sakura Haruno `3A`, Granny Chiyo (Taijutsu) `4D`, Tsunade `54`, Shizune `55`, Kabuto Yakushi `5A` |
+| `2.0` | Sasori (Hiruko) `4C` |
+
+At `2.0` the `r * (2.0 - s)` effects normalize to zero for every request.
 
 `-1` never ticks or auto-expires but is replaceable/removable. `-2` also
 blocks replacement and removal reasons 0..3; reason 5 still destroys it.

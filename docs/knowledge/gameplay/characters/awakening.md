@@ -5,8 +5,8 @@
 Established in retail NA2 (`SLPS-25837`): controller triggers and cleanup,
 the 94 trigger/association rows, all 223 UJ records and 94 local/default
 selections, the 12 effect/form replacements, effect persistence, reconstruction
-ordering, selected character parameter overrides, and the moveset switches
-of Gaara, Deidara, Choji, Kakashi and Chiyo. Donor
+ordering, selected character parameter overrides, the moveset switches
+of Gaara, Deidara, Choji, Kakashi and Chiyo, and Hiruko's Poison Mode. Donor
 Ultimate Jutsu and power comparisons are in
 [UN3 and UN4 characters](un3_un4_characters.md).
 Open: nothing.
@@ -400,6 +400,30 @@ returns mode 1 to 0 while the controller marker is clear, and toggles the mode
 on the progress event that is also the ordinary controller trigger, so
 entering the awakening selects mode 1.
 
+### Hiruko's Poison Mode
+
+`sasori_hiruko_channel1` (Sasori (Hiruko) `0x4C`) keeps object byte
+`+0x4E5D` equal to whether effect `0x4C` is present. Two callbacks read it:
+
+- `sasori_hiruko_hit_response` applies effect `07` (Poison) to the hit
+  fighter with requested lifetime 120 and route 1 when `action_outcome == 1`,
+  the outcome that counts a combo hit. Beyond that, only the current action
+  decides: indices `0x15` and later poison except `0x19`/`0x1A`,
+  `0x20`/`0x21` and `0x24`/`0x25`, the category-`0x100`/`0x200` pairs, which
+  include Nothingness, Heaven's End and White Robe. Actions `0..0x14`, which hold both
+  jutsu and the Ultimate Jutsu, never poison. Each poisoning hit replaces the
+  previous Poison node ([same-ID replacement](../projectiles_and_items/battle_items_and_status_effects.md#same-id-replacement-rule)),
+  so it restarts rather than stacks.
+- `sasori_hiruko_channel5` multiplies Submerged Hand's (`0x1E`) horizontal
+  reach threshold by 1.5 at its phase-0 secondary event 8.
+
+Effect `07`'s requested 120 is normalized by the hit fighter's
+`effect_countdown_scale` ([Countdown normalization](../projectiles_and_items/battle_items_and_status_effects.md#countdown-normalization)):
+120 countdown passes at scale 1.0, about 144 at the lowest scale 0.8, and none
+for Hiruko, whose scale is 2.0. Effect `07` drains `1/1500` of maximum HP per
+resource pass and stops below 10% HP
+([HP and chakra deltas](../projectiles_and_items/battle_items_and_status_effects.md#signed-sums-and-their-boundaries)).
+
 ## Entry paths
 
 ### Ordinary controller entry
@@ -434,6 +458,42 @@ If the list has no associated effect afterwards, the next unsuppressed marked
 pass clears the marker and Deidara/Gaara special/sector changes. A protected
 duplicate already present is different: rejection leaves the association alive
 and does not imply marker cleanup.
+
+### Taunt trigger
+
+The `0x10` progress trigger is the taunt. `fighter_consume_logical_input`
+enters the held-up state `(0,3)` from standing `(0,0)` once the primary
+timeline is past 12 and logical up (`0x4`) fills the last 12 input samples.
+The trigger then fires at phase 2, secondary event 0 (6 for Deidara), which is
+also where `taunt_marker_accepted` counts a taunt for every fighter except IDs
+`0x0E`, `0x22`, `0x25`, `0x31`, `0x34`, `0x36` and `0x55`.
+
+A marked fighter goes to `awakening_reconcile` instead. There Might Guy `0x45`
+runs the ordinary entry again on the same taunt event, which replaces `0x47`
+with `0x48`, and Taijutsu Chiyo `0x4D`'s taunt removes its associated effects
+below `0x68` and clears the marker. Its unmarked taunt removes `0x4D`, the
+effect its Ultimate Jutsu record 171 applies, before applying `0x4E`; the
+constructor applies neither.
+
+### Awakenings without a trigger
+
+`0x39` (Naruto) is `naruto_channel2`'s low-HP effect, `0x3C` (Gaara) comes
+from his character item `53` through `item_status_dispatch`, and `0x23`
+(Tsunade) follows `0x22`. Shizune's `0x59` and Anko's `0x38` have no
+established route: Shizune has no ordinary trigger, and Anko's only `0x38`
+record, 99, is never selected because record 98 is her first category-1
+record.
+
+### Which awakenings use the awakened Ultimate Jutsu
+
+`jutsu_slots_rewrite` selects the awakened (category 1) record only while the
+controller marker is set. Ordinary entry, a class-7 match and adoption set it,
+so a fighter's awakened Ultimate Jutsu is used in the awakenings its triggers
+apply, in a class-7 effect that is one of its associations, and in the effects
+`input_sector_widen_state_a` adopts. An Ultimate Jutsu outcome the fighter
+cannot adopt sets no marker, such as Taijutsu Chiyo's `0x4D`, and neither does
+Naruto's `0x39`. Whether Gaara's character item sets it for `0x3C` is not
+established.
 
 ### Exact class-7 UJ entry
 
@@ -593,6 +653,17 @@ The latter means major 8, an action record with `category & 0xC0000 != 0`,
 and `ActionRecord.streak_exempt`, read as signed, at least 1.
 Other chakra-debit gates remain in
 [Chakra and guard](../combat/chakra_and_guard.md#debit-and-reservation-behavior).
+
+`effect_apply` replaces a requested lifetime of -1 with the record's
+`default_lifetime`, so ordinary entry's -1 is no lasting state: an awakening
+its trigger starts counts down from the same default as one an Ultimate Jutsu
+applies. Across the 78 awakenings in the playable fighters' lists the defaults
+are 600, except `0x23`, `0x48`, `0x4A` and `0x5E` (450), `0x3C` (300), `0x1A`
+and `0x1B` (1200), and `0x17`, `0x39`, `0x4C` and `0x4E` (-1, no countdown).
+`0x4E` ends on Taijutsu Chiyo's next taunt
+([Taunt trigger](#taunt-trigger)). **Observation:** in play, nothing ends the
+three low-HP awakenings `0x17` (Classic Hinata), `0x39` (Naruto) and `0x4C`
+(Sasori, Hiruko) once they start.
 
 Positive lifetimes decrease by exactly one per eligible countdown pass, without
 reading `update_rate`. These IDs are at least `0x0D` and bypass low-ID scalar

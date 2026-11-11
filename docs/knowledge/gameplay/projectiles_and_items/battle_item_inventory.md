@@ -760,8 +760,25 @@ does not decrement in the inspected cleanup chain; an earlier activation
 is not refunded there. This is a static boundary, not a timing/reachability
 observation.
 
-`item_delayed_use_commit` checks kind-6 primary cursor positions with
-`item_emission_scale` influencing emission count and spacing.
+`item_delayed_use_commit` checks kind-6 primary cursor positions. With
+`t = item_emission_scale / 5`, a throw emits `int(min + t * (max - min))`
+projectiles at that many scheduled cursor positions, and passes
+`spread_min + t * (spread_max - spread_min)` to `item_emit`.
+`item_throw_emission_ranges` holds count 2..10 and spread 0..0.15 for
+substates `63`/`64`, and count 3..12 for `65`. Code `1B` uses count 2..4 with
+spread 0; codes `17`, `19`, `1A`, `20` and `22` use count 1..3.
+
+`fighter_load_character_record` copies that scale from character record
+`+0xD0`. Of the 74 playable records only 9 author a nonzero value. In
+substates `63`/`64` that gives:
+
+| Scale | Count | Spread | Characters |
+| ---: | ---: | ---: | --- |
+| 0 | 2 | 0 | Every record not listed |
+| 0.63 | 3 | 0.019 | Shikamaru Nara (Classic) `05`, Anko Mitarashi `2E`, Shizune `55`, Kurenai `57` |
+| 0.75 | 3 | 0.0225 | Kidomaru `23` |
+| 1.0 | 3 | 0.03 | Shikamaru Nara `44` |
+| 1.25 | 4 | 0.0375 | Haku `0A`, Tenten (Classic) `0D`, Tenten `42` |
 Other delayed codes require the primary cursor-zero check to return zero
 and a secondary-cursor check to succeed; that target is half the action
 frame length divided by `rate/256`. Only a successful timing gate

@@ -1717,22 +1717,22 @@ typedef struct ProjectileScheduleEntry {
 typedef struct AwakeningEffectRecord {
     void *factory;
     int effect;
-    int default_lifetime;
+    int default_lifetime; // -1 none; effect_apply's -1 request resolves to it
     unsigned int flags;
     float attack_factor;
     float defense_factor;
     float action_rate;
-    float payload_1c;
-    float payload_20;
-    float payload_24;
-    float payload_28;
-    float payload_2c;
-    float payload_30;
-    float payload_34;
-    float payload_38;
-    float payload_3c;
-    float payload_40;
-    float payload_44;
+    float jump_height_factor; // node payload_80, effect_jump_height_factor
+    float knockback_factor; // node payload_84, fighter_knockback_scalar
+    float size_target; // node payload_88, fighter_set_size_targets on entry
+    float hp_recovery_factor; // node payload_8c, effect_hp_recovery_factor
+    float guard_damage_share; // node payload_90, effect_guard_damage_maximum: share of a blocked hit's damage
+    float chakra_recovery_factor; // node payload_94, effect_chakra_recovery_factor
+    float opponent_hit_chakra_debit; // node payload_98: chakra units the opponent loses per landed ordinary hit, times the record's byte +0x2D % 5 + 1
+    float hp_entry_delta; // node payload_9c, applied by effect_generic_construct
+    float hp_expiry_delta; // node payload_a0, effect_zero_countdown_actions
+    float chakra_entry_delta; // node payload_a4, applied by effect_generic_construct
+    float chakra_expiry_delta; // node payload_a8, effect_zero_countdown_actions
     float hp_delta;
     float hp_boundary;
     float chakra_delta;
@@ -1780,10 +1780,16 @@ typedef struct AwakeningCharacterRecord {
     int x_dash_duration; // +0x90 signed movement cursor duration
     float x_dash_min_distance; // +0x94 copied to Fighter.x_dash_min_distance
     float x_dash_max_distance; // +0x98 copied to Fighter.x_dash_max_distance
-    unsigned char _pad_009C[0x20];
+    unsigned char _pad_009C[0x10];
+    float capture_range; // +0xAC copied to Fighter.capture_range
+    float capture_distance_cap; // +0xB0 copied to Fighter.capture_distance_cap
+    unsigned char _pad_00B4[8];
     float offense;
     float durability;
-    unsigned char _pad_00C4[0x10];
+    float knockback_taken; // +0xC4; above 1 reduces received knockback
+    float knockback_given; // +0xC8
+    float effect_countdown_scale; // +0xCC; low-ID effect countdown normalization
+    float item_emission_scale; // +0xD0; nonzero on 9 playable records
     float hp_recovery;
     float chakra_recovery;
 } AwakeningCharacterRecord;

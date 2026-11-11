@@ -4,8 +4,8 @@
 
 Established: the ordinary/guarded routing and its rejection gates, response
 selection with callbacks and remaps, descriptors, animations and phase lengths,
-the motion table and modifiers, gravity, the update order behind elapsed
-counts, contact and held handoffs, input recoveries, timed downed recovery,
+the motion table and modifiers with every character's knockback values,
+gravity, the update order behind elapsed counts, contact and held handoffs, input recoveries, timed downed recovery,
 guarded transitions, rehit suppression, the rejection countdown, the
 destination sets of all 74 table-selected source-response callbacks, and the
 raw-store, address-taken entry and callback-vector owner audit. Animation
@@ -458,6 +458,28 @@ The table holds bases. At the motion event, in order:
 3. `attack_scale` `s`: planar × `s`; vertical × `1 + 0.5(|s| - 1)` above 1,
    otherwise × `|s|` (or the half-strength form with a source scalar below 1).
 4. `planar_scale` and `vertical_scale`. Each consumed transient resets to 1.0.
+
+`fighter_load_character_record` copies `knockback_taken` from character
+record `+0xC4` and `knockback_given` from `+0xC8`. A larger `knockback_taken`
+means less knockback: 1.5 leaves 62.5% of the planar and 87.5% of the
+vertical speed. The 74 playable records author 1.0 except:
+
+| Field | Value | Characters |
+| --- | ---: | --- |
+| `knockback_taken` | `0.9` | Konohamaru Ninja Squad `28`, Hanabi Hyuga `29` |
+| | `1.05` | Tsunade `54` |
+| | `1.1` | The Third Hokage `16` |
+| | `1.15` | Zabuza Momochi `0B`, Might Guy `45`, Kakashi Hatake `46`, Orochimaru `59`, Yamato `5B`, Sai `5C` |
+| | `1.2` | Jiraiya `53` |
+| | `1.25` | Kisame Hoshigaki `48` |
+| | `1.5` | Choji Akimichi (Classic) `0E`, Jirobo `22`, Second Stage Jirobo `34`, Choji Akimichi `51` |
+| `knockback_given` | `0.9` | Tayuya `24` |
+| | `1.1` | The Third Hokage `16`, The Second Hokage `2B`, Itachi Uchiha `47`, Jiraiya `53`, Asuma Sarutobi `56` |
+| | `1.15` | Choji Akimichi (Classic) `0E`, Jirobo `22`, Kakashi Hatake `46`, Choji Akimichi `51`, Yamato `5B`, Sai `5C` |
+| | `1.2` | Sasori (Hiruko) `4C` |
+| | `1.25` | Zabuza Momochi `0B`, Naruto Uzumaki (Nine-Tailed) `2F`, Possessed Gaara `32`, Second Stage Jirobo `34`, Second Stage Tayuya `36`, Might Guy `45`, Kisame Hoshigaki `48`, Nine-Tailed Fourth Awakened State `49` |
+| | `1.3` | The First Hokage `2A` |
+| | `2.0` | Tsunade `54` |
 
 `attack_scale` comes from `ActionRecord.knockback_scale` when
 `response_retain_attack_record` (or the Extra Hit retarget) retains a new
