@@ -245,7 +245,11 @@ earlier ground parts. Its `TEX_s10obj19` has flags 5 (not ordered),
 palette RGB `10,13,19` hex and alpha up to `0x4A`; `ccs_parse_palette`
 (`0x088B4870`) expands alpha to 147 but leaves RGB unchanged. Drawing
 the shadow before its ground blends it against earlier scenery and writes
-depth that prevents the later ground from filling beneath it.
+depth that prevents the later ground from filling beneath it. The floor's
+later decal parts lie level with the parts under them or within a unit or
+two, such as its cracks `MAT_s10flo00_17` (`TEX_s10flo111`) on
+`MAT_s10flo00_1` and `_4` in the model's height steps of 4 units, and on
+the PSP its cracks flicker as the camera moves (the user's observation).
 
 Two factories the Stage Select archives use have no NA2 counterpart:
 

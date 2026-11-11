@@ -47,6 +47,7 @@ address	kind	name	type	comment
 0x0890695C	function	bg_factory_fog		Factory 10: RGB, near/far percentages, near/far distances, NA2's tokens.
 0x08907160	function	bg_factory_render_coefficients		Factory 17: first token to 0x08CDDA48, second to 0x08CDDA44.
 0x0890941C	function	bg_uv_animation_draw		Factory 29 (ccBgUVAnm) draw: sets the model's UV offset from U/V floats +0x2C/+0x30 (fixed12) and draws it.
+0x08926A9C	function	scene_update_restricted		1 when the word DAT_08CDF6C4 points to exists and is not -1, else 0; bg_crash_break_reborn_update holds its bombs while it is 1 or DAT_08CE0580 is 0.
 0x089409B0	function	stage_select_build_available_list		Scans the 13 Stage Select rows in order, keeping scenes whose availability bit is set.
 0x08957988	function	battle_camera_create_view		Allocates the 0x50-byte view camera at +0xB4 (45 degree field of view).
 0x08958724	function	camera_track_stage		Normal-stage camera: frames the fighters by mode, clamps to the stage markers (0x089599F0), eases eye and target by 0.3 per update.
