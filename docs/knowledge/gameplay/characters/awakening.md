@@ -5,7 +5,8 @@
 Established in retail NA2 (`SLPS-25837`): controller triggers and cleanup,
 the 94 trigger/association rows, all 223 UJ records and 94 local/default
 selections, the 12 effect/form replacements, effect persistence, reconstruction
-ordering, and selected character parameter overrides. Donor
+ordering, selected character parameter overrides, and the moveset switches
+of Gaara, Deidara, Choji, Kakashi and Chiyo. Donor
 Ultimate Jutsu and power comparisons are in
 [UN3 and UN4 characters](un3_un4_characters.md).
 Open: nothing.
@@ -378,6 +379,26 @@ A separate `0x54` presence test controls later contact/presentation work,
 not this mode. Flag cleanup can therefore request target 16 while the node
 survives. The setter changes neither the four damage/resource parameters below
 nor acceleration, braking or first-jump height.
+
+### Kakashi's and Chiyo's moveset switches
+
+`kakashi_channel2` (Kakashi `0x46`) requests mode 1 from
+`kakashi_swap_mode_actions` while the controller marker is set, and mode 0
+when it is clear and the mode byte is 1. The setter changes only on a
+different mode, and leaves mode 1 only outside effective action index 1. Each
+change zeroes action 3's category, gives action 21 category `0x80000` and
+swaps the two whole records. In mode 1 the second jutsu slot therefore holds
+action 21, `万華鏡写輪眼` (Mangekyo Sharingan), which is a jutsu only there.
+Mode 1 also saves and zeroes action 2's category and swaps animation slots
+`0x4A..0x4D`; mode 0 restores both.
+
+`chiyo_taijutsu_variant_categories` (Chiyo, taijutsu, `0x4D`) works like
+Gaara's switch on its own mode byte: mode 1 zeroes action categories
+`0x15..0x25` and restores `0x2E..0x3D` from the defaults, and mode 0 does the
+reverse. Its constructor and `chiyo_taijutsu_channel` call it. The channel
+returns mode 1 to 0 while the controller marker is clear, and toggles the mode
+on the progress event that is also the ordinary controller trigger, so
+entering the awakening selects mode 1.
 
 ## Entry paths
 

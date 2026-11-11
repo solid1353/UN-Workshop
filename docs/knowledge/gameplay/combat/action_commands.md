@@ -430,8 +430,11 @@ array (constructors such as `naruto_classic_construct` redirect it there), and
 
 - records 0..3 come from the two configured jutsu selectors: selector 1 copies
   `null_action_record`; otherwise `jutsu_selector_character` picks the source
-  character and moving a pair shifts continuations by two and rewrites the
-  `0xF0000` direction group;
+  character, and moving a pair shifts continuations by two. Every copied
+  record with a bit in `0xF0000` gets `0x20000` in records 0 and 1 and
+  `0x10000` in records 2 and 3, whichever pair it came from, so the
+  [1P/2P Commands](../../localization/ui/battle/command_chart_and_commands.md#row-construction)
+  show the first selector's jutsu as up, up and the second's as down, down;
 - records 4.. come from the default array; among 4..9 only the slot chosen by
   `jutsu_slot_config` (0..2 → 4..6, 4..6 → 7..9) keeps its category and gets a
   configured display name, the others lose their category.

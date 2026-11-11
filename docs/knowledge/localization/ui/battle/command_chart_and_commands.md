@@ -4,7 +4,8 @@
 
 Established: retail NA2 binding icons; Command Chart rows, input and footer;
 1P/2P Commands filtering, side, input and header; command-token derivation,
-texture selection and the native labels below.
+combo prefixes, conditions, row order, texture selection and the native
+labels below.
 Evidence is static code and data. Names come from `@annotations/NA2`; addresses are live.
 Open: nothing.
 
@@ -157,11 +158,39 @@ array pointers are at `+0xA54` and `+0xA58`; MCP's applied `Fighter` view
 currently disagrees with the saved declaration, so those offsets qualify the
 field names here.
 
-A zero `ActionRecord.category` or any category bit in `0xF002` omits the row.
-Nonempty `display_name`s become visible names; empty names accumulate command
-tokens for later named continuation entries. `ActionRecord.display_prefix`
-controls prefix handling. This is a presentation scan, separate from the
-action-state validator.
+A zero `ActionRecord.category` or any category bit in `0xF002` omits the
+record. A record with a nonempty `display_name` publishes a row; one with an
+empty name publishes nothing and keeps its tokens and their count. A record
+whose `display_prefix` is nonzero starts from the kept tokens, first dropping
+the last three when its prefix is lower than the previous record's, so a
+combo's named finishers show the presses before them. This is a presentation
+scan, separate from the action-state validator.
+
+A record with a category bit in `0xF00000` is an Ultimate Jutsu slot: its row
+shows bindings 0 and 1, its condition is 1, 2 or 3 for cost 5, 10 or 15 (1 for
+any other cost), and its category label is 19, 20 or 21 for `0x100000`,
+`0x200000` or `0x400000`, or 22 when `support_cinematic_skill_lookup` gives
+the side's support a linked skill. Every other record takes its tokens from
+the signature (see [Binding icons](#binding-icons-and-direction-tokens));
+signature bit `0x4` sets condition 6, and then the category decides:
+
+| Category | Condition | Tokens |
+| --- | --- | --- |
+| any bit in `0xC0000` (jutsu) | 13 after a take-down record or with flag `0x2000000`, else `move_chart_jutsu_condition` | replaced by up, up and binding 1, or down, down and binding 1 when signature bit `0x10000` is set on the record's continuation, or on the record without one; category label 18 when that record's signature bit `0x1` is set |
+| `0x200` with `display_prefix` 1 | 4, or 5 with signature bit `0x4` | unchanged |
+| `0x4` | 9, or 11 with signature bit `0x4` | binding 1 appended |
+| `0x10` | 10, or 12 with signature bit `0x4` | binding 1 appended |
+
+A record with flag `0x2000000` whose condition is not 13 is a take-down: the
+next record with a row gets condition 8.
+`move_chart_jutsu_condition` (`0x0087A380`) maps the record's `jutsu_selector`
+through `skill_selector_resource_table` (0 outside 0..187) and returns 14 when
+the resource's `jutsu_resource_flags` (`0x008CAE40`) word has `0x80`, 15 when
+it has `0x100`, and 7 otherwise.
+
+`move_chart_order_rows` (`0x00879C80`) then reorders the rows by condition,
+keeping their order within each group: 0; 8 to 12; 4; 5; 6; 7 and 13 to 15;
+1 to 3. A row with any other condition is dropped.
 
 `MoveChartView.rows` contains `MoveChartRow`s:
 
@@ -205,15 +234,25 @@ sample d-pad texels in that layer.
 
 ### Category text
 
-`command_chart_relationship_strings` (`0x008BD1D0`) supplies the category
-labels. Relevant native labels, with ruby omitted:
+`command_chart_relationship_strings` (`0x008BD1D0`) supplies the labels both
+row bytes index; the category label is drawn right after the condition's.
+Index 0 is an empty string. Native labels, with ruby omitted:
 
-| Index | Annotated string | Native label | Meaning |
-| ---: | --- | --- | --- |
-| 9 | `command_chart_rapid_press` (`0x008BCF90`) | 連打技 | rapid-press technique |
-| 10 | `command_chart_charge_qualifier` (`0x008BCFB0`) | 溜め技 | charge technique |
-| 11 | `command_chart_air_rapid_press` (`0x008BCFD0`) | 空中連打技 | airborne rapid-press technique |
-| 12 | `command_chart_air_charge` (`0x008BD000`) | 空中溜め技 | airborne charge technique |
+| Index | Native label | Meaning |
+| ---: | --- | --- |
+| 1, 2, 3 | チャクラゲージ壱以上, 弐以上, 参 | chakra gauge 1 or more, 2 or more, 3 |
+| 4, 5 | 地上投げ, 空中投げ | ground throw, air throw |
+| 6 | ジャンプ中に | while jumping |
+| 7 | チャクラ消費 | consumes chakra |
+| 8 | 当て身技 | take-down |
+| 9 | 連打技 (`command_chart_rapid_press`, `0x008BCF90`) | rapid-press technique |
+| 10 | 溜め技 (`command_chart_charge_qualifier`, `0x008BCFB0`) | charge technique |
+| 11 | 空中連打技 (`command_chart_air_rapid_press`, `0x008BCFD0`) | airborne rapid-press technique |
+| 12 | 空中溜め技 (`command_chart_air_charge`, `0x008BD000`) | airborne charge technique |
+| 13, 14, 15 | チャクラ消費／当て身技, ／溜め技, ／連打技 | consumes chakra, and a take-down, charge or rapid-press technique |
+| 16, 17 | 溜め技　弱, 溜め技　強 | weak and strong charge |
+| 18 | ／空中可 | also in the air |
+| 19, 20, 21, 22 | ／通常奥義, ／逆転奥義, ／覚醒奥義, ／連係奥義 | normal, reversal, awakened and linked Ultimate Jutsu |
 
 The related `command_list_draw` uses the input-condition wording listed under
 [Command Chart rows](#command-chart-rows).
