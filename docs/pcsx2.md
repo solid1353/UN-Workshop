@@ -243,9 +243,11 @@ out after three seconds, so clients follow these rules:
 
 Every savestate folder holds the game's memory at the moment it was saved
 (`eeMemory.bin`, the 32 MiB EE RAM), that frame's `Screenshot.png`, and a GS
-dump of the four frames that follow (`GS.gs.zst`), which
-[`gs_dump.py`](#gs-dumps) lists and diffs. The dump is missing only when
-emulation stopped before those frames ran or `SaveStateGSDump` is off
+dump of the four frames up to and including it (`GS.gs.zst`), which
+[`gs_dump.py`](#gs-dumps) lists and diffs. The dump is written with the state,
+even while PCSX2 is paused. It
+is missing only when no frame has completed since the game started or a state
+loaded, or `SaveStateGSDump` is off
 ([fork savestates](../../../PCSX2/docs/input_recording_capture.md#marker-capture)).
 
 ## GS dumps
