@@ -54,6 +54,7 @@ function Invoke-UnWorkshopGameLaunch {
         [string]$CaptureDirectory,
         [string]$MemoryCard,
         [string]$LogFile,
+        [string]$SavestateFolder,
         [string[]]$Pnach,
         [switch]$DiscardMemoryCardWrites,
         [switch]$VolatileMemoryCard,
@@ -113,6 +114,9 @@ function Invoke-UnWorkshopGameLaunch {
     if ($Surfaceless) { $parameters.Surfaceless = $true }
     if (-not [string]::IsNullOrWhiteSpace($LogFile)) {
         $parameters.LogFile = $LogFile
+    }
+    if (-not [string]::IsNullOrWhiteSpace($SavestateFolder)) {
+        $parameters.SavestateFolder = $SavestateFolder
     }
     if (-not [string]::IsNullOrWhiteSpace($Snapshots)) {
         $parameters.Play = $Snapshots
@@ -219,6 +223,7 @@ switch ($normalizedCommand) {
             -CaptureDirectory $launch.CaptureDirectory `
             -MemoryCard $launch.MemoryCard `
             -LogFile $launch.LogFile `
+            -SavestateFolder $launch.SavestateFolder `
             -Pnach $launch.Pnach `
             -DiscardMemoryCardWrites:$launch.DiscardMemoryCardWrites `
             -VolatileMemoryCard:$launch.VolatileMemoryCard `
