@@ -7,7 +7,8 @@ optional offsets and filter, authored appearance and
 texture/draw switches and how UN3 keeps its appearance substitutions, defender draw/placement/matrix gates, bone replacement,
 popup interruption, selected geometry providers, the resident BSS globals
 for opponent groups, optional switch tables and the derived main path, and
-the screen-held panels, domes and distortion lenses of sampled films.
+the screen-held panels, domes, distortion lenses and backdrops ending at the
+4:3 view of sampled films.
 Open: the intended optional-body constant/resource, the capacity of the
 derived main-path buffer, targets across every cinematic, accumulated matrix orientation and visible body animation in
 omitted-draw ranges. Names come from `@annotations/NA2`; comments and types
@@ -44,7 +45,24 @@ no depth offset. Some screen covers are domes around the camera rather than
 flat panels: `D58_50`'s expanding air disc `MDL_e58air5a` (frame 28) spans
 the whole 4:3 width with its far corners 1.21–1.40 times as deep as its near
 ones, and `D69_20`'s green disc `MDL_e69back03` (frame 168) 1.53–2.56 times.
-These are frames sampled through PINE while the film plays, not every film.
+The streak lines `MDL_e71line03a/b` of `D71_50` and `D72_50` start at the left 4:3 edge at frame 147. Backdrops and effects of other films end just past
+the 4:3 view: `D07_10`'s pink backdrop `MDL_e07back01` (frame 195),
+`D13_30`'s red backdrop `MDL_e13img03` (frame 153), which `D13_10` shares,
+`D13_30`'s backdrop `MDL_e00back35` (frame 206), the sky
+`MDL_e60sky02_a` of `D60_10` (frame 34) and `D60_20`, `D60_20`'s fire
+`MDL_e60smp02_b` (frame 353), `D62_20`'s smoke `MDL_e62smk01c` (frame 597)
+and sky dome `MDL_e62bg_sky` (frame 565), and `D86_20`'s fire cloud
+`MDL_e86fir01a..d` (frame 183). So do 3D sets, such as `D70_10`'s rocks and
+`D78_20`'s smoke and walls. `D07_10`'s orange filter `MDL_e07fil01` (frames
+362 and 376) is a flat panel facing the camera that ends just past the right
+4:3 edge, while its left end stops inside the left one. `D60_10`'s light
+pillar `MDL_e60img02_a/b` (frame 128), which `D18_20` and `D60_20` share, is
+curved, its far corners 1.6 times as deep as its near ones, and each of its
+two layers ends just past one 4:3 edge. In `D64_30` at
+frame 23, the forest `MDL_e64ki00` ends just past the right 4:3 edge, and
+its nearest trunk hides a dark area that the far forest `MDL_e64enki00`,
+which ends left of the screen center, leaves uncovered. These are frames sampled through
+PINE while the film plays, not every film.
 
 Distortion lenses are `ygm` models, such as `D58_50`'s `MDL_58ygm_a` and
 `D57_25`'s `MDL_e57zygm02_b`, which about forty films carry. Before one draws,
