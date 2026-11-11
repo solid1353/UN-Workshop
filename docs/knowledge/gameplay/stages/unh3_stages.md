@@ -87,7 +87,7 @@ reads, most separate mission scenes from battle scenes
 | --- | --- | --- |
 | `0x0895BF0C`, from presentation camera mode 7 (`0x0895BF8C`) | 2, 8 | The side probe from a fighter on section 0 with `+0x9FE` 1 reaches 250 (scene 2) or 230 (scene 8) instead of 200, which decides the side of the camera's offsets. NA2's presentation cameras (`effect_adapt_camera_record`, BTL `0x00776610`) have no such probe. |
 | `bg_break_anm_trigger`, factory 102's break | 0 | Plays sound `0x38` before `0x3A`; only `s21` (scene 11) has factory-102 records. |
-| `0x08A8E144`, positional sound volume | 0..12 | Full volume within 2200, fading out over 4000 beyond it (also on mission 35; 1000 on other missions). NA2's `audio_position_scalar` (`0x001D2FD0`) fades from 700 to 2700. |
+| `0x08A8E144`, positional sound volume | 0..12 | Full volume within 2200, fading out over 4000 beyond it (also on mission 35; 1000 on other missions), measured from `sound_listener` (`0x08A8E0CC`), the `+0x40` of the object `0x0897FB2C` returns. NA2's `audio_position_scalar` (`0x001D2FD0`) finds no listener in a fight and gives full volume ([battle audio](../session/battle_audio.md#position-dependent-command-parameters)). |
 
 UNH3 has none of the constants of NA2's stage-keyed exceptions, such as
 `stage_nearest_line_extended`'s 1100 or `stage_effect_height_override`'s

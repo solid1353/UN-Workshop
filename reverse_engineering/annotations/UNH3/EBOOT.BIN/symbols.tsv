@@ -128,6 +128,9 @@ address	kind	name	type	comment
 0x089C47AC	function	timeline_secondary_event_crossed		Called as NA2's timeline_secondary_event_crossed(primary +0x1E4, 0) at the top of fighter_present_action_effects.
 0x089CA408	function	fighter_place_pair_at_safe_position		Places a paired action's two fighters side by side at DMY_safe_pos on section 0.
 0x089D01A0	function	fighter_correct_position		NA2's stage_correct_position: mask 0x10 clamps x by field_clamp_section_extremes; mask 0x20 lifts to the floor profile as NA2's.
+0x08A8E0CC	function	sound_listener		Copies +0x40 and +0x90 of the object 0x0897FB2C returns, the references sound_position_volume and sound_position_direction measure from; 0 without battle_manager or that object.
+0x08A8E144	function	sound_position_volume		Row maximum (+2) within 2200 of sound_listener; silent past 2200 + fade; between, scale(+4 short) x maximum x (1 - (d - 2200)/fade) / 256, fade 4000 for scenes below 13 and 35, else 1000; 0x7F without a position or listener; below 1 gives -1.
+0x08A8E3B8	function	sound_position_direction		Pan from sound_listener: 0x3F without a position, 0x003F0000 without a listener, else (63 - 126 sine(angle)) clamped 0..0x7F in the upper half and the angle in the lower.
 0x08A8E670	function	stage_get_default_bgm_member		Scene's default track for scenes 0..41, else -1.
 0x08A8F2A0	function	footstep_sound_for_surface		Masked F0F0F0: 202020 0x32; 80D0F0 and 60C0 0x2D; 10C0/5000/3060 0x2E; water 0x35; D000 0x31; 90B0C0 0x34; F0D0D0/606060/8080F0/E000E0 0x33; 0, D0D0, F0F0F0 none; others 0x4B.
 0x08A8F3BC	function	footstep_note_for_character		0x3A for characters 4/0x0E/0x15/0x51, 0x3B for 0x18, 0x39 for 0x32, else 0x3C, as NA2's.

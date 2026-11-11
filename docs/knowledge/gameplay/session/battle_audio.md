@@ -465,6 +465,16 @@ and `audio_position_direction`. The former uses full three-dimensional
 distance; the latter uses the first two coordinates. Helper annotations
 preserve formulas, ranges and distinct null/reference defaults.
 
+`audio_reference_vectors` returns none while `battle_session` is set, so in
+a fight `audio_position_scalar` returns `0x7F` at any distance and
+`audio_position_direction` returns `0x003F0000`, centred: its 700-to-2700
+fade and its pan apply only outside fights. UN2's and UN3's positional
+one-shots also play at `0x7F` at any distance (their gain functions return
+it). UN2's direction function returns `0x003F0000` too, while UN3's pans
+from the camera; UN3's moving loops fade from the camera's eye
+(`audio_position_velocity`: full within 500, silent beyond 5500 for a row
+of scale 256).
+
 ## Pending streamed requests
 
 In NA2, `AudioRequestContext` holds four `AudioPendingStream` rows.

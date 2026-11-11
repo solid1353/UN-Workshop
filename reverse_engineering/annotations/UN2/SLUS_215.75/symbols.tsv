@@ -138,6 +138,8 @@ address	kind	name	type	comment
 0x002B0C90	function	battle_control_mask_active		True when mask +0x64 and latch +0x60 are both nonzero.
 0x002B2310	function	glare_pass_initialize		Mode 1, colour 0xA0808080, second colour 0xFFFFFF, amount -0.1 (NA2 pause_auxiliary_refresh).
 0x002B2620	function	glare_pass_draw		Downsamples the frame 256/128/64, blurs back up, subtracts amount x 255 of the second colour, then blends the result over the frame with mode +0x81 and colour +0x84.
+0x002B78C0	function	audio_position_gain		Returns 0x7F: audio_request_common_position plays positional common sounds at the row maximum at any distance.
+0x002B7A80	function	audio_position_direction		Returns 0x003F0000: positional common sounds play centred.
 0x002B7C10	function	audio_character_bank_descriptor		&audio_character_banks[index]; index is character ID - 1.
 0x002B7C30	function	audio_load_battle_character_banks		Loads both sides' banks from battle manager +0x42/+0x43 character IDs minus one.
 0x002B8090	function	audio_apply_music_preset		Preset 5 plays the context +0x1AC override, or stage_music_tracks[scene] from SOUND.AFS partition 0 through 0x0025DA30.
