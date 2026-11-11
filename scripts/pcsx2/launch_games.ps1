@@ -55,6 +55,9 @@ param(
 
     [switch]$LastGameAudio,
 
+    # The game -aud unmutes and -r records, by selector; the last by default.
+    [string]$MainGame,
+
     [switch]$Mute,
 
     [string]$ProjectRoot,
@@ -159,7 +162,10 @@ function Get-UnWorkshopConfiguredPinePort {
 function Get-UnWorkshopUserEmulatorProcesses {
     param(
         [Parameter(Mandatory)]
-        [string[]]$Roots
+        [string[]]$Roots,
+        # Only the windows a launch of several games tiled: PCSX2 started with
+        # -no-recenter and PPSSPP with --window, which no other launch passes.
+        [switch]$Tiled
     )
 
     $rootPrefixes = @(
@@ -170,16 +176,19 @@ function Get-UnWorkshopUserEmulatorProcesses {
             ) + [IO.Path]::DirectorySeparatorChar
         }
     )
-    # Surfaceless PCSX2 instances, which agents and replays drive, are not the
-    # user's: they started with -surfaceless or -agent-replay.
-    $surfaceless = [Collections.Generic.HashSet[int]]::new()
-    foreach ($instance in @(Get-CimInstance -ClassName Win32_Process -Filter "Name LIKE 'pcsx2%'" -ErrorAction SilentlyContinue)) {
-        if ([string]$instance.CommandLine -match '(?:^|\s)-(?:surfaceless|agent-replay)(?:\s|$)') {
-            [void]$surfaceless.Add([int]$instance.ProcessId)
-        }
+    $commandLines = @{}
+    foreach ($instance in @(Get-CimInstance -ClassName Win32_Process -Filter "Name LIKE 'pcsx2%' OR Name LIKE 'PPSSPP%'" -ErrorAction SilentlyContinue)) {
+        $commandLines[[int]$instance.ProcessId] = [string]$instance.CommandLine
     }
     foreach ($process in @(Get-Process -Name 'pcsx2*', 'PPSSPP*' -ErrorAction SilentlyContinue)) {
-        if ($surfaceless.Contains($process.Id)) {
+        $commandLine = [string]$commandLines[$process.Id]
+        # Surfaceless PCSX2 instances, which agents and replays drive, are not the
+        # user's: they started with -surfaceless or -agent-replay.
+        if ($process.Name -like 'pcsx2*' -and
+            $commandLine -match '(?:^|\s)-(?:surfaceless|agent-replay)(?:\s|$)') {
+            continue
+        }
+        if ($Tiled -and $commandLine -notmatch '(?:^|[\s"])(?:-no-recenter(?:[\s"]|$)|--window=)') {
             continue
         }
         try {
@@ -196,16 +205,17 @@ function Get-UnWorkshopUserEmulatorProcesses {
     }
 }
 
-# Ask each visible development emulator to close; force-stop it after five
-# seconds.
+# Ask each visible development emulator, or with -Tiled each tiled one, to
+# close; force-stop it after five seconds.
 function Close-UnWorkshopUserEmulatorProcesses {
     [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)]
-        [string[]]$Roots
+        [string[]]$Roots,
+        [switch]$Tiled
     )
 
-    foreach ($process in @(Get-UnWorkshopUserEmulatorProcesses -Roots $Roots)) {
+    foreach ($process in @(Get-UnWorkshopUserEmulatorProcesses -Roots $Roots -Tiled:$Tiled)) {
         if (-not $PSCmdlet.ShouldProcess(
             "Emulator process $($process.Id) ($($process.Path))",
             'close before launch'
@@ -402,6 +412,18 @@ if ($null -ne $UnlimitedForFramesByGame) {
             throw "Frame-limited Unlimited targets an unselected game: $selector"
         }
     }
+}
+$mainIndex = $selectedGames.Count - 1
+if (-not [string]::IsNullOrWhiteSpace($MainGame)) {
+    $mainCandidates = @(
+        for ($candidate = 0; $candidate -lt $selectedGames.Count; $candidate++) {
+            if ($selectedGames[$candidate].Selector -ieq $MainGame) { $candidate }
+        }
+    )
+    if ($mainCandidates.Count -eq 0) {
+        throw "The main game is not selected: $MainGame"
+    }
+    $mainIndex = $mainCandidates[0]
 }
 
 # PSP games run in PPSSPP. A recording belongs to the emulator that made it.
@@ -699,7 +721,7 @@ elseif ($Surfaceless) {
     "launch $gameList surfaceless"
 }
 elseif ($selectedGames.Count -gt 1) {
-    "close configured user emulators, launch $gameList, and tile their windows"
+    "close earlier tiled emulators, launch $gameList, and tile their windows"
 }
 else {
     "launch $gameList"
@@ -708,8 +730,11 @@ if (-not $PSCmdlet.ShouldProcess($pcsx2Root, $action)) {
     return
 }
 
-if (($selectedGames.Count -gt 1 -and -not $noWindow) -or $ClosePcsx2) {
+if ($ClosePcsx2) {
     Close-UnWorkshopUserEmulatorProcesses -Roots @($paths.Pcsx2Dev, $paths.PpssppDev)
+}
+elseif ($selectedGames.Count -gt 1 -and -not $noWindow) {
+    Close-UnWorkshopUserEmulatorProcesses -Roots @($paths.Pcsx2Dev, $paths.PpssppDev) -Tiled
 }
 
 $usedPinePorts = [Collections.Generic.HashSet[int]]::new()
@@ -756,7 +781,7 @@ try {
             }
             elseif (
                 $PSCmdlet.ParameterSetName -eq 'Record' -and
-                $index -eq $selectedGames.Count - 1
+                $index -eq $mainIndex
             ) {
                 $ppssppParameters.CreateInputRecording = $pspRecordingPath
             }
@@ -790,7 +815,7 @@ try {
                 }
                 if ($selectedGames.Count -gt 1) {
                     $ppssppParameters.Mute = -not ($LastGameAudio -and
-                        $index -eq $selectedGames.Count - 1)
+                        $index -eq $mainIndex)
                     # Start in its tile; PPSSPP doesn't save it as its window position.
                     $ppssppParameters.Window = Get-UnWorkshopWindowTile `
                         -Index $index `
@@ -831,7 +856,7 @@ try {
 
         $pcsx2Arguments = @('-pine-port', [string]$pinePort)
         if ($Mute -or ($selectedGames.Count -gt 1 -and
-            -not ($LastGameAudio -and $index -eq $selectedGames.Count - 1))) {
+            -not ($LastGameAudio -and $index -eq $mainIndex))) {
             $pcsx2Arguments += '-mute'
         }
         $launchParameters = @{
@@ -893,7 +918,7 @@ try {
         }
         elseif (
             $PSCmdlet.ParameterSetName -eq 'Record' -and
-            $index -eq $selectedGames.Count - 1
+            $index -eq $mainIndex
         ) {
             $launchParameters.CreateInputRecording = $recordingName
         }

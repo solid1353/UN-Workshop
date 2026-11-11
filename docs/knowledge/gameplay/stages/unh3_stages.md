@@ -77,7 +77,7 @@ one line up to about 36,000 long built from `maptip` pieces, with an
 
 ## Scene-keyed code
 
-The battle manager (`0x08CE0580`) holds the scene at `+0x90`, and the
+`battle_manager` (`0x08CE0580`) holds the scene at `+0x90`, and the
 background control keeps a copy at `+0x10` (`bg_control_load_scene`) that
 no caller of its getter (`0x088E650C`) reads back. Of the manager's scene
 reads, most separate mission scenes from battle scenes

@@ -23,12 +23,12 @@ differences:
   [debugger](#debugger-client) on the first free port from 28111, on this
   machine only.
 
-Launches of two or three games mute it, unless it is the last game with `-aud`,
+Launches of two or three games mute it, unless it is the game `-aud` keeps,
 and start it in its tile through `--window`, then tile it like the PCSX2 windows; `-mute` mutes
 it in any launch. A single launch uses
 `--centered-window`. A recording cannot span PSP and PS2 games. `-k` and
-launches of two or three games close every visible development emulator,
-PPSSPP included.
+launches of two or three games close development emulators, PPSSPP included,
+as [PCSX2's](pcsx2.md#launching-games) do.
 
 `workshop ppsspp` launches development PPSSPP without a game in Turbo.
 
@@ -72,7 +72,7 @@ a recording, whose saves have to run.
 
 ## Input recordings and captures
 
-`-r <recording>` records only the last instance, and `-rp <recording>` replays
+`-r <recording>` records only the instance PCSX2's would, and `-rp <recording>` replays
 one recording in every instance. Names are relative paths below
 `@ppsspp_input_recordings/`, and Workshop adds the `.ppr` extension.
 
@@ -115,6 +115,14 @@ any write.
 such as `08812345`, where a cheat line's is an offset from `08800000`. Each line
 applies once per invocation. The debugger's writes clear compiled code
 themselves.
+
+`@ppsspp_scripts/assemble.py --port <port> --base <address> <listing>` turns a
+listing of one Allegrex instruction per line, with `name:` labels that any
+line can name as an operand and `;` comments, into `_L` word writes from that
+guest address on. PPSSPP's `memory.assemble` encodes each line by writing it
+into the running game, so assemble into memory the game doesn't use, such as
+the 16 KiB from `08800000` that PPSSPP reserves for the user system library
+and never writes.
 
 ## Debugger client
 

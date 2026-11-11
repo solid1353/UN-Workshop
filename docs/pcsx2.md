@@ -31,7 +31,8 @@ launch opens a centered window through PCSX2's `-centered-window`
 Launches of two or three games tile them left to right in argument order, each
 window an equal share of the screen width, and keep them there through PCSX2's
 `-no-recenter`, which stops game starts from recentering the windows; they also
-mute every PCSX2 instance, except the last one with `-aud`. `-mute` mutes every
+mute every PCSX2 instance except, with `-aud`, the last one, or the one a caller
+names by selector as `MainGame`. `-mute` mutes every
 launched game, including a single one; it excludes `-aud`. `-t` selects Turbo,
 while `-u` selects Unlimited; these speed options are mutually exclusive. Each result reports the ordered
 game, process, PINE or debugger port, and window position.
@@ -41,7 +42,9 @@ PSP games launch in PPSSPP instead, with the differences in
 
 `-k` closes every visible development emulator before launching; surfaceless
 instances, from `-surfaceless`, `-rps` or `-agent-replay`, keep running.
-Launches of two or three games do this automatically, except agent replays. Snapshot replays
+Launches of two or three games, except agent replays, close only the windows
+an earlier such launch tiled, which PCSX2 opened with `-no-recenter` and
+PPSSPP with `--window`, so a single game's window stays open. Snapshot replays
 never close an emulator and reject `-k`. Each emulator gets five seconds to close
 before it is force-stopped.
 
@@ -84,7 +87,8 @@ and hash verification.
 `-rp <recording>` replays one shared input recording in every launched instance
 through PCSX2's
 [read-only playback](../../../PCSX2/docs/input_recording_capture.md#read-only-playback).
-`-r <recording>` records only the last or rightmost instance. Recording names
+`-r <recording>` records only the last or rightmost instance, or a caller's
+`MainGame`. Recording names
 may be relative paths below `@pcsx2_input_recordings/`; Workshop adds the
 `.p2m2` extension automatically. Recording creates missing parent directories.
 

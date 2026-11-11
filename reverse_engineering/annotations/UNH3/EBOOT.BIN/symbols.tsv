@@ -20,6 +20,9 @@ address	kind	name	type	comment
 0x088A6874	function	ccs_expand_vertex_colour		Expand each packed RGBA byte c to max(2*c-1,0), with no upper clamp before packed OR. Used by ordinary geometry list compilation; RGB above128 spills into adjacent channels.
 0x088A7330	function	model_compile_ordinary_mesh		Compile retained ordinary arrays into PSP vertex layouts based on model flags, signed short XYZ*position scale, optional normal bytes, expanded RGBA through ccs_expand_vertex_colour and UV/256. Split triangle-strip runs using normal/control fourth byte, recording sceGuDrawArray lists. This preserves vertex/strip order inside a material part.
 0x088B4870	function	ccs_parse_palette		Read CLUT section, retaining RGB bytes and expanding every alpha a to max(2*a-1,0). 16 entries use palette format14, larger13. Palette data does not brighten RGB; partial-alpha rock shadow TEX_s10obj19 in s10 has RGB101319, alpha up to4A authored (147 expanded).
+0x088C60DC	function	opening_update		MOTHER state 2: runs the logos, waiting inside until they end, and returns 1 for the title.
+0x088C6270	function	title_update		MOTHER state 3: -1 returns to the opening, 1 (New Game) or 2 (Continue) is kept as the title result for state 4.
+0x088C82CC	function	mother_task		MOTHER thread: after its startup waits stores state 2 (li v1,2 at 0x088C8420), then runs mother_state: 2 opening_update, 3 title_update, 4 manager_update.
 0x088DEFE8	function	mission_apply_battle_record		Reads a 0x52-byte eventBattle.ccbpm record; scene halfword at +0x2A.
 0x088E650C	function	bg_control_get_active		The active background control (sections of 0x150 bytes; +0x14 section count; +0x600 player positions).
 0x088E69D8	function	stage_format_archive_path		Formats the stage folder prefix and the scene's archive name.
@@ -49,6 +52,7 @@ address	kind	name	type	comment
 0x0890941C	function	bg_uv_animation_draw		Factory 29 (ccBgUVAnm) draw: sets the model's UV offset from U/V floats +0x2C/+0x30 (fixed12) and draws it.
 0x08926A9C	function	scene_update_restricted		1 when the word DAT_08CDF6C4 points to exists and is not -1, else 0; bg_crash_break_reborn_update holds its bombs while it is 1 or DAT_08CE0580 is 0.
 0x089409B0	function	stage_select_build_available_list		Scans the 13 Stage Select rows in order, keeping scenes whose availability bit is set.
+0x0894E204	function	character_select_commit		Per selected slot: flags +0x10 bit 1 COM, character +0x14, team +0x1C, side +0x24, ninjutsu, handicap; clears unselected slots' characters; stage +0x90, player count.
 0x08957988	function	battle_camera_create_view		Allocates the 0x50-byte view camera at +0xB4 (45 degree field of view).
 0x08958724	function	camera_track_stage		Normal-stage camera: frames the fighters by mode, clamps to the stage markers (0x089599F0), eases eye and target by 0.3 per update.
 0x089589DC	function	camera_follow_behind_fighter		Mode 1: eye behind the tracked fighter on the line to its opponent, (2 + 0.001 d) of the half-span out, raised by a fifth of its depth and 100, at least 50 above the fighter.
@@ -69,6 +73,7 @@ address	kind	name	type	comment
 0x08963678	function	ai_set_next_state		Sets the controller's next state (+0x1C8).
 0x08963FDC	function	ai_state_approach_target		On the target's section, moves toward it by x (output bits 1 right, 2 left); otherwise sets state 0xC or 0xD toward the target's section, then 9.
 0x08964D08	function	ai_controllers_bind_all		ai_controller_bind for each of the four controllers and the manager's fighters.
+0x08968510	function	install_prompt		Asks whether to install game data (install_us.ccs) and applies the answer.
 0x089688E8	function	effect_scene_update	int effect_scene_update(void *effect)	Effect scene movement,scale,fade,lifetime and bound-player update. Flags byte+20 bit0 chooses camera-facing matrix: scale,local Z/Y/X rotation,active camera renderer+10 matrix then transpose,restore world translation+30; clearbit uses world transform. Bind via embedded interface+100,update and publish opacity; return completion.
 0x08968F94	function	effect_scene_set_velocity		Copies the motion window (+0x120/+0x124, from args 0/1) and velocity (+0x130, from args 4..7) and sets flag 1.
 0x08969098	function	effect_scene_set_fade_out		Sets +0x190, the opacity subtracted each update once age reaches +0x24, and flag 0x20.
@@ -86,6 +91,26 @@ address	kind	name	type	comment
 0x08973D40	function	field_player_placement		Slot n starts at DMY_pp(n+1)_010 (background +0x600 + 0x10 n), in the section holding it (0x088E7864); on battle scenes even slots face +pi/2, odd -pi/2.
 0x08973EA8	function	field_project_position		NA2's stage_project_position: rejects a section outside 0..count-1 (+0x74), else bg_resolve_section_transfer.
 0x08974000	function	stage_is_mission_scene		1 for scenes 13..41 (r001..r029, Master Road missions), 0 below 13; -1 argument reads the active scene.
+0x08975330	function	menu_files_load		Queues mdsel.ccs once, then option.ccs, rec_us.ccs and install_us.ccs once; Mode Select draws from them.
+0x089755AC	function	manager_update		MOTHER state 4: builds battle_manager (0x34C bytes), then runs its phase +8: 1 picks 2 for New Game, 3 for Continue, else 4 with mode 1 (li v0,0x4 at 0x08975658); 2 new_game_prepare; 3 continue_prepare; 4 mode +4 (1 mode_select_update, 4 practice_mode_update); 5 back to the title.
+0x089757D4	function	new_game_prepare		Phase 2: new_game_prompts, then menu_files_load and its wait; returns 1 for phase 4, mode 1.
+0x08975A00	function	continue_prepare		Phase 3: Load Game; returns 1 for phase 4, mode 1, or -1 for the title.
+0x08975CE0	function	mode_select_update		Mode 1: transient states 0..6; the menu's result 2..7 becomes battle_manager mode (4 Practice, 5 Master Road).
+0x089763D0	function	practice_mode_update		Mode 4: battle_mode_begin(2), then battle_mode_update.
+0x0897796C	function	battle_mode_begin		Builds battle_mode_controller (0x68 bytes) once and stores its kind (2 Practice) at battle_mode_kind.
+0x08977A48	function	battle_mode_update		Runs battle_mode_controller's +0x5C update.
+0x0897838C	function	battle_mode_controller_update		States 4 battle_mode_load_character_select, 5 battle_mode_character_select, 6 battle_mode_commit_selection, 8 battle_mode_create_battle, 10 battle_mode_battle_update.
+0x08978A24	function	battle_mode_load_character_select		State 4: queues and binds Character Select's files, then state 5.
+0x08978BB8	function	battle_mode_character_select		State 5: Character Select with Customize, Map Select and the versus screen; on confirm +0x30 method (0) and state 6, on back state 0x17.
+0x08978D10	function	battle_mode_commit_selection		State 6: battle_manager_finalize_slots, then state 7.
+0x08978EC0	function	battle_mode_create_battle		State 8: in Practice builds the Practice object at 0x08CE061C; then state 10.
+0x089790D8	function	battle_mode_battle_update		State 10: the battle; its end enters state 0xB.
+0x0897C97C	function	player_name_entry		Waits on the name dialog and on-screen keyboard; an accepted name is stored in the profile.
+0x0897CD38	function	new_game_prompts		New Game's player_name_entry, then install_prompt once a name is entered; returns whether one was.
+0x0897D068	function	battle_manager_set_player_count		Stores the count at slots +0x88 (battle_manager +0x98).
+0x0897D070	function	battle_manager_set_ninjutsu		(slots +0x10, slot, ninjutsu): -1 takes the character's default (0x08AC9488); stored at slot +0x18.
+0x0897D19C	function	battle_manager_finalize_slots		Separates same-character teams, fills unset +0x20 defaults and copies the slots, stage and count to the battle's copy at +0x9C.
+0x0897D780	function	battle_manager_set_battle_setting		(kind, value, slot) into +0x128..: kind 1 bit 0 Command Display in Practice, 7 handicap at +0x12E+slot, 0xC..0x10 a COM's Practice settings at +0x132+slot*5.
 0x08984960	function	mission_stage_load_auxiliary_archives		For mission scenes loads gim.ccs and 13adv e000/e007/e300 and the mission's object resources.
 0x089BC56C	function	fighter_run_dust_interval		Run-dust interval by character: 0x4C 20, 0x32 12, 4/0xE 11, 0x15/0x18/0x3C/0x53 8, 0x12/0x22/0x51 7, 0xB/0x11 6, otherwise 5 updates.
 0x089BC67C	function	fighter_surface_thud	void fighter_surface_thud(unsigned int surface, float *position, int hard)	Mask F0F0F0. 202020 plays48 note32; water E0E090/E0A000/E0E000 plays48;60C0 plays3B;8080F0/5000/80D0F0/606060/90B0C0/3060 plays45 if hard,47 otherwise; other codes silent. Called at primary presentation event0 for damage actions44/45/4A(side surface C50,position+half height),46(ceiling C5C,position+height), and damage feedback helpers.
@@ -128,4 +153,9 @@ address	kind	name	type	comment
 0x08C72188	data	sound_banks		Sound bank files, 16 bytes each (kind, name, .phd size, .pbd size): 0 sound/se/commse0, 1 battleSE, 2 eventSE, then PL57.. character banks; a sound's high hex digit picks the bank.
 0x08CDDA44	data	stage_render_packet_coefficient	float	Factory 17's second token; bss, set by no battle setup, so a stage without the record keeps the last one's (0 before any).
 0x08CDDA48	data	stage_render_colour_coefficient	float	Factory 17's first token; bss, set by no battle setup, so a stage without the record keeps the last one's (0 before any). Draw passes override it only around their draw.
+0x08CDE814	data	mother_state	int *	Eight bytes: the MOTHER state word, then the title result (1 New Game, 2 Continue), 0 at allocation.
 0x08CDFB90	data	ai_controllers		Four computer-fighter controllers of 0x240 bytes, one per manager fighter slot (+0x32C); +0x1C4 state, +0x1C8 next state, +0x1CC state timer, +0x1C0 target entry.
+0x08CE0580	data	battle_manager	void *	Mode +4, phase +8, four 0x20-byte fighter slots from +0x10, stage scene +0x90, player count +0x98, the battle's copy from +0x9C, battle settings from +0x128.
+0x08CE0610	data	front_end_transient	void *	The 0x34-byte state object new_game_prepare and mode_select_update share, or 0.
+0x08CE0620	data	battle_mode_controller	void *	State +0, sub-state +4, vtable +0x30 (0x08C8C384: +0xC set state, +0x5C update).
+0x08CE06A0	data	battle_mode_kind	int	2 in Practice.

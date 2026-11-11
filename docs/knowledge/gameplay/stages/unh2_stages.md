@@ -165,7 +165,7 @@ Scenes 18 and 19's line, `cl` and doll nodes equal UN2 scenes 16's and
 
 ## Scene-keyed code
 
-These are the reads of the scene byte (`+0x3D` of the battle context at
+These are the reads of the scene byte (`+0x3D` of `battle_manager`,
 `0x08C634C0`) in the decompiled `BOOT.BIN` that compare it with scene 5.
 None singles out 16..19, so scenes 18 and 19 take every routine's
 default.
