@@ -18,7 +18,7 @@ UN Workshop
     [-pnach <file>]...      Additional PNACH files
     -t                      Turbo
     -u                      Unlimited
-    -k                      Close running development emulators first
+    -k                      Close visible development emulators first
     -aud                    Keep the last game's sound in a launch of two or three games
     -surfaceless            PCSX2 without a window, focus or sound
     -savestates <folder>    PCSX2 saves and loads this run's savestates there

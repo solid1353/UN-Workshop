@@ -38,8 +38,9 @@ game, process, PINE or debugger port, and window position.
 PSP games launch in PPSSPP instead, with the differences in
 [PPSSPP tooling](ppsspp.md).
 
-`-k` closes every running development emulator before launching. Launches of two
-or three games do this automatically, except agent replays. Snapshot replays
+`-k` closes every visible development emulator before launching; surfaceless
+instances, from `-surfaceless`, `-rps` or `-agent-replay`, keep running.
+Launches of two or three games do this automatically, except agent replays. Snapshot replays
 never close an emulator and reject `-k`. Each emulator gets five seconds to close
 before it is force-stopped.
 

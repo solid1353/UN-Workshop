@@ -165,7 +165,18 @@ function Get-UnWorkshopUserEmulatorProcesses {
             ) + [IO.Path]::DirectorySeparatorChar
         }
     )
+    # Surfaceless PCSX2 instances, which agents and replays drive, are not the
+    # user's: they started with -surfaceless or -agent-replay.
+    $surfaceless = [Collections.Generic.HashSet[int]]::new()
+    foreach ($instance in @(Get-CimInstance -ClassName Win32_Process -Filter "Name LIKE 'pcsx2%'" -ErrorAction SilentlyContinue)) {
+        if ([string]$instance.CommandLine -match '(?:^|\s)-(?:surfaceless|agent-replay)(?:\s|$)') {
+            [void]$surfaceless.Add([int]$instance.ProcessId)
+        }
+    }
     foreach ($process in @(Get-Process -Name 'pcsx2*', 'PPSSPP*' -ErrorAction SilentlyContinue)) {
+        if ($surfaceless.Contains($process.Id)) {
+            continue
+        }
         try {
             $processPath = [IO.Path]::GetFullPath([string]$process.Path)
         }
@@ -180,7 +191,8 @@ function Get-UnWorkshopUserEmulatorProcesses {
     }
 }
 
-# Ask each development emulator to close; force-stop it after five seconds.
+# Ask each visible development emulator to close; force-stop it after five
+# seconds.
 function Close-UnWorkshopUserEmulatorProcesses {
     [CmdletBinding(SupportsShouldProcess)]
     param(
