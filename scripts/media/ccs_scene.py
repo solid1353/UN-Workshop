@@ -107,8 +107,13 @@ def animation_keys(words):
         elif tag == KEY_OBJECT:
             position, cursor = _first_vector(body, 2, flags & 7)
             mode = (flags >> 3) & 7
-            rotation, cursor = (_first_vector(body, cursor, mode)
-                                if cursor is not None and mode in (1, 2) else (None, None))
+            # An absent rotation channel (mode 0) leaves the scale channel next.
+            if cursor is None or mode not in (0, 1, 2):
+                rotation, cursor = None, None
+            elif mode == 0:
+                rotation = None
+            else:
+                rotation, cursor = _first_vector(body, cursor, mode)
             scale, _ = (_first_vector(body, cursor, (flags >> 6) & 7)
                         if cursor is not None else (None, None))
             keys.setdefault(body[0], ("object", position, rotation, scale))

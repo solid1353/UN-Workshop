@@ -5847,6 +5847,10 @@ address	kind	name	type	comment
 0x005D4268	data	orochimaru_cinematic169_hits		Native selectedskill169 descriptorcount2,row5D3140; compact cues140:0F,190:12; matches donor skill22 frame/cue pairs only, not whole scene/voice samples.
 0x005D4270	data	orochimaru_cinematic170_hits		Native selectedskill170 descriptorcount51,row5D3150; signed soundbyte rows feed audio_request_cinematic_cue independent of SOUND intro/PLVOICE.
 0x005D4438	data	jutsu_timing_cpu_hit_caps	short[5]	CPU tier0..4 maximum hits1/2/4/4/5.
+0x005D44C8	data	ccfm_reference_width	int	512; ccfm_rectangle_pairs_prepare (0x0036C53C) is its only load. Ultimate Jutsu filter bands do not use it: render_callback_owner_apply_record copies their precomputed 512x384 positions from the record, and a runtime value of 683 left them unchanged.
+0x005D44D0	data	ccfm_reference_height	int	384; read only by ccfm_rectangle_pairs_prepare (0x0036C534).
+0x005D44D8	data	ccfm_reference_center_x	int	256; band center X in ccfm_rectangle_pairs_prepare, also read at 0x0036CED0, 0x0036D588 and 0x0036E0E8.
+0x005D44E0	data	ccfm_reference_center_y	int	192; band center Y in ccfm_rectangle_pairs_prepare.
 0x005D44E8	data	ccfm_scalar_channel_payload_sizes	unsigned int[4]	Runtime-state allocation sizes for scalar channel modes 0/1/2/3: 4/4/12/0 bytes. Mode 0 reserves unused allocation bytes; reset and advance consume state only for modes 1/2. Checked own-game bytes agree with UN4.
 0x005D44F8	data	ccfm_discrete_channel_payload_sizes	unsigned int[4]	Runtime-state allocation sizes for discrete channel modes 0/1/2/3: 4/4/12/0 bytes. Mode 0 reserves unused allocation bytes; reset and advance consume state only for modes 1/2. Checked own-game bytes agree with UN4.
 0x005D4640	data	font_inline_icon_draw_branches	void *[8]	Eight computed font_inline_icon_draw_dispatch branch destinations:indices0..3 ->00377F58;4..7 ->00377F64. Both merge00377F78 and call scene_output_finalize at00378074; table bytes verified through MCP.

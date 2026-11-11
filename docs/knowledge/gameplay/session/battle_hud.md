@@ -469,6 +469,10 @@ The marker projects `Fighter.position` through `fighter_position_project`.
 Draw uses descriptor groups 117..119 and 120..122 with screen-edge clamps
 and borrowed shared textures. Numeric history maintains a linked popup list
 and saturated aggregate/peak pair and draws admitted active entries.
+It is Practice's damage readout: `hud_numeric_history_bind` anchors side 0's
+at `(412,110)` and side 1's at `(170,110)`, and `damage_counter_add` copies
+that anchor into each popup it creates. `practice_damage_draw` ends the digits
+at the anchor's X, puts `％` at X+10, and puts `最大` left of the peak's digits.
 Shared icons own five sprite wrappers, an animation and two render layers.
 
 ### Combo digit presentation

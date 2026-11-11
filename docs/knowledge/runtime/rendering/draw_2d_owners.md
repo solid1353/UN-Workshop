@@ -394,13 +394,14 @@ few texels is a near-uniform sample:
 | `OPTION.CCS` | `MDL_op_back` | 0×1 | `-285..301` |
 | `CHARSEL1.CCS` | `MDL_back00`, a relief 23 units deep | artwork | `±318` |
 | `3EYE/ENDDEMO.CCS` | `MDL_black_panel`; `MDL_back_ef01/02`, `MDL_haikei` | 0×0; artwork | `±266`; `±256` |
-| `OUGI.CCS` | `MDL_ougi_back`, `MDL_obi01/02`, `MDL_obi_b01/02`; `MDL_obi01b2/02b2`; `MDL_back_pt01..03` | 0×0; artwork; artwork | `±551`, `±711`; `±323`; `±201..272` |
+| `OUGI.CCS` | `MDL_ougi_back`, `MDL_obi01/02`, `MDL_obi_b01/02`, `MDL_ougi_white`; `MDL_obi01b2/02b2`; `MDL_back_pt01..03` | 0×0; artwork; artwork | `±551`, `±327`, `±298`; `±323`; `±201..272` |
 | `BATTLEGAUGE.CCS` | `MDL_xc_line1/2`, `MDL_xc_back`, `MDL_x_flash_panel` | 1×1, 0×0, 4×8 | `±259`, `±277`, `±259` |
 | `CMN/GAUGE.CCS` | `MDL_back_panel`, `MDL_xb_back` | 3×4, 0×0 | `±266`, `-277..293` |
 | `LOADING/SPLOAD.CCS` | `MDL_splback`, `MDL_spl_obi01`; `MDL_back_a01/b01/c01`, `MDL_back_ef01/02` | 0×0, 9×0; artwork | `±302`, `±276`; `±258..260` |
-| `MODENAME/MODE2CMN.CCS` | `MDL_black_efb01`, `MDL_mode2obi1a/2a`; the same five `back_*` artwork panels | 0×0, 0×4; artwork | `±307`, `±286`; `±258..260` |
+| `MODENAME/MODE2CMN.CCS` | `MDL_black_efb01`, `MDL_mode2obi1a/2a`, `MDL_mode2back03`; the same five `back_*` artwork panels | 0×0, 0×4, 0×0; artwork | `±307`, `±286`, `±290`; `±258..260` |
 | `XNINKA.CCS` | `MDL_xback01` | 0×0 | `±256` |
 | `CONTINUE.CCS` | `MDL_obi01` | 0×2 | `±277` |
+| `STR/D57_20E.CCS` | `MDL_e57air01a`, `MDL_e57air01b` (cloud layers held on screen; observed mid-scene, not frame 0) | artwork | `±254`, `±304` |
 
 [`ccs_scene.py`](../../../../scripts/media/ccs_scene.py) reproduces these values from the
 containers. It reads ordinary meshes and frame-0 keys only and ignores parent
@@ -420,6 +421,14 @@ projection and the fixed-reference inverse described in
 The active linked quad supplies region geometry; owner offsets and uniform
 scale modify it about `(256,192)`. The draw mixes cropped black/transparent
 mask geometry, an optional border and an authored animation player.
+
+The quads are pieces of one band. `cutin_start_staged` (`0x0086F8A0`) stores
+the band rectangle `(0,72,512,240)` at controller `+0x7F0` and rebuilds the
+quad list from it, then cuts it along a line from `cutin_split_lines`
+(`0x008CE690`): X `136` at Y `0` to X `376` at Y `384`, or its mirror, with a
+gap of `5`. The cut keeps the band's own outer X and moves only the inner
+edges, so a band rectangle of any X range is split along the same line. Each
+region selects its piece by index and slides it in through its offsets.
 
 The two regions own eight renderer states. Their selected environments,
 repeated viewport/2D publications, scoped player copies and teardown are owned
@@ -551,6 +560,25 @@ draw group chooses a no-op, `colored_six_rectangle_pairs_draw` or
 `colored_radial_mesh_draw`. `ccfm_owner_draw` (`0x003701E0`) and the nested
 transformed owner select that draw group with their byte selector. Thus these
 computed calls reach the already classified shared-2D meshes.
+
+`ccfm_rectangle_pairs_prepare` sizes its band as the rectangle that
+circumscribes the `ccfm_reference_width` by `ccfm_reference_height` frame
+(`512` by `384`, words at `0x005D44C8`/`0x005D44D0`) rotated by the control's
+angle, centered on `ccfm_reference_center_x/y` (`256`,`192`) plus its offset.
+Its edges therefore pass through the frame's corners. No other code in the
+ELF or `BTL.BIN` loads the width or height.
+
+Ultimate Jutsu filters do not use that computation. For each record,
+`render_callback_owner_apply_record` (`0x0036EC20`) copies the shape's
+positions from the record: in mode 1 the six columns (`x0,y0,x1,y1`) at owner
+`+0x00`, in mode 2 the center at `+0x00` and five 16-point rings at `+0x08`.
+The draw callbacks use them as copied. Its two callers are `ccfm_owner_draw`
+at `0x00370328` and `ccfm_transformed_draw_owner_apply_record` at
+`0x0036F4EC`. The recorded shapes are sized to the 512-by-384 frame: a tilted
+band whose edges pass through its corners, and a 16-sided vignette of outer
+radius `330` around `(256,192)`, just past the corners' `320`. With
+`ccfm_reference_width` changed to `683`, the copied bands kept their
+512-based size.
 
 Other packets in those owners have separate contracts:
 
