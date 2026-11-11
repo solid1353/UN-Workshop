@@ -313,7 +313,20 @@ kind-1 animation player. `WrappedScenePlayback.kind` is a word-sized field.
 `indexed_effect_set_step` writes the halfword playback step;
 `indexed_effect_seek` seeks the animation. Submission publishes
 `support_scalar` to the bound player's opacity before the model submission
-helper. The exact field layouts and routine details live in annotations.
+helper. Kind 0 binds a composition record. Before submitting it,
+`projectile_service_transform` writes `support_scalar` to each of its
+object children's opacity (`+0x88`). The exact field layouts and routine
+details live in annotations.
+
+Reset turns on every bookkeeping feature (`+0xC4` = -1). Each update,
+bookkeeping adds the velocity at `+0x1C0` to the translation and steps the
+scale at `+0xE0` by `+0xE4`. In mode 1 of `+0xEC` the step stops at the
+target `+0xE8`; mode 2 holds the scale. It then writes the scale to
+`+0x1F4..+0x1FC`, which the transform applies. `indexed_effect_set_scale`
+(`0x00311E60`, start, step, target, record, stop) sets the scale's start,
+step and target, and mode 1 when stop is nonzero. A zero step instead sets
+the scale and holds it. `effect_spawn_debris_burst` scales its smokes this
+way.
 
 A traced consumer requests retirement through two concurrent mechanisms:
 

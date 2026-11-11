@@ -9,7 +9,7 @@ normal-stage camera, the fog, glare and render records, factories 134 and
 135, the scaled marker, how its handlers for the factories it shares with
 NA2 and its renderer differ from NA2's, material-part drawing order, its scene-keyed code, how its
 computer fighters choose sections, its sound banks, its item records, and
-what the 29 mission scenes are, its running dust's art, its camera's
+what the 29 mission scenes are, its running dust's art, timing and motion, its camera's
 field of view, and its collision lids, ropes, branch words and skies,
 including their scroll speeds and precision. Names are UNH3 `EBOOT.BIN` addresses; NA2
 comparison names come from `@annotations/NA2`.
@@ -385,6 +385,30 @@ also raises it on `0x80D0F0`, `0xF0D0D0` and `0xF0F0F0`. It is
 (`effect_catalog_rows`), `CMP_e0x_mok02` from `effect0x` with its own
 32×32 `TEX_e0x_mok02`, a different model and texture from NA2's
 `EFF_e0xsmok20` (64×64), which NA2 draws as effect `0x99`.
+
+UNH3 raises one puff per call, where NA2 raises two smokes
+(`fighter_present_action_effects`):
+
+- Through a run (state 1/`0xE`): every n updates, with n by character
+  (`fighter_run_dust_interval`, `0x089BC56C`): 20 for `0x4C`, 12 for
+  `0x32`, 11 for 4 and `0xE`, 8 for `0x15`, `0x18`, `0x3C` and `0x53`, 7
+  for `0x12`, `0x22` and `0x51`, 6 for `0xB` and `0x11`, otherwise 5.
+  NA2 raises its smoke on each of the run's first 8 updates, then every 4,
+  or every 10 for character 4, never for `0x4C`.
+- On each update of the run's starts (1/`0xF` through update 10, 1/`0x11`
+  through update 5), of state 5/`0x5D` and of state 8, with the facing
+  angle negated, and of state 5/`0x40` at twice the scale. NA2 raises its
+  smoke through `fighter_surface_dust_burst` on each update of 1/`0xF`
+  through update 10 (`fighter_run_start_dust`), and of 5/`0x5B` and state
+  8 (`fighter_state_dust`).
+
+A puff (`fighter_running_dust_spawn`, `0x0897125C`, with r(x) a signed
+random up to x) starts at the given position plus (5 + r(20),
+−8 − |r(10)|, 20 + r(5)), turned r(π) about z, at scale 0.8 × the
+fighter's `+0x330`. Each update (`effect_scene_update`, `0x089688E8`) it
+drifts by (r(3), with the facing angle's sign, −|r(5)|, r(0.5)), shrinks by
+(0.04 + |r(0.05)|) × that scale and fades from 1 by 0.04 + |r(0.05)|. It
+ends when its opacity falls below 0, after 11 to 25 updates.
 Knockdowns, bounces and falls in damage states
 (`fighter_present_action_effects`) add a surface thud
 (`fighter_surface_thud`) NA2 has no counterpart of: `0x45`, or `0x47` on
