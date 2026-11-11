@@ -415,7 +415,8 @@ render environment `+0x138 = 1000.0` and `+0x124 = 1`. Once
 it, clears the secondary transition pool and from then on stops the film
 on Cross with `ccs_stream_player_latch_stop_skip(player, 2)`. Afterwards it
 calls `sp_skill_play_destroy`, `battle_character_pair_release` and
-`audio_request_frontend_command(4)`, releases both containers, restores the
+`audio_request_frontend_command(4)`, which starts Collection's music again,
+releases both containers, restores the
 frame colour, zeroes both render-environment fields and returns the viewer to
 its list.
 

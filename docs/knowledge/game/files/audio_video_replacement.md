@@ -106,6 +106,11 @@ command labels are independent selection sites even though the clean result
 is identical. **Inference:** these fixed-size instruction sites can select
 other existing tracks independently without changing `SOUND.AFS`.
 
+Mode Select's exit to Collection submits command 1, which fades channel 0
+out over two seconds through `audio_fade_out_music_channel_2s`. Collection's
+skill viewer submits command 4 after each film, requesting music preset 4,
+Collection's music.
+
 `audio_music_track_gain`, read by `audio_get_track_gain`, stores `-40` for
 track 62 and `0` for track 68. `audio_start_streamed_music` combines track gain
 with `AudioCommandContext.music_volume`, stores the effective channel gain,
