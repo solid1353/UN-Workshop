@@ -6523,6 +6523,7 @@ address	kind	name	type	comment
 0x006073CC	data	registered_renderer_list_head	RendererTransformState *	Registered renderer-list head; renderer_list_insert prepends through RendererTransformState.next and renderer_list_remove unlinks matching renderers.
 0x006073D4	data	active_render_environment	void *	Selected resident render/light environment pointer; render_environment_select stores the supplied environment at 0x00106210.
 0x006073D8	data	render_ordering_pool_base	RenderOrderingNode *	Shared ordering-node allocation base; render_ordering_pool_initialize publishes it and engine_snapshot_service_word resets the per-frame cursor from it.
+0x006073D0	data	primary_render_environment	void *	Render environment bg_light_distant_parse fills: light list +0xC0, lighting colour +0x70, main direction +0xD0; selects it as active_render_environment first.
 0x006073DC	data	render_ordering_pool_cursor	RenderOrderingNode *	Next shared ordering node; render_ordering_insert advances it by 0x14 per reservation and engine_snapshot_service_word resets it from the pool base.
 0x006073F4	data	render_context_holder	void *	Current render context holder; +0x3C render context with clip bounds at +0x200/+0x210
 0x006073FC	data	engine_pad_context	EnginePadContext *	Published resident 0x530-byte engine context containing both pad records; allocated and initialized by engine_root_allocate.

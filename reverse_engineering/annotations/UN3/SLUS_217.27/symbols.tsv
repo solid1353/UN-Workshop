@@ -1318,6 +1318,8 @@ address	kind	name	type	comment
 0x006A23C0	data	lightning_blade_hand_node_names		{OBJ_2cmn00t0 r_hand for resources 11/53, second name for 3/89}
 0x006A23C8	data	lightning_blade_dash_durations		Halfwords by resource 53,3,89,11: 3,8,8,3 updates.
 0x006A2F1C	data	arena_end_sentinel	void *	End sentinel pointer (gp-0x5D54) stored by game_arena_initialize.
+0x006A2F58	data	primary_render_environment	void *	gp-0x5D18 (gp 0x006A8C70). Render environment stage_parse_lighting fills: light list +0xC0, lighting colour +0x70; as NA2's 0x006073D0.
+0x006A2F5C	data	active_render_environment	void *	gp-0x5D14. Selected render environment; stage_parse_lighting sets it to primary_render_environment before registering lights; as NA2's 0x006073D4.
 0x006A30F4	data	audio_request_context_ptr	unsigned int	Own UN3 published 0x60-byte request-context pointer. Four 0x14-byte pending rows at its base are written by audio_write_pending_stream and drained by audio_consume_pending_streams.
 0x006A3110	data	audio_command_context_ptr	unsigned int	Own UN3 published command-context pointer, allocated as 0x184 bytes. Signed voice-set word at +0xC is initialized to zero, written by audio_set_voice_set and queried by audio_alternate_voice_set_enabled.
 0x006A31CC	data	battle_manager	void *	0xB10-byte manager built by new_game_start or the load path; +4 profile, +0x54 scene, +0x58 mode, +0x60 control mode, +0x61 stage scene index, +0x62/+0x63 P1/P2 character, +0x66/+0x67 P1/P2 COM flag, +0xA38 active side.

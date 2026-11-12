@@ -381,7 +381,7 @@ optional owners, walks records through `stage_category_dispatch`
 | 10 | `stage_parse_player_nodes` | `プレイヤー１/２`; token 3 names `DMY_pp1_010`/`DMY_pp2_010`. |
 | 11 | `stage_parse_line_nodes` | Front/back token 3 names `DMY_line_010`/`DMY_line_020`; token 5 counts family nodes. |
 | 12 | none | Skipped; `0xC0A` occurs in three stages. |
-| 13 | `stage_parse_lighting` | First resource is light animation (always `ANM_stalig00`), played with player flag bit 0 so all its lights join the render environment's list; for each index below token 5 it registers `LGT_dis_%d`, `LGT_drc_%d` (both given flags 6), `LGT_spo_%d` or `LGT_omn_%d`. The light code it feeds (`render_environment_build_light_matrix`, `0x0010BBD0`; `omni_light_evaluate`, `0x0014E0D0`) matches NA2's. |
+| 13 | `stage_parse_lighting` | First resource is light animation (always `ANM_stalig00`), played with player flag bit 0 so all its lights join the render environment's list; for each index below token 5 it registers `LGT_dis_%d`, `LGT_drc_%d` (both given flags 6), `LGT_spo_%d` or `LGT_omn_%d`. The light code it feeds (`render_environment_build_light_matrix`, `0x0010BBD0`; `omni_light_evaluate`, `0x0014E0D0`) matches NA2's. It registers them in `primary_render_environment` (`0x006A2F58`, gp `0x006A8C70` − `0x5D18`; NA2's is `0x006073D0`). |
 | 14 | `stage_parse_cl_lines` | Front/back token 5 counts `DMY_{f,b}_cl_N_*` lines. |
 
 Every authored category-3..8 type has a construction branch. Census counts
@@ -1155,6 +1155,10 @@ would not supply the missing actors.
 
 
 ## Forest of the Giant Spider
+
+In a fight, its render environment keeps the default 0.65 grey row with a
+lighting colour (`+0x70`) of (190, 180, 160) / 255, and its one light,
+with flags 6, shines (247, 240, 223) / 255 along (0.933, 0.25, -0.259).
 
 Scene 11's `earth_dome_parse` (`0x0080A240`) creates a two-crash dome rather
 than an ordinary attack receiver. `earth_dome_detect_crash` requires front
