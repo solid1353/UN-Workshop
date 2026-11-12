@@ -130,6 +130,28 @@ dark rim just past the left 4:3 edge in the top-left corner (frame 385), and
 `D80_10`'s floor `MDL_e80bgf20` leaves the bottom-right corner of the 16:9
 view bare (frame 176).
 
+Some films tilt the shared boards so an edge crosses a 16:9 side:
+`MDL_e00board01_w` in `D04_10` (frame 157) and `D39_10` (frame 270), and
+`MDL_e00board01_b` in `D19_10` (frame 321). Also ending just past a 4:3
+edge: the shared speed-line backdrops `MDL_e00back01` (`D03_30` frame 242)
+and `MDL_e00back18` (`D03_30` frame 311), `D05_20`'s sky `MDL_e05_sky`
+(frame 316), `D07_20`'s backdrop `MDL_e07bac01` (frame 50), `D15_30`'s
+`MDL_e15_back13` (frame 48), `D22_20`'s floor `MDL_e22flo01` (frame 93) and
+its red filter board `MDL_filter_board` (frames 17 and 93), which is in the
+film container `D22_20.CCS` rather than its effect container, from the
+film's scene ` d\22\sss\d22_20.max`,
+`D38_15`'s glow `MDL_e38img3` (frame 327), `D41_10`'s backdrop
+`MDL_e41_back` (frame 52), `D42_10`'s floor `MDL_e42flox0` (frame 473),
+`D42_20`'s fire `MDL_e42shbom00` and its cloud `MDL_e42clter00` (frame 836),
+and `D43_10`'s clouds `MDL_e43_kumo` and wind `MDL_e43_kaze` (frames 208 and
+242), splash `MDL_e43_sibuki` and its foam `MDL_e43_kemu` (frame 118).
+Widened by 4/3, `MDL_e42flox0` draws a dark line across the right side at
+`D42_10` frame 30, `MDL_e43_kumo` and `MDL_e43_kaze` show straight cloud edges
+at the sides at `D43_10` frames 60, 150 and 210, and `MDL_e00back18` in
+`D05_10` ends in a hard horizontal edge at the top at frame 50.
+`D01_20`'s clone crowds `MDL_nrt_tex_l/r` end short of the 16:9 sides
+(frame 28).
+
 `scene_object_submit_geometry` (`0x00190F40`) gates a scene object's shadow,
 its auxiliary model queued through `model_part_queue_projection`, apart from
 its body, so a hidden body still casts one. In `D62_10` at frame 313,
