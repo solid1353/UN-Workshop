@@ -234,7 +234,10 @@ expands vertex colour channels to `2c - 1` without an upper clamp
 (`ccs_expand_vertex_colour`, `0x088A6874`), so a channel above `0x80` overflows into the next:
 `83 83 83 80` packs as `0xFF050505`. `s05`, `s09`, `s10`, `s21` and `s22`
 have such vertices. Texture flag `0x08`, the models' blend selectors (0
-and 1), animation tracks and hit meshes read as NA2's.
+and 1), animation tracks and hit meshes read as NA2's. It draws every
+textured model, the stage's among them, with face culling off, so both
+sides of each face show: in a fight's GE dump, `cullfaceenable` is set only
+around untextured passes (`texturemapenable` 0).
 
 Effect sprites take an alpha test too. `s21`'s candle glow, `ANM_s21efe00`'s
 `EFF_efe_020_`, draws one additive sprite per candle at material alpha
@@ -332,10 +335,27 @@ a factory-43 wire, so UNH3's ropes never swing; NA2's wires generate
 landing-tree branch meshes (`HIT_gim_200_hit`, s01, s06, s07) are
 `0x0000D001`, where NA2's carry `0x800` (`0x0000D801`, `0x0000D80D`).
 
-The skies (`MDL_bac_000`/`_000_`) are half domes behind the stage: they
-start at y 0 on s01, s06, s07, s09, s13 and s22 and only a little in
-front on s02, s04, s05 and s10, where NA2's wrap round the stage. The
-camera, clamped to `DMY_cpmin..cpmax`, always faces them. Factory-29 skies
+The skies (`MDL_bac_000`/`_000_`, and s08's `OBJ_flo_002`) are half
+domes behind the stage: they start at y 0 on s01, s06, s07, s09, s13 and
+s22 and only a little in front on s02, s04, s05, s08 and s10, where NA2's
+wrap round the stage. About the vertical they span 135° (s01, s13), 144°
+(s06, s09), 180° (s07, s22), 202° (s10), 234° (s08), 283° (s04), 323°
+(s02) and 338° (s05). Each is a dome over the stage's centre: below height
+3000 every vertex is 11,800 or more from the centre, except s04's back
+cliff (behind the stage, 30° to 150° from +x toward +y), within 4,200 below
+the ground (z -1,900 to -10,000), and the point closing s05's bottom,
+15,200 below it; nearer vertices only close a dome's top, above height
+3,600. Each ring keeps one height, colour and V all round, and U runs
+evenly with the angle. The rings of s01, s05, s07, s10, s13 and s22 are
+circles about the vertical through the stage's centre, within 0.3%; those
+of s06, s08 and s09 stray from circles by up to 10%; s02's are half circles
+behind the stage that run straight on to its front. s04's sky is cliffs and
+floor in four textures. Every texture
+these skies use tiles left to right, its edge columns differing no more
+than neighbouring ones. The cloud and mist bands before them (s02
+`OBJ_cld_000_`; s06, s13 and s22 `OBJ_cld_001_`) are uneven partial arcs
+behind the stage. The camera, clamped to `DMY_cpmin..cpmax`, always faces
+them. Factory-29 skies
 and mist scroll at 0.0003..0.002 per update (U speed, token 6: s01
 `OBJ_bac_000` 0.0003; s07, s10 `OBJ_bac_000` and s08 `OBJ_flo_002`
 -0.0006; s06, s13 `OBJ_cld_001_` and s09 `OBJ_bac_000_` 0.001; s02
