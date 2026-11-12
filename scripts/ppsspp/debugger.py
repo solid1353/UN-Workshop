@@ -175,15 +175,6 @@ class DebuggerClient:
         self.notify("cpu.resume")
         self.wait_for_stepping(False)
 
-    def pause_at(self, frame: int) -> int:
-        """Pause, then run to vblank `frame` since boot and stop there, or
-        stay paused where the game is once past it; the frame it stopped at."""
-        self.pause()
-        reached = self.step_frames(1).end_frame
-        if reached < frame:
-            reached = self.step_frames(frame - reached).end_frame
-        return reached
-
     def read(self, address: int, size: int) -> bytes:
         return base64.b64decode(self.request("memory.read", address=address, size=size)["base64"])
 
@@ -260,8 +251,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     step.add_argument("--state", type=pad_state)
     replay_step = commands.add_parser("replay-step")
     replay_step.add_argument("vblanks", type=int)
-    pause_at = commands.add_parser("pause-at")
-    pause_at.add_argument("frame", type=int)
     args = parser.parse_args(argv)
 
     with DebuggerClient(args.port) as client:
@@ -288,8 +277,6 @@ def main(argv: Sequence[str] | None = None) -> int:
                 print(client.step_frames(args.frames, args.state))
             case "replay-step":
                 print(client.replay_step(args.vblanks))
-            case "pause-at":
-                print(client.pause_at(args.frame))
     return 0
 
 
