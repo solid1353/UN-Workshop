@@ -7,8 +7,9 @@ optional offsets and filter, authored appearance and
 texture/draw switches and how UN3 keeps its appearance substitutions, defender draw/placement/matrix gates, bone replacement,
 popup interruption, selected geometry providers, the resident BSS globals
 for opponent groups, optional switch tables and the derived main path, and
-the screen-held panels, domes, distortion lenses and backdrops ending at the
-4:3 view of sampled films.
+the screen-held panels, domes, distortion lenses and their texture
+projection, backdrops ending at the 4:3 view, and characters kept just
+outside it, in sampled films.
 Open: the intended optional-body constant/resource, the capacity of the
 derived main-path buffer, targets across every cinematic, accumulated matrix orientation and visible body animation in
 omitted-draw ranges. Names come from `@annotations/NA2`; comments and types
@@ -99,6 +100,20 @@ frame 23, the forest `MDL_e64ki00` ends just past the right 4:3 edge, and
 its nearest trunk hides a dark area that the far forest `MDL_e64enki00`,
 which ends left of the screen center, leaves uncovered; the dark areas at
 the sides of frames 30, 104, 165 and 369 come from the same forest.
+`D79_10`'s snowy mountain range `MDL_e79mtn00` (frame 171) ends inside the
+16:9 sides, leaving a dark ledge at the left and a dark notch at the right of
+the horizon. In `D79_20` at frame 45, the sky `MDL_e79sky10` behind Shino
+ends in a diagonal edge inside the 4:3 view, where Shino covers it; past that
+edge nothing draws, so the 16:9 top-right corner is black. The edge clears
+that corner only once the sky is about 1.9 times as wide about the screen
+center. `D66_10`'s sky `MDL_e66sky00a` (frame 286) ends just short of the
+16:9 top-right corner, which the haze in front shows darker. `D70_20`'s far
+mountain `MDL_e70mtn01b` reaches the ground; at frame 271 the pale wedge at
+the right is sky between its flank and the near slope, which widening it as
+far as 2.5 times does not close. At `D78_10` frame 338 a dark notch shows at
+the foot of the right cliff of the background `MDL_e78bg10`, which covers it
+only at 1.6 times as wide, a width that moves its cliffs inside the 4:3 view
+at frame 120.
 
 More films' skies, backdrops and effects end just past a 4:3 edge:
 `D59_10`'s sky `MDL_e59sky00` (frame 90) and `D59_35`'s sky
@@ -150,7 +165,35 @@ Widened by 4/3, `MDL_e42flox0` draws a dark line across the right side at
 at the sides at `D43_10` frames 60, 150 and 210, and `MDL_e00back18` in
 `D05_10` ends in a hard horizontal edge at the top at frame 50.
 `D01_20`'s clone crowds `MDL_nrt_tex_l/r` end short of the 16:9 sides
-(frame 28).
+(frame 28), and its near clones are one scene model, `MDL_nrt_copy_2`, that
+spans the whole screen (frame 63). Also ending just past a 4:3 edge:
+`D04_10`'s sand tsunami `MDL_e04snm02` (frame 125), whose deeper parts lie
+behind its sky dome `MDL_e04sky01` near the left of the view, so the depth
+test alone keeps the sky's yellow band hidden behind the tsunami's front
+lobe (frames 110 to 157), `D07_10`'s floor
+`MDL_e07flo00`, whose far edge shows at the right (frames 63 and 354),
+`D09_30`'s twisted snakes `MDL_e09snk06t0 body` (frame 223), `D61_30`'s floor
+`MDL_e61flo03`, whose end leaves a dark wedge at the right horizon (frame
+232), `D63_30`'s sky panel `MDL_e63kbg01` (frame 199), `D68_20`'s log
+leaning behind the fighter `MDL_e68wood01_b`, one part of 180 vertices
+running about 4,700 units along its Y between end caps, its far end cut and
+resting under the diagonal trunk `MDL_e68wood_c` (frame 171), `D83_10`'s
+rock slope
+`MDL_e83gak01` (frame 10) and `D91_10`'s wind lines `MDL_e91air02a/b`
+(frame 329).
+
+Films keep some characters just outside the 4:3 view. In `D02_10`, from
+frame 190 to 232, Sasuke's `MDL_1ssk00t1` lies at screen X -1.08 to -1.00
+renderer half widths and `MDL_1ssk00t0`'s bounds at -1.73 to -0.63, while
+the 4:3 view, at +-0.75, shows none of him (frames 200 and 220). In
+`D59_10`, from frame 186 to 234, Gaara's `MDL_1gaw00t0` and `MDL_1gaw01t0`
+lie at 0.81 to 1.24, and his robe `MDL_1gawl00t0` beside them, whose bounds
+reach behind the camera. In `D62_20`, Chiyo is the film's own `MDL_st6200t0`
+(parts `body`, `lh_body` and `rh_body`), which 4:3 shows at the left (frames
+470 to 505), while her battle model `MDL_1chy00t0` draws no part but still
+reaches the shadow pass. `MDL_1cmn00t0` draws no part in the films sampled
+(`D04_10`, `D25_20`, `D36_10`, `D62_20`, `D80_10`, `D83_10`, `D89_10` and
+`D91_10`), yet its 17 limb shadows reach the shadow pass.
 
 `scene_object_submit_geometry` (`0x00190F40`) gates a scene object's shadow,
 its auxiliary model queued through `model_part_queue_projection`, apart from
@@ -166,7 +209,14 @@ the film copies the screen with sprites to its own buffer, and the lens draws
 that copy back blended at half, through a destination-alpha test. Its texture
 coordinates follow its own projected vertices, clamped to the copy: in
 `D58_50` frame 28 each vertex samples about 0.63 of its distance from the
-screen center, a zoom, in both directions.
+screen center, a zoom, in both directions. `morpher_blend_vertices`
+(`0x00197570`) computes them when the draw context's flags at `+0x20C` hold
+`0x80000`: it projects each vertex through the renderer's
+`device_projection` times the context's matrix at `+0x110`
+(`0x00197668`), maps the renderer's device rectangle onto `0..4096` by
+`0..3576`, and clamps. That projection is separate from the model's drawn
+device matrix, so a lens samples where it draws only while the two agree.
+`D25_20` carries the lens `MDL_e25ygm02`.
 
 ## Addresses
 

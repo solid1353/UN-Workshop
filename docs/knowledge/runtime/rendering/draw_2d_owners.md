@@ -392,6 +392,7 @@ across their panel:
 | --- | --- | --- | --- |
 | `MODESEL1.CCS` | `MDL_mode_back` (`OBJ_mode_back` at Y `396.7`) | 0×0 | `±326` |
 | `MAPSEL1.CCS` | `MDL_back01` | 4×3 | `-377..311` |
+| `MAPSEL1.CCS` | `MDL_cover`, the red arm holding the stage drum: from its left end, one quad of its front face reaches across its emblem ring's left half, whose inside is a hole in the texture over a dark backing quad; its top and bottom walls lie behind that face | artwork; the end's own column is plain red | left end at about `-334` |
 | `VS.CCS` | `MDL_vs_back3`, a cream sheet with a round hole of radius about `142` around each side's disc, open toward the screen edge, where the disc's flat-colored rectangle `MDL_char1_back1`/`MDL_char2_back1` (`±163.1` at X `∓169.4`) and the ring `MDL_vs_ring1/2` show through | 1×0 | `±315` |
 | `OPTION.CCS` | `MDL_op_back` | 0×1 | `-285..301` |
 | `CHARSEL1.CCS` | `MDL_back00`: its first four vertices are a flat backdrop at depth 0; the rest is a relief of frame pieces up to 23 units in front | 0×1; `charsel01` atlas pieces | `±256`; `±318` |
