@@ -5,8 +5,8 @@
 Established: the archive set and format, BOOT.BIN's scene table, record
 dispatch and per-scene tables, scenes 5, 18 and 19's records with the
 handlers of the types UN2 lacks and of scene 5's props, the breakables,
-training dolls and item drops, the battle camera's placement against
-NA2's, scene 19's floor layout, the route
+training dolls and item drops, the battle camera's placement, the model
+alpha test and the distance fog against NA2's, scene 19's floor layout, the route
 reader, the combo anchors, the scene-keyed code, the common sounds and
 footsteps, the battle tracks' format and selection, the Stage Select
 container and the English stage names, and what UNH2's scene 5 changes
@@ -36,6 +36,28 @@ UN2's at half the width and height, some with their palettes requantized
 from 16 colours to 256.
 NA2's parsers read them as they read UN2's
 ([older-version branches](../../game/files/ccs_object_types.md#older-version-parser-branches)).
+Every `s8b` texture and all but one `s8a` texture (160) keep the PS2's
+alpha reference `0x70`.
+
+UNH2 expands palette alpha and vertex colours to the PSP's 0..255 scale.
+Its model draw (`model_bind_texture`, `0x0882BF48`) keeps a texel
+whose alpha is above the model's opacity times its texture's alpha
+reference, or times 16 where the reference is `0x70`
+(`gu_alpha_func`, greater), and writes depth for every texel it keeps;
+NA2 keeps only texels at or above the reference itself, on the 0..128
+scale, for depth. So `s8b`'s translucent curtains (`MDL_obj_040_`, vertex
+alpha 32..86) write depth in UNH2 and hide the additive window glow
+(`MDL_obj_020_1`) and banners (`MDL_obj_100_`) drawn after them.
+
+Its distance fog (`model_select_fog`, `0x0882BD10`) sets the GE fog from
+the near distance to four times the far one, from none to full, and
+ignores the far percentage: scene 19's 1,500 to 12,500 at 40% fogs 23%
+at 12,500 and reaches 40% at about 20,900, where NA2's reaches 40% at
+12,500 and stays there. Both fog each vertex by its depth: in a GS frame
+dump, NA2's fog value falls with each vertex's depth within one model's
+draw. So `s8b`'s additive window shafts (`MDL_obj_020_2`, a grey texture
+up to 53 on opaque alpha) add the fog's colour over their whole sheets,
+which stack along the hall and light the path between the curtains.
 
 ## Scene table and records
 
@@ -139,7 +161,10 @@ offset across the view at the angle whose tangent is 64/240 of the
 half-angle's, the half screen's 136 rows less 72 against its 240 columns
 (`0x08B027C8`, 480.0, and `0x08B027CC`, 272.0); NA2's takes 120/256, so
 with fighters at different heights UNH2's camera stands up to 1.76 times
-farther back. Its target selection (`camera_select_target`,
+farther back. The renderer spreads the camera's 40.6° field of view
+across the screen's 480-pixel width (GE projection scales 2.7014 and
+4.7672, viewport 240 × 136), so it shows 23.7° vertically; NA2 spreads
+it across its 4:3 width. Its target selection (`camera_select_target`,
 `0x088ED8D4`), fit and eye placement otherwise match NA2's for two
 tracked fighters; with one, UNH2 raises it by a further 0.6 of its height
 and offsets the target by 150 across and +50 or -50 up

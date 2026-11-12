@@ -6,6 +6,7 @@ address	kind	name	type	comment
 0x08810180	function	gu_depth_range		Depth range on the current GU context; set to 0xFFF0..0x10 at 0x0880ACC4.
 0x088101AC	function	gu_depth_offset		Depth offset on the current GU context; effect_sprite_draw_frame passes an effect's instance +0x22 below 0x199A.
 0x088105A4	function	gu_tex_func		sceGuTexFunc(tfx, tcc) with the context's colour doubling flag (+0xE4).
+0x0881099C	function	gu_alpha_func		sceGuAlphaFunc: GE command 0xDB with function, reference and mask.
 0x088109D8	function	gu_depth_func		ZTST (0xDE): 1 always, 7 greater-or-equal.
 0x088109FC	function	gu_depth_mask		ZMSK (0xE7): 1 disables depth writes.
 0x08810B2C	function	gu_blend_func		sceGuBlendFunc(op, src, dst, srcfix, dstfix).
@@ -18,10 +19,14 @@ address	kind	name	type	comment
 0x08828BD4	function	effect_sprite_draw_frame		Draws one frame of an effect as a camera-facing sprite at a point with the effect's alpha, culled by distance.
 0x0882A600	function	composition_set_model_test		Per composition child: selector 1 sets TEST low bits 0x1001 (value 0) or 0x100B; 0 sets bit 16; 2 sets bits 14..15.
 0x0882AD1C	function	composition_draw		Draws a composition player's models and effects at their composed transforms.
+0x0882BA90	function	model_set_draw_state		Depth offset, depth function and mask, then fog, lighting and blend for a model draw.
+0x0882BD10	function	model_select_fog		Fog mode bit 0: GE fog from the environment's near distance (+0xF0) to four times its far one (+0xF4), none to full, ignoring the far percentage; bit 1: the model's fixed F (+0x184).
 0x0882BEBC	function	model_select_blend		Adds for a model blend 0x48 and subtracts for 0x42 (table 0x08AF1C08: 0x44,0x48,0x42,0x09,0x54); every other entry blends as plain alpha.
+0x0882BF48	function	model_bind_texture		Binds a model part's texture and palette; alpha test greater than opacity (+0x9C) x the texture's alpha reference, or x 16 where the reference is 0x70, on the 0..255 scale.
 0x0883C09C	function	animation_set_fog_mode		Sets each animated object's fog mode (+0xA8 bits 3..4) and effect flag (+0xDE bit 5); 0x5AA mist passes 1.
 0x08849250	function	random_next		Mersenne twister (MT19937) next 32-bit output.
 0x088497F4	function	random_signed_scaled		scale x signed Mersenne-twister output / 2^31, in -scale..scale.
+0x0885A39C	function	render_environment_set_fog		Stores near, far, near and far percentages and NA2's F slope (+0x108), offset (+0x10C) and clamps (+0x100, +0x104) and the colour (+0x110).
 0x0887A914	function	music_request		Requests music row param_1 with its loop and fade arguments.
 0x08880220	function	stage_scene_construct		Walks a scene's records by category (type bits 8..15) to UN2's handlers; publishes the scene at battle_manager +0x3D.
 0x088807E8	function	stage_construct_training_dolls		0x825: token-5 training dolls at the doll node and its siblings.
