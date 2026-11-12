@@ -1102,7 +1102,8 @@ with damage0.03, response selector11 and one hit per descriptor, and plays
 common sound `0x15` without a position, a sample NA2's common bank lacks. The two
 carried breakable objects choose among fly00/01/02 animations with matching
 debris each pass and orbit at offsets(0,300,1000)/(0,-300,1200), with randomized
-rotation rates and height sway. Their proximity depth snaps to1000 near the
+rotation rates and height sway; each spin wraps into -π..π both ways
+(`sandstorm_carry_props`, `0x007EBC50`). Their proximity depth snaps to1000 near the
 back plane. The eagles use the ordinary kite parser/update/draw unchanged.
 
 ### Shared particle names do not establish matching visuals
