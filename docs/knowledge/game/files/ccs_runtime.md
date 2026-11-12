@@ -958,7 +958,11 @@ The latch is `sp_skill_player_latch_stop_skip` (`0x00266E60`) in UN2,
 play flags `0x60` enable it, and retail never sets them. Play flag bit 1,
 which retail never sets either, draws `ccs_player_status_overlay_draw`'s
 PLAY/PAUSE/END, frame and name after each frame's scene, on an overlay
-environment of its own with `global_font_draw_state` bound to it. The flags
+environment of its own with `global_font_draw_state` bound to it. That
+environment and its context stay `active_render_environment` and
+`render_context_holder` through the draw, so `immediate_rectangle_integer`
+called there draws on the overlay too, over the scene and in draw order with
+the text. **Observed.** The flags
 come from `CcsStreamPlayer.play_flags` (`+0x27C`) when each part starts.
 
 Below the latches, `ccs_step_streamed_blocks` reads the container's play

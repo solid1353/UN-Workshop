@@ -45,6 +45,12 @@ no depth offset. Some screen covers are domes around the camera rather than
 flat panels: `D58_50`'s expanding air disc `MDL_e58air5a` (frame 28) spans
 the whole 4:3 width with its far corners 1.21–1.40 times as deep as its near
 ones, and `D69_20`'s green disc `MDL_e69back03` (frame 168) 1.53–2.56 times.
+`D76_10`'s light sphere `MDL_e76img01` (frame 44), 2.5 times as deep at its
+far corners as at its near ones, ends just past both 4:3 edges, behind a
+burst panel that covers the screen's height. It loads from the film's
+effect container `str/d76_10e.ccs`, as a hemisphere of seven vertex rings
+(scale 512) from its pole at the origin, under the burst, to its rim at
+raw radius about 3075 and Z 3082, which leaves the 16:9 corners bare.
 The streak lines `MDL_e71line03a/b` of `D71_50` and `D72_50` start at the left 4:3 edge at frame 147. Backdrops and effects of other films end just past
 the 4:3 view: `D07_10`'s pink backdrop `MDL_e07back01` (frame 195),
 `D13_30`'s red backdrop `MDL_e13img03` (frame 153), which `D13_10` shares,
@@ -58,11 +64,79 @@ and sky dome `MDL_e62bg_sky` (frame 565), and `D86_20`'s fire cloud
 4:3 edge, while its left end stops inside the left one. `D60_10`'s light
 pillar `MDL_e60img02_a/b` (frame 128), which `D18_20` and `D60_20` share, is
 curved, its far corners 1.6 times as deep as its near ones, and each of its
-two layers ends just past one 4:3 edge. In `D64_30` at
+two layers ends just past one 4:3 edge. `D57_20`'s floor `MDL_e57flo01`
+(frame 177), which `D57_25` shares, is a round crater disc seen from above at
+an angle, its far corners 1.7 times as deep as its near ones, whose edge ends
+just past both 4:3 edges. `D57_35`'s blast dome `MDL_e57shoth` (frame
+428) ends just past the left 4:3 edge. `D58_10`'s floor `MDL_e58flo05`
+(frame 188), part of which is behind the camera, ends past the left 4:3 edge
+in the screen's top-left corner. Its other floor `MDL_e58flo04` and its
+mesas `MDL_e58gak02` and `MDL_e58gak03` (frames 38, 202, 242 and 266) end
+just past the 4:3 edges, leaving the sky showing below the horizon at the
+sides; `D58_30` shares `MDL_e58gak02`. At frame 150, the slope of
+`MDL_e58flo04` hides a darker part of the sky `MDL_e58sky04`. `D58_20`'s canyon walls `MDL_e58gake03`
+(frame 38) end in a straight vertical cut just past the right 4:3 edge. Just
+past a 4:3 edge also end `D58_20`'s pink burst `MDL_e58img02sr` (frames 206
+and 287) and clouds `MDL_e58kmo01` (frame 378), `D58_30`'s cliff
+`MDL_e58gak01` (frame 218) and rubble `MDL_e58rocs01b` (frame 285; it and
+`MDL_e58rocs01a`, which meets it, are in `D58_20` too), `D65_30`'s floor
+`MDL_e65flo05` (frame 378), `D70_20`'s distant mountain `MDL_e70mtn01a`
+(frame 271) and the sky `MDL_e70sky01` (`D70_10` frame 348), which `D70_20`
+and `D70_25` share. At `D70_20` frame 240 the base of `MDL_e70mtn01a` hides
+part of the sky that is dark below the horizon. `D65_20`'s
+background blocks `MDL_e65fbk00_00..10` (frame 285) form a ring around the
+scene, and one of them stands with a straight edge just past the right 4:3
+edge. Also ending just past a 4:3 edge: `D66_30`'s light column
+`MDL_e66img02` (frame 213), `D67_30`'s canyon wall pieces
+`MDL_e67rock01_a..d` (frame 20) and rock step `MDL_e67rock02_e/f` (frame
+44), `D68_30`'s smoke `MDL_e68kem7b` (frame 460), which `D93_30` shares,
+`D79_10`'s disc `MDL_e79clr00` (frame 401), and `D80_10`'s backdrops
+`MDL_e80bgf20`, `MDL_e80bgs20`, `MDL_e80bgm20` and `MDL_e80bgr20` (frames
+72, 176 and 285); widening the rear one, `MDL_e80bgr20`, cuts its cliff
+open at frame 285. In
+`D64_30` at
 frame 23, the forest `MDL_e64ki00` ends just past the right 4:3 edge, and
 its nearest trunk hides a dark area that the far forest `MDL_e64enki00`,
-which ends left of the screen center, leaves uncovered. These are frames sampled through
-PINE while the film plays, not every film.
+which ends left of the screen center, leaves uncovered; the dark areas at
+the sides of frames 30, 104, 165 and 369 come from the same forest.
+
+More films' skies, backdrops and effects end just past a 4:3 edge:
+`D59_10`'s sky `MDL_e59sky00` (frame 90) and `D59_35`'s sky
+`MDL_e59sky02` (frame 408), `D59_30`'s ring of background pieces
+`MDL_e59back01_a..i` (frame 77), which `D59_20` shares, `D60_30`'s sky
+`MDL_e60sky01r` (frame 146) and red glow `MDL_e60gre01` (frame 324),
+`D61_10`'s smoke ring `MDL_e61skrm01b` (frame 279), `D61_20`'s background
+`MDL_e61bg001` and floor `MDL_e61fl01`, which leave a dark line at the right
+horizon between them (frame 333), `D61_30`'s cliff `MDL_e61roc04_01..03`
+(frame 278), `D62_10`'s sound-effect letters `MDL_e62zugaa/b`, cut where
+their panel ends (frame 313), `D63_10`'s rocks `MDL_e63roch01a/b` and
+`MDL_e63bgrc01b/d/e` (frame 315), which `D63_20` shares, the sky
+`MDL_e63sky01_01` of `D63_50` and `D64_50` (`D64_50` frame 114),
+`D71_10`'s floor `MDL_e71flo01` (frame 293), which `D71_50`, `D71_51`,
+`D72_50` and `D72_51` share, `D72_20`'s water burst `MDL_e72hasi04` (frame
+385), `D72_30`'s sky `MDL_e72_sora` (frame 288), `D83_10`'s sky `MDL_e83sky10` (frames 91 and
+162), `D90_10`'s speed lines `MDL_e90line01k` (frame 145) and blue flames
+`MDL_e90cut07` and `MDL_e90cut07b` (frame 352), `D91_10`'s speed lines
+`MDL_e91line01` (frame 49), `D91_20`'s filter `MDL_e91fil0` (frame 165),
+the background `MDL_e93bg01_sky` and `MDL_e93bg01_mut` of `D89_50` (frame
+25), which `D93_20` and `D93_50` share, the speed-line tunnel
+`MDL_e93img01b` of `D93_30` (frame 25), which `D89_50` and `D93_50` share,
+and `D93_30`'s backdrop `MDL_e93_bgl` (frame 398). `D76_10`'s background
+pieces `MDL_e76back01_a..i` end just past the 4:3 edges too (frames 63 and
+384), but at frame 384 those drawn, widened together, open a dark band at
+the left. In `D93_30` at frame 119, Sasuke's close-up face `MDL_e93ssfac0`
+ends short of the right 16:9 edge. `D72_20`'s sky dome `MDL_e72sky00` has a
+dark rim just past the left 4:3 edge in the top-left corner (frame 385), and
+`D80_10`'s floor `MDL_e80bgf20` leaves the bottom-right corner of the 16:9
+view bare (frame 176).
+
+`scene_object_submit_geometry` (`0x00190F40`) gates a scene object's shadow,
+its auxiliary model queued through `model_part_queue_projection`, apart from
+its body, so a hidden body still casts one. In `D62_10` at frame 313,
+Chiyo's `MDL_1chy00t0 shadowNN` and the wire puppet's
+`MDL_e6200t0 shadow` reach the shadow pass while neither body draws; both
+shadows lie just outside the 4:3 view. These are frames sampled through PINE
+while the film plays, not every film.
 
 Distortion lenses are `ygm` models, such as `D58_50`'s `MDL_58ygm_a` and
 `D57_25`'s `MDL_e57zygm02_b`, which about forty films carry. Before one draws,
