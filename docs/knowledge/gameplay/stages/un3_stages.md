@@ -853,7 +853,12 @@ by a signed random 0.05 per update, clamped to 0.2..0.5. Each node also owns
 a spark generator using descriptors `0x009136A8` and `0x00913700`.
 The lighting animation has one distant light and two animated omni lights,
 all registered by `stage_parse_lighting`; `stage_scene_update` advances the
-lighting animation after its prop lists. Its lens-flare descriptor and
+lighting animation after its prop lists. The omni lights, at (±750, 450,
+400), keep their records' flags, 0, and priority 0; only the distant light
+has flags 6. They therefore fill light rows but never become the main light,
+so fighters, drawn on the alternate path, take only the distant light's
+direction beside a torch. Forcing the omni lights' flags to 6 in a running
+battle turns the fighters' shading toward the torch. Its lens-flare descriptor and
 19 numeric quad rows match S20's, with `TEX_s1cefe10/20/30/40` in place of
 the S20 texture names.
 

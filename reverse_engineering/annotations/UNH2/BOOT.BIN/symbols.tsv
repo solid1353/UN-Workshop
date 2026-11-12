@@ -14,6 +14,7 @@ address	kind	name	type	comment
 0x08811744	function	gu_depth_range_context		sceGuDepthRange(near, far) on a context: +0xD8/+0xDC, viewport Z from their midpoint plus the depth offset.
 0x088117EC	function	gu_depth_offset_context		sceGuDepthOffset: stores the offset at context +0xE0 and re-emits viewport Z scale/position (0x44/0x47) and NEARZ/FARZ (0xD6/0xD7) with the depth range at +0xD8/+0xDC.
 0x088254B4	function	light_list_insert		Inserts a light by priority unless already linked (+0xA0), so a repeated lighting record adds no light.
+0x08825CEC	function	omni_light_evaluate		omni_light_vtable +0xC, NA2's light_omni_evaluate (0x0019A670) counterpart.
 0x08828A0C	function	effect_sprite_bind		Binds an effect instance: colour 0xFFFFFF, opacity 1, frame table, depth offset at +0x22 from the effect, test state 0x50000 then the blend's.
 0x08828B6C	function	effect_sprite_set_blend		Instance +0x40 = blend table[mode]; +0x48 test state 0x100B for mode 0, else 0x1001 with +0x4C bit 0x20.
 0x08828BD4	function	effect_sprite_draw_frame		Draws one frame of an effect as a camera-facing sprite at a point with the effect's alpha, culled by distance.
@@ -31,7 +32,7 @@ address	kind	name	type	comment
 0x08880220	function	stage_scene_construct		Walks a scene's records by category (type bits 8..15) to UN2's handlers; publishes the scene at battle_manager +0x3D.
 0x088807E8	function	stage_construct_training_dolls		0x825: token-5 training dolls at the doll node and its siblings.
 0x08882E78	function	stage_parse_fog		Category 1: tokens 0..2 colour, 3 near, 4 far, 5 far percentage.
-0x08883040	function	stage_parse_lighting		Category 13: light animation, token 5 light count; token 10 R,G,B (not "0") sets the render environment colour, else the light's.
+0x08883040	function	stage_parse_lighting		Category 13: light animation, token 5 light count; token 10 R,G,B (not "0") sets the render environment colour, else the light's. Gives flags 6 only to LGT_dis_/LGT_drc_ lights; LGT_spo_/LGT_omn_ keep their record flags (s1c2's torches 0), as UN3's 0x007C7310.
 0x08884018	function	stage_parse_animation_props		Category 5: constructs a subtype per record, including UNH2's 0x5A9 lantern lights, 0x5AA mist and 0x5AB translucent layers.
 0x0889148C	function	stage_glare_apply_scene_row		Copies 20 stage_scene_effect_defaults rows, applies UN2's same overrides to rows 0,1,2,4,9,10, writes enable byte and glare pass +0x64 colour, +0x68 amount, +0x6C second colour.
 0x08896714	function	stage_dispatch_prop_effect		Prop effects by type, then the sound at the position: 2 hit spark, 7/8/9 the break effects of stage_break_effect_construct with particle bursts, as UN3's.
@@ -139,6 +140,8 @@ address	kind	name	type	comment
 0x08BCDE00	data	audio_common_controls		8-byte rows per common event, UN2's layout: program (-1 none), two bytes, key, velocity, maximum, 0, 1; events 0..0x64 play programs of their own number but 0x61/0x62.
 0x08BCEB10	data	skill_pair_rectangles		32-byte rows of two corner points (x, height ranges), then target rows of two points by side.
 0x08BD071C	data	stage_music_tracks		A word per scene: the music_rows track (stageNN.at3), 0x0F where the disc has no archive.
+0x08BF8E60	data	omni_light_vtable		Vtable of LGT_omn_ lights (light +0xA4); +0xC is omni_light_evaluate. Scene 5's torches use it with flags 0, priority 0.
+0x08BF8E90	data	distant_light_vtable		Vtable of LGT_dis_ lights (light +0xA4); scene 5's sun has flags 6, priority -1.
 0x08BFBD90	data	vs_cpu_character_select_vtable		VS CPU sub-state 1's vtable; +8 is vs_cpu_character_select_update.
 0x08C634C0	data	battle_manager	void *	The battle manager, built by New Game; see battle_manager_construct.
 0x08C634F8	data	mode_select	void *	The running Mode Select, or 0.

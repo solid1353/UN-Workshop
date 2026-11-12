@@ -11,8 +11,8 @@ reader, the combo anchors, the scene-keyed code, the common sounds and
 footsteps, the battle tracks' format and selection, the Stage Select
 container and the English stage names, and what UNH2's scene 5 changes
 from UN2's, the jutsu camera's end request and the screen-glare colour
-overrides. Names come from
-`@annotations/UNH2`; UN2 comparison names from `@annotations/UN2`.
+overrides, and scene 5's torch lights against the fighters. Names come
+from `@annotations/UNH2`; UN2 comparison names from `@annotations/UN2`.
 
 This document owns retail UNH2 (*Naruto: Ultimate Ninja Heroes 2*, US
 `ULUS-10349`) battle-stage facts and their correspondence with UN2, whose
@@ -335,7 +335,12 @@ Its props behave as UN3 S05's counterparts:
   plays, and `s1c2` holds neither.
 - The torches (`0x51C`, parse `0x088C3F84`, update `0x088C42D8`, draw
   `0x088C4458`) are UN3's `0x517`: flames at opacity 0.5 and over each an
-  `EFF_efe_020_` glow sprite at an opacity walking within 0.2..0.5.
+  `EFF_efe_020_` glow sprite at an opacity walking within 0.2..0.5. Their
+  lights, `s1c2`'s `LGT_omn_1` and `_2`, keep their records' flags, 0:
+  `stage_parse_lighting` gives flags 6 only to `LGT_dis_` and `LGT_drc_`
+  lights, as UN3's does. They never light the fighters: in a frame with a
+  fighter beside a torch, both fighters draw with GE light 0 alone, whose
+  position, direction and colour no command of the frame sets.
 - The bells (`0x818`) swing by their hits and 0.3 of the wind
   (`0x0889BA4C`), each completed swing at 0.6 of the last, and sound only
   when they break.
