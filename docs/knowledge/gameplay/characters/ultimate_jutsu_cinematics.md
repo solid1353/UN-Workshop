@@ -12,7 +12,8 @@ projection, backdrops ending at the 4:3 view, and characters kept just
 outside it, in sampled films.
 Open: the intended optional-body constant/resource, the capacity of the
 derived main-path buffer, targets across every cinematic, accumulated matrix orientation and visible body animation in
-omitted-draw ranges. Names come from `@annotations/NA2`; comments and types
+omitted-draw ranges, and what draws `D59_30`'s, `D05_20`'s and `D91_10`'s dark
+side shapes. Names come from `@annotations/NA2`; comments and types
 carry code-level details. Static resident/BTL/ETC and clean CCS evidence
 establishes dependencies, not live allocation success. UN4's cinematic formats
 are compared in [UN4 Ultimate Jutsu](un4/ultimate_jutsu.md); donor character
@@ -100,6 +101,10 @@ frame 23, the forest `MDL_e64ki00` ends just past the right 4:3 edge, and
 its nearest trunk hides a dark area that the far forest `MDL_e64enki00`,
 which ends left of the screen center, leaves uncovered; the dark areas at
 the sides of frames 30, 104, 165 and 369 come from the same forest.
+`D21_30` (frames 29 and 322) and `D77_10` (frame 197) frame the film between
+black bars drawn as effect models across the screen that reach far past its
+top and bottom edges, each edged inside by a thin line drawn separately at the
+bar's inner edge.
 `D79_10`'s snowy mountain range `MDL_e79mtn00` (frame 171) ends inside the
 16:9 sides, leaving a dark ledge at the left and a dark notch at the right of
 the horizon. In `D79_20` at frame 45, the sky `MDL_e79sky10` behind Shino
@@ -114,6 +119,26 @@ far as 2.5 times does not close. At `D78_10` frame 338 a dark notch shows at
 the foot of the right cliff of the background `MDL_e78bg10`, which covers it
 only at 1.6 times as wide, a width that moves its cliffs inside the 4:3 view
 at frame 120.
+The scenes of `D05_10`, `D05_11`, `D12_10`, `D12_11` and `D15_10` hold a glow
+board, `MDL_ca_kasan_bord`, over the screen and sized just past the 4:3 view
+(`D05_10` frame 50, `D15_10` frame 231). `D18_10`'s speed-line backdrop
+`MDL_e18back11` (frame 238) and `D18_30`'s `MDL_e18back01` (frame 129) have
+cut corners that clear the 16:9 corners only at about 1.6 times as wide.
+`D09_20`'s fist `MDL_e09tkbi01` (frame 250) is a picture on a 4-by-4 grid,
+500 units square, whose last strip is plain arm ending just past the right
+4:3 edge. `D89_10`'s floor `MDL_e89bgf` (frame 21) ends in a near corner just
+past the bottom-right of the 4:3 view. In `D01_20`, `MDL_nrt_copy_2` draws a
+group of running clones; from frame 58 its nearest clone's face lies just past
+the right 4:3 edge while its other clones show inside the view, and at frame 70
+it passes behind the camera. In `D62_20`, from frame 474 to 510 of the shot of
+frames 462 to 515, Chiyo's right-hand puppet, the `rh_body` part of
+`MDL_st6200t0`, stands far off past the left 4:3 edge. `D59_30`'s dark wedges
+at both sides (frame 359) stay when its background ring `MDL_e59back01_a..i`
+grows up to 2 times or its cliff `MDL_e59gak01a` and clouds `MDL_e59km01`
+4/3; `D05_20`'s dark slanted bands at both sides (frame 210) stay when its
+hands `MDL_e05_hand01` and `MDL_e05_handp` grow 1.6 times; and `D91_10`'s dark
+sliver at the right of the horizon (frame 11) belongs to none of its sky,
+background, clouds, mountains, forest, characters or shadows.
 
 More films' skies, backdrops and effects end just past a 4:3 edge:
 `D59_10`'s sky `MDL_e59sky00` (frame 90) and `D59_35`'s sky
