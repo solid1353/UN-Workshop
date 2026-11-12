@@ -12,8 +12,8 @@ projection, backdrops ending at the 4:3 view, and characters kept just
 outside it, in sampled films.
 Open: the intended optional-body constant/resource, the capacity of the
 derived main-path buffer, targets across every cinematic, accumulated matrix orientation and visible body animation in
-omitted-draw ranges, and what draws `D59_30`'s, `D05_20`'s and `D91_10`'s dark
-side shapes. Names come from `@annotations/NA2`; comments and types
+omitted-draw ranges, and why the renderer draws nothing of the `D91_10`
+floor face that leaves its sliver. Names come from `@annotations/NA2`; comments and types
 carry code-level details. Static resident/BTL/ETC and clean CCS evidence
 establishes dependencies, not live allocation success. UN4's cinematic formats
 are compared in [UN4 Ultimate Jutsu](un4/ultimate_jutsu.md); donor character
@@ -133,12 +133,16 @@ the right 4:3 edge while its other clones show inside the view, and at frame 70
 it passes behind the camera. In `D62_20`, from frame 474 to 510 of the shot of
 frames 462 to 515, Chiyo's right-hand puppet, the `rh_body` part of
 `MDL_st6200t0`, stands far off past the left 4:3 edge. `D59_30`'s dark wedges
-at both sides (frame 359) stay when its background ring `MDL_e59back01_a..i`
-grows up to 2 times or its cliff `MDL_e59gak01a` and clouds `MDL_e59km01`
-4/3; `D05_20`'s dark slanted bands at both sides (frame 210) stay when its
-hands `MDL_e05_hand01` and `MDL_e05_handp` grow 1.6 times; and `D91_10`'s dark
-sliver at the right of the horizon (frame 11) belongs to none of its sky,
-background, clouds, mountains, forest, characters or shadows.
+at both sides (frames 330 to 380) are where its sand wall `MDL_e59gak01a`
+ends: its ends lie just inside the 16:9 sides, and it covers them at 4/3 as
+wide. `D05_20`'s dark slanted bands at both sides (frame 210) are where its
+translucent light panel `MDL_e05_kogen` ends: its slanted edges cross both
+16:9 sides, and it covers them at about 2 times as wide. `D91_10`'s dark
+sliver at the right of the horizon (frame 11) is a gap in its floor
+`MDL_e91flo01`: in a 16:9 view, the renderer draws neither the face of its
+vertices 776 to 778, whose corner 776 lies far below the screen at a tenth of
+the others' depth, nor any clipped piece of it, while the clipped faces
+around it draw.
 
 More films' skies, backdrops and effects end just past a 4:3 edge:
 `D59_10`'s sky `MDL_e59sky00` (frame 90) and `D59_35`'s sky
@@ -164,8 +168,16 @@ the background `MDL_e93bg01_sky` and `MDL_e93bg01_mut` of `D89_50` (frame
 and `D93_30`'s backdrop `MDL_e93_bgl` (frame 398). `D76_10`'s background
 pieces `MDL_e76back01_a..i` end just past the 4:3 edges too (frames 63 and
 384), but at frame 384 those drawn, widened together, open a dark band at
-the left. In `D93_30` at frame 119, Sasuke's close-up face `MDL_e93ssfac0`
-ends short of the right 16:9 edge. `D72_20`'s sky dome `MDL_e72sky00` has a
+the left. In `D93_30` at frame 119, Sasuke's close-up face `MDL_e93ssfac0`, a
+flat drawing of about 1,100 vertices sized to the 4:3 view, ends short of
+the right 16:9 edge in the shaded edge of his cheek; its left end lies behind
+the hair pieces `MDL_e93sshar*`, and past them at the left nothing draws.
+`D36_10`'s night sky `MDL_e36_back01` (frame 251) leaves the 16:9 top-left
+corner black until it is about 1.6 times as wide. At `D76_20` frame 54 the
+slanted edge across the bottom-left corner is that of the overlay
+`MDL_e76egre01`, which moves the sand inside the 4:3 view when it widens; the
+dark streak at `D76_10` frame 63's right edge stays when any of
+`MDL_e76back01_a..i`, its clouds, rock or wave is hidden. `D72_20`'s sky dome `MDL_e72sky00` has a
 dark rim just past the left 4:3 edge in the top-left corner (frame 385), and
 `D80_10`'s floor `MDL_e80bgf20` leaves the bottom-right corner of the 16:9
 view bare (frame 176).
