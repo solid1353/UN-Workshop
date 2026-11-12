@@ -194,7 +194,15 @@ class DebuggerClient:
         self.request(event, wait=True, timeout=120.0, **target)
 
     def screenshot(self, path: str | os.PathLike[str]) -> None:
-        uri = self.request("gpu.buffer.screenshot", timeout=30.0)["uri"]
+        """PPSSPP reads the screen only while stopped, so a running game is paused around it."""
+        running = self.status() == "running"
+        if running:
+            self.pause()
+        try:
+            uri = self.request("gpu.buffer.screenshot", timeout=30.0)["uri"]
+        finally:
+            if running:
+                self.resume()
         Path(path).write_bytes(base64.b64decode(uri.partition("base64,")[2]))
 
     def ge_dump(self, path: str | os.PathLike[str]) -> None:

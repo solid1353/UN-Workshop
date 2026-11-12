@@ -65,9 +65,15 @@ if ($PSBoundParameters.ContainsKey('Window') -and (
 )) {
     throw '-Window requires left, top, width and height, with a width and height of at least 20.'
 }
-if ($Headless -and ($Window -or $CenteredWindow -or $Mute -or $Turbo -or $Unlimited -or
+if ($Headless -and ($Window -or $CenteredWindow -or $Mute -or
     $ReadOnlySettings -or $CreateInputRecording)) {
-    throw '-Headless takes no window, sound, speed, settings or recording options.'
+    throw '-Headless takes no window, sound, settings or recording options.'
+}
+if ($Turbo -and $Unlimited) {
+    throw 'Use only one of -Turbo or -Unlimited.'
+}
+if ($Headless -and $InputRecording -and ($Turbo -or $Unlimited)) {
+    throw 'A headless replay takes no speed options.'
 }
 if ($CaptureDirectory -and -not $Headless) {
     throw '-CaptureDirectory requires -Headless.'
@@ -153,10 +159,19 @@ if ($CenteredWindow) {
 if ($Mute) {
     $launchArguments += '--mute'
 }
-if ($Turbo) {
+if ($Headless -and -not $InputRecording) {
+    # A live run: at PSP speed, Turbo's 200%, or flat out for -Unlimited.
+    if ($Turbo) {
+        $launchArguments += @('--realtime', '--speed=200')
+    }
+    elseif (-not $Unlimited) {
+        $launchArguments += '--realtime'
+    }
+}
+elseif ($Turbo) {
     $launchArguments += '--turbo'
 }
-if ($Unlimited) {
+elseif ($Unlimited) {
     $launchArguments += '--unlimited'
 }
 if ($ReadOnlySettings) {
@@ -190,7 +205,9 @@ if ($CaptureDirectory) {
     )
 }
 if ($DebuggerPort -gt 0) {
-    $launchArguments += @("--debugger=$DebuggerPort", '--debugger-local')
+    # Headless stops at the start for --debugger; a live run shouldn't.
+    $debugger = if ($Headless -and -not $InputRecording) { '--debugger-run' } else { '--debugger' }
+    $launchArguments += @("$debugger=$DebuggerPort", '--debugger-local')
 }
 if ($Arguments) {
     $launchArguments += @(

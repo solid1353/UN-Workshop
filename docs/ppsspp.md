@@ -30,6 +30,12 @@ it in any launch. A single launch uses
 launches of two or three games close development emulators, PPSSPP included,
 as [PCSX2's](pcsx2.md#launching-games) do.
 
+`-surfaceless` runs the game in `PPSSPPHeadless`, which has no window, focus or
+sound, at PSP speed, Turbo's 200% with `-t`, or flat out with `-u`. It plays
+live, for a caller that drives it through the [debugger](#debugger-client) and
+stops its process when done. `-k` and tiled launches leave headless PPSSPP
+running. Its saves follow `-mc`, `-dmc` and `-vmc` as in a normal launch.
+
 `workshop ppsspp` launches development PPSSPP without a game in Turbo.
 
 ## Deploying a PPSSPP build
@@ -135,7 +141,8 @@ command line covers `status`, `pause`, `resume`, `step`, `replay-status`,
 `replay-step`, `screenshot`, `ge-dump`, `save-state`, `load-state` and
 `shutdown`. Agent input set through `DebuggerClient` lasts until released, and
 goes when that client disconnects, so the command line only takes it for a
-`step`.
+`step`. PPSSPP reads the screen only while stopped, so a screenshot of a running
+game pauses it around the capture.
 
 ## Savestates
 

@@ -50,7 +50,8 @@ before it is force-stopped.
 
 `-surfaceless` runs PCSX2 without a window, focus or sound, and leaves other
 emulators open. The launch result carries the process, so its caller can stop it.
-`-rps` and `-agent-replay` already run this way, and PSP games reject it.
+`-rps` and `-agent-replay` already run this way. PSP games run in
+[headless PPSSPP](ppsspp.md#launching-games) instead.
 
 `-savestates <folder>` gives every launched PCSX2 that folder for the run's
 savestates, through the fork's

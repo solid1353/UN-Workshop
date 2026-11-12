@@ -188,6 +188,10 @@ function Get-UnWorkshopUserEmulatorProcesses {
             $commandLine -match '(?:^|\s)-(?:surfaceless|agent-replay)(?:\s|$)') {
             continue
         }
+        # Headless PPSSPP never has a window, so it's never the user's either.
+        if ($process.Name -like 'PPSSPPHeadless*') {
+            continue
+        }
         if ($Tiled -and $commandLine -notmatch '(?:^|[\s"])(?:-no-recenter(?:[\s"]|$)|--window=)') {
             continue
         }
@@ -832,11 +836,17 @@ try {
             if (@($game.PnachLines).Count -gt 0) {
                 $ppssppParameters.CheatLines = $game.PnachLines
             }
-            if ($Surfaceless) {
-                throw '-surfaceless runs PCSX2 games only.'
-            }
             if ($AgentReplay) {
                 $ppssppParameters.Headless = $true
+            }
+            elseif ($Surfaceless) {
+                $ppssppParameters.Headless = $true
+                if ($Turbo) {
+                    $ppssppParameters.Turbo = $true
+                }
+                if ($Unlimited) {
+                    $ppssppParameters.Unlimited = $true
+                }
             }
             else {
                 if ($game.UnlimitedForFrames -gt 0) {
@@ -875,7 +885,7 @@ try {
                 PinePort = $null
                 DebuggerPort = $debuggerPort
             })
-            if (-not $AgentReplay) {
+            if (-not $noWindow) {
                 Wait-UnWorkshopGameWindow `
                     -Process $process `
                     -Game $game.Selector `
