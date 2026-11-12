@@ -5,8 +5,8 @@
 Established: the archive set and format, BOOT.BIN's scene table, record
 dispatch and per-scene tables, scenes 5, 18 and 19's records with the
 handlers of the types UN2 lacks and of scene 5's props, the breakables,
-training dolls and item drops, the camera's section elevation and eye
-height limits, scene 19's floor layout, the route
+training dolls and item drops, the battle camera's placement against
+NA2's, scene 19's floor layout, the route
 reader, the combo anchors, the scene-keyed code, the common sounds and
 footsteps, the battle tracks' format and selection, the Stage Select
 container and the English stage names, and what UNH2's scene 5 changes
@@ -133,7 +133,22 @@ the eye stays at height 200 or above on UN2's scenes and scene 18, while
 scenes 5 and 19 have no effective floor. No read of field 17 was found in
 UN2's stage camera (`0x001ED960` and its placement routines). Each
 fighter's tracked point rises by 0.55 of its scaled height
-(`camera_stage_track`), where UN2's rises by 0.75 (`0x001EDFE8`).
+(`camera_stage_track`), where UN2's and NA2's rise by 0.75
+(`0x001EDFE8`). `camera_compute_fit` (`0x088EDC08`) fits each fighter's
+offset across the view at the angle whose tangent is 64/240 of the
+half-angle's, the half screen's 136 rows less 72 against its 240 columns
+(`0x08B027C8`, 480.0, and `0x08B027CC`, 272.0); NA2's takes 120/256, so
+with fighters at different heights UNH2's camera stands up to 1.76 times
+farther back. Its target selection (`camera_select_target`,
+`0x088ED8D4`), fit and eye placement otherwise match NA2's for two
+tracked fighters; with one, UNH2 raises it by a further 0.6 of its height
+and offsets the target by 150 across and +50 or -50 up
+(`camera_tracking_submode_offsets`, `0x08B57BC0`), where NA2 offsets it by
++100 and -50 or -100, and it scales the eye's x by 0.8 under a nonzero
+tracking submode, where NA2 leaves it. Eye and target smoothing
+(`camera_main_track`, `0x088EE884`; `camera_main_finish_track`,
+`0x088EEAFC`) use the record's coefficients as NA2's do, except that a
+battle-manager flag (`+0x74`) forces 0.15625.
 
 Scene 19's floor (`MDL_obj_000_`) is a pit at height 0, |x| up to 492,
 from depth -2496 to 488, between walkways at height 200 (|x| 548 to 1600)

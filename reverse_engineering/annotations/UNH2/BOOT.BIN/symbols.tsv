@@ -55,9 +55,12 @@ address	kind	name	type	comment
 0x088D7548	function	stage_directional_wind_parse		0x585: token 10 x -2 push, five-second initial hold, holds at phases 90/180/270, a 30-second rest at 360, random fixed sign, as UN3's 0x55E.
 0x088D7648	function	stage_directional_wind_update		0x585: pushes both fighters (+0x410) by the half-sine strength and places common sound 0x3E, as UN3's.
 0x088ECF40	function	camera_bind_stage_record		Saves the previous stage camera record (+0x180) and binds stage_camera_records_by_scene[scene] at +0x17C.
-0x088ECF64	function	camera_stage_track		Lowers the desired elevation by record +0x4C when sections differ and by +0x50 when either is nonzero, as UN2's 0x001ED960.
-0x088EDC08	function	camera_compute_fit		Sets FOV atan(0.8 tan 47 deg) and the fit distance, as NA2's camera_compute_fit.
+0x088ECF64	function	camera_stage_track		Lowers the desired elevation by record +0x4C when sections differ and by +0x50 when either is nonzero, as UN2's 0x001ED960; each tracked point rises by 0.55 of the fighter's scaled height, where UN2's and NA2's rise by 0.75.
+0x088ED8D4	function	camera_select_target		NA2's camera_select_target for mode 0; modes 1/2 add 0.6 of the fighter's height and offset by camera_tracking_submode_offsets (+-150 across, +50/-50 up) where NA2 adds +100 and -50/-100.
+0x088EDC08	function	camera_compute_fit		NA2's fit, but the height fit's angle has tangent 64/240 of the half-angle's (half screen height 136 less 72 against half width 240), where NA2's has 120/256: up to 1.76x farther back.
 0x088EE2A8	function	camera_place_eye		UN2/NA2 eye placement; then clamps eye height between stage record +0x40 (cap) and +0x44 (floor, read at 0x088EE848): 200 on UN2's scenes, -2000 on scene 19.
+0x088EE884	function	camera_main_track		Eye smoothing as NA2's camera_main_track; battle manager +0x74 == 1 forces coefficient 0.15625.
+0x088EEAFC	function	camera_main_finish_track		Target smoothing as NA2's camera_main_finish_track; battle manager +0x74 == 1 forces coefficient 0.15625.
 0x088F8AB4	function	stage_navigation_response		Scenes 1 and 5: a COM in state 5 whose point ahead lies outside its section's endpoints resets, as UN3's on its scenes 1 and 4.
 0x08900834	function	ai_route_region_gate		Scene 5 rejects section 0 among secondary navigation points, as UN3's on its scenes 14 and 4.
 0x0890514C	function	com_think		COM decisions for a fighter whose +0x50 bits 5..8 (COM level) are nonzero, called by each character's AI method; leaves them at +0x8C..+0x94 of the fighter's +0x3C object.
@@ -117,6 +120,8 @@ address	kind	name	type	comment
 0x08A5C7A4	function	skill_combo_choose_anchor		Chooses the anchor nearest the first fighter on its section, gives both participants the returned side and places both there, as NA2's skill_combo_choose_anchor.
 0x08AF1C08	data	model_blend_alpha_table		PS2 ALPHA values kept as blend identifiers: 0x44, 0x48, 0x42, 0x09, 0x54.
 0x08AF5F88	data	music_rows		12-byte rows: disc path, loop flag, volume; stage00..10, then the other tracks.
+0x08B027C8	data	screen_width_float	float	480.0, the screen width the camera's fit and edge angles use.
+0x08B027CC	data	screen_height_float	float	272.0, the screen height the camera's fit and edge angles use.
 0x08B25E68	data	stage_effect_intensity		A byte per scene 0..19; UN2's 18 then 0xFF, 0xFF.
 0x08B2B7AC	data	skill_pair_rectangle_targets		Halfword target row per rectangle row; -1 drops the placement.
 0x08B31ED0	data	stage_combo_anchors		20 0x10-byte records by scene: side 0/1 vector pointers at +0/+4, counts at +8/+9; scenes 16 and 17 share arrays, 18 and 19 have their own.
@@ -124,6 +129,7 @@ address	kind	name	type	comment
 0x08B51E70	data	stage_scene_effect_defaults		Screen glare rows by scene, UN2's 18 rows byte-identical, then two zero (disabled) rows for scenes 18 and 19. Override code not traced.
 0x08B51FB0	data	stage_scene_tables		20 pointers (scenes 0..19: UN2's 18, then s8a Outside and s8b Inside the Mugenjo) to UN2-layout 32-byte scene records.
 0x08B57B60	data	stage_camera_records_by_scene		20 pointers to 22-float camera records: UN2's fields 0..21.
+0x08B57BC0	data	camera_tracking_submode_offsets	float[3]	150 across, then +50 and -50 up for tracking submodes 1 and 2 (camera_select_target).
 0x08B58E30	data	stage_navigation_authored_routes		20 pointers to UN2-layout route rows; lists end with a zero row, scenes 18 and 19 reuse scenes 16's and 17's.
 0x08BCDE00	data	audio_common_controls		8-byte rows per common event, UN2's layout: program (-1 none), two bytes, key, velocity, maximum, 0, 1; events 0..0x64 play programs of their own number but 0x61/0x62.
 0x08BCEB10	data	skill_pair_rectangles		32-byte rows of two corner points (x, height ranges), then target rows of two points by side.
