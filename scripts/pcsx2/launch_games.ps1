@@ -833,6 +833,7 @@ try {
                 Process = $process
                 PinePort = $null
                 DebuggerPort = $debuggerPort
+                PauseAt = $game.UnlimitedForFrames
             })
             if (-not $AgentReplay) {
                 Wait-UnWorkshopGameWindow `
@@ -942,6 +943,21 @@ try {
     }
 
     $gameCount = $launchedGames.Count
+    # A PSP game launched beside other games stops where its startup
+    # fast-forward ends, a Practice launch's fight start, or right after boot
+    # without one, so a comparison starts from a still frame.
+    if ($gameCount -gt 1 -and -not $noWindow -and $PSCmdlet.ParameterSetName -eq 'Normal') {
+        foreach ($launch in @($launchedGames | Where-Object { $_.Emulator -eq 'PPSSPP' })) {
+            & (Join-Path $PSScriptRoot '..\lib\run_python.ps1') `
+                -Script (Join-Path $PSScriptRoot '..\ppsspp\debugger.py') `
+                -Repository (Join-Path $PSScriptRoot '..\..') `
+                -NoBytecode `
+                -ArgumentList @('--port', $launch.DebuggerPort, 'pause-at', $launch.PauseAt) | Out-Null
+            if ($LASTEXITCODE -ne 0) {
+                Write-Warning "PPSSPP kept running for $($launch.Game): its debugger did not pause it."
+            }
+        }
+    }
     if ($gameCount -gt 1 -and -not $noWindow) {
         foreach ($launch in $launchedGames) {
             [UnWorkshopLaunchWindow]::ShowWindowAsync(

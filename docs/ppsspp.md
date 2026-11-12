@@ -25,7 +25,9 @@ differences:
 
 Launches of two or three games mute it, unless it is the game `-aud` keeps,
 and start it in its tile through `--window`, then tile it like the PCSX2 windows; `-mute` mutes
-it in any launch. A single launch uses
+it in any launch. They also leave it paused where its startup fast-forward
+ends, a Practice launch's fight start, or right after boot without one, so
+a comparison starts from a still frame. A single launch uses
 `--centered-window`. A recording cannot span PSP and PS2 games. `-k` and
 launches of two or three games close development emulators, PPSSPP included,
 as [PCSX2's](pcsx2.md#launching-games) do.
@@ -129,7 +131,8 @@ and never writes.
 `@ppsspp_scripts/debugger.py` is the client for PPSSPP's
 [WebSocket debugger](../../../PPSSPP/docs/WebSocketDebugger.md) and the fork's
 `agent.*` events, PPSSPP's counterpart of [PINE](pcsx2.md#pine-client). A
-command line covers `status`, `pause`, `resume`, `step`, `replay-status`,
+command line covers `status`, `pause`, `pause-at` (pause, then run to a
+vblank since boot and stop there), `resume`, `step`, `replay-status`,
 `replay-step`, `screenshot`, `ge-dump`, `save-state`, `load-state` and
 `shutdown`. Agent input set through `DebuggerClient` lasts until released, and
 goes when that client disconnects, so the command line only takes it for a

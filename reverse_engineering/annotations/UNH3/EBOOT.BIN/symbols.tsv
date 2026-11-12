@@ -112,6 +112,7 @@ address	kind	name	type	comment
 0x0897D19C	function	battle_manager_finalize_slots		Separates same-character teams, fills unset +0x20 defaults and copies the slots, stage and count to the battle's copy at +0x9C.
 0x0897D780	function	battle_manager_set_battle_setting		(kind, value, slot) into +0x128..: kind 1 bit 0 Command Display in Practice, 7 handicap at +0x12E+slot, 0xC..0x10 a COM's Practice settings at +0x132+slot*5.
 0x08984960	function	mission_stage_load_auxiliary_archives		For mission scenes loads gim.ccs and 13adv e000/e007/e300 and the mission's object resources.
+0x0898D474	function	battle_fighter_get		Fighter 0..3 from battle_manager + 0x32C + 4 x index; 0 without battle_manager. Fighters hold their position at +0x40.
 0x089BC56C	function	fighter_run_dust_interval		Run-dust interval by character: 0x4C 20, 0x32 12, 4/0xE 11, 0x15/0x18/0x3C/0x53 8, 0x12/0x22/0x51 7, 0xB/0x11 6, otherwise 5 updates.
 0x089BC67C	function	fighter_surface_thud	void fighter_surface_thud(unsigned int surface, float *position, int hard)	Mask F0F0F0. 202020 plays48 note32; water E0E090/E0A000/E0E000 plays48;60C0 plays3B;8080F0/5000/80D0F0/606060/90B0C0/3060 plays45 if hard,47 otherwise; other codes silent. Called at primary presentation event0 for damage actions44/45/4A(side surface C50,position+half height),46(ceiling C5C,position+height), and damage feedback helpers.
 0x089BCEA0	function	fighter_play_action_sfx		Plays action_sfx_map[index] at the fighter; index 0xC on character 0x11 adds 0x1008.
