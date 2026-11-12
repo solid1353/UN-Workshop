@@ -56,7 +56,8 @@ Esc stops the game as it does in PCSX2. A game launch passes
 
 The speeds behind Turbo and slow motion are `AltSpeedPercent` and
 `AltSpeedPercent2` in `@ppsspp_dev`'s `ppsspp.ini`, set to 200 and 25 like
-PCSX2's.
+PCSX2's. A tile is taller than it is wide, which PPSSPP lays out as portrait, so
+that layout's `DisplayOffsetY` is 0.5 to center the game as PCSX2 does.
 
 ## Saves
 
