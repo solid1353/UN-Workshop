@@ -385,6 +385,9 @@ trace establishes no release path for the manager's metadata allocations.
 The resident wrappers are sector-oriented. `file_read_sectors_required`
 truncates signed byte length to `0x800`-byte sectors; a positive tail smaller
 than a sector is not transferred. It returns the original requested length.
+It pumps and polls the lower read every 333 µs through
+`thread_delay_microseconds`, so a read returns as soon as the drive delivers
+it rather than on a frame boundary.
 `file_seek_bytes_rounded` rounds positive byte offsets upward to sectors;
 `file_size_sector_bytes` reports sector count shifted left eleven.
 
@@ -489,7 +492,9 @@ Allocation and open failures are unchecked.
 A `TransportDescriptor` is `0x0C` bytes: count, data and state. States
 0, 1 and 2 mean available/empty, ordinary committed chunk and final descriptor.
 Writable-span requests sleep while occupied; requesting the next span commits
-a full preceding chunk as 1. Finish commits the current partial descriptor
+a full preceding chunk as 1. Producer and consumer wake each other directly
+with `WakeupThread`, not through the task manager, so chunks pass between
+stages within a frame. Finish commits the current partial descriptor
 as 2, clears abort and wakes the consumer. It finalizes a stream without
 destroying storage.
 
