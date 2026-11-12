@@ -51,7 +51,8 @@ Every launch loads the tracked `@ppsspp_files/controls.ini` through
 PCSX2's [input profile](pcsx2.md#input-profiles). The PSP has no second stick
 or L2 and R2, so the arrow keys drive its stick, and the keyboard's Z and C
 do nothing. L3 and R3 are the marker chord below. The pause menu is on F1, since
-Esc stops the game as it does in PCSX2.
+Esc stops the game as it does in PCSX2. A game launch passes
+`--pause-menu-exit`, so stopping the game, or the game quitting, closes PPSSPP.
 
 The speeds behind Turbo and slow motion are `AltSpeedPercent` and
 `AltSpeedPercent2` in `@ppsspp_dev`'s `ppsspp.ini`, set to 200 and 25 like

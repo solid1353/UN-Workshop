@@ -713,6 +713,47 @@ function Get-UnWorkshopWindowTile {
     $right = $workingArea.X + [Math]::Floor($workingArea.Width * ($Index + 1) / $Count)
     return [int[]]@($left, $workingArea.Y, ($right - $left), $workingArea.Height)
 }
+
+# PPSSPP takes its starting window in physical pixels, while this process sees
+# the screen scaled.
+function ConvertTo-UnWorkshopPhysicalPixels {
+    param([Parameter(Mandatory)][int[]]$Rectangle)
+
+    if (-not ('UnWorkshopDisplayScale' -as [type])) {
+        Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+
+public static class UnWorkshopDisplayScale
+{
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetDC(IntPtr window);
+
+    [DllImport("user32.dll")]
+    private static extern int ReleaseDC(IntPtr window, IntPtr dc);
+
+    [DllImport("gdi32.dll")]
+    private static extern int GetDeviceCaps(IntPtr dc, int index);
+
+    public static double Get()
+    {
+        IntPtr dc = GetDC(IntPtr.Zero);
+        try
+        {
+            // DESKTOPHORZRES over HORZRES.
+            return (double)GetDeviceCaps(dc, 118) / GetDeviceCaps(dc, 8);
+        }
+        finally
+        {
+            ReleaseDC(IntPtr.Zero, dc);
+        }
+    }
+}
+'@
+    }
+    $scale = [UnWorkshopDisplayScale]::Get()
+    return [int[]]@($Rectangle | ForEach-Object { [int][Math]::Round($_ * $scale) })
+}
 $gameList = $selectedGames.Selector -join ', '
 $action = if ($AgentReplay) {
     "launch surfaceless agent replay for $gameList"
@@ -817,9 +858,9 @@ try {
                     $ppssppParameters.Mute = -not ($LastGameAudio -and
                         $index -eq $mainIndex)
                     # Start in its tile; PPSSPP doesn't save it as its window position.
-                    $ppssppParameters.Window = Get-UnWorkshopWindowTile `
-                        -Index $index `
-                        -Count $selectedGames.Count
+                    $ppssppParameters.Window = ConvertTo-UnWorkshopPhysicalPixels (
+                        Get-UnWorkshopWindowTile -Index $index -Count $selectedGames.Count
+                    )
                 }
                 else {
                     $ppssppParameters.CenteredWindow = $true

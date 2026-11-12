@@ -198,6 +198,10 @@ if ($Arguments) {
     )
 }
 if ($IsoPath) {
+    if (-not $Headless) {
+        # Stopping the game (Esc) closes PPSSPP, as it closes PCSX2.
+        $launchArguments += '--pause-menu-exit'
+    }
     $launchArguments += "`"$resolvedIso`""
 }
 
