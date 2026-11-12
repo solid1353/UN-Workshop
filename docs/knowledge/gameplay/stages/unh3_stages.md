@@ -236,6 +236,13 @@ expands vertex colour channels to `2c - 1` without an upper clamp
 have such vertices. Texture flag `0x08`, the models' blend selectors (0
 and 1), animation tracks and hit meshes read as NA2's.
 
+Effect sprites take an alpha test too. `s21`'s candle glow, `ANM_s21efe00`'s
+`EFF_efe_020_`, draws one additive sprite per candle at material alpha
+`0x32`, without a depth test, keeping only texels above alpha `0x10`, so
+each glow shows as a disc with a hard round edge (a fight's GE dump and
+the user's observation). NA2's effect renderer draws the same sprite at the
+same opacity with every texel, so it fades out softly and shows far less.
+
 `model_submit_ordinary` (`0x0888CD3C`) draws a model's material parts in
 forward table order within its direct and ordered lists. NA2's
 `model_dispatch_geometry` prepends each part's packets to the corresponding
