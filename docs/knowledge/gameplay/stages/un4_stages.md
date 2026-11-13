@@ -903,7 +903,9 @@ Big previews use six cells per texture: two columns spaced 256 pixels and
 three rows spaced 168 pixels. For raw slot s, texture index is `s / 6` and
 cell is `s % 6`; normalized offsets are `1 - column * 0.5` and
 `1 - row * 0.328125`. S01's decoded picture occupies top-origin rectangle
-`(0,0,256,168)` in `TEX_mappure01`. The TV builder uses normalized offsets
+`(0,0,256,168)` in `TEX_mappure01`. `MDL_pure_ita` is a 397.1×260.6 quad
+whose UVs (u 0..128, v 172..256 in 1/256 units) cover a whole 256×168 cell,
+both 1.524:1, so big previews show at their stored proportions. The TV builder uses normalized offsets
 `(s % 5) * 0.1875` and `1 - (s / 5) * 0.140625`; decoded S01's 96×72 TV
 image lies at `(0,168,96,72)` in `TEX_mappure04`. The image location and
 the code's 96×72 offset steps establish the matching TV cell by visual

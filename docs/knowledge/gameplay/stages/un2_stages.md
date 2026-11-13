@@ -118,6 +118,8 @@ battle context's scene; US entries 16 and 17 are random and next, JP's 18 and
 `haipure(s / 8 + 1)` (`stage_select_preview_texture_names`, `0x0081C700`):
 column `(s % 8) / 4` at 256 pixels, row `s % 4` at 128, a 256×128 cell, on
 the `MDL_gamen` quad, whose UVs show pixels 40..214 by 2..128 of the cell.
+The quad is 4693×3165 model units (1.483:1) and the part it shows 174×126
+(1.381:1), so Stage Select shows each big preview 7.4% wider than stored.
 `stage_select_draw_thumbnails` (`0x006B0760`) draws a 64×48 sprite from
 `haipure_s01` at `stage_select_thumbnail_origins` (`0x0081C6A0`).
 
@@ -136,6 +138,13 @@ previews are identical. The thumbnails are the same shots with different
 palettes: the six cells above differ by up to 123 levels per channel. US's
 texture holds the snow thumbnails at JP's cells, but only JP's Stage Select
 draws them.
+
+Each thumbnail shows its scene's big preview shrunk: Training Field's and
+Rainbow Ice Wall's match, in normalized grey, a 4:3 box covering nearly the
+whole shown picture (correlation 0.74 and 0.83). Hero Memorial's and
+Snowfield's show the same views by eye but score 0.46 and 0.39: their
+64×48 crops carry a dark strip along the left and bottom edges, and US's
+colors for the snow thumbnails are far from the big preview's.
 
 ## Scene-record dispatch
 

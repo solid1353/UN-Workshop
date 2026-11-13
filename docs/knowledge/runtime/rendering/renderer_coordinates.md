@@ -342,6 +342,12 @@ Before camera composition, the configured projection has diagonal coefficients
 `A=n*f*(z1-z0)/(f-n)` and `B=(z0*f-z1*n)/(f-n)`. After division,
 `depth=B+A/z`: near maps to `z1`, far to `z0`.
 
+Read in battle, the display is 512×448 with `gY` 7/6 (448/384), and
+`default_renderer` has scales (1, 1), field of view 40.63° and focal
+coefficient 691.57. A 4:3 screen spreads 512 columns across its width and
+448 rows down its height, so `F*sx` and `F*sy*gY` cover equal screen
+distances per unit of tangent: battle 3D shows at its true proportions.
+
 The fixed-reference projection uses `F512*sx`, `F512*sy`, and half the logical
 viewport width/height as center contributions. It reuses the depth terms;
 its vertical scale does not include `gY`.

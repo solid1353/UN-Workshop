@@ -3,7 +3,8 @@
 ## Research coverage
 
 Established: the archive set and its format, EBOOT.BIN's scene, name, track
-and Stage Select tables, how the 13 Stage Select scenes build their lines,
+and Stage Select tables, scenes 1's and 6's pictures against their battle views, how the
+13 Stage Select scenes build their lines,
 player positions, camera bounds and paired placement from markers, the
 normal-stage camera, the fog, glare and render records, factories 134 and
 135, the scaled marker, how its handlers for the factories it shares with
@@ -14,7 +15,7 @@ field of view, and its collision lids, ropes, branch words and skies,
 including their scroll speeds and precision. Names are UNH3 `EBOOT.BIN` addresses; NA2
 s01's road below its collision ground,
 comparison names come from `@annotations/NA2`.
-Open: nothing.
+Open: the size Stage Select draws its pictures at on screen.
 
 This document owns retail UNH3 (*Naruto Shippuden: Ultimate Ninja Heroes
 3*, PSP) battle-stage facts. UNH3 runs NA2's stage engine
@@ -104,7 +105,15 @@ and small picture objects) gives Stage Select's order: scenes 0, 6, 7, 8,
 from the top-left in that order, thumbnails in 72×39 cells below them,
 and names from `m\map\tex\en\map_name.bmp` rows. A 14th picture
 (`SPD_map_st13`, a grassy field) is drawn in the atlas but no record uses
-it.
+it. Row `i`'s picture objects are `0x41 + i` and `0x50 + i`. The container
+names the `SPD_map_st` and `SPD_map_stm` sprites but holds no section for
+them, so the size they are drawn at is set elsewhere.
+
+Scene 1's big picture shows the village standing tall and bright behind the
+fence under a cloudy sky. In battle, the village lies low in the basin
+beyond the fence, only its lights showing under a dark sky. Scene 6's big
+picture shows the far field band reddish brown, where in battle it is
+golden.
 
 ## Lines, placement and camera
 

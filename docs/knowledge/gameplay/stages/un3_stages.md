@@ -5,7 +5,7 @@
 Established: archive compatibility, compiled records, construction routing,
 update gates, selected prop states, the summon switch/return path,
 the per-stage camera, combo-anchor, route, intensity, screen glare and music tables, Stage
-Select preview and name assets, record translation evidence from the shared
+Select preview and name assets and S02's preview against its stage, record translation evidence from the shared
 stages, the archive conversion rules those stages show, S04's stage-specific
 handlers, the landing-tree reaction, the glare's draw order, S02's faded-pillar
 order relative to the charging aura, S01's flags,
@@ -271,7 +271,14 @@ The small previews are 20 parts of `MDL_purepanel`, `OBJ_sam01` through
 `OBJ_sam20` (`stage_select_transform_thumbnail`, `0x00830B20`, formats `OBJ_sam0%d`/`OBJ_sam%d` from choice
 position + 1). Their models carry fixed UVs into the `haipure04` grid at
 `(256..512, 0..240)`, 64×48 cells with a 2-pixel border, which hold
-different shots from the big previews.
+different shots from the big previews. Each `MDL_samNN` is an 83.2×62.5 quad
+(1.331:1) over a 60×44 part (1.364:1), so it shows its picture 2.4% narrower
+than stored.
+
+The `MDL_purepanel` model itself is a single 295.2×206.6 quad (1.429:1) whose
+UVs (u 0..127, v 172..255 in 1/256 units) cover a 254×166 part (1.530:1) of
+one 256×168 cell. **Inference, high confidence:** it carries the big
+preview, which Stage Select therefore shows 6.6% narrower than stored.
 
 | S04 asset | Top-down rectangle |
 | --- | --- |
@@ -283,6 +290,12 @@ on two lines, and S03's "No.44 Exercise Ground" over "The Forest of
 Death". For
 scenes 0..5, 7, 10, 11, 13, 16, 18 and 19, the grid's cell at column
 `s % 4` and row `s / 4` shows the same stage as the big preview.
+
+S02's big preview shows a layout the stage doesn't have. In it, the arena's
+railing hides the stilts of the houses behind, and the houses sit just
+under the faces' chins. From every camera in front of the built stage, as
+in its battle view, the stilts stand clear above the railing and the houses
+well below the chins.
 
 ## UN3 summon selection and archive lifetime
 

@@ -2,12 +2,13 @@
 
 ## Research coverage
 
-Established: object lifetime, 24-slot limits, previews, name rectangles,
-atlas free area, carousel and footer drawing boundaries.
+Established: object lifetime, 24-slot limits, previews and their models'
+shapes, name rectangles, atlas free area, carousel and footer drawing
+boundaries.
 Established: input sources, buttons, Random bounds and eight-state ordering.
 Evidence: static retail BTL, resident ELF and decoded `MAPSEL1.CCS`.
 Routine, field and data names come from `@annotations/NA2`.
-Open: nothing.
+Open: how the previews look on screen under Stage Select's camera.
 
 The native Stage Select screen of retail NA2 (`SLPS-25837`): its choices,
 stage records, previews and names, browsing, Random, and confirmation handoff.
@@ -138,6 +139,16 @@ the used cells 6–8. The decoded RGBA crops are not byte-identical to cells 6�
 
 The four preview textures are 512×512 indexed images stored bottom-up.
 The TV grid's `v = 96..455` occupies stored rows `56..415`.
+
+`MDL_circle0` is a 154-vertex disc of radius 123.5 model units whose texture
+coordinates reach about 76 pixels across and 74 down from its centre, so it
+shows the big preview at the cell's own proportions, within the coordinates'
+1/256 rounding. `MDL_sirinder_tv` is one 73.1×57.7 quad over a whole 96×72
+cell (u 0..48, v 171..207 in 1/256 units), so it shows its picture 5%
+narrower than stored. `stage_select_carousel_draw` builds the carousel's and
+each TV's root matrix from a 0.4713-radian (27°) rotation (`0x001523B8`),
+the translation at `0x008993C0` and the TV's ring angle (`0x00152460`):
+rotations and a translation, no scale.
 
 The carousel's TV submit call at `0x0071514C` receives the current TV object
 after its root matrix at `+0x40` and dirty byte at `+0x8D` are installed.
