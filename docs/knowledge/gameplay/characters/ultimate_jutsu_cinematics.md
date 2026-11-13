@@ -13,7 +13,7 @@ outside it, in sampled films.
 Open: the intended optional-body constant/resource, the capacity of the
 derived main-path buffer, targets across every cinematic, accumulated matrix orientation and visible body animation in
 omitted-draw ranges, and why the renderer draws nothing of the floor faces
-that leave `D91_10`'s sliver and `D76_10`'s streak. Names come from `@annotations/NA2`; comments and types
+that leave `D91_10`'s sliver and `D76_10`'s streak, and what draws the edges at the 16:9 sides of `D22_30` (frame 12), `D34_20` (204), `D36_10` (247) and `D72_20` (414), `D80_10`'s light band at the left (353) and the white past `D19_10`'s trees at the right (248). Names come from `@annotations/NA2`; comments and types
 carry code-level details. Static resident/BTL/ETC and clean CCS evidence
 establishes dependencies, not live allocation success. UN4's cinematic formats
 are compared in [UN4 Ultimate Jutsu](un4/ultimate_jutsu.md); donor character
@@ -263,6 +263,36 @@ resting under the diagonal trunk `MDL_e68wood_c` (frame 171), `D83_10`'s
 rock slope
 `MDL_e83gak01` (frame 10) and `D91_10`'s wind lines `MDL_e91air02a/b`
 (frame 329).
+
+More pieces end just past a 4:3 edge, by film and frame: `D04_10`'s distant
+sand `MDL_e04enkeisuna00` (242), whose end cuts the dune at the right, over
+the near sand `MDL_e04sandf01`, whose own edge shows as a light streak at the
+bottom left when the distant sand alone is 4/3 as wide; `D15_10`'s hill
+`MDL_e15_oka` (215); `D58_20`'s cloud piece `MDL_e58kmok` (371), past whose
+end the blue backdrop shows above the dune; `D61_10`'s sky `MDL_e61sky02` and
+smoke `MDL_e61smbl01` (281 and 310); `D61_20`'s mountains `MDL_e61mtn00`
+(365); `D68_30`'s far mountains `MDL_e68mtn0` (347); `D70_10`'s backdrop
+`MDL_e70img05` (193); `D70_25`'s three slanted panels `MDL_e70back03_a..c`
+(91), one 3-by-5 grid mesh each with the texture `e70back01`, whose light
+edges are the white lines between them; `D71_10`'s distant view
+`MDL_e71enkei01` (308); `D71_30`'s rocks `MDL_e71rcbk01a..c` (174); `D78_10`'s
+dust `MDL_e78skn01` and sky `MDL_e78sky03` (49); `D79_10`'s crater
+`MDL_e79jng00a` (439); `D79_20`'s ground `MDL_e79bg10` (176); `D80_20`'s floor
+`MDL_e80bgf` and `MDL_e80bgf01` with its distant mountains `MDL_e80bgm` (49),
+whose floor widened opens a dark hole under the sphere and a light floor edge
+in the sphere's shot (331); `D81_20`'s sky `MDL_e81sky02` (212); `D83_10`'s
+floor `MDL_e83flo02` and background `MDL_e83bg10` (442); `D89_10`'s shadow
+`MDL_e89kge01` and distant hills `MDL_e89bgm` (166); `D90_10`'s flames
+`MDL_e90cut04` (357); and `D93_30`'s light filter `MDL_gemfil` (105), which
+lights the face while Chidori shines. `D09_30`'s arching snake
+`MDL_e09snk00_a` and the snake below it `MDL_e09snk00_c` end in mid-air past
+the right 4:3 edge (83). At `D09_20` frame 174 the dark arm whose straight end
+shows past the right 4:3 edge is `MDL_1ude00t0` (` e\09\max\e09hd01.max`), a
+skinned model with bones `bone02..13`. `MDL_e93ssfac0`'s colours come from its
+vertex colours over a white region of the swatch texture `e93sstex0`: every
+vertex samples U and V 0.69 to 0.97. Its right end is one column of 23
+vertices at X 1,074, the next vertices at X 649, and at frame 80 its darker
+end shows just inside the right 16:9 edge, with nothing drawn past it.
 
 Films keep some characters just outside the 4:3 view. In `D02_10`, from
 frame 190 to 232, Sasuke's `MDL_1ssk00t1` lies at screen X -1.08 to -1.00
