@@ -6069,6 +6069,7 @@ address	kind	name	type	comment
 0x005DD1C0	label	bg_uv_animation_vtable		ccBgUVAnm vtable; head points to bg_uv_animation_type_descriptor0x005D6048; update slot+8=bg_uv_animation_update0x0039B910.
 0x005DD220	label	background_shadow_animation_vtable		ccBgDrawShadowAnm separate owner vtable; first entry descriptor0x005D6078. | ccBgDrawShadowAnm owner; descriptor at0, update+8, draw+0xC, initialize+0x14, register+0x18, unregister+0x1C, transform refresh+0x20, destroy+0x24; verified methods background_shadow_animation_update/draw/initialize/register/unregister/refresh_transform/destroy.
 0x005DD280	label	palette_reflection_wrapper_vtable		Palette reflection wrapper vtable:slot+0x08 update0x0039A110,+0x14 initializer0x0039A150,+0x24 destructor0x003AA4A0.
+0x005DD370	label	cc_bg_glare_filter_vtable		ccBgGlareFilter (factory 11) installed vtable: +0x0C draw bg_glare_draw 0x00398C10, +0x14 parse bg_glare_parse 0x00398C40; same draw slot as the ccBgBreakDollBattle vtable 0x005DDA70.
 0x005DD3A0	label	bg_rotate_sky_vtable		ccBgRotateSky vtable; head points to bg_rotate_sky_type_descriptor0x005D6138; update slot+8=bg_rotate_sky_update0x00398510.
 0x005DD640	data	cloth_model_modifier_vtable		Concrete modifier table with slot+0x0C=cloth_model_modifier_apply0x003B0FE0; bg_cloth_initialize_visual installs it on allocated0x18 modifier. Geometry output obtained from model_draw_edit_positions.
 0x005DD650	label	cc_bg_object_vtable		ccBgObject base vtable installed before derived stage-object vtables.

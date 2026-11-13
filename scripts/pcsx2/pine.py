@@ -28,6 +28,10 @@ REPLAY_STEP = 0x1B
 REPLAY_SCREENSHOT = 0x1C
 REPLAY_SHUTDOWN = 0x1D
 REPLAY_GS_DUMP = 0x1E
+SCREENSHOT_TO = 0x1F
+SCREENSHOT_TO_VERSION = 1
+# Seconds to wait for a path screenshot's reply, which follows the PNG write.
+SCREENSHOT_TO_TIMEOUT = 40
 
 AGENT_INPUT_VERSION = 1
 REPLAY_ANALYSIS_VERSION = 1
@@ -269,6 +273,27 @@ class PineClient:
 
     def screenshot(self) -> None:
         self.command(SCREENSHOT)
+
+    def screenshot_to(self, path: str | os.PathLike[str]) -> None:
+        """Save the next presented frame as PNG at an exact absolute path,
+        returning once the file is written; no replay or pause is needed."""
+        exact_path = os.fspath(path)
+        if not os.path.isabs(exact_path) or not exact_path.lower().endswith(".png"):
+            raise ValueError("screenshot path must be absolute and end in .png")
+        encoded = exact_path.encode("utf-8")
+        if not 1 <= len(encoded) <= 32768:
+            raise ValueError("screenshot path is outside 1..32768 bytes")
+        self.socket.settimeout(SCREENSHOT_TO_TIMEOUT)
+        try:
+            reply = self.exchange(
+                bytes([SCREENSHOT_TO, SCREENSHOT_TO_VERSION])
+                + struct.pack("<I", len(encoded))
+                + encoded
+            )
+        finally:
+            self.socket.settimeout(3)
+        if reply != bytes([SCREENSHOT_TO_VERSION]):
+            raise RuntimeError("PINE ScreenshotTo returned a malformed reply")
 
     @staticmethod
     def _expect_replay_version(reply: bytes, operation: str) -> bytes:

@@ -9,7 +9,8 @@ training dolls and item drops, the battle camera's placement, the model
 alpha test and the distance fog against NA2's, scene 19's floor layout, the route
 reader, the combo anchors, the scene-keyed code, the common sounds and
 footsteps, the battle tracks' format and selection, the Stage Select
-container and the English stage names, and what UNH2's scene 5 changes
+container, the size it draws pictures at and scene 18's red-tinted one, and
+the English stage names, and what UNH2's scene 5 changes
 from UN2's, the jutsu camera's end request and the screen-glare colour
 overrides, and scene 5's torch lights against the fighters. Names come
 from `@annotations/UNH2`; UN2 comparison names from `@annotations/UN2`.
@@ -288,6 +289,12 @@ Stage Select's order, scene 5's night roof at (401, 1), scene 18's at
 pictures in 192×96 cells of `haipure01`..`03` and its thumbnails in
 `haipure_s01`, where scene 5's show UN2's daytime roof and scenes 18 and
 19 have none.
+
+Stage Select draws the chosen stage's picture unscaled, 96×72 with its
+top-left at (192, 100) of the 480×272 screen, so each picture is a 4:3 view
+as stored. Scene 18's picture is tinted far redder than the stage looks
+in battle: its mean colour is (72, 35, 25), where a VS CPU frame of the
+battle view averages (75, 61, 48), a warm sepia under a red moon.
 
 ## Scene 5 against UN2's
 

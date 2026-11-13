@@ -255,6 +255,12 @@ is missing only when no frame has completed since the game started or a state
 loaded, or `SaveStateGSDump` is off
 ([fork savestates](../../../PCSX2/docs/input_recording_capture.md#marker-capture)).
 
+Saving a state stops NA2's stage glare (factory 11's sampling pass,
+`bg_glare_draw`) from showing for the rest of that session: the scene loses
+the pass's colour and contrast, and bright props such as lanterns look lit
+from inside. Screenshots meant to show the game as it looks are taken in a
+session that has saved no state.
+
 ## GS dumps
 
 `@pcsx2_scripts/gs_dump.py` reads PCSX2 GS dumps (`.gs` or `.gs.zst`, from
