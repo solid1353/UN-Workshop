@@ -13,7 +13,8 @@ outside it, in sampled films.
 Open: the intended optional-body constant/resource, the capacity of the
 derived main-path buffer, targets across every cinematic, accumulated matrix orientation and visible body animation in
 omitted-draw ranges, and why the renderer draws nothing of the floor faces
-that leave `D91_10`'s sliver and `D76_10`'s streak, and what draws the edges at the 16:9 sides of `D22_30` (frame 12), `D34_20` (204), `D36_10` (247) and `D72_20` (414), `D80_10`'s light band at the left (353) and the white past `D19_10`'s trees at the right (248). Names come from `@annotations/NA2`; comments and types
+that leave `D91_10`'s sliver and `D76_10`'s streak, what `D86_20`'s untextured black figure is (frame 71), and
+which part of the left Kakashi leaves the clear colour in `D70_25`'s bottom-left corner (frame 91). Names come from `@annotations/NA2`; comments and types
 carry code-level details. Static resident/BTL/ETC and clean CCS evidence
 establishes dependencies, not live allocation success. UN4's cinematic formats
 are compared in [UN4 Ultimate Jutsu](un4/ultimate_jutsu.md); donor character
@@ -285,14 +286,123 @@ floor `MDL_e83flo02` and background `MDL_e83bg10` (442); `D89_10`'s shadow
 `MDL_e89kge01` and distant hills `MDL_e89bgm` (166); `D90_10`'s flames
 `MDL_e90cut04` (357); and `D93_30`'s light filter `MDL_gemfil` (105), which
 lights the face while Chidori shines. `D09_30`'s arching snake
-`MDL_e09snk00_a` and the snake below it `MDL_e09snk00_c` end in mid-air past
-the right 4:3 edge (83). At `D09_20` frame 174 the dark arm whose straight end
-shows past the right 4:3 edge is `MDL_1ude00t0` (` e\09\max\e09hd01.max`), a
-skinned model with bones `bone02..13`. `MDL_e93ssfac0`'s colours come from its
+`MDL_e09snk00_a` hangs its tail past the right 4:3 edge, where it is cut off
+blunt in mid-air (83), in the shot that ends at frame 97. Earlier in that
+shot the tail's end lies in the ground, inside the 4:3 view to frame 62 and
+just past its right edge from frame 64; it lifts out of the ground at frame
+66, and from frame 67 to 75 it lies in front of the body of the snake
+lunging left below it. That
+snake ends at the right in its own tapering tail tip, and a third snake's
+head comes in from the right 16:9 edge under the hanging tail, reaching the
+4:3 view by frame 93. The arching snake's tube is a blend of the tubes of
+`MDL_e09snk00_a` and `MDL_e09snk00_b`, 1,062 vertices each: their mean
+from frame 66 to 97, and four parts of `_a` to six of `_b` at frame 64. The
+other two snakes are both `MDL_e09snk00_c`, drawn twice, its tube 726
+vertices and rigid. The camera cuts close at frame 79; from then the
+lunging snake's last quarter runs below the bottom edge from inside the 4:3
+view and comes back up to its tip at about 16:9 (620, 307) at frame 83,
+beside the third snake's head, which is nearer the camera. At `D09_20` frame 174 the dark mass whose straight
+end shows just past the right 4:3 edge, at 16:9 X 570 of 640, is the picture
+card of hands `MDL_e09hdita01`, textured `e09hdita01`: like the fist
+`MDL_e09tkbi01`, a 4-by-4 grid, of 54 vertices running X -4,013 to -13 and Z
+-2,000 to 2,000 raw, its texture's U reaching 254 at its largest X. The
+snaking arms textured `e09hd_l02` run far past both edges.
+`MDL_e93ssfac0`'s colours come from its
 vertex colours over a white region of the swatch texture `e93sstex0`: every
 vertex samples U and V 0.69 to 0.97. Its right end is one column of 23
-vertices at X 1,074, the next vertices at X 649, and at frame 80 its darker
-end shows just inside the right 16:9 edge, with nothing drawn past it.
+vertices at X 1,074, the next vertices at X 649, and at frame 80 its end
+lies just inside the right 16:9 edge.
+
+What draws at the 16:9 sides of more shots: in `D61_20` (365) the floor is two
+models, the ringed `MDL_e61fl03` near and the dusty `MDL_e61fl01` far, whose
+edge between them lies across the screen under the rolled camera. In `D79_10`
+(439) the forest is `MDL_e79jng00` and `MDL_e79jng00a`, which meet along the
+crater's rim. In `D83_10` (442) a ridge `MDL_e83mori` (texture `e83bg02`)
+lies in front of the rocks of `MDL_e83bg10`, and its end shows just past the
+right 4:3 edge. In `D36_10` (247) the cloud card `MDL_e36_wd03` ends in a
+straight slanted edge at the top left of the 16:9 view, with the night sky
+past it. `D22_30`'s red tint (12) is `D22_30.CCS`'s untextured
+`MDL_e22_img_color`, drawn in vertex colour red 0x28 at alpha 0x19 and
+spanning 16:9 X 36 to 598, so the sides past it show the scene untinted; it
+is that film's only untextured model. In `D34_20` (204) nothing draws left of
+16:9 X 33 above the middle, where the rocks `MDL_e34rock a..c` (texture
+`e34rock06`) end. `D80_10`'s light band at the left (353) is what its filter
+`MDL_e80fil01`, textured `e00white01` and drawn black at alpha 0x2a over the
+scene, leaves uncovered: its slanted left edge crosses the left side between
+16:9 X 30 and 70. In `D79_20` (176) the ground slope `MDL_e79flo01` is a
+single quad textured `e79flo20` whose left end lies at 16:9 X 40, past which
+the background `e79bg03` shows. `D19_10`'s white past the trees at the right
+(248) is its sky `MDL_e19sky02`, seen between the foliage (texture
+`e19tree00`) of the scene's big tree `MDL_d19301wdnc` and the cut-out forest
+cards `MDL_e19mor01a` and `MDL_e19mor01c` (textures `e19mor01` and
+`e19mor03`), as it shows in gaps at the right of the 4:3 view. In
+`D58_30` (293) and `D80_20` (331) the dark gap at the left is the clear
+colour, where no model draws. In `D67_20` (336) the dark notch at the left
+edge is the shadowed side, textured `e67rock06`, of one of the 71 floor
+fragments `MDL_e67hhn00_01..71`; its floor is the square slab
+`MDL_e67flo04`, 1,762 units across, with the strip `MDL_e67flo05` along one
+side, and past its far corner at the top left of the 16:9 view only the dark
+sky shows; that shot down onto the broken ground runs from frame 311 to the
+film's white fade near frame 360, after a shot of a floating rock that ends
+at frame 310. The sky `MDL_e67sky03` lies over the far ground's edge there
+as haze: with the sky hidden, the top of the far-left rock turns from
+(117, 108, 161) to (113, 92, 131), the tone of the rocks beside it. In `D36_20` (266) the posts and logs are `MDL_e00wood_a..f`
+(textures `e00wood01..03`): the teal crossbeam is `MDL_e00wood_c`, the
+diagonal log below it `MDL_e00wood_b`, the vertical post `MDL_e00wood_d` and
+the thick trunk at the right `MDL_e00wood_a`. Both logs are crooked, rings of
+a few vertices joined by long segments: the crossbeam is two meshes, of 93
+and 87 vertices, and its left end is the ring at its largest Y; the diagonal
+log is one mesh of 180 vertices, and its left end the ring at its smallest Y.
+In `D86_20` (71) the foot at the left edge is the defender's: the film
+stands the defender just past the left 4:3 edge while its shot shows the
+lunch box, and with Naruto as defender hiding `MDL_1nrw00t0` removes it. A
+defender's body parts are the records named `MDL_` and the first four
+letters of its presentation body file (`1nrwbod1.ccs`), the character taken
+from `UltimateJutsuSkillPlay.defender_id` (57 there, with attacker 86,
+Asuma). The shadow under that foot is not the defender's: in that frame
+`scene_object_submit_geometry` queues shadow parts only for Asuma
+(`MDL_1asw00t0 shadow01..17`) and for `MDL_1cmn00t0`, a stand-in whose body
+does not draw there, and dropping the stand-in's removes the shadow.
+`model_part_queue_projection` is the only caller of
+`projection_controller_append_packets`, and the call at 0x0019109C its only
+caller. The frame also draws an untextured black figure at alpha 0x80, of
+2,573 vertices in one strip, mostly off the screen to the left. The fire
+trail `MDL_e86firtl01` (texture `e86firtl01`, drawn additively) is a ribbon
+of 262 vertices from past the right edge to the defender's feet, its end
+there at its smallest Y. A bright spot near that end shows at the left 16:9
+edge at frame 71 (X 0 to 6), 72 (15) and 73 (39); by frame 74 the trail
+shows nothing left of X 260. The shot travels low over the water from frame
+66, and the floor `MDL_e86flo01` is cut off close to the camera: the
+bottom-right corner shows the clear colour from frame 66, 72 pixels wide at
+the bottom edge, to frame 72, 6 pixels wide. The lighter's shot ends and
+the defender stands in the top-left of the 16:9 view from frame 74. `D70_25`'s left
+panel is `MDL_e70back03_b`, its outer end at its smallest Y, and its right
+panel `MDL_e70back03_c`, its outer end at its largest Y; the middle panel is
+`MDL_e70back03_a`. Each outer panel is a flat square 100 units across, of 30
+vertices in a 2-by-4 grid, whose texture's streaks run along its X. At frame
+91 the left one leans: its outer edge slants in toward the bottom, and its
+top edge, at its smallest X, crosses the top-left 16:9 corner. The panels
+draw after the characters, with alpha 0 down their middle column, so each
+one's dark band is the clear colour. At frame 91 the bottom-left 16:9
+corner, about 10 by 20 pixels under the left Kakashi's vest hem, also shows
+the clear colour, although the left panel's outer strip covers it once its
+outer end is moved out: strips of that Kakashi, textured as his body, and
+their shading passes, which subtract, test no alpha and write depth, cover
+that pixel nearer than the panel. The seam in `D72_20`'s clouds (414) is the left edge of
+the flat card `MDL_e72hasi00` (texture `e72hasi00`, 18 vertices), at 16:9 X
+68; the burst `MDL_e72hasi04` is many small quads over it. The card is in
+the one shot from frame 345 to 450: it shows as the water column from frame
+365 to 375, and the clouds cover it from about frame 380. `D09_30`'s
+snakes `MDL_e09snk00_a..c` are each a head part and a body tube whose end at
+its largest Y is the tail tip. `D93_30`'s close-up shot starts at frame 80; frames 76 to 79 are the 3D
+shot before it. At frame 80 the card `MDL_e93ssfac0` leans, its right end
+column slanting in toward the bottom, and nothing draws past it: the grey
+band at the right (80), widest at the bottom, is the film's overlays and its
+blend of earlier frames over the clear colour, until the card's end passes
+the 16:9 edge by frame 84. `D34_20`,
+`D36_10`, `D36_20` and `D93_30` blend earlier frames into each frame, so a change shows fully only
+tens of frames later. These are GS draws of sampled frames, matched to models
+through their textures.
 
 Films keep some characters just outside the 4:3 view. In `D02_10`, from
 frame 190 to 232, Sasuke's `MDL_1ssk00t1` lies at screen X -1.08 to -1.00
