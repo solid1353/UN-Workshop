@@ -4,7 +4,8 @@
 
 Established: retail NA2 stage resources and ownership, geometry/navigation,
 reactive props and stage-object damage, with complete archive and named-factory
-censuses, and the stage-count/readers audit below. Names come from
+censuses, the stage-count/readers audit below, and how every game's training
+doll and monkey doll models compare. Names come from
 `@annotations/NA2`; addresses are live.
 Open: nothing.
 
@@ -1197,6 +1198,26 @@ and Stage Select assets.
 NA2's stage engine, the marker-built lines, placement and camera that
 replace NA2's per-slot tables there, its own factories and its Master Road
 mission scenes.
+
+### Training doll and monkey doll models
+
+Every stage of every game carries its own training doll and monkey doll
+(うっきー君), with their debris (`OBJ_doll_bre_000_a0`..`a3`,
+`OBJ_uki_bre_000_a0`..`a3`). NA2's training doll is one 966-vertex model on
+every NA2 stage; UN3's, UNH2's and UN2 S0A2's match it, UN2 S1A2's and UN4's
+are variants, and UNH3's is a 60-vertex model drawn from one 64x128 image.
+NA2's own monkey doll differs between stages: S02's, S05's and S07's are
+three models. UN2 S0A2's, UN3's and UNH2's match S02's, and UNH3 S07's
+matches S07's. S02's leaves are 8-bit images; S07's training and monkey doll
+images are all 64x64 and 16-colour.
+
+A stage shades them in their vertex colours, white where lit and one to a
+few stage colours elsewhere (UNH3's doll in one flat colour), and in the
+training doll's target and the monkey doll's leaves, whose images differ per
+stage; the straw, bamboo and pot images come in two shared variants. UNH2's
+images and UNH3's monkey doll's are 32x32. UN3 S03 also draws two of its
+stage models, `MDL_gim_010` and `MDL_gim_000_`, with its training and monkey
+dolls' materials.
 
 ## Address index
 
