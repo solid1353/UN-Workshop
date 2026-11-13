@@ -400,7 +400,10 @@ at `+0x24` from the row's entry at `+0x30`. It calls
 `audio_skill_play_pending_set(0)` (`0x001D94D0`), which sets the
 `AudioCommandContext` byte at `+0x4D`, queues both characters' `pl/%s`
 archives, the names coming from the character table at `0x00402710`, and
-enters state 5. `etc_skill_play_start` (ETC `0x006C0AF0`)
+enters state 5. A film that plays a fighter's battle body gets it from its
+own request: eight request rows list one among their extra bodies, such as
+skill `0x01`'s `pl/2nrtbod1.ccs` for `D01_10` and `0x4E`'s
+`pl/2nwvbod1.ccs` for `D57_35`. `etc_skill_play_start` (ETC `0x006C0AF0`)
 waits for its white cover and the load queue, takes both containers, calls
 `battle_character_pair_prepare(attacker, defender)`, clears manager
 `+0x54` and `+0x7C`, and calls
