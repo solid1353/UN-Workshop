@@ -12,6 +12,7 @@ computer fighters choose sections, its sound banks, its item records, and
 what the 29 mission scenes are, its running dust's art, timing and motion, its camera's
 field of view, and its collision lids, ropes, branch words and skies,
 including their scroll speeds and precision. Names are UNH3 `EBOOT.BIN` addresses; NA2
+s01's road below its collision ground,
 comparison names come from `@annotations/NA2`.
 Open: nothing.
 
@@ -333,6 +334,15 @@ a factory-43 wire, so UNH3's ropes never swing; NA2's wires generate
 `0x0001D9D1`, which adds `0x100` and the first-jump doubling `0x800`.
 `s21`'s `TEX_s21obj05` is identical to NA2 S21's wire texture. The
 landing-tree branch meshes (`HIT_gim_200_hit`, s01, s06, s07) are
+`s01`'s drawn road dips below the ground its fighters walk on. Along their
+line the hit batch is flat at 0, where the road of `MDL_obj_000_`
+(`MAT_s01obj00_10`) lies at -10 from the centre out to x 400, rising to
+-7.6 at 800, and the paths beside it lie at 0. UNH3's fighters stand on the
+collision ground, both at height 0 when a fight starts, and their lowest
+drawn vertices lie at 2 to 5, 12 to 15 above the road. They do not look
+raised: UNH3 draws each fighter's round shadow last, flat at 5 above its
+standing height and scaled by 1.5, between its feet and the road.
+
 `0x0000D001`, where NA2's carry `0x800` (`0x0000D801`, `0x0000D80D`).
 
 The skies (`MDL_bac_000`/`_000_`, and s08's `OBJ_flo_002`) are half
