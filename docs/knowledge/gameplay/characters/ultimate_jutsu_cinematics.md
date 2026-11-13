@@ -12,8 +12,8 @@ projection, backdrops ending at the 4:3 view, and characters kept just
 outside it, in sampled films.
 Open: the intended optional-body constant/resource, the capacity of the
 derived main-path buffer, targets across every cinematic, accumulated matrix orientation and visible body animation in
-omitted-draw ranges, and why the renderer draws nothing of the `D91_10`
-floor face that leaves its sliver. Names come from `@annotations/NA2`; comments and types
+omitted-draw ranges, and why the renderer draws nothing of the floor faces
+that leave `D91_10`'s sliver and `D76_10`'s streak. Names come from `@annotations/NA2`; comments and types
 carry code-level details. Static resident/BTL/ETC and clean CCS evidence
 establishes dependencies, not live allocation success. UN4's cinematic formats
 are compared in [UN4 Ultimate Jutsu](un4/ultimate_jutsu.md); donor character
@@ -100,7 +100,33 @@ open at frame 285. In
 frame 23, the forest `MDL_e64ki00` ends just past the right 4:3 edge, and
 its nearest trunk hides a dark area that the far forest `MDL_e64enki00`,
 which ends left of the screen center, leaves uncovered; the dark areas at
-the sides of frames 30, 104, 165 and 369 come from the same forest.
+the sides of frames 30 and 165 lie past the near trees and the flat tree
+cards behind them, `MDL_e64kiha00` and `MDL_e64itaki00`: at frame 30 nothing
+draws at the top right past the near trees, which no card, the far forest,
+sky, mountains or hills reach at up to five times as wide. The forest is four
+placements of `MDL_e64ki00`; the far forest card `MDL_e64enki00` lies flat
+and recedes to the left, ending left of the screen center at frames 23 and
+30, so lengthening it moves its end further left; the frame's clear colour
+shows there. While Deidara transforms
+(frames 80 to 130, as frame 104), the black see-through sheet `MDL_e64bl00`
+dims the forest: a wall behind him and a floor toward the camera, five
+columns across, whose ends lie at the 4:3 edges, so the forest past them
+shows undimmed. Widened about the screen center, its floor's near corners
+pass the renderer's drawing limits, and those faces drop as light patches at
+the bottom; with only its end columns moved outward, it reaches the 16:9
+sides. The thin green strips then left at the bottom sides are the grass
+piece `MDL_e64jim03`, whose texture `e64jim01` is grass with transparent
+gaps, over the dirt `MDL_e64jim00`. It shows only past the 4:3 edges in this
+shot, and its vertices are at full brightness where the forest's are at
+about two-thirds, so under the same sheet it stays brighter. Hidden, it
+uncovers lighter ground at the corners. Other shots show it inside the 4:3
+view (frames 45, 200 and 240). The draw sends a mesh's vertex colors by DMA
+reference to its loaded array, so changing that array changes the next draw. At frame 369 the white
+notch at the right of the horizon is where the grassy band `MDL_e64jim05`
+ends: half a ring about the crater, from about 11 to 158 degrees, over the
+full ground ring `MDL_e64jim02`, which holds the crater. Widened about the
+screen center, the band reaches past the 16:9 edge but its lower edge comes
+off the ground ring at the left.
 `D21_30` (frames 29 and 322) and `D77_10` (frame 197) frame the film between
 black bars drawn as effect models across the screen that reach far past its
 top and bottom edges, each edged inside by a thin line drawn separately at the
@@ -115,10 +141,14 @@ center. `D66_10`'s sky `MDL_e66sky00a` (frame 286) ends just short of the
 16:9 top-right corner, which the haze in front shows darker. `D70_20`'s far
 mountain `MDL_e70mtn01b` reaches the ground; at frame 271 the pale wedge at
 the right is sky between its flank and the near slope, which widening it as
-far as 2.5 times does not close. At `D78_10` frame 338 a dark notch shows at
-the foot of the right cliff of the background `MDL_e78bg10`, which covers it
-only at 1.6 times as wide, a width that moves its cliffs inside the 4:3 view
-at frame 120.
+far as 2.5 times does not close. The near mountain `MDL_e70mtn01a` closes it
+at 4/3 as wide, and with it the slope `MDL_e70flo01`, without which the near
+mountain's other end shows black at the bottom left (frames 240 and 271). At
+`D78_10` frame 338 a dark notch shows at the foot of the right cliff of the
+background `MDL_e78bg10`, which covers it at 4/3 as wide; that shot starts at
+frame 332 in a dissolve from Akamaru's, and in the shots before it the
+widened background shows its cliffs' edges at the sides (frames 120 and
+320).
 The scenes of `D05_10`, `D05_11`, `D12_10`, `D12_11` and `D15_10` hold a glow
 board, `MDL_ca_kasan_bord`, over the screen and sized just past the 4:3 view
 (`D05_10` frame 50, `D15_10` frame 231). `D18_10`'s speed-line backdrop
@@ -138,11 +168,14 @@ ends: its ends lie just inside the 16:9 sides, and it covers them at 4/3 as
 wide. `D05_20`'s dark slanted bands at both sides (frame 210) are where its
 translucent light panel `MDL_e05_kogen` ends: its slanted edges cross both
 16:9 sides, and it covers them at about 2 times as wide. `D91_10`'s dark
-sliver at the right of the horizon (frame 11) is a gap in its floor
+sliver at the right of the horizon (frames 6 to 11, as the opening shot fades
+in from white) is a gap in its floor
 `MDL_e91flo01`: in a 16:9 view, the renderer draws neither the face of its
 vertices 776 to 778, whose corner 776 lies far below the screen at a tenth of
 the others' depth, nor any clipped piece of it, while the clipped faces
-around it draw.
+around it draw. At 4/3 as wide, with its hills `MDL_e91bg0` covering its far
+edge at the left, the floor reaches past the gap; later in the shot (frame
+25) the widened floor's near edge crosses the 4:3 view beside Yamato.
 
 More films' skies, backdrops and effects end just past a 4:3 edge:
 `D59_10`'s sky `MDL_e59sky00` (frame 90) and `D59_35`'s sky
@@ -168,7 +201,9 @@ the background `MDL_e93bg01_sky` and `MDL_e93bg01_mut` of `D89_50` (frame
 and `D93_30`'s backdrop `MDL_e93_bgl` (frame 398). `D76_10`'s background
 pieces `MDL_e76back01_a..i` end just past the 4:3 edges too (frames 63 and
 384), but at frame 384 those drawn, widened together, open a dark band at
-the left. In `D93_30` at frame 119, Sasuke's close-up face `MDL_e93ssfac0`, a
+the left. There the dark line at the bottom left and the light wedge at the
+bottom right are where the foreground sand `MDL_e76fbk02` ends over
+`MDL_e76back01_h`; `MDL_e76fbk02` alone covers them at 4/3 as wide. In `D93_30` at frame 119, Sasuke's close-up face `MDL_e93ssfac0`, a
 flat drawing of about 1,100 vertices sized to the 4:3 view, ends short of
 the right 16:9 edge in the shaded edge of his cheek; its left end lies behind
 the hair pieces `MDL_e93sshar*`, and past them at the left nothing draws.
@@ -176,8 +211,13 @@ the hair pieces `MDL_e93sshar*`, and past them at the left nothing draws.
 corner black until it is about 1.6 times as wide. At `D76_20` frame 54 the
 slanted edge across the bottom-left corner is that of the overlay
 `MDL_e76egre01`, which moves the sand inside the 4:3 view when it widens; the
-dark streak at `D76_10` frame 63's right edge stays when any of
-`MDL_e76back01_a..i`, its clouds, rock or wave is hidden. `D72_20`'s sky dome `MDL_e72sky00` has a
+darker wedge at the bottom right is where a translucent dust card of 18
+vertices, `MDL_e76smk06`, `MDL_e76smk10` or `MDL_e76tiri01`, ends. The dark
+streak at `D76_10`'s right edge (frames 61 to 72, in the sand shot after
+the white flash) is a gap in its sand floor, whose pieces use the texture
+`e76back09`: the renderer draws no part of a face there, as in `D91_10`, and
+widening the floor does not bring it back. The frame's clear colour shows
+through it, lifted by the film's overlays. `D72_20`'s sky dome `MDL_e72sky00` has a
 dark rim just past the left 4:3 edge in the top-left corner (frame 385), and
 `D80_10`'s floor `MDL_e80bgf20` leaves the bottom-right corner of the 16:9
 view bare (frame 176).
@@ -198,9 +238,14 @@ film's scene ` d\22\sss\d22_20.max`,
 and `D43_10`'s clouds `MDL_e43_kumo` and wind `MDL_e43_kaze` (frames 208 and
 242), splash `MDL_e43_sibuki` and its foam `MDL_e43_kemu` (frame 118).
 Widened by 4/3, `MDL_e42flox0` draws a dark line across the right side at
-`D42_10` frame 30, `MDL_e43_kumo` and `MDL_e43_kaze` show straight cloud edges
-at the sides at `D43_10` frames 60, 150 and 210, and `MDL_e00back18` in
-`D05_10` ends in a hard horizontal edge at the top at frame 50.
+`D42_10` frame 30, where it covers the dark notch at the right of the horizon
+in the shot of Hashirama from frame 447 (frame 473), `MDL_e43_kumo` shows
+straight cloud edges at the sides at `D43_10` frames 60, 150 and 210, while
+`MDL_e43_kaze` alone fills the black right side at frame 208 and the cloud
+edge at the left at frame 242, and `MDL_e00back18` in
+`D05_10` ends in a hard horizontal edge at the top at frame 50. At `D42_10`
+frame 127 the pale gap at the left of the horizon is where its distant hills
+`MDL_e42mtn00` end, which cover it at 4/3 as wide.
 `D01_20`'s clone crowds `MDL_nrt_tex_l/r` end short of the 16:9 sides
 (frame 28), and its near clones are one scene model, `MDL_nrt_copy_2`, that
 spans the whole screen (frame 63). Also ending just past a 4:3 edge:
