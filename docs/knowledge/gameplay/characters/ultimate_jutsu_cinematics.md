@@ -346,7 +346,26 @@ sky shows; that shot down onto the broken ground runs from frame 311 to the
 film's white fade near frame 360, after a shot of a floating rock that ends
 at frame 310. The sky `MDL_e67sky03` lies over the far ground's edge there
 as haze: with the sky hidden, the top of the far-left rock turns from
-(117, 108, 161) to (113, 92, 131), the tone of the rocks beside it. In `D36_20` (266) the posts and logs are `MDL_e00wood_a..f`
+(117, 108, 161) to (113, 92, 131), the tone of the rocks beside it.
+`D57_35`'s shot of the crater runs from a white fade, white to frame 536,
+to frame 601; frame 602 is the close shot after it. Its crater, all in
+`D57_35E.CCS`, is the near floor `MDL_e57flo38` (233 vertices, texture
+`e57flo35`), the wall, the second part of `MDL_e57flo37` (282 vertices,
+drawn with `e57bg36`), and the far rock `MDL_e57bg37` (130 vertices,
+`e57bg35`) at the left, under the dust cards `MDL_e57kem..`, `MDL_e57kmr00`
+and `MDL_e57kmb01`. At frame 555 the floor's left end and its right corner
+lie just past the 4:3 edges, and so does the wall's left end, with the far
+rock showing beside it. In `D58_50`'s last shot, from frame 766, Sakura stands
+far off on the cliffs with the defender crouched at her feet; `D62_50`
+ends with the same shot from the same frame. The cliffs are many copies of
+the rocks `MDL_e58bgcla..f`, each drawn with its own matrix, and their left
+end lies just past the left 4:3 edge, the clear colour and the sky showing
+beyond it. The shadows at the two fighters' feet are their own shadow parts
+and the stand-in's, `MDL_1cmn00t0 shadow..`. A shadow part's device matrix
+is the projection controller's renderer's device projection (renderer
++0x40; the controller at the active render environment +0xCC, its renderer
+at +0x4C) times the part's model matrix (draw context +0x110), composed in
+`model_part_queue_projection`. In `D36_20` (266) the posts and logs are `MDL_e00wood_a..f`
 (textures `e00wood01..03`): the teal crossbeam is `MDL_e00wood_c`, the
 diagonal log below it `MDL_e00wood_b`, the vertical post `MDL_e00wood_d` and
 the thick trunk at the right `MDL_e00wood_a`. Both logs are crooked, rings of
