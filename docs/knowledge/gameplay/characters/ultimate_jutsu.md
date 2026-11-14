@@ -727,6 +727,12 @@ Records:
   `character_default_jutsu_records` starts right after the table.
 - A scan for direct references to `character_jutsu_lists` finds one
   reader, `jutsu_select_record`.
+- 198 of the 223 records sit in exactly one character's list
+  (`character_jutsu_lists`, `0x005ACFB0`), none in two. Record 0 is empty;
+  the other 24 sit in no list: records 18..20, 50..52, 56..59, 61, 62, 64
+  and 90..95 carry the titles of Orochimaru's, Jiraiya's, Tsunade's,
+  Shizune's, Kabuto's, Asuma's and Kurenai's Ultimate Jutsu, and 60, 63 and
+  203..205 are Chakra Release.
 
 Per-skill data (184 retail skills, `0..0xB7`):
 
