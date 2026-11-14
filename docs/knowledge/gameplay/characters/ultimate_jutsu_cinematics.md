@@ -9,7 +9,8 @@ popup interruption, selected geometry providers, the resident BSS globals
 for opponent groups, optional switch tables and the derived main path, and
 the screen-held panels, domes, distortion lenses and their texture
 projection, backdrops ending at the 4:3 view, and characters kept just
-outside it, in sampled films.
+outside it, in sampled films, with where a film's camera is read and the
+shots of the films sampled for it.
 Open: the intended optional-body constant/resource, the capacity of the
 derived main-path buffer, targets across every cinematic, accumulated matrix orientation and visible body animation in
 omitted-draw ranges, and why the renderer draws nothing of the floor faces
@@ -458,6 +459,100 @@ screen center, a zoom, in both directions. `morpher_blend_vertices`
 `0..3576`, and clamps. That projection is separate from the model's drawn
 device matrix, so a lens samples where it draws only while the two agree.
 `D25_20` carries the lens `MDL_e25ygm02`.
+
+A film's camera is the primary draw environment's renderer, the pointer at
+`0x0060919C`: its `device_projection` at `+0x40` holds the film's view at any
+moment, while the active render environment's projection controller is null
+between frames. The ground of a film's scene is the XY plane, Z up, so that
+projection's first two columns are two points of the horizon on the screen
+and give its slope. Films roll the camera often: sampled slopes, in pixels down
+per pixel across of the 16:9 picture, are 0.27 in `D89_50` (frame 33), 0.36
+in `D93_20` (458), -0.27 in `D42_10` (29), -0.40 in `D80_20` (81), 0.55 in
+`D17_20` (327) and -0.42 in `D93_30` (343). A jump of that projection from
+one frame to the next marks a cut; a run of equal smaller jumps is a camera
+move. Shots found this way, first to last frame: `D01_30` 77..100 and
+170..248 (between white fades), `D09_20` 187..268, `D09_30` 52..97,
+`D15_30` 185..208, `D16_10` 186..232, `D16_20` 143..162 and 163..206,
+`D17_20` 285 to the end, `D25_20` 351 to the end, `D34_20` 141 to the end
+(a close-up that pulls back onto the rocks over frames 185 to 188),
+`D37_15` 185..245 (the camera swings onto the gate over frames 200 to
+208), `D42_10` 1..36, `D42_20` 1..35 and 925..1026 (white from about 947
+to 950), `D58_50` and `D62_50` 1..25, `D60_30` 370 to the end, `D61_30`
+66..100, 168..257 and 327 to the end, `D64_30` 236..299, `D68_20` 131..149,
+150..185, 186..203 and 204..239 (one forest of logs), `D71_30` 101..155 and
+156..252, `D72_10` 354 to the end, `D80_10` 257..295 and 296..369, `D80_20`
+52..86 and 358..405, `D81_30` 231..270, `D89_50` 1..56, `D92_10` 270..293,
+`D93_20` 447 to the end and `D93_30` 325..373.
+
+Past the 4:3 edges those shots show, in retail: in `D80_20` (404) and
+`D60_30` (382) a hole between the ground and what lies behind it, where the
+frame's clear colour shows; in `D61_30` (82) the wind `MDL_e61wnd..` as a
+darker wedge with a straight edge, its tip inside the 4:3 view; in `D61_30`
+(348) the end of the rubble `MDL_e61roc..`; in `D25_20` (414) the straight
+cut foot of the volcano `MDL_e25yam..`; in `D92_10` (280) the shadow of a
+figure that does not draw; in `D09_20` (267) the end of the fist's arm
+`MDL_e09tkbi01`; in `D16_20` (183) the ends of the streaks
+`MDL_e16line00`; in `D15_30` (191) the top edge of the backdrop
+`MDL_e15_back17`; in `D42_20` (20) the far edge of `MDL_e42flo00` and
+`MDL_e42load00`; and in `D58_50` and `D62_50` (14) the end of the far shore
+`MDL_e58flo50`. `D89_50` and `D93_20` share `D93`'s scenery
+(`MDL_e93bg01_sky`, `_cld`, `_mut`, `_a`, the rocks `MDL_e93bg02..` and the
+floor `MDL_e93bg03_flo`). `D42_10`'s motion lines behind the flying figure
+are copies of the shared speed lines, `MDL_e00line46a/b`. `D64_30`'s
+explosion `MDL_e64exp0..` is round and reaches the 4:3 width at about frame
+253.
+
+More of what those shots hold, from GS draws and from hiding single models while
+the frame is held: in `D80_10`'s shot from frame 257 to 295 the floor
+`MDL_e80bgf20` ends just past the left 4:3 edge, a dark green wedge showing
+past it (272). In `D80_20` (404) the far mountains `MDL_e80bgm` do not end at
+the left 4:3 edge: they sink there behind the far ground `MDL_e80bgf`, and
+the crater is `MDL_e80clr00`. `D61_30`'s cracked rock (220) is the rocks
+`MDL_e61roc..` under a coat of dust, `MDL_e61smk..` and `MDL_e61kmr..`,
+without which it shows blue-grey, on the ground `MDL_e61flo..`; its blue arc
+is `MDL_e61air..`. The rock is cut off straight at its left: until the camera
+closes in at frame 218 the cut lies inside the 4:3 view, at 16:9 X 106 (200),
+and from then at that view's left edge. That film, `D25_20` and `D01_30` also blend earlier frames
+into each frame. `D71_30`'s shot from frame 101 has no cut in the primary
+renderer's camera until frame 156, yet the picture changes: Naruto runs on
+white ground to frame 128, smoke blows in from frame 129, and from frame 133
+he stands close at the left in smoke. That smoke is flat cards,
+`MDL_e71sgkm01a/b` and `MDL_e71laskm01a/b`, which cover the 4:3 view only, so
+past them at both sides shows the dark sheet `MDL_e71bflo01`, which lies
+over the white ground and draws black (140). In the sphere's shot, frames 156
+to 252, the black ledge `MDL_e71rcbk01` has a straight top edge, which the
+smoke cards `MDL_e71sgkm01a/b` and the layer `MDL_e71sgkl01` cover inside the 4:3 view
+only (224); `MDL_e71sgkm01a/b` also draw the black cloud around the sphere.
+The dark shape on `D72_10`'s water (366) is the clear colour, past the end of
+the water `MDL_e72flo..`. On `D25_20`'s volcano `MDL_e25yam..` lie the lava
+`MDL_e25gan..`, the magma `MDL_e25mag..` and the smoke `MDL_e25kem..`. In
+`D01_30`'s shot under the leg, frames 77 to 100, the cliff and what lies
+below it are many `MDL_e01..` models that end together at the right (80). In
+its shot of the dome, frames 170 to 248, the cliffs are `MDL_e01bg01` and
+`MDL_e01bg02`, the black ground `MDL_e01bgblack00`, and the black rocks in
+front of the dome one model, `MDL_e01rocbeak00`, whose lit faces show as
+grey shards left of the dome and as a dark red streak right of it, at 16:9 X
+560 to 600 (212); the other `MDL_e01rocbeak0..` models and `MDL_e02rcs01..`
+are flying debris. `D17_20`'s ground `MDL_e17flo03` has a pale rim along its
+far edge, which the far ground `MDL_e17mor01` covers (327). `D42_20`'s forest
+from above is `MDL_e42mori00` with its shadow `MDL_e42sdmori00`, both sized to
+the 4:3 view (940); after the white flash, from frame 951, the same shot of
+the camera shows the explosion's rings instead. `D37_15`'s gate is
+`MDL_st5100t0 body`, its two halves drawn apart, on the floor
+`MDL_e37flo01..03`; the jagged pale piece at the left 16:9 edge (223) is a
+streak of dust, `MDL_e01smk09`, while `MDL_e01smk08` is the dust around the
+gate. `D34_20`'s rocks are `MDL_e34rock a..c`. In `D68_20` the log
+`MDL_e68wood01_b` also lies across the top of the shot before the forest of
+logs, frames 100 to 130, from edge to edge. `D09_30`'s camera cuts between
+frames 65 and 66, onto the arching snake.
+`D93_50`'s shot of the dust trail runs from frame 138 to 187: the camera
+pulls back fast over frames 156 to 160, and from about frame 165 the defender
+flies up through the right 16:9 side only. `D02_30`'s speed-line tunnel runs
+from frame 171 to 230, the camera pushing in from frame 212; its backdrop
+`MDL_e02back08` and streak layers `MDL_e02air..`, `MDL_e02wind01` and
+`MDL_e00line46a/b` hold lines that fan out, so they line up only when all are
+drawn at one scale. `D60_20`'s shot at frame 367 runs from 338 to 419, and
+`D89_10`'s shot of the swarm from 90 to 132.
 
 ## Addresses
 
